@@ -863,3 +863,35 @@ input:focus, textarea:focus{
     grid-template-columns:1fr;
   }
 }
+
+
+.footer-links a{
+  position:relative;
+  transition:transform .22s ease, color .22s ease, opacity .22s ease;
+}
+.footer-links a::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-3px;
+  width:0;
+  height:2px;
+  background:rgba(255,255,255,.92);
+  transition:width .22s ease;
+}
+.footer-links a:hover{
+  transform:translateX(4px);
+  color:#ffffff;
+}
+.footer-links a:hover::after{
+  width:100%;
+}
+.footer-col{
+  animation:fadeUp .8s ease both;
+}
+.footer-col:nth-child(2){
+  animation-delay:.08s;
+}
+.footer-col:nth-child(3){
+  animation-delay:.16s;
+}
