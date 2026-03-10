@@ -376,8 +376,8 @@ a{
 }
 
 .logo-item{
-  width:290px;
-  height:150px;
+  width:400px;
+  height:200px;
   background:transparent;
   border:none;
   display:flex;
@@ -389,7 +389,7 @@ a{
 
 .logo-item img{
   max-width:100%;
-  max-height:118px;
+  max-height:160px;
   object-fit:contain;
   filter:grayscale(100%) saturate(.9);
   opacity:.85;
@@ -901,12 +901,12 @@ textarea:focus{
   }
 
   .logo-item{
-    width:220px;
-    height:112px;
+    width:310px;
+    height:155px;
   }
 
   .logo-item img{
-    max-height:88px;
+    max-height:125px;
   }
 
   .footer-grid{
@@ -1022,13 +1022,13 @@ textarea:focus{
   }
 
   .logo-item{
-    width:210px;
-    height:96px;
+    width:290px;
+    height:135px;
     padding:8px 14px;
   }
 
   .logo-item img{
-    max-height:64px;
+    max-height:90px;
   }
 
   .cert-wrap,
@@ -1272,13 +1272,13 @@ textarea:focus{
   }
 
   .logo-item{
-    width:180px;
-    height:84px;
+    width:250px;
+    height:120px;
     padding:6px 10px;
   }
 
   .logo-item img{
-    max-height:52px;
+    max-height:75px;
   }
 
   .cert-copy,
@@ -1426,12 +1426,12 @@ textarea:focus{
   }
 
   .logo-item{
-    width:160px;
-    height:78px;
+    width:220px;
+    height:110px;
   }
 
   .logo-item img{
-    max-height:46px;
+    max-height:65px;
   }
 
   .stat-number{
