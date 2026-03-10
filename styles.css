@@ -17,7 +17,7 @@
 html{scroll-behavior:smooth}
 body{
   margin:0;
-  font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-family:"Montserrat",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   color:var(--text);
   background:var(--bg);
   line-height:1.6;
@@ -118,10 +118,12 @@ a{text-decoration:none;color:inherit}
 .hero-content{
   position:relative;
   z-index:1;
-  display:grid;
-  grid-template-columns:1.25fr .75fr;
-  gap:34px;
+}
+.hero-centered{
+  display:flex;
+  flex-direction:column;
   align-items:center;
+  text-align:center;
 }
 .eyebrow{
   display:inline-flex;
@@ -150,6 +152,63 @@ a{text-decoration:none;color:inherit}
   color:var(--muted);
   margin-top:14px;
 }
+
+
+.hero-impact-title{
+  margin:22px auto 14px;
+  font-size:clamp(2.8rem, 7vw, 6rem);
+  line-height:.98;
+  max-width:1200px;
+  font-weight:900;
+  letter-spacing:-0.04em;
+}
+.hero-copy-centered{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.hero-tagline-centered{
+  max-width:980px;
+  text-align:center;
+  font-size:1.5rem;
+}
+.hero-text-centered{
+  max-width:980px;
+  text-align:center;
+  font-size:1.08rem;
+}
+.hero-actions-centered{
+  justify-content:center;
+}
+.hero-stats{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  gap:18px;
+  width:100%;
+  margin-top:34px;
+}
+.stat-box{
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(217,227,239,.95);
+  border-radius:24px;
+  padding:26px 22px;
+  box-shadow:var(--shadow);
+  animation:fadeUp .9s ease both;
+}
+.stat-value{
+  display:block;
+  font-size:clamp(1.6rem, 3vw, 2.5rem);
+  line-height:1;
+  font-weight:900;
+  color:var(--primary-dark);
+  margin-bottom:8px;
+}
+.stat-text{
+  display:block;
+  color:var(--muted);
+  font-weight:700;
+}
+
 .hero-actions{
   display:flex;
   gap:14px;
@@ -305,12 +364,12 @@ a{text-decoration:none;color:inherit}
   align-items:center;
   gap:22px;
   width:max-content;
-  animation:scrollLogos 55s linear infinite;
+  animation:scrollLogos 34s linear infinite;
 }
 .logo-marquee:hover .logo-track{animation-play-state:paused}
 .logo-item{
-  width:240px;
-  height:132px;
+  width:290px;
+  height:150px;
   background:transparent;
   border:none;
   border-radius:0;
@@ -326,7 +385,7 @@ a{text-decoration:none;color:inherit}
 }
 .logo-item img{
   max-width:100%;
-  max-height:96px;
+  max-height:118px;
   object-fit:contain;
   filter:saturate(1.04);
 }
@@ -478,6 +537,10 @@ input:focus, textarea:focus{
 }
 
 @media (max-width: 1080px){
+  .hero-stats{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+
   .hero-content,
   .cert-wrap,
   .contact-wrap{
@@ -492,6 +555,17 @@ input:focus, textarea:focus{
 }
 
 @media (max-width: 760px){
+  .hero-impact-title{
+    font-size:clamp(2.5rem, 12vw, 4.2rem);
+    text-align:center;
+  }
+  .hero-stats{
+    grid-template-columns:1fr;
+  }
+  .hero-tagline-centered{
+    font-size:1.15rem;
+  }
+
   .menu-toggle{display:block}
   .main-nav{
     position:absolute;
@@ -519,8 +593,8 @@ input:focus, textarea:focus{
     align-items:flex-start;
   }
   .logo-item{
-    width:180px;
-    height:96px;
+    width:220px;
+    height:112px;
   }
 }
 
@@ -598,4 +672,13 @@ input:focus, textarea:focus{
     opacity:1;
     transform:translateY(0);
   }
+}
+
+
+.section-logos .section-heading{
+  margin-bottom:38px;
+}
+.section-logos{
+  padding-top:86px;
+  padding-bottom:86px;
 }
