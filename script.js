@@ -12,6 +12,15 @@ if (menuToggle && mainNav) {
       mainNav.classList.remove("open");
     });
   });
+
+  document.addEventListener("click", (e) => {
+    const isClickInsideNav = mainNav.contains(e.target);
+    const isClickOnToggle = menuToggle.contains(e.target);
+
+    if (!isClickInsideNav && !isClickOnToggle) {
+      mainNav.classList.remove("open");
+    }
+  });
 }
 
 // HEADER SCROLL
