@@ -4,14 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IPCI | Instituto Profesional de Certificación Industrial Latinoamericano</title>
-  <meta name="description" content="Instituto Profesional de Certificación Industrial Latinoamericano. Certificación profesional para la industria moderna." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <meta
+    name="description"
+    content="Instituto Profesional de Certificación Industrial Latinoamericano. Formación aplicada y certificación profesional para sectores industriales, científicos y empresariales."
+  />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="site-header">
+  <header class="site-header" id="siteHeader">
     <div class="container nav-wrap">
       <a href="#inicio" class="brand">
         <img src="assets/logo.jpeg" alt="Logo IPCI" class="brand-logo" />
@@ -21,80 +29,97 @@
         </div>
       </a>
 
-      <button class="menu-toggle" aria-label="Abrir menú" id="menuToggle">☰</button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
 
       <nav class="main-nav" id="mainNav">
         <a href="#inicio">Inicio</a>
+        <a href="#aliadas">Empresas aliadas</a>
+        <a href="#certificados">Certificados</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#metodologia">Metodología</a>
         <a href="#areas">Áreas</a>
-        <a href="#aliadas">Aliadas</a>
-        <a href="#certificados">Certificados</a>
         <a href="#contacto" class="nav-btn">Contacto</a>
       </nav>
     </div>
   </header>
 
   <main>
-    
-<section class="hero" id="inicio">
-      <div class="container hero-content hero-centered">
-        <div class="hero-copy hero-copy-centered">
-          <span class="eyebrow">Institución de formación y certificación</span>
-          <h1 class="hero-impact-title">Instituto Profesional de Certificación Industrial Latinoamericano</h1>
-          <p class="hero-tagline hero-tagline-centered">Formación aplicada, estructura profesional y certificación para la industria moderna.</p>
-          <p class="hero-text hero-text-centered">
-            El IPCI integra metodología propia, validación institucional y presencia multisectorial
-            para fortalecer competencias en sectores productivos, empresariales, científicos y técnicos.
+    <!-- INICIO -->
+    <section class="hero" id="inicio">
+      <div class="container hero-center reveal">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            INSTITUTO PROFESIONAL<br />
+            DE CERTIFICACIÓN INDUSTRIAL<br />
+            LATINOAMERICANO
+          </h1>
+
+          <p class="hero-subtitle">
+            Formación aplicada y certificación profesional para sectores industriales,
+            científicos y empresariales.
           </p>
-          <div class="hero-actions hero-actions-centered">
-            <a href="#aliadas" class="btn btn-primary">Ver empresas aliadas</a>
-            <a href="#certificados" class="btn btn-secondary">Validar certificado</a>
+
+          <p class="hero-description">
+            El IPCI integra metodología propia, validación institucional y presencia
+            multisectorial para fortalecer competencias profesionales con enfoque práctico.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="#aliadas" class="btn-primary">Ver empresas aliadas</a>
+            <a href="#certificados" class="btn-secondary">Validar certificado</a>
           </div>
         </div>
 
         <div class="hero-stats">
-          <article class="stat-box">
-            <span class="stat-value">+50</span>
+          <div class="stat reveal">
+            <span class="stat-number counter" data-target="50">0</span>
             <span class="stat-text">Empresas aliadas</span>
-          </article>
-          <article class="stat-box">
-            <span class="stat-value">7</span>
+          </div>
+
+          <div class="stat reveal">
+            <span class="stat-number counter" data-target="7">0</span>
             <span class="stat-text">Áreas estratégicas</span>
-          </article>
-          <article class="stat-box">
-            <span class="stat-value">7 etapas</span>
-            <span class="stat-text">Método IPCI aplicado</span>
-          </article>
-          <article class="stat-box">
-            <span class="stat-value">24/7</span>
+          </div>
+
+          <div class="stat reveal">
+            <span class="stat-number">7</span>
+            <span class="stat-text">Etapas del método IPCI</span>
+          </div>
+
+          <div class="stat reveal">
+            <span class="stat-number">24/7</span>
             <span class="stat-text">Validación institucional</span>
-          </article>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- EMPRESAS ALIADAS -->
     <section class="section section-logos" id="aliadas">
       <div class="container">
-        <div class="section-heading centered">
+        <div class="section-heading centered reveal">
           <span class="section-kicker">Empresas consultoras aliadas</span>
-          <h2>Red de presencia sectorial</h2>
+          <h2>Presencia multisectorial que fortalece la proyección institucional del IPCI</h2>
           <p>
-            Organizaciones que participan en el fortalecimiento técnico y profesional de la visión institucional del IPCI.
+            Organizaciones que respaldan la presencia sectorial y la visión institucional
+            del Instituto Profesional de Certificación Industrial Latinoamericano.
           </p>
         </div>
 
-        <div class="logo-marquee">
+        <div class="logo-marquee reveal">
+          <div class="logo-fade left"></div>
+          <div class="logo-fade right"></div>
+
           <div class="logo-track">
             <div class="logo-item"><img src="assets/logos/LOGO_AGROTEC-_AMERICA.jpg" alt="AGROTEC" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_SINERGIA.jpg" alt="SINERGIA" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO-ING-AVICOLA.png" alt="Ingeniería Avícola" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO_VISION_PECUARIA.png" alt="Visión Pecuaria" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO_GLOBAL.jpg" alt="Global" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO-ING-AVICOLA.png" alt="INGENIERÍA AVÍCOLA" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO_VISION_PECUARIA.png" alt="VISIÓN PECUARIA" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO_GLOBAL.jpg" alt="GLOBAL" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_IMIDIIL_MEX.png" alt="IMIDIIL" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_TECMEC.jpg" alt="TECMEC" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_ICADEM.jpeg" alt="ICADEM" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO_ELIPTICA.jpeg" alt="ELIPTICA" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO_ELIPTICA.jpeg" alt="ELÍPTICA" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_SYNOVA.jpg" alt="SYNOVA" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_SYNOVALAB.jpeg" alt="SYNOVALAB" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_BIOGENIX.jpeg" alt="BIOGENIX" /></div>
@@ -107,15 +132,16 @@
             <div class="logo-item"><img src="assets/logos/LOGO_ZOORIGEN.jpg" alt="ZOORIGEN" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_BIOTERRA.jpg" alt="BIOTERRA" /></div>
 
+            <!-- duplicados para loop fluido -->
             <div class="logo-item"><img src="assets/logos/LOGO_AGROTEC-_AMERICA.jpg" alt="AGROTEC" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_SINERGIA.jpg" alt="SINERGIA" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO-ING-AVICOLA.png" alt="Ingeniería Avícola" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO_VISION_PECUARIA.png" alt="Visión Pecuaria" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO_GLOBAL.jpg" alt="Global" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO-ING-AVICOLA.png" alt="INGENIERÍA AVÍCOLA" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO_VISION_PECUARIA.png" alt="VISIÓN PECUARIA" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO_GLOBAL.jpg" alt="GLOBAL" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_IMIDIIL_MEX.png" alt="IMIDIIL" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_TECMEC.jpg" alt="TECMEC" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_ICADEM.jpeg" alt="ICADEM" /></div>
-            <div class="logo-item"><img src="assets/logos/LOGO_ELIPTICA.jpeg" alt="ELIPTICA" /></div>
+            <div class="logo-item"><img src="assets/logos/LOGO_ELIPTICA.jpeg" alt="ELÍPTICA" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_SYNOVA.jpg" alt="SYNOVA" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_SYNOVALAB.jpeg" alt="SYNOVALAB" /></div>
             <div class="logo-item"><img src="assets/logos/LOGO_BIOGENIX.jpeg" alt="BIOGENIX" /></div>
@@ -132,48 +158,258 @@
       </div>
     </section>
 
+    <!-- CERTIFICADOS -->
     <section class="section" id="certificados">
       <div class="container cert-wrap">
-        <div class="cert-copy">
+        <div class="cert-copy reveal">
           <span class="section-kicker">Certificados IPCI</span>
-          <h2>Documentos con autenticidad institucional</h2>
+          <h2>Certificación profesional verificable</h2>
           <p>
-            Los certificados emitidos por el IPCI incorporan mecanismos de autenticidad documental para
-            fortalecer su verificabilidad y respaldo institucional.
+            Los certificados emitidos por el IPCI incorporan mecanismos de autenticidad
+            documental para fortalecer su verificabilidad, confianza institucional y consulta digital.
           </p>
+
           <ul class="feature-list">
             <li>Folio único institucional</li>
             <li>Código QR de verificación</li>
-            <li>Registro interno de certificados</li>
-            <li>Validación mediante consulta digital</li>
+            <li>Registro interno</li>
+            <li>Validación digital</li>
           </ul>
         </div>
 
-        <div class="validate-card">
+        <div class="validate-card reveal">
           <div class="validate-head">
             <img src="assets/sello.jpeg" alt="Sello IPCI" class="seal" />
             <div>
-              <h3>Validar certificado</h3>
-              <p>Ingresa el folio para iniciar la verificación.</p>
+              <h3>Validación institucional de certificados</h3>
+              <p>
+                Consulta la autenticidad documental de los certificados emitidos
+                por el IPCI mediante folio institucional.
+              </p>
             </div>
           </div>
 
-          <form id="validateForm" class="validate-form">
+          <form class="validate-form" id="validateForm">
             <label for="folio">Folio institucional</label>
-            <input id="folio" name="folio" type="text" placeholder="Ej. IPCI-2026-00015" />
-            <button type="submit" class="btn btn-primary btn-full">Validar certificado</button>
+            <input
+              type="text"
+              id="folio"
+              name="folio"
+              placeholder="Ej. IPCI-2026-00015"
+            />
+            <button type="submit" class="btn-primary btn-full">Validar certificado</button>
           </form>
-          <p class="validate-note">Esta versión deja listo el módulo visual para conectar tu sistema de validación más adelante.</p>
+
+          <p class="validate-note">
+            Sistema preparado para consulta digital, autenticidad documental y validación institucional.
+          </p>
         </div>
       </div>
     </section>
 
-    <section class="section section-alt" id="contacto">
+    <!-- NOSOTROS -->
+    <section class="section section-alt" id="nosotros">
+      <div class="container">
+        <div class="section-heading centered reveal">
+          <span class="section-kicker">Nosotros</span>
+          <h2>Institución enfocada en competencias profesionales aplicadas</h2>
+          <p>
+            El IPCI es una institución orientada al desarrollo de competencias profesionales
+            mediante programas de capacitación técnica, empresarial y aplicada, diseñados para
+            responder a las necesidades actuales de la industria moderna.
+          </p>
+        </div>
+
+        <div class="info-grid">
+          <article class="info-card reveal">
+            <h3>Misión</h3>
+            <p>
+              Brindar programas de capacitación profesional accesibles, estructurados y aplicables
+              que contribuyan al desarrollo de competencias técnicas y empresariales.
+            </p>
+          </article>
+
+          <article class="info-card reveal">
+            <h3>Visión</h3>
+            <p>
+              Consolidarse como un instituto de referencia en capacitación profesional aplicada
+              en Latinoamérica, reconocido por su enfoque práctico y vinculación con la industria.
+            </p>
+          </article>
+
+          <article class="info-card reveal">
+            <h3>Objetivo institucional</h3>
+            <p>
+              Fortalecer habilidades, actualizar conocimientos y respaldar procesos formativos
+              útiles, verificables y alineados con el sector productivo.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- METODOLOGÍA -->
+    <section class="section" id="metodologia">
+      <div class="container">
+        <div class="section-heading centered reveal">
+          <span class="section-kicker">Metodología</span>
+          <h2>Método IPCI de Capacitación Aplicada</h2>
+          <p>
+            Un modelo estructurado que integra análisis, fundamentos técnicos, aplicación práctica
+            y evaluación final para fortalecer competencias con utilidad real en entornos profesionales.
+          </p>
+        </div>
+
+        <div class="method-intro-card reveal">
+          <p>
+            El <strong>método IPCI</strong> combina comprensión técnica, análisis de escenarios reales
+            y enfoque aplicado, permitiendo que cada proceso formativo genere aprendizaje útil,
+            claro y orientado a resultados.
+          </p>
+          <p class="method-highlight">
+            Este enfoque hace que la capacitación sea más
+            <strong>práctica</strong>,
+            <strong>estructurada</strong>,
+            <strong>aplicable</strong>
+            y <strong>profesional</strong>.
+          </p>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-card reveal">
+            <span>1</span>
+            <h3>Análisis del problema</h3>
+            <p>
+              Se identifican las situaciones reales del entorno profesional,
+              evaluando contexto, necesidades y desafíos.
+            </p>
+          </article>
+
+          <article class="step-card reveal">
+            <span>2</span>
+            <h3>Principios técnicos</h3>
+            <p>
+              Se presentan los fundamentos conceptuales y técnicos
+              necesarios para comprender el contenido aplicado.
+            </p>
+          </article>
+
+          <article class="step-card reveal">
+            <span>3</span>
+            <h3>Implementación</h3>
+            <p>
+              Se revisan herramientas, procesos y metodologías
+              para llevar el conocimiento a una aplicación concreta.
+            </p>
+          </article>
+
+          <article class="step-card reveal">
+            <span>4</span>
+            <h3>Caso real</h3>
+            <p>
+              Se estudian ejemplos y escenarios concretos que permiten
+              comprender el uso práctico del conocimiento.
+            </p>
+          </article>
+
+          <article class="step-card reveal">
+            <span>5</span>
+            <h3>Aplicación industrial</h3>
+            <p>
+              El participante comprende cómo trasladar lo aprendido
+              a contextos profesionales, técnicos o empresariales.
+            </p>
+          </article>
+
+          <article class="step-card reveal">
+            <span>6</span>
+            <h3>Puntos de mejora</h3>
+            <p>
+              Se analizan oportunidades de optimización,
+              buenas prácticas y recomendaciones de aplicación.
+            </p>
+          </article>
+
+          <article class="step-card reveal">
+            <span>7</span>
+            <h3>Evaluación</h3>
+            <p>
+              Se verifica la comprensión del contenido
+              y se consolida el aprendizaje.
+            </p>
+          </article>
+        </div>
+
+        <div class="method-proof reveal">
+          <h3>¿Por qué el método IPCI es eficaz?</h3>
+          <p>
+            Porque integra teoría, análisis y aplicación en una misma estructura,
+            permitiendo desarrollar comprensión y criterio profesional.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÁREAS -->
+    <section class="section section-alt" id="areas">
+      <div class="container">
+        <div class="section-heading centered reveal">
+          <span class="section-kicker">Áreas</span>
+          <h2>Enfoque multidisciplinario orientado a la industria moderna</h2>
+          <p>
+            El IPCI desarrolla programas de capacitación en sectores estratégicos
+            con orientación profesional, técnica y aplicada.
+          </p>
+        </div>
+
+        <div class="areas-grid">
+          <article class="area-card reveal">
+            <h3>Agroindustria</h3>
+            <p>Capacitación aplicada a procesos productivos y formación técnica para el sector.</p>
+          </article>
+
+          <article class="area-card reveal">
+            <h3>Ingeniería industrial</h3>
+            <p>Procesos, mejora operativa, gestión técnica y fortalecimiento de competencias industriales.</p>
+          </article>
+
+          <article class="area-card reveal">
+            <h3>Administración y gestión empresarial</h3>
+            <p>Programas orientados a estructura organizacional, documentación, gestión y desarrollo profesional.</p>
+          </article>
+
+          <article class="area-card reveal">
+            <h3>Logística y operaciones</h3>
+            <p>Herramientas para compras, abastecimiento, control y optimización operativa.</p>
+          </article>
+
+          <article class="area-card reveal">
+            <h3>Biotecnología</h3>
+            <p>Capacitación técnica en ciencias biológicas aplicadas, industria y análisis especializado.</p>
+          </article>
+
+          <article class="area-card reveal">
+            <h3>Investigación científica</h3>
+            <p>Formación aplicada a metodología, análisis y comprensión de procesos científicos y técnicos.</p>
+          </article>
+
+          <article class="area-card reveal">
+            <h3>Salud y bienestar</h3>
+            <p>Programas de actualización profesional en áreas clínicas, rehabilitación, nutrición y bienestar integral.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="section" id="contacto">
       <div class="container contact-wrap">
-        <div class="contact-copy">
+        <div class="contact-copy reveal">
           <span class="section-kicker">Contacto</span>
           <h2>Conecta con el IPCI</h2>
-          <p>Atención institucional para programas, capacitación y validación documental.</p>
+          <p>
+            Atención institucional para programas, capacitación y validación documental.
+          </p>
 
           <div class="contact-data">
             <a href="mailto:ipcilinstituto@gmail.com">ipcilinstituto@gmail.com</a>
@@ -181,43 +417,70 @@
           </div>
         </div>
 
-        <form class="contact-form" action="mailto:ipcilinstituto@gmail.com" method="post" enctype="text/plain">
+        <form
+          class="contact-form reveal"
+          action="mailto:ipcilinstituto@gmail.com"
+          method="post"
+          enctype="text/plain"
+        >
           <div class="form-grid">
             <div>
               <label for="nombre">Nombre</label>
               <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" />
             </div>
+
             <div>
               <label for="correo">Correo</label>
               <input type="email" id="correo" name="correo" placeholder="tu@correo.com" />
             </div>
           </div>
+
           <div>
             <label for="mensaje">Mensaje</label>
             <textarea id="mensaje" name="mensaje" rows="5" placeholder="Escribe tu mensaje"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+
+          <button type="submit" class="btn-primary">Enviar mensaje</button>
         </form>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-wrap">
+    <div class="container footer-grid">
       <div class="footer-brand">
         <img src="assets/logo.jpeg" alt="Logo IPCI" class="footer-logo" />
         <div>
-          <strong>Instituto Profesional de Certificación Industrial Latinoamericano</strong>
-          <p>Certificación profesional para la industria moderna</p>
+          <strong>INSTITUTO PROFESIONAL DE CERTIFICACIÓN INDUSTRIAL LATINOAMERICANO</strong>
+          <p>Certificación profesional para la industria moderna.</p>
         </div>
       </div>
 
-      <div class="footer-links">
-        <a href="#inicio">Inicio</a>
-        <a href="#metodologia">Metodología</a>
-        <a href="#areas">Áreas</a>
-        <a href="#certificados">Certificados</a>
-        <a href="#contacto">Contacto</a>
+      <div class="footer-col">
+        <h4>Navegación</h4>
+        <div class="footer-links">
+          <a href="#inicio">Inicio</a>
+          <a href="#aliadas">Empresas aliadas</a>
+          <a href="#certificados">Certificados</a>
+          <a href="#nosotros">Nosotros</a>
+          <a href="#metodologia">Metodología</a>
+          <a href="#areas">Áreas</a>
+          <a href="#contacto">Contacto</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contacto institucional</h4>
+        <div class="footer-contact">
+          <a href="mailto:ipcilinstituto@gmail.com">ipcilinstituto@gmail.com</a>
+          <a href="tel:+522382388913">2382388913</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container">
+        <p>© IPCI — Todos los derechos reservados.</p>
       </div>
     </div>
   </footer>
