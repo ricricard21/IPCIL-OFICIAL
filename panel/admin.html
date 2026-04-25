@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Super Admin — IPCI</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<button class="menu-toggle" id="menu-toggle">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+</button>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div class="sidebar-brand-text">
+        <strong>IPCI</strong>
+        <span>Super Admin</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="sidebar-link" data-view="consultoras">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+        Consultoras
+      </button>
+      <button class="sidebar-link" data-view="usuarios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Usuarios
+      </button>
+      <button class="sidebar-link" data-view="cursos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Cursos
+      </button>
+      <button class="sidebar-link" data-view="certificados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Certificados
+      </button>
+      <button class="sidebar-link" data-view="ranking">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
+        Ranking
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-initial">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role">Super admin</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <div class="main-header">
+        <h1 class="main-title">Dashboard global</h1>
+        <p class="main-subtitle">Visión general del sistema IPCI</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Consultoras activas</div>
+          <div class="stat-value" id="dash-consultoras">0</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">Total usuarios</div>
+          <div class="stat-value" id="dash-usuarios">0</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Certificados emitidos</div>
+          <div class="stat-value" id="dash-certificados">0</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Ingresos totales</div>
+          <div class="stat-value" id="dash-ingresos">$0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Esta semana vs semana pasada</div></div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Alumnos esta semana</div>
+            <div class="stat-value" id="dash-alumnos-semana">0</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Certificados esta semana</div>
+            <div class="stat-value" id="dash-certs-semana">0</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label">Ingresos esta semana</div>
+            <div class="stat-value" id="dash-ingresos-semana">$0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Últimos certificados emitidos</div></div>
+        <div id="dash-ultimos"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- CONSULTORAS -->
+    <section id="view-consultoras" class="view hidden">
+      <div class="main-header flex items-center justify-between gap-16">
+        <div>
+          <h1 class="main-title">Consultoras</h1>
+          <p class="main-subtitle">Gestiona las consultoras aliadas</p>
+        </div>
+        <button class="btn" id="btn-nueva-consultora">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nueva consultora
+        </button>
+      </div>
+
+      <div class="card">
+        <div id="consultoras-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- USUARIOS -->
+    <section id="view-usuarios" class="view hidden">
+      <div class="main-header flex items-center justify-between gap-16">
+        <div>
+          <h1 class="main-title">Usuarios</h1>
+          <p class="main-subtitle">Coordinadores y vendedores del sistema</p>
+        </div>
+        <button class="btn" id="btn-nuevo-usuario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo usuario
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Listado de usuarios</div>
+          <select id="filter-rol" class="input" style="max-width:200px">
+            <option value="">Todos los roles</option>
+            <option value="coordinador">Coordinadores</option>
+            <option value="vendedor">Vendedores</option>
+            <option value="superadmin">Super admins</option>
+          </select>
+        </div>
+        <div id="usuarios-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- CURSOS -->
+    <section id="view-cursos" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">Todos los cursos</h1>
+        <p class="main-subtitle">Cursos del ecosistema IPCI</p>
+      </div>
+
+      <div class="card">
+        <div id="cursos-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- CERTIFICADOS -->
+    <section id="view-certificados" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">Certificados emitidos</h1>
+        <p class="main-subtitle">Historial completo de certificaciones</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Listado</div>
+          <input type="search" class="input" id="search-cert" placeholder="Buscar por folio o nombre..." style="max-width:280px">
+        </div>
+        <div id="certificados-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- RANKING -->
+    <section id="view-ranking" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">Ranking</h1>
+        <p class="main-subtitle">Top de consultoras y vendedores</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">🏆 Top consultoras (por certificados emitidos)</div></div>
+        <div id="ranking-consultoras"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">⭐ Top vendedores</div></div>
+        <div id="ranking-vendedores"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL CONSULTORA -->
+<div class="modal-overlay" id="modal-consultora">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-consultora-title">Nueva consultora</h2>
+      <button class="modal-close" data-close="consultora">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form id="form-consultora">
+      <input type="hidden" id="consultora-id">
+
+      <div class="field-group">
+        <label class="label">Nombre *</label>
+        <input type="text" id="consultora-nombre" required placeholder="Ej. OdonTeck">
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="label">Código (4 letras) *</label>
+          <input type="text" id="consultora-codigo" required maxlength="4" placeholder="ODON" style="text-transform:uppercase">
+        </div>
+        <div>
+          <label class="label">Estado</label>
+          <select id="consultora-activa">
+            <option value="true">Activa</option>
+            <option value="false">Inactiva</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="label">Texto descriptivo (para certificados)</label>
+        <input type="text" id="consultora-descriptivo" placeholder="Ej. en el ámbito odontológico">
+      </div>
+
+      <div class="field-group">
+        <label class="label">Texto de firma (para certificados)</label>
+        <input type="text" id="consultora-firma" placeholder="Ej. ODONTECK — COORDINACIÓN GENERAL">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-close="consultora">Cancelar</button>
+        <button type="submit" class="btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Nuevo usuario</h2>
+      <button class="modal-close" data-close="usuario">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div style="background:var(--yellow-bg);border:1px solid var(--yellow);color:#854d0e;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:18px">
+      ⚠️ <strong>Importante:</strong> Primero crea el usuario en Firebase Authentication, copia el UID y luego registra aquí los datos.
+    </div>
+
+    <form id="form-usuario">
+      <div class="field-group">
+        <label class="label">UID de Firebase Auth *</label>
+        <input type="text" id="usuario-uid" required placeholder="Pega aquí el UID copiado de Authentication">
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="label">Email *</label>
+          <input type="email" id="usuario-email" required>
+        </div>
+        <div>
+          <label class="label">Nombre completo *</label>
+          <input type="text" id="usuario-nombre" required>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="label">Rol *</label>
+          <select id="usuario-rol" required>
+            <option value="">Selecciona...</option>
+            <option value="vendedor">Vendedor</option>
+            <option value="coordinador">Coordinador</option>
+            <option value="superadmin">Super admin</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Consultora *</label>
+          <select id="usuario-consultora" required>
+            <option value="">Selecciona...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-close="usuario">Cancelar</button>
+        <button type="submit" class="btn">Crear usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth, db,
+    requireRole, cerrarSesion, formatFecha, toast,
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot
+  } from "./firebase-config.js";
+
+  let usuario = null;
+  let consultoras = [];
+  let usuarios = [];
+  let cursos = [];
+  let certificados = [];
+  let alumnos = [];
+
+  usuario = await requireRole("superadmin");
+  document.getElementById("user-name").textContent = usuario.nombre || "Admin";
+  document.getElementById("user-initial").textContent = (usuario.nombre || "A")[0].toUpperCase();
+
+  document.querySelectorAll(".sidebar-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      document.getElementById(`view-${btn.dataset.view}`).classList.remove("hidden");
+      document.getElementById("sidebar").classList.remove("open");
+      if (btn.dataset.view === "ranking") renderRanking();
+    });
+  });
+
+  document.getElementById("menu-toggle").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
+
+  // ─── Suscripciones globales ───
+  onSnapshot(collection(db, "consultoras"), (snap) => {
+    consultoras = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    consultoras.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    renderConsultoras();
+    rellenarSelectConsultoras();
+    actualizarDashboard();
+  });
+
+  onSnapshot(collection(db, "usuarios"), (snap) => {
+    usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderUsuarios();
+    actualizarDashboard();
+  });
+
+  onSnapshot(collection(db, "cursos"), (snap) => {
+    cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCursos();
+  });
+
+  onSnapshot(collection(db, "certificados"), (snap) => {
+    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+    renderCertificados();
+    actualizarDashboard();
+    renderRanking();
+  });
+
+  onSnapshot(collection(db, "alumnos"), (snap) => {
+    alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    actualizarDashboard();
+  });
+
+  function actualizarDashboard() {
+    document.getElementById("dash-consultoras").textContent = consultoras.filter(c => c.activa !== false).length;
+    document.getElementById("dash-usuarios").textContent = usuarios.length;
+    document.getElementById("dash-certificados").textContent = certificados.length;
+
+    const ingresos = certificados.reduce((sum, c) => sum + (parseFloat(c.precio) || 0), 0);
+    document.getElementById("dash-ingresos").textContent = `$${ingresos.toLocaleString("es-MX")}`;
+
+    const semanaAtras = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    const alumnosSemana = alumnos.filter(a => (a.creadoEn?.toMillis?.() || 0) >= semanaAtras).length;
+    document.getElementById("dash-alumnos-semana").textContent = alumnosSemana;
+
+    const certsSemana = certificados.filter(c => (c.creadoEn?.toMillis?.() || 0) >= semanaAtras);
+    document.getElementById("dash-certs-semana").textContent = certsSemana.length;
+
+    const ingresosSemana = certsSemana.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+    document.getElementById("dash-ingresos-semana").textContent = `$${ingresosSemana.toLocaleString("es-MX")}`;
+
+    renderUltimos();
+  }
+
+  function renderUltimos() {
+    const c = document.getElementById("dash-ultimos");
+    const ultimos = certificados.slice(0, 8);
+
+    if (ultimos.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay certificados</div></div>';
+      return;
+    }
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th><th>Precio</th><th>Fecha</th></tr></thead>
+          <tbody>
+            ${ultimos.map(cert => `
+              <tr>
+                <td><code style="color:var(--primary);font-weight:700;font-size:11px">${escapeHtml(cert.folio)}</code></td>
+                <td>${escapeHtml(cert.nombreAlumno)}</td>
+                <td>${escapeHtml(cert.nombreCurso)}</td>
+                <td>${escapeHtml(cert.nombreConsultora)}</td>
+                <td>$${(cert.precio || 0).toLocaleString("es-MX")}</td>
+                <td>${escapeHtml(cert.fecha || "—")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderConsultoras() {
+    const c = document.getElementById("consultoras-container");
+    if (consultoras.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay consultoras</div><div class="empty-hint">Crea la primera con el botón "Nueva consultora"</div></div>';
+      return;
+    }
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr>
+            <th>Código</th><th>Nombre</th><th>Cursos</th><th>Vendedores</th><th>Certificados</th><th>Estado</th>
+            <th style="text-align:right">Acción</th>
+          </tr></thead>
+          <tbody>
+            ${consultoras.map(co => {
+              const numCursos = cursos.filter(cu => cu.consultoraId === co.id).length;
+              const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
+              const numCerts = certificados.filter(ce => ce.consultoraId === co.id).length;
+              return `
+                <tr>
+                  <td><code style="color:var(--primary);font-weight:700">${escapeHtml(co.codigo)}</code></td>
+                  <td><strong>${escapeHtml(co.nombre)}</strong></td>
+                  <td>${numCursos}</td>
+                  <td>${numVend}</td>
+                  <td><strong>${numCerts}</strong></td>
+                  <td>${co.activa !== false ? '<span class="badge success">Activa</span>' : '<span class="badge muted">Inactiva</span>'}</td>
+                  <td style="text-align:right">
+                    <button class="btn btn-sm btn-secondary" data-edit-consultora="${co.id}">Editar</button>
+                  </td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+    c.querySelectorAll("[data-edit-consultora]").forEach(b => {
+      b.addEventListener("click", () => editarConsultora(b.dataset.editConsultora));
+    });
+  }
+
+  function rellenarSelectConsultoras() {
+    const sel = document.getElementById("usuario-consultora");
+    sel.innerHTML = '<option value="">Selecciona...</option>';
+    consultoras.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.nombre;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderUsuarios() {
+    const c = document.getElementById("usuarios-container");
+    const filtro = document.getElementById("filter-rol").value;
+    const filtrados = filtro ? usuarios.filter(u => u.rol === filtro) : usuarios;
+
+    if (filtrados.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Sin usuarios</div></div>';
+      return;
+    }
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Consultora</th><th>Estado</th></tr></thead>
+          <tbody>
+            ${filtrados.map(u => {
+              const rolBadge = {
+                superadmin: '<span class="badge info">Super admin</span>',
+                coordinador: '<span class="badge warning">Coordinador</span>',
+                vendedor: '<span class="badge success">Vendedor</span>'
+              }[u.rol] || '<span class="badge muted">—</span>';
+              return `
+                <tr>
+                  <td><strong>${escapeHtml(u.nombre)}</strong></td>
+                  <td>${escapeHtml(u.email)}</td>
+                  <td>${rolBadge}</td>
+                  <td>${escapeHtml(u.consultoraNombre || "—")}</td>
+                  <td>${u.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderCursos() {
+    const c = document.getElementById("cursos-container");
+    if (cursos.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay cursos</div></div>';
+      return;
+    }
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>Curso</th><th>Consultora</th><th>Ponente</th><th>Modalidad</th><th>Precio</th><th>Estado</th></tr></thead>
+          <tbody>
+            ${cursos.map(cu => {
+              const cons = consultoras.find(co => co.id === cu.consultoraId);
+              return `
+                <tr>
+                  <td><strong>${escapeHtml(cu.nombre)}</strong></td>
+                  <td>${escapeHtml(cons?.nombre || "—")}</td>
+                  <td>${escapeHtml(cu.ponente || "—")}</td>
+                  <td>${escapeHtml(cu.modalidad || "—")}</td>
+                  <td>${cu.precio ? `$${Number(cu.precio).toLocaleString("es-MX")}` : "—"}</td>
+                  <td>${cu.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderCertificados() {
+    const c = document.getElementById("certificados-container");
+    const search = document.getElementById("search-cert").value.toLowerCase();
+    const filtrados = search
+      ? certificados.filter(ce =>
+          (ce.folio || "").toLowerCase().includes(search) ||
+          (ce.nombreAlumno || "").toLowerCase().includes(search))
+      : certificados;
+
+    if (filtrados.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">' + (search ? "Sin resultados" : "Aún no hay certificados") + '</div></div>';
+      return;
+    }
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th><th>Precio</th><th>Fecha</th><th style="text-align:right">PDF</th></tr></thead>
+          <tbody>
+            ${filtrados.map(ce => `
+              <tr>
+                <td><code style="color:var(--primary);font-weight:700;font-size:11px">${escapeHtml(ce.folio)}</code></td>
+                <td>${escapeHtml(ce.nombreAlumno)}</td>
+                <td>${escapeHtml(ce.nombreCurso)}</td>
+                <td>${escapeHtml(ce.nombreConsultora)}</td>
+                <td>$${(ce.precio || 0).toLocaleString("es-MX")}</td>
+                <td>${escapeHtml(ce.fecha || "—")}</td>
+                <td style="text-align:right"><a href="${ce.pdfUrl}" target="_blank" class="btn btn-sm btn-secondary">Ver</a></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderRanking() {
+    // Ranking consultoras
+    const rConsultoras = consultoras.map(co => {
+      const certs = certificados.filter(ce => ce.consultoraId === co.id);
+      const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      return { consultora: co, certs: certs.length, ingresos };
+    }).sort((a, b) => b.certs - a.certs);
+
+    document.getElementById("ranking-consultoras").innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>#</th><th>Consultora</th><th>Certificados</th><th>Ingresos</th></tr></thead>
+          <tbody>
+            ${rConsultoras.map((r, i) => `
+              <tr>
+                <td><strong>${i + 1}</strong></td>
+                <td><strong>${escapeHtml(r.consultora.nombre)}</strong></td>
+                <td><strong style="color:var(--primary)">${r.certs}</strong></td>
+                <td>$${r.ingresos.toLocaleString("es-MX")}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+    // Ranking vendedores
+    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
+    const rVendedores = vendedoresList.map(v => {
+      const certs = certificados.filter(ce => ce.generadoPor === v.id);
+      const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      return { vendedor: v, certs: certs.length, ingresos };
+    }).sort((a, b) => b.certs - a.certs);
+
+    document.getElementById("ranking-vendedores").innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>#</th><th>Vendedor</th><th>Consultora</th><th>Certificados</th><th>Ingresos</th></tr></thead>
+          <tbody>
+            ${rVendedores.map((r, i) => `
+              <tr>
+                <td><strong>${i + 1}</strong></td>
+                <td><strong>${escapeHtml(r.vendedor.nombre)}</strong></td>
+                <td>${escapeHtml(r.vendedor.consultoraNombre || "—")}</td>
+                <td><strong style="color:var(--primary)">${r.certs}</strong></td>
+                <td>$${r.ingresos.toLocaleString("es-MX")}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // ─── Modal helpers ───
+  document.querySelectorAll("[data-close]").forEach(b => {
+    b.addEventListener("click", () => {
+      document.getElementById(`modal-${b.dataset.close}`).classList.remove("open");
+    });
+  });
+
+  // CONSULTORA
+  document.getElementById("btn-nueva-consultora").addEventListener("click", () => abrirModalConsultora());
+
+  function abrirModalConsultora(data = null) {
+    const f = document.getElementById("form-consultora");
+    f.reset();
+    if (data) {
+      document.getElementById("modal-consultora-title").textContent = "Editar consultora";
+      document.getElementById("consultora-id").value = data.id;
+      document.getElementById("consultora-nombre").value = data.nombre || "";
+      document.getElementById("consultora-codigo").value = data.codigo || "";
+      document.getElementById("consultora-activa").value = String(data.activa !== false);
+      document.getElementById("consultora-descriptivo").value = data.textoDescriptivo || "";
+      document.getElementById("consultora-firma").value = data.firmaTexto || "";
+    } else {
+      document.getElementById("modal-consultora-title").textContent = "Nueva consultora";
+      document.getElementById("consultora-id").value = "";
+      document.getElementById("consultora-activa").value = "true";
+    }
+    document.getElementById("modal-consultora").classList.add("open");
+  }
+
+  function editarConsultora(id) {
+    const c = consultoras.find(x => x.id === id);
+    if (c) abrirModalConsultora(c);
+  }
+
+  document.getElementById("form-consultora").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const id = document.getElementById("consultora-id").value;
+      const data = {
+        nombre: document.getElementById("consultora-nombre").value.trim(),
+        codigo: document.getElementById("consultora-codigo").value.trim().toUpperCase(),
+        activa: document.getElementById("consultora-activa").value === "true",
+        textoDescriptivo: document.getElementById("consultora-descriptivo").value.trim(),
+        firmaTexto: document.getElementById("consultora-firma").value.trim()
+      };
+
+      if (id) {
+        await updateDoc(doc(db, "consultoras", id), data);
+        toast("Consultora actualizada", "success");
+      } else {
+        data.contadorFolio = 0;
+        await addDoc(collection(db, "consultoras"), data);
+        toast("Consultora creada", "success");
+      }
+      document.getElementById("modal-consultora").classList.remove("open");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    }
+  });
+
+  // USUARIO
+  document.getElementById("btn-nuevo-usuario").addEventListener("click", () => {
+    document.getElementById("form-usuario").reset();
+    document.getElementById("modal-usuario").classList.add("open");
+  });
+
+  document.getElementById("form-usuario").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const uid = document.getElementById("usuario-uid").value.trim();
+      const consultoraId = document.getElementById("usuario-consultora").value;
+      const consultora = consultoras.find(c => c.id === consultoraId);
+
+      const data = {
+        email: document.getElementById("usuario-email").value.trim().toLowerCase(),
+        nombre: document.getElementById("usuario-nombre").value.trim(),
+        rol: document.getElementById("usuario-rol").value,
+        consultoraId,
+        consultoraNombre: consultora?.nombre || "",
+        activo: true
+      };
+
+      await setDoc(doc(db, "usuarios", uid), data);
+      toast("Usuario creado", "success");
+      document.getElementById("modal-usuario").classList.remove("open");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    }
+  });
+
+  // Filtros y búsquedas
+  document.getElementById("filter-rol").addEventListener("change", renderUsuarios);
+  document.getElementById("search-cert").addEventListener("input", renderCertificados);
+
+  function escapeHtml(s) {
+    if (!s) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Coordinador — IPCI</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<button class="menu-toggle" id="menu-toggle">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+</button>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div class="sidebar-brand-text">
+        <strong>IPCI</strong>
+        <span>Coordinación</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-view="cursos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Cursos
+      </button>
+      <button class="sidebar-link" data-view="vendedores">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Vendedores
+      </button>
+      <button class="sidebar-link" data-view="resumen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg>
+        Resumen
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-initial">?</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role" id="user-consultora">Coordinador</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- VIEW: CURSOS -->
+    <section id="view-cursos" class="view">
+      <div class="main-header flex items-center justify-between gap-16">
+        <div>
+          <h1 class="main-title">Cursos</h1>
+          <p class="main-subtitle">Gestiona los cursos que ofrece tu consultora</p>
+        </div>
+        <button class="btn" id="btn-nuevo-curso">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo curso
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Cursos activos</div>
+          <div class="stat-value" id="stat-cursos">0</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">Alumnos registrados</div>
+          <div class="stat-value" id="stat-alumnos">0</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Certificados emitidos</div>
+          <div class="stat-value" id="stat-certificados">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Listado de cursos</div>
+        </div>
+        <div id="cursos-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- VIEW: VENDEDORES -->
+    <section id="view-vendedores" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">Vendedores</h1>
+        <p class="main-subtitle">Vendedores activos de tu consultora</p>
+      </div>
+
+      <div class="card">
+        <div id="vendedores-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- VIEW: RESUMEN -->
+    <section id="view-resumen" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">Resumen</h1>
+        <p class="main-subtitle">Rendimiento de los cursos</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Top cursos por certificados</div></div>
+        <div id="resumen-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL: CURSO -->
+<div class="modal-overlay" id="modal-curso">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-curso-title">Nuevo curso</h2>
+      <button class="modal-close" id="modal-close-curso">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form id="form-curso">
+      <input type="hidden" id="curso-id">
+
+      <div class="field-group">
+        <label class="label">Nombre del curso *</label>
+        <input type="text" id="curso-nombre" required placeholder="Ej. Manejo Avanzado de Implantología">
+      </div>
+
+      <div class="field-group">
+        <label class="label">Ponente *</label>
+        <input type="text" id="curso-ponente" required placeholder="Ej. Dr. Roberto Martínez">
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="label">Modalidad *</label>
+          <select id="curso-modalidad" required>
+            <option value="">Selecciona...</option>
+            <option value="En línea">En línea</option>
+            <option value="Presencial">Presencial</option>
+            <option value="Híbrido">Híbrido</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Duración *</label>
+          <input type="text" id="curso-duracion" required placeholder="Ej. 40 horas">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="label">Precio (MXN)</label>
+          <input type="number" id="curso-precio" min="0" step="0.01" placeholder="599">
+        </div>
+        <div>
+          <label class="label">Estado</label>
+          <select id="curso-activo">
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-cancelar-curso">Cancelar</button>
+        <button type="submit" class="btn" id="btn-guardar-curso">Guardar curso</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth, db,
+    requireRole, cerrarSesion, formatFecha, toast,
+    collection, query, where, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot
+  } from "./firebase-config.js";
+
+  let usuario = null;
+  let cursos = [];
+  let alumnos = [];
+  let certificados = [];
+  let vendedores = [];
+  let unsubCursos = null;
+  let unsubAlumnos = null;
+  let unsubCertificados = null;
+
+  usuario = await requireRole("coordinador");
+  document.getElementById("user-name").textContent = usuario.nombre || "Coordinador";
+  document.getElementById("user-consultora").textContent = usuario.consultoraNombre || "—";
+  document.getElementById("user-initial").textContent = (usuario.nombre || "?")[0].toUpperCase();
+
+  document.querySelectorAll(".sidebar-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      document.getElementById(`view-${btn.dataset.view}`).classList.remove("hidden");
+      document.getElementById("sidebar").classList.remove("open");
+
+      if (btn.dataset.view === "vendedores") cargarVendedores();
+      if (btn.dataset.view === "resumen") renderResumen();
+    });
+  });
+
+  document.getElementById("menu-toggle").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
+
+  // ─── Suscribirse a cursos ───
+  unsubCursos = onSnapshot(
+    query(collection(db, "cursos"), where("consultoraId", "==", usuario.consultoraId)),
+    (snap) => {
+      cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      cursos.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+      renderCursos();
+      actualizarStats();
+    }
+  );
+
+  // ─── Suscribirse a alumnos de la consultora ───
+  unsubAlumnos = onSnapshot(
+    query(collection(db, "alumnos"), where("consultoraId", "==", usuario.consultoraId)),
+    (snap) => {
+      alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      actualizarStats();
+      renderResumen();
+    }
+  );
+
+  // ─── Suscribirse a certificados de la consultora ───
+  unsubCertificados = onSnapshot(
+    query(collection(db, "certificados"), where("consultoraId", "==", usuario.consultoraId)),
+    (snap) => {
+      certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      actualizarStats();
+      renderResumen();
+    }
+  );
+
+  function actualizarStats() {
+    document.getElementById("stat-cursos").textContent = cursos.filter(c => c.activo).length;
+    document.getElementById("stat-alumnos").textContent = alumnos.length;
+    document.getElementById("stat-certificados").textContent = certificados.length;
+  }
+
+  function renderCursos() {
+    const c = document.getElementById("cursos-container");
+
+    if (cursos.length === 0) {
+      c.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/></svg>
+          </div>
+          <div class="empty-text">Aún no hay cursos</div>
+          <div class="empty-hint">Crea el primer curso de tu consultora</div>
+        </div>`;
+      return;
+    }
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr>
+            <th>Nombre</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th><th>Estado</th>
+            <th style="text-align:right">Acción</th>
+          </tr></thead>
+          <tbody>
+            ${cursos.map(c => `
+              <tr>
+                <td><strong>${escapeHtml(c.nombre)}</strong></td>
+                <td>${escapeHtml(c.ponente || "—")}</td>
+                <td>${escapeHtml(c.modalidad || "—")}</td>
+                <td>${escapeHtml(c.duracion || "—")}</td>
+                <td>${c.precio ? `$${Number(c.precio).toLocaleString("es-MX")}` : "—"}</td>
+                <td>${c.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
+                <td style="text-align:right">
+                  <button class="btn btn-sm btn-secondary" data-edit="${c.id}">Editar</button>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+    c.querySelectorAll("[data-edit]").forEach(b => {
+      b.addEventListener("click", () => editarCurso(b.dataset.edit));
+    });
+  }
+
+  async function cargarVendedores() {
+    const c = document.getElementById("vendedores-container");
+    c.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+    try {
+      const snap = await getDocs(
+        query(
+          collection(db, "usuarios"),
+          where("consultoraId", "==", usuario.consultoraId),
+          where("rol", "==", "vendedor")
+        )
+      );
+      vendedores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      if (vendedores.length === 0) {
+        c.innerHTML = `
+          <div class="empty">
+            <div class="empty-text">Aún no hay vendedores asignados</div>
+            <div class="empty-hint">Pide al super admin que cree vendedores para tu consultora</div>
+          </div>`;
+        return;
+      }
+
+      c.innerHTML = `
+        <div class="table-wrapper">
+          <table class="table">
+            <thead><tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Alumnos</th><th>Certificados</th></tr></thead>
+            <tbody>
+              ${vendedores.map(v => {
+                const sus = alumnos.filter(a => a.registradoPor === v.id).length;
+                const certs = certificados.filter(cc => cc.generadoPor === v.id).length;
+                return `
+                  <tr>
+                    <td><strong>${escapeHtml(v.nombre)}</strong></td>
+                    <td>${escapeHtml(v.email)}</td>
+                    <td>${v.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
+                    <td>${sus}</td>
+                    <td>${certs}</td>
+                  </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    } catch (e) {
+      console.error(e);
+      c.innerHTML = '<div class="empty"><div class="empty-text">Error cargando vendedores</div></div>';
+    }
+  }
+
+  function renderResumen() {
+    const c = document.getElementById("resumen-container");
+    if (cursos.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay datos</div></div>';
+      return;
+    }
+
+    const ranking = cursos.map(curso => {
+      const certsDelCurso = certificados.filter(cert => cert.cursoId === curso.id).length;
+      return { curso, certs: certsDelCurso };
+    }).sort((a, b) => b.certs - a.certs);
+
+    c.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead><tr><th>#</th><th>Curso</th><th>Ponente</th><th>Certificados emitidos</th></tr></thead>
+          <tbody>
+            ${ranking.map((r, i) => `
+              <tr>
+                <td><strong>${i + 1}</strong></td>
+                <td>${escapeHtml(r.curso.nombre)}</td>
+                <td>${escapeHtml(r.curso.ponente || "—")}</td>
+                <td><strong style="color:var(--primary)">${r.certs}</strong></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // ─── MODAL CURSO ───
+  const modal = document.getElementById("modal-curso");
+  document.getElementById("btn-nuevo-curso").addEventListener("click", () => abrirModalCurso());
+  document.getElementById("modal-close-curso").addEventListener("click", () => modal.classList.remove("open"));
+  document.getElementById("btn-cancelar-curso").addEventListener("click", () => modal.classList.remove("open"));
+
+  function abrirModalCurso(cursoData = null) {
+    document.getElementById("form-curso").reset();
+    if (cursoData) {
+      document.getElementById("modal-curso-title").textContent = "Editar curso";
+      document.getElementById("curso-id").value = cursoData.id;
+      document.getElementById("curso-nombre").value = cursoData.nombre || "";
+      document.getElementById("curso-ponente").value = cursoData.ponente || "";
+      document.getElementById("curso-modalidad").value = cursoData.modalidad || "";
+      document.getElementById("curso-duracion").value = cursoData.duracion || "";
+      document.getElementById("curso-precio").value = cursoData.precio || "";
+      document.getElementById("curso-activo").value = String(cursoData.activo !== false);
+    } else {
+      document.getElementById("modal-curso-title").textContent = "Nuevo curso";
+      document.getElementById("curso-id").value = "";
+      document.getElementById("curso-activo").value = "true";
+    }
+    modal.classList.add("open");
+  }
+
+  function editarCurso(id) {
+    const c = cursos.find(x => x.id === id);
+    if (c) abrirModalCurso(c);
+  }
+
+  document.getElementById("form-curso").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btn-guardar-curso");
+    btn.disabled = true;
+
+    try {
+      const id = document.getElementById("curso-id").value;
+      const data = {
+        consultoraId: usuario.consultoraId,
+        nombre: document.getElementById("curso-nombre").value.trim(),
+        ponente: document.getElementById("curso-ponente").value.trim(),
+        modalidad: document.getElementById("curso-modalidad").value,
+        duracion: document.getElementById("curso-duracion").value.trim(),
+        precio: parseFloat(document.getElementById("curso-precio").value) || 0,
+        activo: document.getElementById("curso-activo").value === "true",
+        creadoPor: usuario.uid
+      };
+
+      if (id) {
+        await updateDoc(doc(db, "cursos", id), data);
+        toast("Curso actualizado", "success");
+      } else {
+        data.creadoEn = serverTimestamp();
+        await addDoc(collection(db, "cursos"), data);
+        toast("Curso creado", "success");
+      }
+
+      modal.classList.remove("open");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function escapeHtml(s) {
+    if (!s) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  window.addEventListener("beforeunload", () => {
+    if (unsubCursos) unsubCursos();
+    if (unsubAlumnos) unsubAlumnos();
+    if (unsubCertificados) unsubCertificados();
+  });
+</script>
+
+</body>
+</html>
