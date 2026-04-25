@@ -7,6 +7,66 @@
 <link rel="icon" href="../assets/logo.jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="panel.css">
+<style>
+  .progreso-card {
+    background: linear-gradient(135deg, #0b4ea2 0%, #083a79 100%);
+    color: white;
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 20px;
+  }
+  .progreso-card-title { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; opacity: .8; margin-bottom: 8px; }
+  .progreso-num { font-size: 36px; font-weight: 800; }
+  .progreso-bar { background: rgba(255,255,255,.15); height: 8px; border-radius: 999px; margin-top: 14px; overflow: hidden; }
+  .progreso-bar-fill { background: #C8982E; height: 100%; transition: width .3s; }
+
+  .btn-enviar-todos {
+    background: var(--green);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  .btn-enviar-todos:hover:not(:disabled) { background: #15803d; }
+  .btn-enviar-todos:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  .btn-reenviar {
+    background: var(--primary);
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .btn-reenviar:hover:not(:disabled) { background: var(--primary-dark); }
+  .btn-reenviar:disabled { background: #cbd5e1; cursor: not-allowed; }
+  .btn-reenviar.success { background: var(--green); }
+
+  .historico-toolbar {
+    background: white;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .badge.historico {
+    background: #fef3c7;
+    color: #854d0e;
+    border: 1px solid #fcd34d;
+  }
+</style>
 </head>
 <body>
 
@@ -33,6 +93,11 @@
       <button class="sidebar-link" data-view="vendedores">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Vendedores
+      </button>
+      <button class="sidebar-link" data-view="historicos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/></svg>
+        📦 Históricos pendientes
+        <span id="badge-historicos" class="badge" style="margin-left:auto;background:#fef3c7;color:#854d0e;font-size:10px">0</span>
       </button>
       <button class="sidebar-link" data-view="resumen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg>
@@ -99,9 +164,50 @@
         <h1 class="main-title">Vendedores</h1>
         <p class="main-subtitle">Vendedores activos de tu consultora</p>
       </div>
-
       <div class="card">
         <div id="vendedores-container"><div class="loader"><div class="spinner"></div></div></div>
+      </div>
+    </section>
+
+    <!-- VIEW: HISTÓRICOS -->
+    <section id="view-historicos" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">📦 Alumnos históricos pendientes</h1>
+        <p class="main-subtitle">Alumnos migrados del sistema viejo. Reenvía sus certificados con el folio original.</p>
+      </div>
+
+      <div class="progreso-card">
+        <div class="progreso-card-title">Progreso de envío</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+          <div>
+            <div class="progreso-num"><span id="hist-enviados">0</span> / <span id="hist-total">0</span></div>
+            <div style="font-size:13px;opacity:.85;margin-top:4px">certificados históricos enviados</div>
+          </div>
+          <div style="text-align:right">
+            <button class="btn-enviar-todos" id="btn-enviar-todos">
+              📨 Enviar todos los pendientes
+            </button>
+            <div style="font-size:11px;opacity:.75;margin-top:4px">~5 segundos por certificado</div>
+          </div>
+        </div>
+        <div class="progreso-bar">
+          <div class="progreso-bar-fill" id="hist-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="historico-toolbar">
+          <input type="search" id="hist-search" placeholder="🔍 Buscar nombre o email..." style="padding:8px 12px;border:1.5px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px;flex:1;max-width:300px">
+          <select id="hist-filter-curso" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px;max-width:240px">
+            <option value="">Todos los cursos</option>
+          </select>
+          <select id="hist-filter-estado" style="padding:8px 12px;border:1.5px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px">
+            <option value="pendiente">Solo pendientes</option>
+            <option value="enviado">Solo enviados</option>
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div id="historicos-container"><div class="loader"><div class="spinner"></div></div></div>
       </div>
     </section>
 
@@ -111,7 +217,6 @@
         <h1 class="main-title">Resumen</h1>
         <p class="main-subtitle">Rendimiento de los cursos</p>
       </div>
-
       <div class="card">
         <div class="card-header"><div class="card-title">Top cursos por certificados</div></div>
         <div id="resumen-container"><div class="loader"><div class="spinner"></div></div></div>
@@ -121,7 +226,7 @@
   </main>
 </div>
 
-<!-- MODAL: CURSO -->
+<!-- MODAL CURSO -->
 <div class="modal-overlay" id="modal-curso">
   <div class="modal">
     <div class="modal-header">
@@ -130,20 +235,16 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
-
     <form id="form-curso">
       <input type="hidden" id="curso-id">
-
       <div class="field-group">
         <label class="label">Nombre del curso *</label>
         <input type="text" id="curso-nombre" required placeholder="Ej. Manejo Avanzado de Implantología">
       </div>
-
       <div class="field-group">
         <label class="label">Ponente *</label>
         <input type="text" id="curso-ponente" required placeholder="Ej. Dr. Roberto Martínez">
       </div>
-
       <div class="field-row">
         <div>
           <label class="label">Modalidad *</label>
@@ -159,7 +260,6 @@
           <input type="text" id="curso-duracion" required placeholder="Ej. 40 horas">
         </div>
       </div>
-
       <div class="field-row">
         <div>
           <label class="label">Precio (MXN)</label>
@@ -173,7 +273,6 @@
           </select>
         </div>
       </div>
-
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" id="btn-cancelar-curso">Cancelar</button>
         <button type="submit" class="btn" id="btn-guardar-curso">Guardar curso</button>
@@ -184,19 +283,19 @@
 
 <script type="module">
   import {
-    auth, db,
+    auth, db, functions,
     requireRole, cerrarSesion, formatFecha, toast,
-    collection, query, where, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot
+    collection, query, where, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp, onSnapshot,
+    httpsCallable
   } from "./firebase-config.js";
 
   let usuario = null;
   let cursos = [];
   let alumnos = [];
+  let historicos = [];
   let certificados = [];
   let vendedores = [];
-  let unsubCursos = null;
-  let unsubAlumnos = null;
-  let unsubCertificados = null;
+  let unsubAll = [];
 
   usuario = await requireRole("coordinador");
   document.getElementById("user-name").textContent = usuario.nombre || "Coordinador";
@@ -213,6 +312,7 @@
 
       if (btn.dataset.view === "vendedores") cargarVendedores();
       if (btn.dataset.view === "resumen") renderResumen();
+      if (btn.dataset.view === "historicos") renderHistoricos();
     });
   });
 
@@ -222,165 +322,264 @@
 
   document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
 
-  // ─── Suscribirse a cursos ───
-  unsubCursos = onSnapshot(
+  // ─── CURSOS ───
+  unsubAll.push(onSnapshot(
     query(collection(db, "cursos"), where("consultoraId", "==", usuario.consultoraId)),
     (snap) => {
       cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      cursos.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+      cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
       renderCursos();
       actualizarStats();
+      // Llenar select de cursos en filtro de históricos
+      const sel = document.getElementById("hist-filter-curso");
+      sel.innerHTML = '<option value="">Todos los cursos</option>';
+      cursos.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.nombre;
+        sel.appendChild(opt);
+      });
     }
-  );
+  ));
 
-  // ─── Suscribirse a alumnos de la consultora ───
-  unsubAlumnos = onSnapshot(
+  // ─── ALUMNOS ───
+  unsubAll.push(onSnapshot(
     query(collection(db, "alumnos"), where("consultoraId", "==", usuario.consultoraId)),
     (snap) => {
-      alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      alumnos = todos.filter(a => a.registradoPor !== "MIGRACION_HISTORICA");
+      historicos = todos.filter(a => a.registradoPor === "MIGRACION_HISTORICA");
       actualizarStats();
-      renderResumen();
+      renderHistoricos();
     }
-  );
+  ));
 
-  // ─── Suscribirse a certificados de la consultora ───
-  unsubCertificados = onSnapshot(
+  unsubAll.push(onSnapshot(
     query(collection(db, "certificados"), where("consultoraId", "==", usuario.consultoraId)),
     (snap) => {
       certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       actualizarStats();
       renderResumen();
     }
-  );
+  ));
 
   function actualizarStats() {
     document.getElementById("stat-cursos").textContent = cursos.filter(c => c.activo).length;
-    document.getElementById("stat-alumnos").textContent = alumnos.length;
+    document.getElementById("stat-alumnos").textContent = alumnos.length + historicos.length;
     document.getElementById("stat-certificados").textContent = certificados.length;
+
+    // Badge sidebar
+    const pendientes = historicos.filter(h => h.estado !== "email_enviado").length;
+    document.getElementById("badge-historicos").textContent = pendientes;
+    if (pendientes === 0) {
+      document.getElementById("badge-historicos").style.display = "none";
+    } else {
+      document.getElementById("badge-historicos").style.display = "";
+    }
+
+    // Progreso card
+    const enviados = historicos.filter(h => h.estado === "email_enviado").length;
+    const total = historicos.length;
+    document.getElementById("hist-enviados").textContent = enviados;
+    document.getElementById("hist-total").textContent = total;
+    const pct = total > 0 ? (enviados / total) * 100 : 0;
+    document.getElementById("hist-bar").style.width = `${pct}%`;
   }
 
   function renderCursos() {
     const c = document.getElementById("cursos-container");
-
     if (cursos.length === 0) {
-      c.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/></svg>
-          </div>
-          <div class="empty-text">Aún no hay cursos</div>
-          <div class="empty-hint">Crea el primer curso de tu consultora</div>
-        </div>`;
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay cursos</div></div>';
       return;
     }
-
-    c.innerHTML = `
-      <div class="table-wrapper">
-        <table class="table">
-          <thead><tr>
-            <th>Nombre</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th><th>Estado</th>
-            <th style="text-align:right">Acción</th>
-          </tr></thead>
-          <tbody>
-            ${cursos.map(c => `
-              <tr>
-                <td><strong>${escapeHtml(c.nombre)}</strong></td>
-                <td>${escapeHtml(c.ponente || "—")}</td>
-                <td>${escapeHtml(c.modalidad || "—")}</td>
-                <td>${escapeHtml(c.duracion || "—")}</td>
-                <td>${c.precio ? `$${Number(c.precio).toLocaleString("es-MX")}` : "—"}</td>
-                <td>${c.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
-                <td style="text-align:right">
-                  <button class="btn btn-sm btn-secondary" data-edit="${c.id}">Editar</button>
-                </td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>`;
-
-    c.querySelectorAll("[data-edit]").forEach(b => {
-      b.addEventListener("click", () => editarCurso(b.dataset.edit));
-    });
+    c.innerHTML = `<div class="table-wrapper"><table class="table">
+      <thead><tr><th>Nombre</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th><th>Estado</th><th style="text-align:right">Acción</th></tr></thead>
+      <tbody>${cursos.map(c => `<tr>
+        <td><strong>${escapeHtml(c.nombre)}</strong></td>
+        <td>${escapeHtml(c.ponente || "—")}</td>
+        <td>${escapeHtml(c.modalidad || "—")}</td>
+        <td>${escapeHtml(c.duracion || "—")}</td>
+        <td>${c.precio ? `$${Number(c.precio).toLocaleString("es-MX")}` : "—"}</td>
+        <td>${c.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
+        <td style="text-align:right"><button class="btn btn-sm btn-secondary" data-edit="${c.id}">Editar</button></td>
+      </tr>`).join("")}</tbody></table></div>`;
+    c.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => editarCurso(b.dataset.edit)));
   }
 
+  // ─── VENDEDORES ───
   async function cargarVendedores() {
     const c = document.getElementById("vendedores-container");
     c.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-
     try {
-      const snap = await getDocs(
-        query(
-          collection(db, "usuarios"),
-          where("consultoraId", "==", usuario.consultoraId),
-          where("rol", "==", "vendedor")
-        )
-      );
+      const snap = await getDocs(query(
+        collection(db, "usuarios"),
+        where("consultoraId", "==", usuario.consultoraId),
+        where("rol", "==", "vendedor")
+      ));
       vendedores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
       if (vendedores.length === 0) {
-        c.innerHTML = `
-          <div class="empty">
-            <div class="empty-text">Aún no hay vendedores asignados</div>
-            <div class="empty-hint">Pide al super admin que cree vendedores para tu consultora</div>
-          </div>`;
+        c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay vendedores</div><div class="empty-hint">Pide al super admin que cree vendedores</div></div>';
         return;
       }
-
-      c.innerHTML = `
-        <div class="table-wrapper">
-          <table class="table">
-            <thead><tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Alumnos</th><th>Certificados</th></tr></thead>
-            <tbody>
-              ${vendedores.map(v => {
-                const sus = alumnos.filter(a => a.registradoPor === v.id).length;
-                const certs = certificados.filter(cc => cc.generadoPor === v.id).length;
-                return `
-                  <tr>
-                    <td><strong>${escapeHtml(v.nombre)}</strong></td>
-                    <td>${escapeHtml(v.email)}</td>
-                    <td>${v.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
-                    <td>${sus}</td>
-                    <td>${certs}</td>
-                  </tr>`;
-              }).join("")}
-            </tbody>
-          </table>
-        </div>`;
+      c.innerHTML = `<div class="table-wrapper"><table class="table">
+        <thead><tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Alumnos</th><th>Certificados</th></tr></thead>
+        <tbody>${vendedores.map(v => {
+          const sus = alumnos.filter(a => a.registradoPor === v.id).length;
+          const certs = certificados.filter(cc => cc.generadoPor === v.id).length;
+          return `<tr>
+            <td><strong>${escapeHtml(v.nombre)}</strong></td>
+            <td>${escapeHtml(v.email)}</td>
+            <td>${v.activo ? '<span class="badge success">Activo</span>' : '<span class="badge muted">Inactivo</span>'}</td>
+            <td>${sus}</td><td>${certs}</td>
+          </tr>`;
+        }).join("")}</tbody></table></div>`;
     } catch (e) {
       console.error(e);
-      c.innerHTML = '<div class="empty"><div class="empty-text">Error cargando vendedores</div></div>';
+      c.innerHTML = '<div class="empty"><div class="empty-text">Error</div></div>';
     }
   }
 
+  // ─── HISTÓRICOS ───
+  function renderHistoricos() {
+    const c = document.getElementById("historicos-container");
+    const search = document.getElementById("hist-search").value.toLowerCase();
+    const filterCurso = document.getElementById("hist-filter-curso").value;
+    const filterEstado = document.getElementById("hist-filter-estado").value;
+
+    let lista = [...historicos];
+    if (search) {
+      lista = lista.filter(h =>
+        (h.nombre || "").toLowerCase().includes(search) ||
+        (h.email || "").toLowerCase().includes(search));
+    }
+    if (filterCurso) lista = lista.filter(h => h.cursoId === filterCurso);
+    if (filterEstado === "pendiente") lista = lista.filter(h => h.estado !== "email_enviado");
+    else if (filterEstado === "enviado") lista = lista.filter(h => h.estado === "email_enviado");
+
+    if (lista.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Sin resultados</div></div>';
+      return;
+    }
+
+    // Limitar render a 200 por performance
+    const mostrados = lista.slice(0, 200);
+    const truncado = lista.length > 200;
+
+    c.innerHTML = `<div class="table-wrapper"><table class="table">
+      <thead><tr>
+        <th>Nombre</th><th>Email</th><th>Curso</th>
+        <th>Folio original</th><th>Estado</th>
+        <th style="text-align:right">Acción</th>
+      </tr></thead>
+      <tbody>${mostrados.map(h => {
+        const curso = cursos.find(c => c.id === h.cursoId);
+        const ya = h.estado === "email_enviado";
+        const sinCurso = !h.cursoId;
+        const sinEmail = !h.email;
+        return `<tr>
+          <td><strong>${escapeHtml(h.nombre)}</strong></td>
+          <td>${escapeHtml(h.email || '<span style="color:#dc2626">SIN EMAIL</span>')}</td>
+          <td>${curso ? escapeHtml(curso.nombre) : `<span style="color:#dc2626">${escapeHtml(h.historico?.cursoOriginalNombre || 'Sin curso')}</span>`}</td>
+          <td><code style="color:var(--primary);font-weight:700;font-size:11px">${escapeHtml(h.historico?.folioOriginal || "—")}</code></td>
+          <td>${ya
+            ? '<span class="badge success">✓ Enviado</span>'
+            : sinEmail || sinCurso
+              ? '<span class="badge" style="background:#fee2e2;color:#991b1b">Sin datos</span>'
+              : '<span class="badge historico">Pendiente</span>'}</td>
+          <td style="text-align:right">
+            ${ya
+              ? `<span style="color:#16a34a;font-weight:600;font-size:11px">✓ Listo</span>`
+              : sinEmail || sinCurso
+                ? `<span style="color:#94a3b8;font-size:11px">No se puede enviar</span>`
+                : `<button class="btn-reenviar" data-reenviar="${h.id}">Reenviar</button>`}
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>
+      ${truncado ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12px;background:var(--surface-soft)">Mostrando 200 de ${lista.length}. Usa los filtros para refinar.</div>` : ""}`;
+
+    // Bind botones de reenvío individual
+    c.querySelectorAll("[data-reenviar]").forEach(btn => {
+      btn.addEventListener("click", () => reenviarUno(btn.dataset.reenviar, btn));
+    });
+  }
+
+  async function reenviarUno(alumnoId, btnElement) {
+    if (btnElement) {
+      btnElement.disabled = true;
+      btnElement.textContent = "Enviando...";
+    }
+    try {
+      const reenviar = httpsCallable(functions, "reenviarHistorico");
+      const result = await reenviar({ alumnoId });
+      if (btnElement) {
+        btnElement.textContent = "✓ Enviado";
+        btnElement.classList.add("success");
+      }
+      return { ok: true, folio: result.data.folio };
+    } catch (err) {
+      console.error("Error reenviando:", err);
+      if (btnElement) {
+        btnElement.disabled = false;
+        btnElement.textContent = "Reenviar";
+      }
+      return { ok: false, error: err.message };
+    }
+  }
+
+  document.getElementById("hist-search").addEventListener("input", renderHistoricos);
+  document.getElementById("hist-filter-curso").addEventListener("change", renderHistoricos);
+  document.getElementById("hist-filter-estado").addEventListener("change", renderHistoricos);
+
+  // ─── ENVIAR TODOS LOS PENDIENTES ───
+  document.getElementById("btn-enviar-todos").addEventListener("click", async () => {
+    const pendientes = historicos.filter(h =>
+      h.estado !== "email_enviado" && h.email && h.cursoId
+    );
+
+    if (pendientes.length === 0) {
+      toast("No hay históricos pendientes con datos completos", "warning");
+      return;
+    }
+
+    if (!confirm(`Se enviarán ${pendientes.length} certificados por email. Esto puede tardar varios minutos. ¿Continuar?`)) return;
+
+    const btn = document.getElementById("btn-enviar-todos");
+    btn.disabled = true;
+    let exitos = 0, errores = 0;
+
+    for (const alumno of pendientes) {
+      btn.textContent = `Enviando ${exitos + errores + 1}/${pendientes.length}...`;
+      const r = await reenviarUno(alumno.id, null);
+      if (r.ok) exitos++; else errores++;
+      // Pequeño delay para no saturar
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+    btn.disabled = false;
+    btn.textContent = "📨 Enviar todos los pendientes";
+    toast(`Listo: ${exitos} enviados, ${errores} errores`, exitos > 0 ? "success" : "error");
+  });
+
+  // ─── RESUMEN ───
   function renderResumen() {
     const c = document.getElementById("resumen-container");
     if (cursos.length === 0) {
       c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay datos</div></div>';
       return;
     }
-
     const ranking = cursos.map(curso => {
       const certsDelCurso = certificados.filter(cert => cert.cursoId === curso.id).length;
       return { curso, certs: certsDelCurso };
     }).sort((a, b) => b.certs - a.certs);
 
-    c.innerHTML = `
-      <div class="table-wrapper">
-        <table class="table">
-          <thead><tr><th>#</th><th>Curso</th><th>Ponente</th><th>Certificados emitidos</th></tr></thead>
-          <tbody>
-            ${ranking.map((r, i) => `
-              <tr>
-                <td><strong>${i + 1}</strong></td>
-                <td>${escapeHtml(r.curso.nombre)}</td>
-                <td>${escapeHtml(r.curso.ponente || "—")}</td>
-                <td><strong style="color:var(--primary)">${r.certs}</strong></td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>`;
+    c.innerHTML = `<div class="table-wrapper"><table class="table">
+      <thead><tr><th>#</th><th>Curso</th><th>Ponente</th><th>Certificados</th></tr></thead>
+      <tbody>${ranking.map((r, i) => `<tr>
+        <td><strong>${i + 1}</strong></td>
+        <td>${escapeHtml(r.curso.nombre)}</td>
+        <td>${escapeHtml(r.curso.ponente || "—")}</td>
+        <td><strong style="color:var(--primary)">${r.certs}</strong></td>
+      </tr>`).join("")}</tbody></table></div>`;
   }
 
   // ─── MODAL CURSO ───
@@ -417,7 +616,6 @@
     e.preventDefault();
     const btn = document.getElementById("btn-guardar-curso");
     btn.disabled = true;
-
     try {
       const id = document.getElementById("curso-id").value;
       const data = {
@@ -430,7 +628,6 @@
         activo: document.getElementById("curso-activo").value === "true",
         creadoPor: usuario.uid
       };
-
       if (id) {
         await updateDoc(doc(db, "cursos", id), data);
         toast("Curso actualizado", "success");
@@ -439,7 +636,6 @@
         await addDoc(collection(db, "cursos"), data);
         toast("Curso creado", "success");
       }
-
       modal.classList.remove("open");
     } catch (err) {
       console.error(err);
@@ -454,11 +650,7 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
-  window.addEventListener("beforeunload", () => {
-    if (unsubCursos) unsubCursos();
-    if (unsubAlumnos) unsubAlumnos();
-    if (unsubCertificados) unsubCertificados();
-  });
+  window.addEventListener("beforeunload", () => unsubAll.forEach(fn => fn && fn()));
 </script>
 
 </body>
