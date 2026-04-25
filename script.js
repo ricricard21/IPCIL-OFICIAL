@@ -92,24 +92,21 @@ if (counters.length) {
   counters.forEach((counter) => counterObserver.observe(counter));
 }
 
-// VALIDACIÓN VISUAL
+// VALIDACIÓN — redirige a validar.html con el folio
 const validateForm = document.getElementById("validateForm");
 
 if (validateForm) {
   validateForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const folio = document.getElementById("folio").value.trim();
+    const folio = document.getElementById("folio").value.trim().toUpperCase();
 
     if (!folio) {
       alert("Por favor ingresa un folio para continuar.");
       return;
     }
 
-    alert(
-      "Módulo visual listo.\n\n" +
-      "Folio capturado: " + folio + "\n\n" +
-      "En la siguiente etapa se conecta este formulario a tu sistema real de validación."
-    );
+    // Redirige a la página de validación con el folio como parámetro
+    window.location.href = `validar.html?folio=${encodeURIComponent(folio)}`;
   });
 }
