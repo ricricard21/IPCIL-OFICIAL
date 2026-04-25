@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel IPCI — Iniciar sesión</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css">
+<style>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(ellipse 600px 400px at 30% 20%, rgba(11,78,162,.08), transparent 60%),
+      radial-gradient(ellipse 500px 350px at 80% 80%, rgba(200,152,46,.06), transparent 60%),
+      var(--bg);
+    padding: 24px;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 40px 36px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 24px 60px rgba(11,78,162,.12);
+    border-top: 5px solid var(--primary);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: -2px; right: 0;
+    width: 60%;
+    height: 5px;
+    background: var(--gold);
+  }
+
+  .login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .login-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    margin-bottom: 14px;
+  }
+
+  .login-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .login-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .login-form .btn {
+    margin-top: 8px;
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  .login-error {
+    background: var(--red-bg);
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+  }
+
+  .login-error.visible {
+    display: block;
+    animation: fadeIn 0.3s;
+  }
+
+  .login-loader {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 0;
+  }
+
+  .login-loader.visible {
+    display: flex;
+  }
+
+  .login-loader p {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .login-footer {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .login-footer a {
+    color: var(--primary);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-brand">
+    <img src="../assets/logo.jpeg" alt="IPCI" class="login-logo">
+    <div class="login-title">Panel IPCI</div>
+    <div class="login-subtitle">Acceso institucional</div>
+  </div>
+
+  <form class="login-form" id="login-form" autocomplete="on">
+    <div>
+      <label class="label" for="email">Correo electrónico</label>
+      <input type="email" id="email" required autocomplete="email" placeholder="tucorreo@ejemplo.com">
+    </div>
+
+    <div>
+      <label class="label" for="password">Contraseña</label>
+      <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+    </div>
+
+    <div class="login-error" id="login-error"></div>
+
+    <button type="submit" class="btn" id="btn-login">Iniciar sesión</button>
+  </form>
+
+  <div class="login-loader" id="login-loader">
+    <div class="spinner"></div>
+    <p>Verificando credenciales...</p>
+  </div>
+
+  <div class="login-footer">
+    <a href="../index.html">← Volver a ipcil.org</a>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth,
+    db,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    doc,
+    getDoc
+  } from "./firebase-config.js";
+
+  const form = document.getElementById("login-form");
+  const errorEl = document.getElementById("login-error");
+  const loaderEl = document.getElementById("login-loader");
+  const btnLogin = document.getElementById("btn-login");
+
+  // Si ya hay sesión activa, redirigir según el rol
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+        if (userDoc.exists() && userDoc.data().activo) {
+          redirectByRole(userDoc.data().rol);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  });
+
+  function redirectByRole(rol) {
+    const redirects = {
+      superadmin: "admin.html",
+      coordinador: "coordinador.html",
+      vendedor: "vendedor.html"
+    };
+    window.location.href = redirects[rol] || "index.html";
+  }
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.classList.add("visible");
+    setTimeout(() => errorEl.classList.remove("visible"), 5000);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      showError("Completa todos los campos.");
+      return;
+    }
+
+    btnLogin.disabled = true;
+    form.style.display = "none";
+    loaderEl.classList.add("visible");
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+
+      // Verificar que el usuario exista en Firestore con rol
+      const userDoc = await getDoc(doc(db, "usuarios", cred.user.uid));
+
+      if (!userDoc.exists()) {
+        await auth.signOut();
+        throw new Error("Tu cuenta no está registrada en el sistema. Contacta al administrador.");
+      }
+
+      const userData = userDoc.data();
+
+      if (!userData.activo) {
+        await auth.signOut();
+        throw new Error("Tu cuenta está desactivada. Contacta al administrador.");
+      }
+
+      redirectByRole(userData.rol);
+
+    } catch (error) {
+      loaderEl.classList.remove("visible");
+      form.style.display = "flex";
+      btnLogin.disabled = false;
+
+      let msg = "Error al iniciar sesión.";
+      if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
+        msg = "Email o contraseña incorrectos.";
+      } else if (error.code === "auth/too-many-requests") {
+        msg = "Demasiados intentos. Intenta de nuevo en unos minutos.";
+      } else if (error.message) {
+        msg = error.message;
+      }
+
+      showError(msg);
+    }
+  });
+</script>
+
+</body>
+</html>
