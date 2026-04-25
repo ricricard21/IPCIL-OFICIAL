@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Vendedor — IPCI</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+</button>
+
+<div class="layout">
+
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div class="sidebar-brand-text">
+        <strong>IPCI</strong>
+        <span>Panel Vendedor</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-view="alumnos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Mis alumnos
+      </button>
+      <button class="sidebar-link" data-view="certificados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Certificados emitidos
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-initial">?</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role" id="user-consultora">Vendedor</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <main class="main">
+
+    <!-- ═══════ VIEW: ALUMNOS ═══════ -->
+    <section id="view-alumnos" class="view">
+      <div class="main-header flex items-center justify-between gap-16">
+        <div>
+          <h1 class="main-title">Mis alumnos</h1>
+          <p class="main-subtitle">Registra alumnos y genera sus certificados</p>
+        </div>
+        <button class="btn" id="btn-nuevo-alumno">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo alumno
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total alumnos</div>
+          <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">Esta semana</div>
+          <div class="stat-value" id="stat-semana">0</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Certificados emitidos</div>
+          <div class="stat-value" id="stat-certificados">0</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-value" id="stat-pendientes">0</div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Listado de alumnos</div>
+          <input type="search" class="input" id="search-alumno" placeholder="Buscar por nombre o email..." style="max-width:280px">
+        </div>
+
+        <div id="alumnos-container">
+          <div class="loader"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ VIEW: CERTIFICADOS ═══════ -->
+    <section id="view-certificados" class="view hidden">
+      <div class="main-header">
+        <h1 class="main-title">Certificados emitidos</h1>
+        <p class="main-subtitle">Historial de certificados que has generado</p>
+      </div>
+
+      <div class="card">
+        <div id="certificados-container">
+          <div class="loader"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════ MODAL: NUEVO ALUMNO ═══════ -->
+<div class="modal-overlay" id="modal-alumno">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Registrar nuevo alumno</h2>
+      <button class="modal-close" id="modal-close-alumno">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form id="form-alumno">
+      <div class="field-group">
+        <label class="label">Curso *</label>
+        <select id="alumno-curso" required>
+          <option value="">Selecciona un curso...</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="label">Nombre completo *</label>
+        <input type="text" id="alumno-nombre" required placeholder="Ej. JUAN PÉREZ GARCÍA" style="text-transform:uppercase">
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="label">Email *</label>
+          <input type="email" id="alumno-email" required placeholder="ejemplo@correo.com">
+        </div>
+        <div>
+          <label class="label">Teléfono</label>
+          <input type="tel" id="alumno-telefono" placeholder="2381234567">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-cancelar-alumno">Cancelar</button>
+        <button type="submit" class="btn" id="btn-guardar-alumno">Registrar alumno</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: CONFIRMAR GENERAR ═══════ -->
+<div class="modal-overlay" id="modal-confirmar">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h2 class="modal-title">¿Generar certificado?</h2>
+      <button class="modal-close" id="modal-close-confirmar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:8px">Estás por generar el certificado de:</p>
+    <div style="background:var(--surface-soft);padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:8px">
+      <div style="font-weight:700;color:var(--primary);font-size:15px" id="confirmar-nombre">—</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:4px" id="confirmar-curso">—</div>
+      <div style="color:var(--muted);font-size:13px" id="confirmar-email">—</div>
+    </div>
+    <p style="color:var(--muted);font-size:13px;margin-top:16px">Se generará el folio, el PDF y se enviará el certificado por email automáticamente.</p>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="btn-cancelar-confirmar">Cancelar</button>
+      <button type="button" class="btn" id="btn-confirmar-generar">Sí, generar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth, db, functions,
+    requireRole, cerrarSesion, formatFecha, toast,
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp, onSnapshot,
+    httpsCallable
+  } from "./firebase-config.js";
+
+  // ═══════ STATE ═══════
+  let usuario = null;
+  let cursos = [];
+  let alumnos = [];
+  let certificados = [];
+  let unsubAlumnos = null;
+  let unsubCertificados = null;
+
+  // ═══════ INIT ═══════
+  usuario = await requireRole("vendedor");
+  document.getElementById("user-name").textContent = usuario.nombre || "Vendedor";
+  document.getElementById("user-consultora").textContent = usuario.consultoraNombre || "—";
+  document.getElementById("user-initial").textContent = (usuario.nombre || "?")[0].toUpperCase();
+
+  // Sidebar nav
+  document.querySelectorAll(".sidebar-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      document.getElementById(`view-${btn.dataset.view}`).classList.remove("hidden");
+      document.getElementById("sidebar").classList.remove("open");
+    });
+  });
+
+  // Toggle menu mobile
+  document.getElementById("menu-toggle").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+  });
+
+  // Logout
+  document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
+
+  // Cargar cursos disponibles para esta consultora
+  await cargarCursos();
+
+  // Suscribirse a alumnos en tiempo real
+  suscribirseAAlumnos();
+  suscribirseACertificados();
+
+  // ═══════ FUNCIONES ═══════
+
+  async function cargarCursos() {
+    try {
+      const q = query(
+        collection(db, "cursos"),
+        where("consultoraId", "==", usuario.consultoraId),
+        where("activo", "==", true)
+      );
+      const snap = await getDocs(q);
+      cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      const select = document.getElementById("alumno-curso");
+      select.innerHTML = '<option value="">Selecciona un curso...</option>';
+      cursos.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.nombre;
+        select.appendChild(opt);
+      });
+    } catch (e) {
+      console.error("Error cargando cursos:", e);
+      toast("Error cargando cursos", "error");
+    }
+  }
+
+  function suscribirseAAlumnos() {
+    if (unsubAlumnos) unsubAlumnos();
+
+    const q = query(
+      collection(db, "alumnos"),
+      where("registradoPor", "==", usuario.uid)
+    );
+
+    unsubAlumnos = onSnapshot(q, (snap) => {
+      alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Ordenar por más reciente primero
+      alumnos.sort((a, b) => {
+        const dA = a.creadoEn?.toMillis?.() || 0;
+        const dB = b.creadoEn?.toMillis?.() || 0;
+        return dB - dA;
+      });
+      renderAlumnos();
+      actualizarStats();
+    }, (err) => {
+      console.error(err);
+      toast("Error cargando alumnos", "error");
+    });
+  }
+
+  function suscribirseACertificados() {
+    if (unsubCertificados) unsubCertificados();
+
+    const q = query(
+      collection(db, "certificados"),
+      where("generadoPor", "==", usuario.uid)
+    );
+
+    unsubCertificados = onSnapshot(q, (snap) => {
+      certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      certificados.sort((a, b) => {
+        const dA = a.creadoEn?.toMillis?.() || 0;
+        const dB = b.creadoEn?.toMillis?.() || 0;
+        return dB - dA;
+      });
+      renderCertificados();
+      actualizarStats();
+    });
+  }
+
+  function actualizarStats() {
+    document.getElementById("stat-total").textContent = alumnos.length;
+
+    const semanaAtras = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const enSemana = alumnos.filter(a => {
+      const t = a.creadoEn?.toMillis?.() || 0;
+      return t >= semanaAtras;
+    }).length;
+    document.getElementById("stat-semana").textContent = enSemana;
+
+    document.getElementById("stat-certificados").textContent = certificados.length;
+
+    const pendientes = alumnos.filter(a => a.estado !== "email_enviado").length;
+    document.getElementById("stat-pendientes").textContent = pendientes;
+  }
+
+  function renderAlumnos() {
+    const container = document.getElementById("alumnos-container");
+    const search = document.getElementById("search-alumno").value.toLowerCase();
+    const filtrados = search
+      ? alumnos.filter(a =>
+          (a.nombre || "").toLowerCase().includes(search) ||
+          (a.email || "").toLowerCase().includes(search))
+      : alumnos;
+
+    if (filtrados.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div class="empty-text">${search ? "Sin resultados" : "Aún no tienes alumnos"}</div>
+          <div class="empty-hint">${search ? "Prueba con otra búsqueda" : "Registra tu primer alumno con el botón \"Nuevo alumno\""}</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Curso</th>
+              <th>Email</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th style="text-align:right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtrados.map(a => {
+              const curso = cursos.find(c => c.id === a.cursoId);
+              const cursoNombre = curso ? curso.nombre : "—";
+              return `
+                <tr>
+                  <td><strong>${escapeHtml(a.nombre)}</strong></td>
+                  <td>${escapeHtml(cursoNombre)}</td>
+                  <td>${escapeHtml(a.email || "—")}</td>
+                  <td>${badgeEstado(a.estado)}</td>
+                  <td>${a.creadoEn ? formatFecha(a.creadoEn) : "—"}</td>
+                  <td style="text-align:right">
+                    ${accionAlumno(a)}
+                  </td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+    // Bind generar certificado
+    container.querySelectorAll("[data-generar]").forEach(btn => {
+      btn.addEventListener("click", () => abrirConfirmar(btn.dataset.generar));
+    });
+    container.querySelectorAll("[data-ver-pdf]").forEach(btn => {
+      btn.addEventListener("click", () => verPDF(btn.dataset.verPdf));
+    });
+  }
+
+  function accionAlumno(a) {
+    if (a.estado === "email_enviado") {
+      return `<button class="btn btn-sm btn-secondary" data-ver-pdf="${a.certificadoId}">Ver PDF</button>`;
+    }
+    return `<button class="btn btn-sm" data-generar="${a.id}">Generar certificado</button>`;
+  }
+
+  function badgeEstado(estado) {
+    const map = {
+      "registrado": '<span class="badge muted">Registrado</span>',
+      "certificado_generado": '<span class="badge warning">PDF generado</span>',
+      "email_enviado": '<span class="badge success">✓ Enviado</span>'
+    };
+    return map[estado] || '<span class="badge muted">—</span>';
+  }
+
+  function renderCertificados() {
+    const container = document.getElementById("certificados-container");
+
+    if (certificados.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div class="empty-text">Aún no has emitido certificados</div>
+          <div class="empty-hint">Cuando generes tu primer certificado aparecerá aquí</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Alumno</th>
+              <th>Curso</th>
+              <th>Fecha</th>
+              <th style="text-align:right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${certificados.map(c => `
+              <tr>
+                <td><code style="font-size:12px;color:var(--primary);font-weight:700">${escapeHtml(c.folio)}</code></td>
+                <td>${escapeHtml(c.nombreAlumno)}</td>
+                <td>${escapeHtml(c.nombreCurso)}</td>
+                <td>${escapeHtml(c.fecha || "—")}</td>
+                <td style="text-align:right">
+                  <a href="${c.pdfUrl}" target="_blank" class="btn btn-sm btn-secondary">Ver PDF</a>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // ═══════ MODAL ALUMNO ═══════
+  const modalAlumno = document.getElementById("modal-alumno");
+  document.getElementById("btn-nuevo-alumno").addEventListener("click", () => {
+    if (cursos.length === 0) {
+      toast("Tu coordinador no ha creado cursos todavía", "warning");
+      return;
+    }
+    modalAlumno.classList.add("open");
+  });
+  document.getElementById("modal-close-alumno").addEventListener("click", () => modalAlumno.classList.remove("open"));
+  document.getElementById("btn-cancelar-alumno").addEventListener("click", () => modalAlumno.classList.remove("open"));
+
+  document.getElementById("form-alumno").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btn-guardar-alumno");
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    try {
+      const cursoId = document.getElementById("alumno-curso").value;
+      const nombre = document.getElementById("alumno-nombre").value.trim().toUpperCase();
+      const email = document.getElementById("alumno-email").value.trim().toLowerCase();
+      const telefono = document.getElementById("alumno-telefono").value.trim();
+
+      await addDoc(collection(db, "alumnos"), {
+        consultoraId: usuario.consultoraId,
+        cursoId,
+        nombre,
+        email,
+        telefono,
+        estado: "registrado",
+        certificadoId: "",
+        registradoPor: usuario.uid,
+        creadoEn: serverTimestamp()
+      });
+
+      toast("Alumno registrado correctamente", "success");
+      document.getElementById("form-alumno").reset();
+      modalAlumno.classList.remove("open");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Registrar alumno";
+    }
+  });
+
+  // ═══════ MODAL CONFIRMAR ═══════
+  const modalConfirmar = document.getElementById("modal-confirmar");
+  let alumnoIdAGenerar = null;
+
+  function abrirConfirmar(alumnoId) {
+    const a = alumnos.find(x => x.id === alumnoId);
+    if (!a) return;
+    const curso = cursos.find(c => c.id === a.cursoId);
+    alumnoIdAGenerar = alumnoId;
+    document.getElementById("confirmar-nombre").textContent = a.nombre;
+    document.getElementById("confirmar-curso").textContent = curso ? curso.nombre : "Curso —";
+    document.getElementById("confirmar-email").textContent = a.email;
+    modalConfirmar.classList.add("open");
+  }
+
+  document.getElementById("modal-close-confirmar").addEventListener("click", () => modalConfirmar.classList.remove("open"));
+  document.getElementById("btn-cancelar-confirmar").addEventListener("click", () => modalConfirmar.classList.remove("open"));
+
+  document.getElementById("btn-confirmar-generar").addEventListener("click", async () => {
+    if (!alumnoIdAGenerar) return;
+    const btn = document.getElementById("btn-confirmar-generar");
+    btn.disabled = true;
+    btn.textContent = "Generando...";
+
+    try {
+      const generarCertificado = httpsCallable(functions, "generarCertificado");
+      const result = await generarCertificado({ alumnoId: alumnoIdAGenerar });
+
+      toast(`Certificado ${result.data.folio} enviado por email ✓`, "success");
+      modalConfirmar.classList.remove("open");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + (err.message || "No se pudo generar"), "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Sí, generar";
+      alumnoIdAGenerar = null;
+    }
+  });
+
+  function verPDF(certificadoId) {
+    const c = certificados.find(x => x.id === certificadoId);
+    if (c && c.pdfUrl) {
+      window.open(c.pdfUrl, "_blank");
+    } else {
+      toast("PDF no disponible", "error");
+    }
+  }
+
+  // ═══════ SEARCH ═══════
+  document.getElementById("search-alumno").addEventListener("input", renderAlumnos);
+
+  // ═══════ HELPERS ═══════
+  function escapeHtml(s) {
+    if (!s) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Cleanup on unload
+  window.addEventListener("beforeunload", () => {
+    if (unsubAlumnos) unsubAlumnos();
+    if (unsubCertificados) unsubCertificados();
+  });
+</script>
+
+</body>
+</html>
