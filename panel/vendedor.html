@@ -485,6 +485,177 @@
     background: #e0e7ff;
     color: #4338ca;
   }
+
+  /* ═══ APERTURAS — Pestañas y bloques ═══ */
+  .aperturas-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--line);
+    padding: 0 16px;
+    overflow-x: auto;
+    background: var(--surface-soft);
+    margin-top: -1px;
+  }
+
+  .apertura-tab {
+    background: transparent;
+    border: none;
+    padding: 12px 18px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--t);
+  }
+
+  .apertura-tab:hover {
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .apertura-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--surface);
+  }
+
+  .apertura-tab .tab-count {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+
+  .apertura-tab.active .tab-count {
+    background: var(--primary);
+    color: white;
+  }
+
+  .aperturas-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px 12px;
+    flex-wrap: wrap;
+  }
+
+  .curso-bloque {
+    margin: 16px 20px 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .curso-bloque-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #073b80 100%);
+    color: white;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .curso-bloque-titulo {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .curso-bloque-badge {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    font-size: 10.5px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .curso-bloque-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-curso-action {
+    background: var(--gold);
+    color: #2a1a00;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all var(--t);
+    white-space: nowrap;
+  }
+
+  .btn-curso-action:hover {
+    background: #d6a435;
+    transform: translateY(-1px);
+  }
+
+  .curso-bloque .sheet-table {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+  }
+
+  .btn-add-row-bloque {
+    width: 100%;
+    background: var(--surface-soft);
+    border: none;
+    border-top: 1px dashed var(--line);
+    padding: 10px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background var(--t);
+  }
+
+  .btn-add-row-bloque:hover {
+    background: var(--primary-soft);
+  }
+
+  .empty-apertura {
+    padding: 48px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .empty-apertura strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
@@ -592,59 +763,45 @@
         </div>
       </div>
 
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- HOJA NUEVA — Aperturas con pestañas + bloques curso -->
+      <!-- ═══════════════════════════════════════════════════ -->
       <div class="sheet-wrapper">
         <div class="sheet-header">
           <div>
-            <div class="sheet-title" id="sheet-title">Registro de ventas</div>
-            <div style="font-size:11.5px;opacity:.85;margin-top:2px">Llena los datos del alumno y selecciona GENERAR</div>
+            <div class="sheet-title" id="sheet-title">Aperturas de grupo</div>
+            <div style="font-size:11.5px;opacity:.85;margin-top:2px">Cada pestaña es una fecha de apertura · Cada tabla es un curso del grupo</div>
           </div>
           <div class="sheet-counter">
-            Total: <strong id="sheet-counter">0</strong>
+            Total alumnos: <strong id="sheet-counter">0</strong>
           </div>
         </div>
 
         <div class="sheet-instructions">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          <strong>Atajos:</strong> Tab para saltar al siguiente campo · Enter o salir del campo guarda automático · El certificado se envía por email al alumno al dar GENERAR
+          <strong>Atajos:</strong> Tab para saltar al siguiente campo · Enter para guardar · El certificado se envía al alumno al dar GENERAR
         </div>
 
-        <div class="sheet-toolbar">
-          <div class="search-box" style="max-width:300px">
+        <!-- Pestañas de aperturas -->
+        <div class="aperturas-tabs" id="aperturas-tabs">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div>
+        </div>
+
+        <div class="aperturas-toolbar">
+          <button class="btn btn-secondary btn-sm" id="btn-nueva-apertura">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+            Nueva apertura
+          </button>
+          <div class="search-box" style="max-width:280px;margin-left:auto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="input" type="search" id="search-alumno" placeholder="Buscar nombre, email o folio...">
+            <input class="input" type="search" id="search-alumno" placeholder="Buscar alumno...">
           </div>
-          <select class="select" id="filter-estado" style="max-width:200px">
-            <option value="">Todos</option>
-            <option value="registrado">Pendientes</option>
-            <option value="email_enviado">Generados</option>
-          </select>
         </div>
 
-        <div style="overflow-x:auto">
-          <table class="sheet-table">
-            <thead>
-              <tr>
-                <th style="width:50px">#</th>
-                <th style="width:230px">Nombre</th>
-                <th style="width:140px">Teléfono</th>
-                <th style="width:240px">Email</th>
-                <th style="width:240px">Curso</th>
-                <th style="width:100px">Fecha</th>
-                <th style="width:160px">Folio IPCI</th>
-                <th style="width:110px">Estado</th>
-                <th style="width:130px">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="sheet-body">
-              <tr><td colspan="9"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></td></tr>
-            </tbody>
-          </table>
+        <!-- Contenedor de bloques de cursos -->
+        <div id="aperturas-bloques">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>
         </div>
-
-        <button class="btn-add-row" id="btn-add-row">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Agregar nueva fila
-        </button>
       </div>
     </section>
 
@@ -970,31 +1127,196 @@
   // ═══════════════════════════════════════════════════════════
   // RENDER HOJA
   // ═══════════════════════════════════════════════════════════
-  function renderSheet() {
-    const body = document.getElementById("sheet-body");
-    const search = document.getElementById("search-alumno").value.toLowerCase();
-    const estado = document.getElementById("filter-estado").value;
+  // ═══════════════════════════════════════════════════════════
+  // APERTURAS - Estado de pestañas
+  // ═══════════════════════════════════════════════════════════
+  // Cada alumno tiene un campo "aperturaKey" tipo "2026-04-25" que indica
+  // a qué fecha de apertura pertenece. Si no lo tiene, se usa "sin-asignar".
+  // El vendedor crea aperturas (fechas) y el alumno se asigna a una.
 
-    let lista = [...alumnos];
+  let aperturaActual = null; // string "YYYY-MM-DD" o "sin-asignar" o "nueva"
+
+  function getAperturaKey(alumno) {
+    return alumno.aperturaKey || "sin-asignar";
+  }
+
+  function fechaApertura(key) {
+    if (key === "sin-asignar") return null;
+    return new Date(key + "T00:00:00");
+  }
+
+  function labelApertura(key) {
+    if (key === "sin-asignar") return "Sin asignar";
+    const d = fechaApertura(key);
+    if (!d || isNaN(d)) return key;
+    return d.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "2-digit" });
+  }
+
+  function listarAperturas() {
+    // Recopila aperturas únicas de alumnos + de pendingNewRows
+    const set = new Set();
+    alumnos.forEach(a => set.add(getAperturaKey(a)));
+    pendingNewRows.forEach(r => set.add(r.aperturaKey || "sin-asignar"));
+    const arr = [...set];
+    // Ordenar: fechas válidas descendentes, "sin-asignar" al final
+    arr.sort((a, b) => {
+      if (a === "sin-asignar") return 1;
+      if (b === "sin-asignar") return -1;
+      return b.localeCompare(a);
+    });
+    return arr;
+  }
+
+  function renderTabsAperturas() {
+    const cont = document.getElementById("aperturas-tabs");
+    if (!cont) return;
+    const aps = listarAperturas();
+
+    if (aps.length === 0 || (aps.length === 1 && aps[0] === "sin-asignar" && alumnos.length === 0 && pendingNewRows.length === 0)) {
+      cont.innerHTML = `<div style="padding:14px 18px;color:var(--muted);font-size:13px">
+        Aún no hay aperturas. Click en "Nueva apertura" para crear una.
+      </div>`;
+      aperturaActual = null;
+      return;
+    }
+
+    if (!aperturaActual || !aps.includes(aperturaActual)) aperturaActual = aps[0];
+
+    cont.innerHTML = aps.map(k => {
+      const cuenta = alumnos.filter(a => getAperturaKey(a) === k).length
+                  + pendingNewRows.filter(r => (r.aperturaKey || "sin-asignar") === k).length;
+      const isActive = k === aperturaActual;
+      const icono = k === "sin-asignar" ? "📋" : "📅";
+      return `<button class="apertura-tab ${isActive ? 'active' : ''}" data-apertura="${k}">
+        <span>${icono}</span>
+        <span>${labelApertura(k)}</span>
+        <span class="tab-count">${cuenta}</span>
+      </button>`;
+    }).join("");
+
+    cont.querySelectorAll(".apertura-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        aperturaActual = btn.dataset.apertura;
+        renderTabsAperturas();
+        renderBloques();
+      });
+    });
+  }
+
+  function renderBloques() {
+    const cont = document.getElementById("aperturas-bloques");
+    if (!cont) return;
+
+    if (!aperturaActual) {
+      cont.innerHTML = `<div class="empty-apertura">
+        <strong>No hay apertura seleccionada</strong>
+        Crea una nueva apertura para empezar a registrar alumnos
+      </div>`;
+      return;
+    }
+
+    const search = (document.getElementById("search-alumno")?.value || "").toLowerCase();
+
+    // Filtrar alumnos de la apertura actual
+    let alumnosAp = alumnos.filter(a => getAperturaKey(a) === aperturaActual);
+    let pendientesAp = pendingNewRows.filter(r => (r.aperturaKey || "sin-asignar") === aperturaActual);
+
     if (search) {
-      lista = lista.filter(a =>
+      alumnosAp = alumnosAp.filter(a =>
         (a.nombre || "").toLowerCase().includes(search) ||
-        (a.email || "").toLowerCase().includes(search) ||
-        (certificados.find(c => c.id === a.certificadoId)?.folio || "").toLowerCase().includes(search)
+        (a.email || "").toLowerCase().includes(search)
       );
     }
-    if (estado === "registrado") lista = lista.filter(a => a.estado !== "email_enviado");
-    else if (estado === "email_enviado") lista = lista.filter(a => a.estado === "email_enviado");
+
+    // Agrupar por curso
+    const porCurso = new Map();
+    alumnosAp.forEach(a => {
+      const k = a.cursoId || "sin-curso";
+      if (!porCurso.has(k)) porCurso.set(k, { alumnos: [], pendientes: [] });
+      porCurso.get(k).alumnos.push(a);
+    });
+    pendientesAp.forEach(r => {
+      const k = r.cursoId || "sin-curso";
+      if (!porCurso.has(k)) porCurso.set(k, { alumnos: [], pendientes: [] });
+      porCurso.get(k).pendientes.push(r);
+    });
+
+    if (porCurso.size === 0) {
+      cont.innerHTML = `<div class="empty-apertura">
+        <strong>${labelApertura(aperturaActual)} — sin alumnos</strong>
+        Agrega alumnos a esta apertura con el botón "+" abajo
+      </div>
+      <button class="btn btn-primary" id="btn-add-row" style="margin:0 20px 20px;display:flex;align-items:center;gap:6px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar primer alumno
+      </button>`;
+      bindBloqueEvents();
+      return;
+    }
 
     let html = "";
-    let rowNum = 1;
+    porCurso.forEach((data, cursoId) => {
+      const curso = cursos.find(c => c.id === cursoId);
+      const nombreCurso = curso ? curso.nombre : "(Sin curso asignado)";
+      const ponente = curso?.ponente || "";
 
-    lista.forEach(a => {
+      const totalRows = data.alumnos.length + data.pendientes.length;
+      const enviados = data.alumnos.filter(a => a.estado === "email_enviado").length;
+      const pendientesEnvio = data.alumnos.filter(a => a.estado !== "email_enviado").length + data.pendientes.length;
+
+      html += `<div class="curso-bloque">
+        <div class="curso-bloque-header">
+          <div class="curso-bloque-titulo">
+            ${escapeHtml(nombreCurso)}
+            ${ponente ? `<div style="font-size:11px;font-weight:500;opacity:.85;margin-top:3px">Ponente: ${escapeHtml(ponente)}</div>` : ''}
+          </div>
+          <div class="curso-bloque-actions">
+            <span class="curso-bloque-badge">${enviados} enviados · ${pendientesEnvio} pendientes</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th style="width:40px">#</th>
+                <th style="width:230px">Nombre</th>
+                <th style="width:140px">Teléfono</th>
+                <th style="width:240px">Email</th>
+                <th style="width:160px">Folio IPCI</th>
+                <th style="width:110px">Estado</th>
+                <th style="width:130px">Acción</th>
+              </tr>
+            </thead>
+            <tbody>${renderRowsBloque(data.alumnos, data.pendientes, cursoId)}</tbody>
+          </table>
+        </div>
+        <button class="btn-add-row-bloque" data-add-curso="${cursoId}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar alumno a este curso
+        </button>
+      </div>`;
+    });
+
+    // Botón general para crear fila sin curso preasignado
+    html += `<div style="text-align:center;padding:8px 20px 24px">
+      <button class="btn btn-secondary btn-sm" id="btn-add-row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar fila libre
+      </button>
+    </div>`;
+
+    cont.innerHTML = html;
+    bindBloqueEvents();
+  }
+
+  function renderRowsBloque(alumnosArr, pendientesArr, cursoIdBloque) {
+    let html = "";
+    let n = 1;
+    alumnosArr.forEach(a => {
       const cert = certificados.find(c => c.id === a.certificadoId);
       const yaGenerado = a.estado === "email_enviado";
-
       html += `<tr data-alumno-id="${a.id}" class="${yaGenerado ? 'saved' : ''}">
-        <td class="sheet-row-num">${rowNum++}</td>
+        <td class="sheet-row-num">${n++}</td>
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
           : `<input type="text" class="sheet-cell-input" data-field="nombre" value="${escapeHtml(a.nombre)}" placeholder="Nombre completo" style="text-transform:uppercase">`}</td>
@@ -1004,50 +1326,82 @@
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed muted">${escapeHtml(a.email)}</div>`
           : `<input type="email" class="sheet-cell-input" data-field="email" value="${escapeHtml(a.email || "")}" placeholder="email@ejemplo.com">`}</td>
-        <td>${yaGenerado
-          ? `<div class="sheet-cell-fixed muted">${escapeHtml(cursos.find(c => c.id === a.cursoId)?.nombre || "—")}</div>`
-          : `<select class="sheet-cell-select" data-field="cursoId">
-              <option value="">— Selecciona —</option>
-              ${cursos.map(c => `<option value="${c.id}" ${c.id === a.cursoId ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join("")}
-            </select>`}</td>
-        <td><div class="sheet-cell-fixed muted">${a.creadoEn ? formatFecha(a.creadoEn) : "—"}</div></td>
         <td>${cert ? `<div class="sheet-folio">${escapeHtml(cert.folio)}</div>` : `<div class="sheet-cell-fixed muted">—</div>`}</td>
         <td>${badgeEstado(a.estado, a.fechaProgramada)}</td>
         <td class="accion-cell">${accionAlumno(a)}</td>
       </tr>`;
     });
-
-    pendingNewRows.forEach(row => {
+    pendientesArr.forEach(row => {
+      const tieneCurso = !!row.cursoId;
       html += `<tr data-temp-id="${row.tempId}">
-        <td class="sheet-row-num">${rowNum++}</td>
+        <td class="sheet-row-num">${n++}</td>
         <td><input type="text" class="sheet-cell-input" data-field="nombre" data-temp="${row.tempId}" value="${escapeHtml(row.nombre || "")}" placeholder="Nombre completo" style="text-transform:uppercase"></td>
         <td><input type="tel" class="sheet-cell-input" data-field="telefono" data-temp="${row.tempId}" value="${escapeHtml(row.telefono || "")}" placeholder="Teléfono"></td>
         <td><input type="email" class="sheet-cell-input" data-field="email" data-temp="${row.tempId}" value="${escapeHtml(row.email || "")}" placeholder="email@ejemplo.com"></td>
-        <td>
-          <select class="sheet-cell-select" data-field="cursoId" data-temp="${row.tempId}">
-            <option value="">— Selecciona —</option>
-            ${cursos.map(c => `<option value="${c.id}" ${c.id === row.cursoId ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join("")}
-          </select>
-        </td>
-        <td><div class="sheet-cell-fixed muted">—</div></td>
-        <td><div class="sheet-cell-fixed muted">—</div></td>
+        <td>${tieneCurso
+          ? `<div class="sheet-cell-fixed muted">—</div>`
+          : `<select class="sheet-cell-select" data-field="cursoId" data-temp="${row.tempId}">
+              <option value="">— Selecciona curso —</option>
+              ${cursos.map(c => `<option value="${c.id}" ${c.id === row.cursoId ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join("")}
+            </select>`}</td>
         <td><span class="estado-badge estado-pendiente">Sin guardar</span></td>
         <td class="accion-cell"><button class="btn-generar" disabled>Falta info</button></td>
       </tr>`;
     });
+    return html;
+  }
 
-    if (lista.length === 0 && pendingNewRows.length === 0) {
-      html = `<tr><td colspan="9">
-        <div class="empty">
-          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4M9 11V7a3 3 0 0 1 6 0v4M9 11h6"/></svg>
-          <div class="empty-text">Aún no tienes alumnos</div>
-          <div class="empty-hint">Click en "Agregar nueva fila" o "Importar Excel" para empezar</div>
-        </div>
-      </td></tr>`;
-    }
-
-    body.innerHTML = html;
+  function bindBloqueEvents() {
     bindSheetEvents();
+
+    // Botón "Agregar a este curso" en cada bloque
+    document.querySelectorAll("[data-add-curso]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cursoId = btn.dataset.addCurso;
+        if (cursoId === "sin-curso") {
+          agregarFilaPendiente(null);
+        } else {
+          agregarFilaPendiente(cursoId);
+        }
+      });
+    });
+
+    // Botón "Agregar fila libre"
+    const btnAdd = document.getElementById("btn-add-row");
+    if (btnAdd && !btnAdd.dataset.bound) {
+      btnAdd.dataset.bound = "1";
+      btnAdd.addEventListener("click", () => agregarFilaPendiente(null));
+    }
+  }
+
+  function agregarFilaPendiente(cursoId) {
+    if (!aperturaActual || aperturaActual === "sin-asignar") {
+      // Si no hay apertura, abrir el modal de crear
+      if (!alumnos.length && !pendingNewRows.length) {
+        toast("Crea primero una apertura con el botón \"Nueva apertura\"", "warning");
+        return;
+      }
+      aperturaActual = aperturaActual || "sin-asignar";
+    }
+    const tempId = "tmp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    pendingNewRows.push({
+      tempId,
+      nombre: "",
+      telefono: "",
+      email: "",
+      cursoId: cursoId || "",
+      aperturaKey: aperturaActual,
+    });
+    renderTabsAperturas();
+    renderBloques();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER PRINCIPAL — Reemplaza al renderSheet anterior
+  // ═══════════════════════════════════════════════════════════
+  function renderSheet() {
+    renderTabsAperturas();
+    renderBloques();
   }
 
   function badgeEstado(estado, fechaProgramada) {
@@ -1165,20 +1519,7 @@
     });
   }
 
-  // ─── AGREGAR FILA ───
-  document.getElementById("btn-add-row").addEventListener("click", () => {
-    if (cursos.length === 0) {
-      toast("Tu coordinador no ha creado cursos todavía", "warning");
-      return;
-    }
-    const tempId = "temp_" + Date.now() + Math.random().toString(36).substr(2, 5);
-    pendingNewRows.push({ tempId, nombre: "", telefono: "", email: "", cursoId: "" });
-    renderSheet();
-    setTimeout(() => {
-      const newInput = document.querySelector(`[data-temp="${tempId}"][data-field="nombre"]`);
-      if (newInput) newInput.focus();
-    }, 50);
-  });
+  // ─── AGREGAR FILA — Manejado por bindBloqueEvents() ───
 
   async function guardarFilaNueva(tempId) {
     const row = pendingNewRows.find(r => r.tempId === tempId);
@@ -1191,6 +1532,7 @@
         nombre: row.nombre,
         email: row.email,
         telefono: row.telefono || "",
+        aperturaKey: row.aperturaKey || aperturaActual || "sin-asignar",
         estado: "registrado",
         certificadoId: "",
         registradoPor: usuario.uid,
@@ -1346,9 +1688,80 @@
     }
   });
 
-  // ─── BÚSQUEDA Y FILTROS ───
-  document.getElementById("search-alumno").addEventListener("input", renderSheet);
-  document.getElementById("filter-estado").addEventListener("change", renderSheet);
+  // ─── BÚSQUEDA ───
+  document.getElementById("search-alumno").addEventListener("input", renderBloques);
+
+  // ─── BOTÓN NUEVA APERTURA ───
+  document.getElementById("btn-nueva-apertura").addEventListener("click", abrirModalNuevaApertura);
+
+  function abrirModalNuevaApertura() {
+    if (cursos.length === 0) {
+      toast("Tu coordinador no ha creado cursos todavía", "warning");
+      return;
+    }
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    const hoy = new Date();
+    hoy.setDate(hoy.getDate() + 7); // Default: en 1 semana
+    const fechaDefault = hoy.toISOString().split("T")[0];
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Nueva apertura de grupo</div>
+            <div class="modal-subtitle">Define la fecha en que abre el grupo</div>
+          </div>
+          <button class="modal-close" type="button" data-close-here>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+            <div>Esta fecha aparecerá como una pestaña arriba. Podrás registrar alumnos de esa apertura ahí.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Fecha de apertura *</label>
+            <input class="input" type="date" id="ap-fecha" value="${fechaDefault}">
+            <div class="field-hint">Generalmente cada 15 días</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-crear-apertura">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Crear apertura
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", e => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-crear-apertura").addEventListener("click", () => {
+      const fecha = wrap.querySelector("#ap-fecha").value;
+      if (!fecha) {
+        toast("Selecciona una fecha", "warning");
+        return;
+      }
+      // Activar la apertura nueva (creando una fila pendiente vacía para que aparezca la pestaña)
+      aperturaActual = fecha;
+      const tempId = "tmp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+      pendingNewRows.push({
+        tempId,
+        nombre: "",
+        telefono: "",
+        email: "",
+        cursoId: "",
+        aperturaKey: fecha,
+      });
+      renderTabsAperturas();
+      renderBloques();
+      cerrar();
+      toast(`Apertura creada para ${labelApertura(fecha)}`, "success");
+    });
+  }
 
   // ═══════════════════════════════════════════════════════════
   // MI RESUMEN
@@ -1603,6 +2016,7 @@
           nombre: v.nombre,
           email: v.email,
           telefono: v.telefono || "",
+          aperturaKey: aperturaActual || "sin-asignar",
           estado: "registrado",
           certificadoId: "",
           registradoPor: usuario.uid,

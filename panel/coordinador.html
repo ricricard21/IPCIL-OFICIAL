@@ -286,12 +286,12 @@
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Facturación</div>
-            <div class="kpi-value" id="kpi-ingresos">$0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-ingresos-trend">—</span>
+            <div class="kpi-label">Próxima apertura</div>
+            <div class="kpi-value" id="kpi-prox-apertura" style="font-size:20px">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-prox-apertura-trend">grupo más cercano</span>
           </div>
           <div class="kpi-icon kpi-icon-blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </div>
         </div>
         <div class="kpi">
@@ -331,7 +331,7 @@
           <div class="chart-card-header">
             <div>
               <div class="chart-title">Ventas por mes</div>
-              <div class="chart-subtitle">Certificados emitidos e ingresos</div>
+              <div class="chart-subtitle">Certificados emitidos por mes</div>
             </div>
           </div>
           <div class="chart-canvas-wrap"><canvas id="chart-ventas"></canvas></div>
@@ -593,16 +593,13 @@
 
         <div class="field-row">
           <div class="field">
-            <label class="field-label">Precio (MXN)</label>
-            <input class="input" type="number" id="curso-precio" min="0" step="0.01" placeholder="599">
-          </div>
-          <div class="field">
             <label class="field-label">Estado</label>
             <select class="select" id="curso-activo">
               <option value="true">Activo</option>
               <option value="false">Inactivo</option>
             </select>
           </div>
+          <input type="hidden" id="curso-precio" value="0">
         </div>
       </div>
 
@@ -756,9 +753,32 @@
     const certsPeriodo = filtrarPorPeriodo(certificados);
     const alumnosPeriodo = filtrarPorPeriodo(alumnos);
 
-    // KPI: ingresos
-    const ingresos = certsPeriodo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-    document.getElementById("kpi-ingresos").textContent = formatMoney(ingresos);
+    // KPI: Próxima apertura (curso más cercano a abrir grupo)
+    const cursosActivos = cursos.filter(c => c.activo);
+    let proxApertura = null;
+    let proxCurso = null;
+    cursosActivos.forEach(c => {
+      const est = calcularEstadoApertura(c);
+      if (est.proxima) {
+        if (!proxApertura || est.proxima < proxApertura) {
+          proxApertura = est.proxima;
+          proxCurso = c;
+        }
+      }
+    });
+    const elProx = document.getElementById("kpi-prox-apertura");
+    const elProxTrend = document.getElementById("kpi-prox-apertura-trend");
+    if (proxApertura && elProx) {
+      const dias = Math.ceil((proxApertura - new Date()) / (1000 * 60 * 60 * 24));
+      const fecha = proxApertura.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
+      elProx.textContent = fecha;
+      if (proxCurso) {
+        elProxTrend.textContent = dias > 0 ? `en ${dias} días · ${proxCurso.nombre.substring(0, 22)}` : `vencida · ${proxCurso.nombre.substring(0, 22)}`;
+      }
+    } else if (elProx) {
+      elProx.textContent = "—";
+      elProxTrend.textContent = "sin cursos abiertos";
+    }
 
     // KPI: certificados
     document.getElementById("kpi-certs").textContent = certsPeriodo.length;
@@ -771,7 +791,7 @@
     document.getElementById("kpi-vendedores").textContent = activos;
     document.getElementById("kpi-vendedores-total").textContent = vendedores.length;
 
-    // Tendencias (vs periodo anterior)
+    // Tendencias (vs periodo anterior) - sin ingresos
     if (periodoActual !== "all" && typeof periodoActual === "number") {
       const ahora = Date.now();
       const desde = ahora - periodoActual * 24 * 60 * 60 * 1000;
@@ -781,21 +801,21 @@
         const t = c.creadoEn?.toMillis?.() || 0;
         return t >= desdeAnterior && t < desde;
       });
-      const ingresosAnterior = certsAnterior.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
 
       const alumnosAnterior = alumnos.filter(a => {
         const t = a.creadoEn?.toMillis?.() || 0;
         return t >= desdeAnterior && t < desde;
       }).length;
 
-      setTrend("kpi-ingresos-trend", ingresos, ingresosAnterior);
       setTrend("kpi-certs-trend", certsPeriodo.length, certsAnterior.length);
       setTrend("kpi-alumnos-trend", alumnosPeriodo.length, alumnosAnterior);
     } else {
-      ["kpi-ingresos-trend", "kpi-certs-trend", "kpi-alumnos-trend"].forEach(id => {
+      ["kpi-certs-trend", "kpi-alumnos-trend"].forEach(id => {
         const el = document.getElementById(id);
-        el.textContent = "—";
-        el.className = "kpi-trend kpi-trend-flat";
+        if (el) {
+          el.textContent = "—";
+          el.className = "kpi-trend kpi-trend-flat";
+        }
       });
     }
 
@@ -889,26 +909,10 @@
         labels: meses.map(m => m.label),
         datasets: [
           {
-            label: 'Ingresos (MXN)',
-            data: meses.map(m => m.ingresos),
-            backgroundColor: 'rgba(11, 78, 162, 0.85)',
-            borderRadius: 6,
-            yAxisID: 'y'
-          },
-          {
             label: 'Certificados',
             data: meses.map(m => m.certs),
-            type: 'line',
-            borderColor: '#C8982E',
-            backgroundColor: 'rgba(200, 152, 46, 0.12)',
-            borderWidth: 2.5,
-            tension: 0.35,
-            pointRadius: 4,
-            pointBackgroundColor: '#C8982E',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            yAxisID: 'y1',
-            fill: false
+            backgroundColor: 'rgba(11, 78, 162, 0.85)',
+            borderRadius: 6,
           }
         ]
       },
@@ -925,23 +929,15 @@
             padding: 12,
             cornerRadius: 8,
             callbacks: {
-              label: (ctx) => {
-                if (ctx.dataset.label.includes('Ingresos')) return `Ingresos: ${formatMoney(ctx.parsed.y)}`;
-                return `${ctx.dataset.label}: ${ctx.parsed.y}`;
-              }
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}`
             }
           }
         },
         scales: {
           x: { grid: { display: false }, ticks: { font: { family: 'Montserrat' } } },
           y: {
-            position: 'left', beginAtZero: true,
+            beginAtZero: true,
             grid: { color: 'rgba(0,0,0,.05)' },
-            ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v/1000).toFixed(0) + 'k' }
-          },
-          y1: {
-            position: 'right', beginAtZero: true,
-            grid: { display: false },
             ticks: { font: { family: 'Montserrat' }, stepSize: 1 }
           }
         }
@@ -1016,9 +1012,8 @@
     const certsPeriodo = filtrarPorPeriodo(certificados);
     const ranking = vendedores.map(v => {
       const sus = certsPeriodo.filter(ce => ce.generadoPor === v.id);
-      const ingresos = sus.reduce((s, ce) => s + (parseFloat(ce.precio) || 0), 0);
-      return { vendedor: v, certs: sus.length, ingresos };
-    }).sort((a, b) => b.ingresos - a.ingresos || b.certs - a.certs);
+      return { vendedor: v, certs: sus.length };
+    }).sort((a, b) => b.certs - a.certs);
 
     if (ranking.every(r => r.certs === 0)) {
       c.innerHTML = '<div class="empty"><div class="empty-text">Sin ventas en este periodo</div><div class="empty-hint">Cambia el filtro de tiempo o espera nuevas ventas</div></div>';
@@ -1030,11 +1025,11 @@
         <div class="ranking-medal">${i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
         <div class="ranking-info">
           <div class="ranking-name">${escapeHtml(r.vendedor.nombre)}</div>
-          <div class="ranking-sub">${r.certs} ${r.certs === 1 ? 'venta' : 'ventas'} · ${escapeHtml(r.vendedor.email || "")}</div>
+          <div class="ranking-sub">${escapeHtml(r.vendedor.email || "")}</div>
         </div>
         <div class="ranking-stat">
-          <strong>${formatMoney(r.ingresos)}</strong>
-          <span>facturado</span>
+          <strong>${r.certs}</strong>
+          <span>${r.certs === 1 ? 'certificado' : 'certificados'}</span>
         </div>
       </div>
     `).join("")}</div>`;
@@ -1064,7 +1059,7 @@
     }
     c.innerHTML = `<div class="table-wrap"><table class="table">
       <thead><tr>
-        <th>Nombre</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th>
+        <th>Nombre</th><th>Ponente</th><th>Modalidad</th><th>Duración</th>
         <th>Estado</th><th>Ventas</th><th class="col-actions">Acción</th>
       </tr></thead>
       <tbody>${lista.map(cu => {
@@ -1074,7 +1069,6 @@
           <td>${escapeHtml(cu.ponente || "—")}</td>
           <td>${escapeHtml(cu.modalidad || "—")}</td>
           <td>${escapeHtml(cu.duracion || "—")}</td>
-          <td>${cu.precio ? formatMoney(cu.precio) : "—"}</td>
           <td>${cu.activo ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
           <td><strong>${ventas}</strong></td>
           <td class="col-actions"><button class="btn btn-secondary btn-sm" data-edit="${cu.id}">Editar</button></td>
@@ -1102,12 +1096,11 @@
     c.innerHTML = `<div class="table-wrap"><table class="table">
       <thead><tr>
         <th>Vendedor</th><th>Email</th><th>Estado</th>
-        <th>Alumnos</th><th>Ventas</th><th>Facturado</th>
+        <th>Alumnos</th><th>Certificados</th>
       </tr></thead>
       <tbody>${vendedores.map(v => {
         const sus = alumnos.filter(a => a.registradoPor === v.id).length;
         const certs = certificados.filter(cc => cc.generadoPor === v.id);
-        const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
         return `<tr>
           <td>
             <div style="display:flex;align-items:center;gap:10px">
@@ -1119,7 +1112,6 @@
           <td>${v.activo ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
           <td><strong>${sus}</strong></td>
           <td><strong style="color:var(--primary)">${certs.length}</strong></td>
-          <td><strong>${formatMoney(ingresos)}</strong></td>
         </tr>`;
       }).join("")}</tbody></table></div>`;
   }
