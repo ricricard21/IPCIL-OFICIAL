@@ -232,6 +232,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 0 1 .665 6.479A11.952 11.952 0 0 0 12 20.055a11.952 11.952 0 0 0-6.824-2.998 12.078 12.078 0 0 1 .665-6.479L12 14zM12 14v7"/></svg>
         Alumnos
       </button>
+      <button class="sidebar-link" data-view="apertura">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Apertura de grupos
+        <span id="badge-listos" class="badge" style="background:#dcfce7;color:#166534">0</span>
+      </button>
       <button class="sidebar-link" data-view="historicos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/></svg>
         Históricos
@@ -432,6 +437,63 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
+    <!-- APERTURA DE GRUPOS                                   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-apertura" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Apertura de grupos</h1>
+          <p class="main-subtitle">Controla cuándo abrir cada curso según los alumnos inscritos</p>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>
+          <strong>Cómo funciona:</strong> Cada curso tiene un mínimo de alumnos para abrir grupo y una frecuencia (cada cuántos días se reabren). Cuando un curso llega a su mínimo, aparece como <strong>"Listo para abrir"</strong> 🟢.
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Listos para abrir</div>
+            <div class="kpi-value" style="color:var(--green)" id="ap-listos">0</div>
+            <span class="kpi-trend kpi-trend-flat">cursos llegaron al mínimo</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">En proceso</div>
+            <div class="kpi-value" id="ap-proceso">0</div>
+            <span class="kpi-trend kpi-trend-flat">cursos llenándose</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Total inscritos</div>
+            <div class="kpi-value" id="ap-inscritos">0</div>
+            <span class="kpi-trend kpi-trend-flat">esperando apertura</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Estado de cada curso</div>
+            <div class="card-subtitle">Click en "Configurar" para ajustar mínimo y frecuencia · "Abrir grupo ahora" registra la apertura</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-apertura" placeholder="Buscar curso...">
+          </div>
+        </div>
+        <div id="apertura-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
     <!-- HISTÓRICOS                                           -->
     <!-- ═══════════════════════════════════════════════════ -->
     <section id="view-historicos" class="section">
@@ -592,6 +654,7 @@
       document.getElementById(`view-${btn.dataset.view}`).classList.add("active");
       document.getElementById("sidebar").classList.remove("open");
       document.querySelector(".sidebar-backdrop")?.classList.remove("show");
+      if (btn.dataset.view === "apertura") renderApertura();
     });
   });
 
@@ -762,6 +825,7 @@
     renderChartVentas();
     renderChartCursos();
     renderTopVendedores();
+    renderApertura();
   }
 
   function setTrend(id, actual, anterior) {
@@ -1300,6 +1364,234 @@
       btn.disabled = false;
     }
   });
+
+  // ═══════════════════════════════════════════════════════════
+  // APERTURA DE GRUPOS
+  // ═══════════════════════════════════════════════════════════
+  function calcularEstadoApertura(curso) {
+    const minimo = curso.minimoAlumnos || 8;
+    const frecuencia = curso.frecuenciaDiasApertura || 15;
+    const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
+
+    // Cuenta alumnos del curso desde la última apertura (o todos si nunca se ha abierto)
+    const desde = ultimaApertura ? ultimaApertura.getTime() : 0;
+    const inscritos = alumnos.filter(a =>
+      a.cursoId === curso.id &&
+      a.estado !== "email_enviado" && // ya certificados ya tomaron el curso
+      (a.creadoEn?.toMillis?.() || 0) >= desde
+    ).length;
+
+    const pct = Math.min(100, Math.round((inscritos / minimo) * 100));
+    const listo = inscritos >= minimo;
+
+    // Próxima fecha tentativa
+    let proxima = null;
+    if (ultimaApertura) {
+      proxima = new Date(ultimaApertura);
+      proxima.setDate(proxima.getDate() + frecuencia);
+    }
+
+    return { minimo, frecuencia, inscritos, pct, listo, ultimaApertura, proxima };
+  }
+
+  function renderApertura() {
+    const ap = document.getElementById("apertura-container");
+    if (!ap) return;
+
+    const search = (document.getElementById("search-apertura")?.value || "").toLowerCase();
+    let lista = cursos.filter(c => c.activo);
+    if (search) {
+      lista = lista.filter(c =>
+        (c.nombre || "").toLowerCase().includes(search) ||
+        (c.ponente || "").toLowerCase().includes(search)
+      );
+    }
+
+    // Calcular estados
+    const conEstado = lista.map(c => ({ curso: c, estado: calcularEstadoApertura(c) }));
+
+    // Ordenar: primero los listos, luego por % completado descendente
+    conEstado.sort((a, b) => {
+      if (a.estado.listo !== b.estado.listo) return a.estado.listo ? -1 : 1;
+      return b.estado.pct - a.estado.pct;
+    });
+
+    // KPIs
+    const listos = conEstado.filter(x => x.estado.listo).length;
+    const proceso = conEstado.filter(x => !x.estado.listo && x.estado.inscritos > 0).length;
+    const totalInscritos = conEstado.reduce((s, x) => s + x.estado.inscritos, 0);
+    document.getElementById("ap-listos").textContent = listos;
+    document.getElementById("ap-proceso").textContent = proceso;
+    document.getElementById("ap-inscritos").textContent = totalInscritos;
+
+    // Badge sidebar
+    const badgeListos = document.getElementById("badge-listos");
+    if (badgeListos) {
+      badgeListos.textContent = listos;
+      badgeListos.style.display = listos === 0 ? "none" : "";
+    }
+
+    if (conEstado.length === 0) {
+      ap.innerHTML = `<div class="empty">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+        <div class="empty-text">${search ? 'Sin resultados' : 'No hay cursos activos'}</div>
+        <div class="empty-hint">${search ? 'Intenta con otra búsqueda' : 'Activa al menos un curso para ver su estado de apertura'}</div>
+      </div>`;
+      return;
+    }
+
+    ap.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr>
+        <th>Curso</th>
+        <th>Inscritos / Mínimo</th>
+        <th>Progreso</th>
+        <th>Última apertura</th>
+        <th>Próxima sugerida</th>
+        <th>Estado</th>
+        <th class="col-actions">Acción</th>
+      </tr></thead>
+      <tbody>${conEstado.map(({ curso, estado }) => {
+        const fechaUlt = estado.ultimaApertura
+          ? estado.ultimaApertura.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+          : '<span class="text-muted">Nunca</span>';
+        const fechaProx = estado.proxima
+          ? estado.proxima.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+          : '<span class="text-muted">—</span>';
+        const colorBar = estado.listo ? 'var(--green)' : (estado.pct > 50 ? 'var(--gold)' : 'var(--primary)');
+        return `<tr>
+          <td>
+            <strong>${escapeHtml(curso.nombre)}</strong>
+            <div class="text-sm text-muted">${escapeHtml(curso.ponente || "Sin ponente")}</div>
+          </td>
+          <td><strong style="font-size:18px;color:${estado.listo ? 'var(--green)' : 'var(--text)'}">${estado.inscritos}</strong> <span class="text-muted">/ ${estado.minimo}</span></td>
+          <td style="min-width:160px">
+            <div style="background:var(--surface-soft);border-radius:6px;height:8px;overflow:hidden;border:1px solid var(--line-soft)">
+              <div style="background:${colorBar};width:${estado.pct}%;height:100%;transition:width 0.4s ease;border-radius:6px"></div>
+            </div>
+            <div class="text-xs text-muted" style="margin-top:4px">${estado.pct}% del mínimo</div>
+          </td>
+          <td class="text-sm">${fechaUlt}</td>
+          <td class="text-sm">${fechaProx}</td>
+          <td>
+            ${estado.listo
+              ? '<span class="chip chip-green chip-dot">🟢 Listo para abrir</span>'
+              : estado.inscritos === 0
+                ? '<span class="chip chip-gray">Sin inscritos</span>'
+                : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}
+          </td>
+          <td class="col-actions">
+            <div style="display:flex;gap:6px;justify-content:flex-end">
+              <button class="btn btn-secondary btn-sm" data-config="${curso.id}">Configurar</button>
+              ${estado.listo
+                ? `<button class="btn btn-primary btn-sm" data-abrir="${curso.id}" style="background:var(--green);border-color:var(--green)">Abrir grupo</button>`
+                : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+
+    ap.querySelectorAll("[data-config]").forEach(b => b.addEventListener("click", () => abrirModalConfigCurso(b.dataset.config)));
+    ap.querySelectorAll("[data-abrir]").forEach(b => b.addEventListener("click", () => abrirGrupo(b.dataset.abrir)));
+  }
+
+  document.getElementById("search-apertura").addEventListener("input", renderApertura);
+
+  // ─── MODAL CONFIGURAR CURSO ───
+  function abrirModalConfigCurso(cursoId) {
+    const c = cursos.find(x => x.id === cursoId);
+    if (!c) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:480px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Configurar apertura</div>
+            <div class="modal-subtitle">${escapeHtml(c.nombre)}</div>
+          </div>
+          <button class="modal-close" type="button" data-close-here>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+            <div>Define cuántos alumnos necesitas para abrir el grupo y cada cuántos días reabrir.</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Mínimo de alumnos *</label>
+              <input class="input" type="number" id="cf-minimo" min="1" max="100" value="${c.minimoAlumnos || 8}">
+              <div class="field-hint">Cuando llegue a este número, aparecerá como "Listo para abrir"</div>
+            </div>
+            <div class="field">
+              <label class="field-label">Frecuencia (días) *</label>
+              <input class="input" type="number" id="cf-frecuencia" min="1" max="365" value="${c.frecuenciaDiasApertura || 15}">
+              <div class="field-hint">Cada cuántos días reabrir el grupo</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-guardar-config">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            Guardar configuración
+          </button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-guardar-config").addEventListener("click", async () => {
+      const min = parseInt(wrap.querySelector("#cf-minimo").value) || 8;
+      const freq = parseInt(wrap.querySelector("#cf-frecuencia").value) || 15;
+      if (min < 1 || freq < 1) {
+        toast("Los valores deben ser mayores a 0", "warning");
+        return;
+      }
+      try {
+        await updateDoc(doc(db, "cursos", cursoId), {
+          minimoAlumnos: min,
+          frecuenciaDiasApertura: freq,
+        });
+        toast("Configuración actualizada", "success");
+        cerrar();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message, "error");
+      }
+    });
+  }
+
+  // ─── ABRIR GRUPO ───
+  async function abrirGrupo(cursoId) {
+    const c = cursos.find(x => x.id === cursoId);
+    if (!c) return;
+    const estado = calcularEstadoApertura(c);
+
+    const ok = await confirmar({
+      titulo: "Abrir grupo",
+      mensaje: `Vas a marcar el grupo "${c.nombre}" como abierto hoy. Esto registra la fecha y reinicia el contador para la próxima apertura. ¿Continuar?`,
+      btnOk: "Sí, abrir grupo",
+    });
+    if (!ok) return;
+
+    try {
+      await updateDoc(doc(db, "cursos", cursoId), {
+        ultimaApertura: serverTimestamp(),
+        ultimaAperturaPor: usuario.uid,
+      });
+      toast(`Grupo "${c.nombre}" abierto con ${estado.inscritos} alumnos 🎉`, "success");
+    } catch (e) {
+      console.error(e);
+      toast("Error: " + e.message, "error");
+    }
+  }
 
   window.addEventListener("beforeunload", () => unsubAll.forEach(fn => fn && fn()));
 </script>

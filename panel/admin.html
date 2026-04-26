@@ -203,6 +203,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Comisiones
       </button>
+      <button class="sidebar-link" data-view="aperturas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Aperturas globales
+        <span id="badge-aperturas" class="badge" style="background:#dcfce7;color:#166534">0</span>
+      </button>
       <button class="sidebar-link" data-view="ranking">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
         Ranking
@@ -563,6 +568,77 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
+    <!-- APERTURAS GLOBALES                                   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-aperturas" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Aperturas globales</h1>
+          <p class="main-subtitle">Estado de apertura de todos los grupos en todas las consultoras</p>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+        <div>
+          Vista global. Cada coordinador define su propio mínimo y frecuencia desde su panel. Aquí solo monitoreas qué grupos están listos para abrir.
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Listos para abrir</div>
+            <div class="kpi-value" style="color:var(--green)" id="ag-listos">0</div>
+            <span class="kpi-trend kpi-trend-flat">cursos al mínimo</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">En proceso</div>
+            <div class="kpi-value" id="ag-proceso">0</div>
+            <span class="kpi-trend kpi-trend-flat">llenándose</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Inscritos esperando</div>
+            <div class="kpi-value" id="ag-inscritos">0</div>
+            <span class="kpi-trend kpi-trend-flat">alumnos en lista</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Consultoras con aperturas</div>
+            <div class="kpi-value" id="ag-consultoras">0</div>
+            <span class="kpi-trend kpi-trend-flat">activas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Estado por curso</div>
+            <div class="card-subtitle">Filtra por consultora o estado para encontrar grupos rápido</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <select class="select" id="ag-filter-consultora" style="max-width:200px">
+              <option value="">Todas las consultoras</option>
+            </select>
+            <select class="select" id="ag-filter-estado" style="max-width:180px">
+              <option value="">Todos los estados</option>
+              <option value="listo">🟢 Listos para abrir</option>
+              <option value="proceso">🟡 En proceso</option>
+              <option value="vacio">⚪ Sin inscritos</option>
+            </select>
+          </div>
+        </div>
+        <div id="aperturas-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
     <!-- RANKING                                              -->
     <!-- ═══════════════════════════════════════════════════ -->
     <section id="view-ranking" class="section">
@@ -780,6 +856,7 @@
       document.querySelector(".sidebar-backdrop")?.classList.remove("show");
       if (btn.dataset.view === "ranking") renderRanking();
       if (btn.dataset.view === "comisiones") renderComisiones();
+      if (btn.dataset.view === "aperturas") renderAperturasGlobales();
     });
   });
 
@@ -918,6 +995,7 @@
     renderChartDiario();
     renderResumenConsultoras();
     renderUltimos();
+    renderAperturasGlobales();
   }
 
   function setTrend(id, actual, anterior) {
@@ -1643,6 +1721,151 @@
       });
     });
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // APERTURAS GLOBALES
+  // ═══════════════════════════════════════════════════════════
+  function calcularEstadoCurso(curso) {
+    const minimo = curso.minimoAlumnos || 8;
+    const frecuencia = curso.frecuenciaDiasApertura || 15;
+    const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
+    const desde = ultimaApertura ? ultimaApertura.getTime() : 0;
+
+    const inscritos = alumnos.filter(a =>
+      a.cursoId === curso.id &&
+      a.estado !== "email_enviado" &&
+      (a.creadoEn?.toMillis?.() || 0) >= desde
+    ).length;
+
+    const pct = Math.min(100, Math.round((inscritos / minimo) * 100));
+    const listo = inscritos >= minimo;
+
+    let proxima = null;
+    if (ultimaApertura) {
+      proxima = new Date(ultimaApertura);
+      proxima.setDate(proxima.getDate() + frecuencia);
+    }
+
+    return { minimo, frecuencia, inscritos, pct, listo, ultimaApertura, proxima };
+  }
+
+  function renderAperturasGlobales() {
+    const container = document.getElementById("aperturas-container");
+    if (!container) return;
+
+    // Llenar select de consultoras (si está vacío)
+    const selCons = document.getElementById("ag-filter-consultora");
+    if (selCons.options.length <= 1) {
+      consultoras.forEach(co => {
+        const opt = document.createElement("option");
+        opt.value = co.id;
+        opt.textContent = co.nombre;
+        selCons.appendChild(opt);
+      });
+    }
+
+    const filtroCons = selCons.value;
+    const filtroEstado = document.getElementById("ag-filter-estado").value;
+
+    // Calcular estado de cada curso activo
+    let lista = cursos.filter(c => c.activo);
+    if (filtroCons) lista = lista.filter(c => c.consultoraId === filtroCons);
+
+    const conEstado = lista.map(c => ({
+      curso: c,
+      consultora: consultoras.find(co => co.id === c.consultoraId),
+      estado: calcularEstadoCurso(c),
+    }));
+
+    let filtrados = [...conEstado];
+    if (filtroEstado === "listo") filtrados = filtrados.filter(x => x.estado.listo);
+    else if (filtroEstado === "proceso") filtrados = filtrados.filter(x => !x.estado.listo && x.estado.inscritos > 0);
+    else if (filtroEstado === "vacio") filtrados = filtrados.filter(x => x.estado.inscritos === 0);
+
+    // Ordenar: listos primero, luego por % desc
+    filtrados.sort((a, b) => {
+      if (a.estado.listo !== b.estado.listo) return a.estado.listo ? -1 : 1;
+      return b.estado.pct - a.estado.pct;
+    });
+
+    // KPIs (sobre TODOS los cursos, no filtrados)
+    const listos = conEstado.filter(x => x.estado.listo).length;
+    const proceso = conEstado.filter(x => !x.estado.listo && x.estado.inscritos > 0).length;
+    const totalInscritos = conEstado.reduce((s, x) => s + x.estado.inscritos, 0);
+    const consultsConApertura = new Set(conEstado.filter(x => x.estado.listo).map(x => x.curso.consultoraId)).size;
+
+    document.getElementById("ag-listos").textContent = listos;
+    document.getElementById("ag-proceso").textContent = proceso;
+    document.getElementById("ag-inscritos").textContent = totalInscritos;
+    document.getElementById("ag-consultoras").textContent = consultsConApertura;
+
+    // Badge sidebar
+    const badge = document.getElementById("badge-aperturas");
+    if (badge) {
+      badge.textContent = listos;
+      badge.style.display = listos === 0 ? "none" : "";
+    }
+
+    if (filtrados.length === 0) {
+      container.innerHTML = `<div class="empty">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+        <div class="empty-text">${(filtroCons || filtroEstado) ? 'Sin resultados con esos filtros' : 'No hay cursos activos'}</div>
+        <div class="empty-hint">${(filtroCons || filtroEstado) ? 'Intenta otra combinación' : 'Espera a que las consultoras activen sus cursos'}</div>
+      </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr>
+        <th>Curso</th>
+        <th>Consultora</th>
+        <th>Inscritos / Mín</th>
+        <th>Progreso</th>
+        <th>Última apertura</th>
+        <th>Próxima</th>
+        <th>Estado</th>
+      </tr></thead>
+      <tbody>${filtrados.map(({ curso, consultora, estado }) => {
+        const fechaUlt = estado.ultimaApertura
+          ? estado.ultimaApertura.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+          : '<span class="text-muted">Nunca</span>';
+        const fechaProx = estado.proxima
+          ? estado.proxima.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+          : '<span class="text-muted">—</span>';
+        const colorBar = estado.listo ? 'var(--green)' : (estado.pct > 50 ? 'var(--gold)' : 'var(--primary)');
+        return `<tr>
+          <td>
+            <strong>${escapeHtml(curso.nombre)}</strong>
+            <div class="text-sm text-muted">${escapeHtml(curso.ponente || "Sin ponente")}</div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <code style="color:var(--primary);font-weight:700;font-size:11px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(consultora?.codigo || "?")}</code>
+              <span>${escapeHtml(consultora?.nombre || "—")}</span>
+            </div>
+          </td>
+          <td><strong style="font-size:18px;color:${estado.listo ? 'var(--green)' : 'var(--text)'}">${estado.inscritos}</strong> <span class="text-muted">/ ${estado.minimo}</span></td>
+          <td style="min-width:140px">
+            <div style="background:var(--surface-soft);border-radius:6px;height:8px;overflow:hidden;border:1px solid var(--line-soft)">
+              <div style="background:${colorBar};width:${estado.pct}%;height:100%;transition:width 0.4s ease;border-radius:6px"></div>
+            </div>
+            <div class="text-xs text-muted" style="margin-top:4px">${estado.pct}%</div>
+          </td>
+          <td class="text-sm">${fechaUlt}</td>
+          <td class="text-sm">${fechaProx}</td>
+          <td>
+            ${estado.listo
+              ? '<span class="chip chip-green chip-dot">🟢 Listo</span>'
+              : estado.inscritos === 0
+                ? '<span class="chip chip-gray">Sin inscritos</span>'
+                : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+  }
+
+  document.getElementById("ag-filter-consultora").addEventListener("change", renderAperturasGlobales);
+  document.getElementById("ag-filter-estado").addEventListener("change", renderAperturasGlobales);
 
   // ═══════════════════════════════════════════════════════════
   // RANKING

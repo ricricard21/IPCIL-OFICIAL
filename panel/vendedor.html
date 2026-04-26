@@ -420,6 +420,71 @@
     margin: 6px 0 4px;
     letter-spacing: -0.02em;
   }
+
+  /* Selector de programación */
+  .programar-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .prog-option {
+    background: var(--surface-soft);
+    border: 2px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all var(--t);
+    font-family: inherit;
+    text-align: left;
+  }
+
+  .prog-option:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-soft);
+  }
+
+  .prog-option.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.10);
+  }
+
+  .prog-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .prog-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .prog-text strong {
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .prog-text span {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  .prog-option.active .prog-text strong {
+    color: var(--primary);
+  }
+
+  /* Badge programado en la hoja */
+  .estado-programado {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
 </style>
 </head>
 <body>
@@ -499,20 +564,10 @@
           <div class="kpi-content">
             <div class="kpi-label">Certificados emitidos</div>
             <div class="kpi-value" id="stat-certificados">0</div>
-            <span class="kpi-trend kpi-trend-flat">total</span>
+            <span class="kpi-trend kpi-trend-flat" id="stat-programados">0 programados</span>
           </div>
           <div class="kpi-icon kpi-icon-green">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Ingresos generados</div>
-            <div class="kpi-value" id="stat-ingresos">$0</div>
-            <span class="kpi-trend kpi-trend-flat">facturados</span>
-          </div>
-          <div class="kpi-icon kpi-icon-gold">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </div>
         </div>
         <div class="kpi">
@@ -521,8 +576,18 @@
             <div class="kpi-value" id="stat-comision">$0</div>
             <span class="kpi-trend kpi-trend-flat" id="stat-comision-pct">— %</span>
           </div>
+          <div class="kpi-icon kpi-icon-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Mi ranking</div>
+            <div class="kpi-value" id="stat-ranking">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="stat-ranking-text">en la consultora</span>
+          </div>
           <div class="kpi-icon kpi-icon-yellow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
           </div>
         </div>
       </div>
@@ -643,14 +708,14 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
-<!-- MODAL CONFIRMAR GENERAR                              -->
+<!-- MODAL CONFIRMAR GENERAR (con selector de fecha)      -->
 <!-- ═══════════════════════════════════════════════════ -->
 <div class="modal-backdrop hidden" id="modal-confirmar">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:500px">
     <div class="modal-header">
       <div>
         <div class="modal-title">Generar certificado</div>
-        <div class="modal-subtitle">Confirma los datos antes de enviar</div>
+        <div class="modal-subtitle">¿Cuándo quieres que se envíe?</div>
       </div>
       <button class="modal-close" id="modal-close-confirmar" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -668,30 +733,50 @@
           <span class="precio" id="cf-precio">$0</span>
         </div>
         <div class="modal-pago-info-row" style="font-size:12px;margin-top:4px">
-          <span class="text-muted">Tu comisión estimada:</span>
+          <span class="text-muted">Tu comisión:</span>
           <strong style="color:var(--green)" id="cf-comision">$0</strong>
         </div>
       </div>
 
-      <div class="field" style="margin-top:16px">
-        <label class="field-label">Método de pago</label>
-        <select class="select" id="cf-metodo">
-          <option value="efectivo">Efectivo</option>
-          <option value="transferencia">Transferencia</option>
-          <option value="tarjeta">Tarjeta</option>
-          <option value="mercadopago">MercadoPago</option>
-          <option value="otro">Otro</option>
-        </select>
-      </div>
+      <div class="programar-block" style="margin-top:18px">
+        <label class="field-label" style="margin-bottom:10px;display:block">¿Cuándo enviar el certificado?</label>
 
-      <div class="field">
-        <label class="field-label">Notas (opcional)</label>
-        <input class="input" type="text" id="cf-notas" placeholder="Ej. Pago confirmado, descuento aplicado...">
-      </div>
+        <div class="programar-options">
+          <button type="button" class="prog-option active" data-prog="0">
+            <div class="prog-icon">⚡</div>
+            <div class="prog-text">
+              <strong>Ahora mismo</strong>
+              <span>Enviar de inmediato</span>
+            </div>
+          </button>
+          <button type="button" class="prog-option" data-prog="7">
+            <div class="prog-icon">📅</div>
+            <div class="prog-text">
+              <strong>En 7 días</strong>
+              <span id="prog-7-fecha"></span>
+            </div>
+          </button>
+          <button type="button" class="prog-option" data-prog="15">
+            <div class="prog-icon">🗓️</div>
+            <div class="prog-text">
+              <strong>En 15 días</strong>
+              <span id="prog-15-fecha"></span>
+            </div>
+          </button>
+          <button type="button" class="prog-option" data-prog="custom">
+            <div class="prog-icon">⚙️</div>
+            <div class="prog-text">
+              <strong>Otra fecha</strong>
+              <span>Elegir día específico</span>
+            </div>
+          </button>
+        </div>
 
-      <div class="alert alert-warning" style="margin-top:14px;margin-bottom:0">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <span>Al confirmar, se generará el folio único, el PDF y se enviará el certificado al email del alumno automáticamente.</span>
+        <div id="prog-custom-input" class="hidden" style="margin-top:12px">
+          <label class="field-label">Fecha de envío</label>
+          <input type="date" class="input" id="cf-fecha-custom" min="">
+          <div class="field-hint">Se enviará automáticamente esa fecha a las 8:00 AM hora México</div>
+        </div>
       </div>
     </div>
 
@@ -699,7 +784,7 @@
       <button type="button" class="btn btn-secondary" id="btn-cancelar-confirmar">Cancelar</button>
       <button type="button" class="btn btn-primary" id="btn-confirmar-generar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-        Generar y registrar
+        <span id="btn-confirmar-texto">Generar y enviar ahora</span>
       </button>
     </div>
   </div>
@@ -841,7 +926,7 @@
       certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
       renderSheet();
       actualizarStats();
-      renderResumen();
+      renderResumen(); // Recalcula también ranking visible en la vista de ventas
     }
   );
 
@@ -855,13 +940,13 @@
     document.getElementById("stat-certificados").textContent = certificados.length;
     document.getElementById("sheet-counter").textContent = alumnos.length + pendingNewRows.length;
 
-    const ingresos = certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-    document.getElementById("stat-ingresos").textContent = formatMoney(ingresos);
+    // Programados
+    const programados = alumnos.filter(a => a.estado === "programado").length;
+    document.getElementById("stat-programados").textContent = `${programados} programados`;
 
     // Comisión total
     const comisionTotal = certificados.reduce((s, c) => {
       if (c.comisionVendedor) return s + parseFloat(c.comisionVendedor);
-      // Cálculo retroactivo si no quedó guardado
       const curso = cursos.find(cu => cu.id === c.cursoId);
       const pct = calcularComisionPct(usuario, curso, consultora);
       return s + calcularComisionMonto(c.precio || 0, pct);
@@ -869,12 +954,12 @@
 
     document.getElementById("stat-comision").textContent = formatMoney(comisionTotal);
 
-    // Mostrar el % vigente
     const pctVigente = calcularComisionPct(usuario, null, consultora);
     document.getElementById("stat-comision-pct").textContent = pctVigente > 0 ? `${pctVigente}% por venta` : "Sin comisión definida";
 
     document.getElementById("r-total").textContent = alumnos.length;
     document.getElementById("r-certs").textContent = certificados.length;
+    const ingresos = certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
     document.getElementById("r-ingresos").textContent = formatMoney(ingresos);
     document.getElementById("r-comision").textContent = formatMoney(comisionTotal);
     document.getElementById("r-comision-info").textContent = pctVigente > 0
@@ -927,7 +1012,7 @@
             </select>`}</td>
         <td><div class="sheet-cell-fixed muted">${a.creadoEn ? formatFecha(a.creadoEn) : "—"}</div></td>
         <td>${cert ? `<div class="sheet-folio">${escapeHtml(cert.folio)}</div>` : `<div class="sheet-cell-fixed muted">—</div>`}</td>
-        <td>${badgeEstado(a.estado)}</td>
+        <td>${badgeEstado(a.estado, a.fechaProgramada)}</td>
         <td class="accion-cell">${accionAlumno(a)}</td>
       </tr>`;
     });
@@ -965,8 +1050,13 @@
     bindSheetEvents();
   }
 
-  function badgeEstado(estado) {
+  function badgeEstado(estado, fechaProgramada) {
     if (estado === "email_enviado") return '<span class="estado-badge estado-listo">✓ Enviado</span>';
+    if (estado === "programado") {
+      const fecha = fechaProgramada?.toDate ? fechaProgramada.toDate() : null;
+      const fechaStr = fecha ? fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : "";
+      return `<span class="estado-badge estado-programado">📅 ${fechaStr}</span>`;
+    }
     if (estado === "certificado_generado") return '<span class="estado-badge estado-pendiente">PDF listo</span>';
     return '<span class="estado-badge estado-pendiente">Pendiente</span>';
   }
@@ -978,6 +1068,9 @@
         return `<a href="${cert.pdfUrl}" target="_blank" class="btn-generar success" style="display:block;text-decoration:none;text-align:center">Ver PDF</a>`;
       }
       return `<button class="btn-generar success" disabled>✓ Enviado</button>`;
+    }
+    if (a.estado === "programado") {
+      return `<button class="btn-generar" data-cancelar="${a.id}" style="background:#4338ca">Cancelar</button>`;
     }
     return `<button class="btn-generar" data-generar="${a.id}">Generar</button>`;
   }
@@ -1045,6 +1138,31 @@
     document.querySelectorAll("[data-generar]").forEach(btn => {
       btn.addEventListener("click", () => abrirConfirmar(btn.dataset.generar));
     });
+
+    // Cancelar programación
+    document.querySelectorAll("[data-cancelar]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const ok = await confirmar({
+          titulo: "Cancelar envío programado",
+          mensaje: "El certificado ya no se enviará automáticamente. Podrás volver a programarlo o enviarlo manualmente cuando quieras.",
+          btnOk: "Sí, cancelar",
+          peligroso: true,
+        });
+        if (!ok) return;
+        try {
+          await updateDoc(doc(db, "alumnos", btn.dataset.cancelar), {
+            estado: "registrado",
+            fechaProgramada: null,
+            programadoPor: null,
+            programadoEn: null,
+          });
+          toast("Programación cancelada", "success");
+        } catch (e) {
+          console.error(e);
+          toast("Error: " + e.message, "error");
+        }
+      });
+    });
   }
 
   // ─── AGREGAR FILA ───
@@ -1087,9 +1205,25 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // MODAL CONFIRMAR GENERAR
+  // MODAL CONFIRMAR GENERAR (con selector de fecha)
   // ═══════════════════════════════════════════════════════════
   const modal = document.getElementById("modal-confirmar");
+  let progSeleccionado = "0"; // 0 = ahora, 7 = 7d, 15 = 15d, custom
+
+  function fechaEn(dias) {
+    const d = new Date();
+    d.setDate(d.getDate() + dias);
+    d.setHours(8, 0, 0, 0);
+    return d;
+  }
+
+  function actualizarTextoBtnConfirmar() {
+    const btn = document.getElementById("btn-confirmar-texto");
+    if (progSeleccionado === "0") btn.textContent = "Generar y enviar ahora";
+    else if (progSeleccionado === "7") btn.textContent = "Programar en 7 días";
+    else if (progSeleccionado === "15") btn.textContent = "Programar en 15 días";
+    else btn.textContent = "Programar para fecha elegida";
+  }
 
   function abrirConfirmar(alumnoId) {
     const a = alumnos.find(x => x.id === alumnoId);
@@ -1115,8 +1249,43 @@
     document.getElementById("cf-email").textContent = a.email;
     document.getElementById("cf-precio").textContent = formatMoney(curso.precio || 0);
     document.getElementById("cf-comision").textContent = `${formatMoney(comisionMonto)} (${comisionPctActual}%)`;
+
+    // Fechas dinámicas en los botones rápidos
+    const opts = { day: "2-digit", month: "long" };
+    document.getElementById("prog-7-fecha").textContent = fechaEn(7).toLocaleDateString("es-MX", opts);
+    document.getElementById("prog-15-fecha").textContent = fechaEn(15).toLocaleDateString("es-MX", opts);
+
+    // Reset selección
+    progSeleccionado = "0";
+    document.querySelectorAll(".prog-option").forEach(b => b.classList.remove("active"));
+    document.querySelector('.prog-option[data-prog="0"]').classList.add("active");
+    document.getElementById("prog-custom-input").classList.add("hidden");
+    actualizarTextoBtnConfirmar();
+
+    // Min date para custom
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    document.getElementById("cf-fecha-custom").min = manana.toISOString().split("T")[0];
+    document.getElementById("cf-fecha-custom").value = "";
+
     modal.classList.remove("hidden");
   }
+
+  // Click en botones de programación
+  document.querySelectorAll(".prog-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".prog-option").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      progSeleccionado = btn.dataset.prog;
+      const customInput = document.getElementById("prog-custom-input");
+      if (progSeleccionado === "custom") {
+        customInput.classList.remove("hidden");
+      } else {
+        customInput.classList.add("hidden");
+      }
+      actualizarTextoBtnConfirmar();
+    });
+  });
 
   document.getElementById("modal-close-confirmar").addEventListener("click", () => modal.classList.add("hidden"));
   document.getElementById("btn-cancelar-confirmar").addEventListener("click", () => modal.classList.add("hidden"));
@@ -1127,24 +1296,46 @@
     const btn = document.getElementById("btn-confirmar-generar");
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner spinner-sm"></div> Generando...';
+    btn.innerHTML = '<div class="spinner spinner-sm"></div> Procesando...';
 
     try {
-      const metodo = document.getElementById("cf-metodo").value;
-      const notas = document.getElementById("cf-notas").value.trim();
-
-      await updateDoc(doc(db, "alumnos", alumnoIdAGenerar), {
-        metodoPago: metodo,
-        notasPago: notas,
-        fechaPago: serverTimestamp()
-      });
+      // Determinar timestamp de programación
+      let programarEn = null;
+      if (progSeleccionado === "7") programarEn = fechaEn(7).getTime();
+      else if (progSeleccionado === "15") programarEn = fechaEn(15).getTime();
+      else if (progSeleccionado === "custom") {
+        const val = document.getElementById("cf-fecha-custom").value;
+        if (!val) {
+          toast("Selecciona una fecha", "warning");
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        const d = new Date(val + "T08:00:00");
+        if (d.getTime() < Date.now() + 60 * 1000) {
+          toast("La fecha debe ser futura", "warning");
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        programarEn = d.getTime();
+      }
 
       const generarCertificado = httpsCallable(functions, "generarCertificado");
-      const result = await generarCertificado({ alumnoId: alumnoIdAGenerar });
+      const result = await generarCertificado({
+        alumnoId: alumnoIdAGenerar,
+        programarEn,
+      });
 
-      toast(`Certificado ${result.data.folio} enviado`, "success");
+      if (result.data.programado) {
+        const fechaTxt = new Date(result.data.fechaProgramada).toLocaleDateString("es-MX", {
+          day: "2-digit", month: "long", year: "numeric",
+        });
+        toast(`Certificado programado para el ${fechaTxt}`, "success");
+      } else {
+        toast(`Certificado ${result.data.folio} enviado`, "success");
+      }
       modal.classList.add("hidden");
-      document.getElementById("cf-notas").value = "";
     } catch (err) {
       console.error(err);
       toast("Error: " + (err.message || "No se pudo generar"), "error");
@@ -1196,6 +1387,14 @@
       else if (miPos === 3) texto = "🥉 Top 3 de la consultora";
       else if (miPos > 0) texto = `de ${total} vendedores en la consultora`;
       document.getElementById("r-pos-text").textContent = texto;
+
+      // KPI principal de ranking
+      const kpiRanking = document.getElementById("stat-ranking");
+      const kpiRankingText = document.getElementById("stat-ranking-text");
+      if (kpiRanking && miPos > 0) {
+        kpiRanking.textContent = `#${miPos}`;
+        kpiRankingText.textContent = `de ${total} en la consultora`;
+      }
     } catch (e) {
       console.warn("No se pudo calcular ranking", e);
       document.getElementById("r-pos").textContent = "—";
