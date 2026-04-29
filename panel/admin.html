@@ -2087,8 +2087,9 @@
   // ═══════════════════════════════════════════════════════
   // CREACIÓN MASIVA DE USUARIOS (CSV)
   // ═══════════════════════════════════════════════════════
+  const { getApp } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js");
   const { getFunctions, httpsCallable } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-functions.js");
-  const functions = getFunctions(undefined, "us-central1");
+  const functions = getFunctions(getApp(), "us-central1");
   const crearUsuariosMasivoFn = httpsCallable(functions, "crearUsuariosMasivo");
 
   let credencialesGeneradas = [];
