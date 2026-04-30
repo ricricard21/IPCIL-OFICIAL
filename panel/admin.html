@@ -1073,11 +1073,16 @@
   let chartDiario = null;
   let periodoActual = 30;
 
-  // Debounce para inputs de comisiones
+  // Debounce para inputs de comisiones — 350ms (lo más rápido cómodo)
   const debounceTimers = {};
-  function debounce(key, fn, ms = 600) {
+  function debounce(key, fn, ms = 350) {
     clearTimeout(debounceTimers[key]);
     debounceTimers[key] = setTimeout(fn, ms);
+  }
+  // Forzar guardado inmediato (cancela debounce)
+  function flushDebounce(key, fn) {
+    clearTimeout(debounceTimers[key]);
+    fn();
   }
 
   // ─── INIT ───
@@ -1976,19 +1981,36 @@
       }).join("")}</tbody></table></div>`;
 
     c.querySelectorAll("[data-com-cons]").forEach(input => {
-      input.addEventListener("input", () => {
+      const guardar = async () => {
         const id = input.dataset.comCons;
         const val = input.value.trim();
-        debounce(`cons_${id}`, async () => {
-          try {
-            const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
-            await updateDoc(doc(db, "consultoras", id), data);
-            toast(`Comisión actualizada: $${val} MXN`, "success", 1500);
-          } catch (e) {
-            console.error(e);
-            toast("Error: " + e.message, "error");
-          }
-        });
+        try {
+          input.style.background = "#fef3c7";
+          const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
+          await updateDoc(doc(db, "consultoras", id), data);
+          input.style.background = "#dcfce7";
+          toast(`Comisión actualizada: $${val} MXN`, "success", 1500);
+          setTimeout(() => { input.style.background = ""; }, 800);
+        } catch (e) {
+          console.error(e);
+          input.style.background = "#fecaca";
+          toast("Error: " + e.message, "error");
+        }
+      };
+      input.addEventListener("input", () => {
+        const id = input.dataset.comCons;
+        debounce(`cons_${id}`, guardar);
+      });
+      // Guardado inmediato al perder foco o presionar Enter
+      input.addEventListener("blur", () => {
+        const id = input.dataset.comCons;
+        flushDebounce(`cons_${id}`, guardar);
+      });
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          input.blur();
+        }
       });
     });
   }
@@ -2030,19 +2052,35 @@
       }).join("")}</tbody></table></div>`;
 
     c.querySelectorAll("[data-com-curso]").forEach(input => {
-      input.addEventListener("input", () => {
+      const guardar = async () => {
         const id = input.dataset.comCurso;
         const val = input.value.trim();
-        debounce(`curso_${id}`, async () => {
-          try {
-            const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
-            await updateDoc(doc(db, "cursos", id), data);
-            toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
-          } catch (e) {
-            console.error(e);
-            toast("Error: " + e.message, "error");
-          }
-        });
+        try {
+          input.style.background = "#fef3c7";
+          const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
+          await updateDoc(doc(db, "cursos", id), data);
+          input.style.background = "#dcfce7";
+          toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
+          setTimeout(() => { input.style.background = ""; }, 800);
+        } catch (e) {
+          console.error(e);
+          input.style.background = "#fecaca";
+          toast("Error: " + e.message, "error");
+        }
+      };
+      input.addEventListener("input", () => {
+        const id = input.dataset.comCurso;
+        debounce(`curso_${id}`, guardar);
+      });
+      input.addEventListener("blur", () => {
+        const id = input.dataset.comCurso;
+        flushDebounce(`curso_${id}`, guardar);
+      });
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          input.blur();
+        }
       });
     });
   }
@@ -2086,19 +2124,35 @@
       }).join("")}</tbody></table></div>`;
 
     c.querySelectorAll("[data-com-vend]").forEach(input => {
-      input.addEventListener("input", () => {
+      const guardar = async () => {
         const id = input.dataset.comVend;
         const val = input.value.trim();
-        debounce(`vend_${id}`, async () => {
-          try {
-            const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
-            await updateDoc(doc(db, "usuarios", id), data);
-            toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
-          } catch (e) {
-            console.error(e);
-            toast("Error: " + e.message, "error");
-          }
-        });
+        try {
+          input.style.background = "#fef3c7";
+          const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
+          await updateDoc(doc(db, "usuarios", id), data);
+          input.style.background = "#dcfce7";
+          toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
+          setTimeout(() => { input.style.background = ""; }, 800);
+        } catch (e) {
+          console.error(e);
+          input.style.background = "#fecaca";
+          toast("Error: " + e.message, "error");
+        }
+      };
+      input.addEventListener("input", () => {
+        const id = input.dataset.comVend;
+        debounce(`vend_${id}`, guardar);
+      });
+      input.addEventListener("blur", () => {
+        const id = input.dataset.comVend;
+        flushDebounce(`vend_${id}`, guardar);
+      });
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          input.blur();
+        }
       });
     });
   }
