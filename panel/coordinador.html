@@ -1604,50 +1604,111 @@
     if (!c) return;
     const estado = calcularEstadoApertura(c);
 
-    // Mensaje de confirmación: avisar si va a notificar al ponente
     const tieneEmail = c.emailPonente && c.emailPonente.includes("@");
-    let mensaje = `Vas a marcar el grupo "${c.nombre}" como abierto hoy. Esto registra la fecha y reinicia el contador para la próxima apertura.`;
-    if (tieneEmail) {
-      mensaje += `\n\n📧 Se enviará un aviso automático a:\n${c.emailPonente}`;
-    } else {
-      mensaje += `\n\n⚠️ El curso no tiene email del ponente. No se enviará aviso por correo.`;
-    }
-    mensaje += `\n\n¿Continuar?`;
 
-    const ok = await confirmar({
-      titulo: "Abrir grupo",
-      mensaje,
-      btnOk: "Sí, abrir grupo",
-    });
-    if (!ok) return;
+    // Fecha tentativa default: 7 días desde hoy a las 18:00
+    const fechaDefault = new Date();
+    fechaDefault.setDate(fechaDefault.getDate() + 7);
+    fechaDefault.setHours(18, 0, 0, 0);
+    const fechaDefaultStr = fechaDefault.toISOString().slice(0, 16);
 
-    try {
-      // 1) Marcar grupo como abierto en Firestore
-      await updateDoc(doc(db, "cursos", cursoId), {
-        ultimaApertura: serverTimestamp(),
-        ultimaAperturaPor: usuario.uid,
-      });
+    // Modal personalizado con campo fecha
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:520px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Abrir grupo</div>
+            <div class="modal-subtitle">${escapeHtml(c.nombre)}</div>
+          </div>
+          <button class="modal-close" data-close-here type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning" style="background:#dbeafe;border-color:#3b82f6;color:#1e40af">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div>Tienes <strong>${estado.inscritos} alumnos inscritos</strong>. Al abrir el grupo se registra la fecha de hoy y se reinicia el contador para la próxima apertura.</div>
+          </div>
 
-      // 2) Mandar email al ponente si tiene email
-      if (tieneEmail) {
-        try {
-          const notificar = httpsCallable(functions, "notificarApertura");
-          await notificar({
-            cursoId,
-            inscritos: estado.inscritos,
-          });
-          toast(`Grupo "${c.nombre}" abierto · Email enviado al ponente 🎉`, "success");
-        } catch (errEmail) {
-          console.error("Error enviando email al ponente:", errEmail);
-          toast(`Grupo abierto, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
-        }
-      } else {
-        toast(`Grupo "${c.nombre}" abierto con ${estado.inscritos} alumnos 🎉`, "success");
+          <div class="field">
+            <label class="field-label">📅 Fecha y hora tentativa de inicio del curso *</label>
+            <input class="input" type="datetime-local" id="ag-fecha" value="${fechaDefaultStr}" required>
+            <div class="field-hint">Esta fecha se enviará al ponente para que se prepare</div>
+          </div>
+
+          ${tieneEmail
+            ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-top:12px;font-size:13px;color:#166534">
+                📧 <strong>Se enviará aviso automático a:</strong><br>${escapeHtml(c.emailPonente)}
+              </div>`
+            : `<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-top:12px;font-size:13px;color:#92400e">
+                ⚠️ El curso no tiene email del ponente. No se enviará aviso por correo. Edita el curso para agregar el email.
+              </div>`
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-abrir-confirmar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Sí, abrir grupo
+          </button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-abrir-confirmar").addEventListener("click", async () => {
+      const fechaInput = wrap.querySelector("#ag-fecha").value;
+      if (!fechaInput) {
+        toast("Selecciona la fecha y hora del curso", "warning");
+        return;
       }
-    } catch (e) {
-      console.error(e);
-      toast("Error: " + e.message, "error");
-    }
+
+      const btn = wrap.querySelector("#btn-abrir-confirmar");
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px"></div> Procesando...';
+
+      try {
+        // Convertir a timestamp para Firestore
+        const fechaInicio = new Date(fechaInput);
+
+        // 1) Marcar grupo como abierto + guardar fecha de inicio
+        await updateDoc(doc(db, "cursos", cursoId), {
+          ultimaApertura: serverTimestamp(),
+          ultimaAperturaPor: usuario.uid,
+          fechaInicioGrupo: fechaInicio,
+        });
+
+        // 2) Mandar email al ponente si tiene email
+        if (tieneEmail) {
+          try {
+            const notificar = httpsCallable(functions, "notificarApertura");
+            await notificar({
+              cursoId,
+              inscritos: estado.inscritos,
+              fechaInicio: fechaInicio.toISOString(),
+            });
+            toast(`Grupo "${c.nombre}" abierto · Email enviado al ponente 🎉`, "success");
+          } catch (errEmail) {
+            console.error("Error enviando email al ponente:", errEmail);
+            toast(`Grupo abierto, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
+          }
+        } else {
+          toast(`Grupo "${c.nombre}" abierto con ${estado.inscritos} alumnos 🎉`, "success");
+        }
+
+        cerrar();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message, "error");
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sí, abrir grupo';
+      }
+    });
   }
 
   // ═══════════════════════════════════════════════════════

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validar Certificado | IPCI</title>
+  <meta name="description" content="Validación oficial de certificados emitidos por el Instituto Profesional de Certificación Industrial Latinoamericano." />
+  <link rel="icon" href="assets/logo.jpeg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* ═══════════════════════════════════════════
+       VALIDAR.HTML — usa tokens de la marca IPCI
+    ═══════════════════════════════════════════ */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .validate-page {
+      flex: 1;
+      padding: 40px 16px 80px;
+      background:
+        radial-gradient(ellipse 800px 400px at 50% 0%, rgba(11,78,162,.06), transparent 60%),
+        var(--bg);
+    }
+
+    .validate-container {
+      width: min(820px, 100% - 32px);
+      margin: 0 auto;
+    }
+
+    /* ─── BACK LINK ─── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 500;
+      margin-bottom: 28px;
+      transition: color .2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--primary);
+    }
+
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .page-kicker {
+      display: inline-block;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(11,78,162,.08);
+      padding: 8px 18px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 12px;
+      letter-spacing: -.01em;
+      line-height: 1.15;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ─── SEARCH FORM ─── */
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      box-shadow: var(--shadow-soft);
+      max-width: 580px;
+      margin: 0 auto;
+      animation: fadeUp .5s ease forwards;
+    }
+
+    .search-card label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .search-card input {
+      width: 100%;
+      padding: 16px 18px;
+      font-family: "Montserrat", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--bg);
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+      transition: all .2s ease;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .search-card input:focus {
+      border-color: var(--primary);
+      background: var(--surface);
+      box-shadow: 0 0 0 4px rgba(11,78,162,.10);
+    }
+
+    .search-card input::placeholder {
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .search-card .input-hint {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .search-card button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 16px 24px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      cursor: pointer;
+      border-radius: 14px;
+      transition: all .2s ease;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .search-card button:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(11,78,162,.22);
+    }
+
+    .search-card button:active {
+      transform: translateY(0);
+    }
+
+    .search-card button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    /* ─── LOADING ─── */
+    .loading-state {
+      text-align: center;
+      padding: 80px 0;
+      animation: fadeIn .3s ease;
+    }
+
+    .spinner {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 22px;
+      border: 4px solid var(--line);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    .loading-state p {
+      color: var(--muted);
+      font-size: .95rem;
+      letter-spacing: .04em;
+    }
+
+    /* ─── CERTIFICADO ENCONTRADO ─── */
+    .cert-result {
+      animation: fadeUp .5s ease forwards;
+    }
+
+    .verified-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 24px;
+      background: rgba(22,163,74,.10);
+      border: 1px solid rgba(22,163,74,.30);
+      border-radius: 999px;
+      max-width: 360px;
+      margin: 0 auto 28px;
+    }
+
+    .verified-icon {
+      width: 28px;
+      height: 28px;
+      background: #16a34a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .verified-text {
+      font-size: .92rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: #15803d;
+    }
+
+    .cert-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 44px 36px 32px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cert-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    }
+
+    .cert-card-header {
+      text-align: center;
+      padding-bottom: 24px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cert-eyebrow {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .cert-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 4px;
+      letter-spacing: -.005em;
+    }
+
+    .cert-subtitle {
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .cert-intro {
+      text-align: center;
+      font-size: .85rem;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .cert-name {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 800;
+      text-align: center;
+      color: var(--text);
+      letter-spacing: -.005em;
+      line-height: 1.2;
+      margin-bottom: 28px;
+      padding: 0 8px;
+    }
+
+    .cert-course-label {
+      text-align: center;
+      font-size: .92rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+
+    .cert-course-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--primary-dark);
+      margin-bottom: 32px;
+      line-height: 1.4;
+      padding: 0 8px;
+    }
+
+    /* ─── META GRID ─── */
+    .cert-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .meta-item {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      text-align: center;
+    }
+
+    .meta-label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .meta-value {
+      font-size: .98rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: .01em;
+    }
+
+    .meta-value.folio {
+      font-family: "Courier New", monospace;
+      font-size: .88rem;
+      letter-spacing: .04em;
+    }
+
+    /* ─── CARD FOOTER ─── */
+    .cert-card-footer {
+      text-align: center;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cert-seal {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 12px;
+      display: block;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      padding: 3px;
+      background: white;
+      object-fit: cover;
+    }
+
+    .cert-institution {
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .cert-institution-full {
+      font-size: .78rem;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+
+    /* ─── BACK BUTTON ─── */
+    .reset-btn-wrapper {
+      text-align: center;
+      margin-top: 28px;
+    }
+
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 26px;
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      font-family: inherit;
+      font-size: .92rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      cursor: pointer;
+      border-radius: 999px;
+      transition: all .2s ease;
+    }
+
+    .reset-btn:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(11,78,162,.22);
+    }
+
+    .reset-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ─── NOT FOUND ─── */
+    .notfound-card {
+      background: var(--surface);
+      border: 1px solid rgba(220,38,38,.30);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      animation: fadeUp .4s ease forwards;
+      position: relative;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .notfound-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #dc2626, #b91c1c);
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+    }
+
+    .notfound-icon {
+      width: 64px;
+      height: 64px;
+      margin: 8px auto 20px;
+      background: rgba(220,38,38,.10);
+      border: 2px solid rgba(220,38,38,.30);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #dc2626;
+    }
+
+    .notfound-card h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 10px;
+    }
+
+    .notfound-card p {
+      font-size: .95rem;
+      color: var(--muted);
+      margin: 0 0 8px;
+      line-height: 1.6;
+    }
+
+    .notfound-folio {
+      display: inline-block;
+      font-family: "Courier New", monospace;
+      font-size: .88rem;
+      font-weight: 700;
+      background: var(--surface-soft);
+      padding: 8px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 14px 0 22px;
+      letter-spacing: .04em;
+      color: var(--primary-dark);
+    }
+
+    .notfound-card button {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 14px 28px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      font-size: .92rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      border-radius: 999px;
+      transition: all .2s ease;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .notfound-card button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(11,78,162,.22);
+    }
+
+    /* ─── FOOTER MINIMAL ─── */
+    .validate-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .validate-footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .validate-footer a {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      .validate-page { padding: 24px 12px 60px; }
+      .search-card, .notfound-card { padding: 26px 22px; }
+      .cert-card { padding: 32px 22px 24px; }
+      .cert-title { font-size: 1.5rem; }
+      .cert-meta { grid-template-columns: 1fr; }
+      .verified-badge { padding: 10px 18px; font-size: .85rem; }
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER REUTILIZADO DE LA MARCA -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand">
+        <img src="assets/logo.jpeg" alt="Logo IPCI" class="brand-logo" />
+        <div class="brand-copy">
+          <strong>IPCI</strong>
+          <span>Validación institucional</span>
+        </div>
+      </a>
+
+      <a href="index.html" class="nav-btn">Volver al inicio</a>
+    </div>
+  </header>
+
+  <main class="validate-page">
+    <div class="validate-container">
+
+      <a href="index.html" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Inicio
+      </a>
+
+      <!-- ═══════════════════════════════════════════
+           ESTADO 1: BÚSQUEDA
+      ═══════════════════════════════════════════ -->
+      <section id="state-search">
+        <div class="page-header">
+          <span class="page-kicker">Verificación documental</span>
+          <h1>Validación de certificado</h1>
+          <p>
+            Verifica la autenticidad de un certificado emitido por el Instituto Profesional
+            de Certificación Industrial Latinoamericano mediante su folio único institucional.
+          </p>
+        </div>
+
+        <form class="search-card" id="search-form" autocomplete="off">
+          <label for="folio">Folio institucional</label>
+          <input
+            type="text"
+            id="folio"
+            name="folio"
+            placeholder="IPCI-XXXX-2026-0000"
+            required
+            spellcheck="false"
+          />
+          <p class="input-hint">Formato: IPCI seguido del código de la consultora, año y número de folio.</p>
+          <button type="submit">Validar certificado</button>
+        </form>
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           ESTADO 2: CARGANDO
+      ═══════════════════════════════════════════ -->
+      <section id="state-loading" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p>Verificando autenticidad del certificado...</p>
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           ESTADO 3: CERTIFICADO ENCONTRADO
+      ═══════════════════════════════════════════ -->
+      <section id="state-found" class="cert-result hidden">
+        <div class="verified-badge">
+          <div class="verified-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <span class="verified-text">Certificado verificado</span>
+        </div>
+
+        <article class="cert-card">
+          <header class="cert-card-header">
+            <div class="cert-eyebrow">Certificado</div>
+            <h2 class="cert-title">Capacitación Profesional</h2>
+            <div class="cert-subtitle">Validación oficial IPCI</div>
+          </header>
+
+          <div class="cert-intro">Se otorga el presente a</div>
+          <h3 class="cert-name" id="cert-nombre">—</h3>
+
+          <div class="cert-course-label">por haber concluido satisfactoriamente el curso</div>
+          <div class="cert-course-name" id="cert-curso">—</div>
+
+          <div class="cert-meta">
+            <div class="meta-item">
+              <div class="meta-label">Folio</div>
+              <div class="meta-value folio" id="cert-folio">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Fecha</div>
+              <div class="meta-value" id="cert-fecha">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Modalidad</div>
+              <div class="meta-value" id="cert-modalidad">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Duración</div>
+              <div class="meta-value" id="cert-duracion">—</div>
+            </div>
+          </div>
+
+          <footer class="cert-card-footer">
+            <img src="assets/sello.jpeg" alt="Sello IPCI" class="cert-seal" />
+            <div class="cert-institution" id="cert-consultora">—</div>
+            <div class="cert-institution-full">Instituto Profesional de Certificación Industrial Latinoamericano</div>
+          </footer>
+        </article>
+
+        <div class="reset-btn-wrapper">
+          <button class="reset-btn" onclick="resetSearch()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Validar otro certificado
+          </button>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           ESTADO 4: NO ENCONTRADO
+      ═══════════════════════════════════════════ -->
+      <section id="state-notfound" class="notfound-card hidden">
+        <div class="notfound-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        <h2>Folio no encontrado</h2>
+        <p>El folio consultado no existe en nuestros registros institucionales.</p>
+        <div class="notfound-folio" id="notfound-folio">—</div>
+        <p>Verifica que el folio esté escrito correctamente o contacta a la consultora emisora del certificado.</p>
+        <button onclick="resetSearch()">Intentar de nuevo</button>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="validate-footer">
+    <p>
+      © IPCI — Sistema de validación institucional ·
+      <a href="index.html">Volver al inicio</a>
+    </p>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════
+       FIREBASE + LÓGICA DE VALIDACIÓN
+  ═══════════════════════════════════════════ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      getDocs,
+      limit,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // CONFIGURACIÓN FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTh-wdt-yG-3lRCH0icV8v8ipmSP_09Mg",
+      authDomain: "ipci-certificados.firebaseapp.com",
+      projectId: "ipci-certificados",
+      storageBucket: "ipci-certificados.firebasestorage.app",
+      messagingSenderId: "421751322374",
+      appId: "1:421751322374:web:fc2d2d0d14a237248ed087"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // REFERENCIAS DOM
+    const stateSearch = document.getElementById('state-search');
+    const stateLoading = document.getElementById('state-loading');
+    const stateFound = document.getElementById('state-found');
+    const stateNotfound = document.getElementById('state-notfound');
+    const form = document.getElementById('search-form');
+    const folioInput = document.getElementById('folio');
+
+    function showState(name) {
+      [stateSearch, stateLoading, stateFound, stateNotfound].forEach(s => s.classList.add('hidden'));
+      document.getElementById('state-' + name).classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.resetSearch = function() {
+      folioInput.value = '';
+      showState('search');
+      if (window.location.search) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    async function buscarCertificado(folio) {
+      showState('loading');
+
+      try {
+        const q = query(
+          collection(db, 'certificados'),
+          where('folio', '==', folio),
+          limit(1)
+        );
+
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          document.getElementById('notfound-folio').textContent = folio;
+          showState('notfound');
+          return;
+        }
+
+        const cert = snapshot.docs[0].data();
+        mostrarCertificado(cert);
+
+      } catch (error) {
+        console.error('Error consultando Firestore:', error);
+        document.getElementById('notfound-folio').textContent = folio;
+        showState('notfound');
+      }
+    }
+
+    async function mostrarCertificado(cert) {
+      document.getElementById('cert-nombre').textContent = cert.nombreAlumno || '—';
+      document.getElementById('cert-curso').textContent = cert.nombreCurso || '—';
+      document.getElementById('cert-folio').textContent = cert.folio || '—';
+      document.getElementById('cert-fecha').textContent = cert.fecha || '—';
+      document.getElementById('cert-consultora').textContent = cert.nombreConsultora || 'IPCI';
+
+      // Modalidad y duración: primero del cert, si no, del curso
+      let modalidad = cert.modalidad || '';
+      let duracion = cert.duracion || '';
+
+      if ((!modalidad || !duracion) && cert.cursoId) {
+        try {
+          const cursoSnap = await getDoc(doc(db, 'cursos', cert.cursoId));
+          if (cursoSnap.exists()) {
+            const cursoData = cursoSnap.data();
+            if (!modalidad) modalidad = cursoData.modalidad || '';
+            if (!duracion) duracion = cursoData.duracion || '';
+          }
+        } catch (e) {
+          console.warn('No se pudo cargar el curso:', e);
+        }
+      }
+
+      document.getElementById('cert-modalidad').textContent = modalidad || '—';
+      document.getElementById('cert-duracion').textContent = duracion || '—';
+
+      showState('found');
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const folio = folioInput.value.trim().toUpperCase();
+      if (!folio) return;
+      window.history.replaceState({}, document.title, `?folio=${encodeURIComponent(folio)}`);
+      buscarCertificado(folio);
+    });
+
+    folioInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+
+    // Auto-búsqueda si viene de QR (?folio=...)
+    const params = new URLSearchParams(window.location.search);
+    const folioParam = params.get('folio');
+    if (folioParam) {
+      folioInput.value = folioParam.toUpperCase();
+      buscarCertificado(folioParam.trim().toUpperCase());
+    }
+  </script>
+
+</body>
+</html>
