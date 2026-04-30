@@ -237,6 +237,11 @@
         Apertura de grupos
         <span id="badge-listos" class="badge" style="background:#dcfce7;color:#166534">0</span>
       </button>
+      <button class="sidebar-link" data-view="cronograma">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><circle cx="9" cy="15" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg>
+        Cronograma
+        <span id="badge-cronograma" class="badge" style="background:#dbeafe;color:#1e40af">0</span>
+      </button>
       <button class="sidebar-link" data-view="historicos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/></svg>
         Históricos
@@ -494,6 +499,97 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CRONOGRAMA DE APERTURAS                              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-cronograma" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Cronograma de aperturas</h1>
+          <p class="main-subtitle">Grupos abiertos y próximos a iniciar · Vendedores siguen vendiendo hasta la fecha de cierre</p>
+        </div>
+        <div style="display:flex;gap:8px;background:var(--surface-soft);padding:4px;border-radius:10px">
+          <button class="btn btn-secondary" id="btn-vista-lista" style="background:var(--primary);color:white">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Lista
+          </button>
+          <button class="btn btn-secondary" id="btn-vista-calendario">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Calendario
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs cronograma -->
+      <div class="kpi-grid" style="margin-bottom:18px">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Grupos activos</div>
+            <div class="kpi-value" id="kpi-cron-activos">0</div>
+            <span class="kpi-trend kpi-trend-flat">recibiendo alumnos</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Esta semana</div>
+            <div class="kpi-value" id="kpi-cron-semana">0</div>
+            <span class="kpi-trend kpi-trend-flat">cursos programados</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">Total inscritos</div>
+            <div class="kpi-value" id="kpi-cron-inscritos">0</div>
+            <span class="kpi-trend kpi-trend-flat">en grupos abiertos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista LISTA -->
+      <div class="card" id="cronograma-vista-lista">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Grupos programados</div>
+            <div class="card-subtitle">Click en cualquier grupo para editar fecha, hora, modalidad o cancelar</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-cronograma" placeholder="Buscar curso...">
+          </div>
+        </div>
+        <div id="cronograma-lista-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+
+      <!-- Vista CALENDARIO -->
+      <div class="card" id="cronograma-vista-calendario" style="display:none">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Vista calendario</div>
+            <div class="card-subtitle" id="cron-cal-rango">Cargando...</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" id="btn-cal-prev">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="btn btn-secondary" id="btn-cal-hoy">Hoy</button>
+            <button class="btn btn-secondary" id="btn-cal-next">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="cronograma-calendario-container" style="overflow-x:auto"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
     <!-- HISTÓRICOS                                           -->
     <!-- ═══════════════════════════════════════════════════ -->
     <section id="view-historicos" class="section">
@@ -634,10 +730,13 @@
   let historicos = [];
   let certificados = [];
   let vendedores = [];
+  let aperturas = [];
   let unsubAll = [];
   let chartVentas = null;
   let chartCursos = null;
   let periodoActual = 30;
+  let cronVista = "lista"; // "lista" | "calendario"
+  let cronSemana = new Date(); // semana visible en calendario
 
   // ─── INIT ───
   usuario = await requireRole("coordinador");
@@ -658,6 +757,7 @@
       document.getElementById("sidebar").classList.remove("open");
       document.querySelector(".sidebar-backdrop")?.classList.remove("show");
       if (btn.dataset.view === "apertura") renderApertura();
+      if (btn.dataset.view === "cronograma") renderCronograma();
     });
   });
 
@@ -772,6 +872,24 @@
       console.error("Error cargando vendedores:", error);
       document.getElementById("vendedores-container").innerHTML =
         '<div class="error-state"><div class="empty-text">Error cargando vendedores</div><div class="empty-hint">' + escapeHtml(error.message) + '</div></div>';
+    }
+  ));
+
+  // APERTURAS (cronograma)
+  unsubAll.push(onSnapshot(
+    query(collection(db, "aperturas"), where("consultoraId", "==", usuario.consultoraId)),
+    (snap) => {
+      aperturas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Orden: las más próximas primero
+      aperturas.sort((a, b) => (a.fechaInicio?.toMillis?.() || 0) - (b.fechaInicio?.toMillis?.() || 0));
+      // Badge sidebar
+      const activas = aperturas.filter(a => a.estado !== "cancelado" && a.estado !== "cerrado").length;
+      const badge = document.getElementById("badge-cronograma");
+      if (badge) badge.textContent = activas;
+      // Re-render si está visible
+      if (document.getElementById("view-cronograma")?.classList.contains("active")) {
+        renderCronograma();
+      }
     }
   ));
 
@@ -1676,14 +1794,37 @@
         // Convertir a timestamp para Firestore
         const fechaInicio = new Date(fechaInput);
 
-        // 1) Marcar grupo como abierto + guardar fecha de inicio
+        // Calcular fecha de cierre de ventas (hoy + frecuenciaDias del curso)
+        const frecuencia = c.frecuenciaDiasApertura || 15;
+        const fechaCierreVentas = new Date();
+        fechaCierreVentas.setDate(fechaCierreVentas.getDate() + frecuencia);
+
+        // 1) Marcar grupo como abierto + guardar fecha de inicio en cursos
         await updateDoc(doc(db, "cursos", cursoId), {
           ultimaApertura: serverTimestamp(),
           ultimaAperturaPor: usuario.uid,
           fechaInicioGrupo: fechaInicio,
         });
 
-        // 2) Mandar email al ponente si tiene email
+        // 2) Crear documento de apertura en colección /aperturas
+        const aperturaRef = await addDoc(collection(db, "aperturas"), {
+          consultoraId: usuario.consultoraId,
+          consultoraNombre: usuario.consultoraNombre || "",
+          cursoId,
+          cursoNombre: c.nombre || "",
+          ponente: c.ponente || "",
+          emailPonente: c.emailPonente || "",
+          modalidad: c.modalidad || "",
+          duracion: c.duracion || "",
+          fechaInicio,
+          fechaCierreVentas,
+          alumnosAlAbrir: estado.inscritos,
+          estado: "activo",
+          creadoPor: usuario.uid,
+          creadoEn: serverTimestamp(),
+        });
+
+        // 3) Mandar email al ponente si tiene email
         if (tieneEmail) {
           try {
             const notificar = httpsCallable(functions, "notificarApertura");
@@ -1709,6 +1850,366 @@
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sí, abrir grupo';
       }
     });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 📅 CRONOGRAMA DE APERTURAS
+  // ═══════════════════════════════════════════════════════
+
+  function renderCronograma() {
+    actualizarKpisCronograma();
+    if (cronVista === "lista") {
+      document.getElementById("cronograma-vista-lista").style.display = "";
+      document.getElementById("cronograma-vista-calendario").style.display = "none";
+      renderCronogramaLista();
+    } else {
+      document.getElementById("cronograma-vista-lista").style.display = "none";
+      document.getElementById("cronograma-vista-calendario").style.display = "";
+      renderCronogramaCalendario();
+    }
+  }
+
+  function actualizarKpisCronograma() {
+    const activas = aperturas.filter(a => a.estado !== "cancelado" && a.estado !== "cerrado");
+    document.getElementById("kpi-cron-activos").textContent = activas.length;
+
+    // Esta semana
+    const ahora = new Date();
+    const inicioSemana = new Date(ahora);
+    const dia = inicioSemana.getDay();
+    const diff = inicioSemana.getDate() - dia + (dia === 0 ? -6 : 1); // Lunes
+    inicioSemana.setDate(diff);
+    inicioSemana.setHours(0, 0, 0, 0);
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(finSemana.getDate() + 7);
+
+    const semana = activas.filter(a => {
+      const f = a.fechaInicio?.toMillis?.() || 0;
+      return f >= inicioSemana.getTime() && f < finSemana.getTime();
+    });
+    document.getElementById("kpi-cron-semana").textContent = semana.length;
+
+    // Total inscritos en grupos abiertos
+    const inscritosTotal = activas.reduce((sum, a) => {
+      // Contar alumnos del curso entre creadoEn de la apertura y fechaCierreVentas
+      const desde = a.creadoEn?.toMillis?.() || 0;
+      const hasta = a.fechaCierreVentas?.toMillis?.() || Date.now();
+      const cnt = alumnos.filter(al =>
+        al.cursoId === a.cursoId &&
+        (al.creadoEn?.toMillis?.() || 0) >= desde &&
+        (al.creadoEn?.toMillis?.() || 0) <= hasta
+      ).length;
+      return sum + Math.max(cnt, a.alumnosAlAbrir || 0);
+    }, 0);
+    document.getElementById("kpi-cron-inscritos").textContent = inscritosTotal;
+  }
+
+  function renderCronogramaLista() {
+    const cont = document.getElementById("cronograma-lista-container");
+    if (!cont) return;
+    const search = (document.getElementById("search-cronograma")?.value || "").toLowerCase();
+
+    const lista = aperturas.filter(a => {
+      if (a.estado === "cancelado") return false;
+      if (search && !((a.cursoNombre || "").toLowerCase().includes(search) || (a.ponente || "").toLowerCase().includes(search))) return false;
+      return true;
+    });
+
+    if (lista.length === 0) {
+      cont.innerHTML = `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div class="empty-text">No hay grupos programados</div>
+          <div class="empty-hint">${search ? 'Intenta con otra búsqueda' : 'Cuando abras un grupo desde "Apertura de grupos" aparecerá aquí'}</div>
+        </div>`;
+      return;
+    }
+
+    let html = `<table class="data-table"><thead><tr>
+      <th>Curso</th>
+      <th>Ponente</th>
+      <th>Fecha de inicio</th>
+      <th>Modalidad</th>
+      <th>Duración</th>
+      <th>Cierra ventas</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr></thead><tbody>`;
+
+    lista.forEach(a => {
+      const fechaInicio = a.fechaInicio?.toDate?.() || null;
+      const fechaCierre = a.fechaCierreVentas?.toDate?.() || null;
+      const hoy = new Date();
+
+      let estadoBadge = "";
+      if (a.estado === "cerrado") {
+        estadoBadge = `<span class="badge" style="background:#e5e7eb;color:#4b5563">Cerrado</span>`;
+      } else if (fechaCierre && fechaCierre < hoy) {
+        estadoBadge = `<span class="badge" style="background:#fef3c7;color:#92400e">Por cerrar</span>`;
+      } else if (fechaInicio && fechaInicio < hoy) {
+        estadoBadge = `<span class="badge" style="background:#dbeafe;color:#1e40af">En curso</span>`;
+      } else {
+        estadoBadge = `<span class="badge" style="background:#dcfce7;color:#166534">Programado</span>`;
+      }
+
+      const fInicioStr = fechaInicio
+        ? fechaInicio.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric", timeZone: "America/Mexico_City" })
+          + " · " + fechaInicio.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })
+        : "—";
+      const fCierreStr = fechaCierre
+        ? fechaCierre.toLocaleDateString("es-MX", { day: "2-digit", month: "short", timeZone: "America/Mexico_City" })
+        : "—";
+
+      html += `<tr>
+        <td><strong>${escapeHtml(a.cursoNombre || "—")}</strong></td>
+        <td>${escapeHtml(a.ponente || "—")}</td>
+        <td>${fInicioStr}</td>
+        <td>${escapeHtml(a.modalidad || "—")}</td>
+        <td>${escapeHtml(a.duracion || "—")}</td>
+        <td>${fCierreStr}</td>
+        <td>${estadoBadge}</td>
+        <td>
+          <button class="btn-icon" data-edit-apertura="${a.id}" title="Editar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon" data-cancel-apertura="${a.id}" title="Cancelar grupo" style="color:#dc2626">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </button>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+
+    cont.querySelectorAll("[data-edit-apertura]").forEach(b => b.addEventListener("click", () => editarApertura(b.dataset.editApertura)));
+    cont.querySelectorAll("[data-cancel-apertura]").forEach(b => b.addEventListener("click", () => cancelarApertura(b.dataset.cancelApertura)));
+  }
+
+  function renderCronogramaCalendario() {
+    const cont = document.getElementById("cronograma-calendario-container");
+    if (!cont) return;
+
+    // Calcular lunes de la semana visible
+    const ref = new Date(cronSemana);
+    const dia = ref.getDay();
+    const diff = ref.getDate() - dia + (dia === 0 ? -6 : 1);
+    const lunes = new Date(ref);
+    lunes.setDate(diff);
+    lunes.setHours(0, 0, 0, 0);
+
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(lunes);
+      d.setDate(d.getDate() + i);
+      dias.push(d);
+    }
+
+    // Rango texto
+    const rangoStr = `${lunes.toLocaleDateString("es-MX", { day: "numeric", month: "short", timeZone: "America/Mexico_City" })} – ${dias[6].toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Mexico_City" })}`;
+    document.getElementById("cron-cal-rango").textContent = rangoStr;
+
+    // Filtrar aperturas activas en este rango
+    const finSemana = new Date(dias[6]);
+    finSemana.setHours(23, 59, 59, 999);
+    const aperturasSemana = aperturas.filter(a => {
+      if (a.estado === "cancelado") return false;
+      const f = a.fechaInicio?.toDate?.();
+      return f && f >= lunes && f <= finSemana;
+    });
+
+    // Render tabla
+    const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+    let html = `<table class="data-table" style="min-width:1000px"><thead><tr>
+      <th style="width:200px">Curso · Ponente</th>`;
+    dias.forEach((d, i) => {
+      const esHoy = d.toDateString() === new Date().toDateString();
+      html += `<th style="text-align:center;background:${esHoy ? '#dbeafe' : ''}">
+        ${dayNames[i]}<br>
+        <span style="font-size:11px;color:var(--muted)">${d.getDate()}/${d.getMonth() + 1}</span>
+      </th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    if (aperturasSemana.length === 0) {
+      html += `<tr><td colspan="8" style="text-align:center;padding:40px 20px;color:var(--muted)">
+        No hay grupos programados esta semana
+      </td></tr>`;
+    } else {
+      aperturasSemana.forEach(a => {
+        const f = a.fechaInicio.toDate();
+        const diaIdx = (f.getDay() + 6) % 7; // Lun=0 .. Dom=6
+        const horaStr = f.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" });
+
+        html += `<tr>
+          <td>
+            <div style="font-weight:600;font-size:13px;line-height:1.3">${escapeHtml((a.cursoNombre || "").substring(0, 60))}${(a.cursoNombre || "").length > 60 ? "…" : ""}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${escapeHtml(a.ponente || "—")}</div>
+          </td>`;
+        for (let i = 0; i < 7; i++) {
+          if (i === diaIdx) {
+            html += `<td style="text-align:center;background:#dbeafe;cursor:pointer;font-weight:700;color:#1e40af" data-edit-apertura="${a.id}">
+              ${horaStr}
+            </td>`;
+          } else {
+            html += `<td></td>`;
+          }
+        }
+        html += `</tr>`;
+      });
+    }
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+
+    cont.querySelectorAll("[data-edit-apertura]").forEach(b => b.addEventListener("click", () => editarApertura(b.dataset.editApertura)));
+  }
+
+  // Botones de cambio de vista
+  document.getElementById("btn-vista-lista")?.addEventListener("click", () => {
+    cronVista = "lista";
+    document.getElementById("btn-vista-lista").style.background = "var(--primary)";
+    document.getElementById("btn-vista-lista").style.color = "white";
+    document.getElementById("btn-vista-calendario").style.background = "";
+    document.getElementById("btn-vista-calendario").style.color = "";
+    renderCronograma();
+  });
+  document.getElementById("btn-vista-calendario")?.addEventListener("click", () => {
+    cronVista = "calendario";
+    document.getElementById("btn-vista-calendario").style.background = "var(--primary)";
+    document.getElementById("btn-vista-calendario").style.color = "white";
+    document.getElementById("btn-vista-lista").style.background = "";
+    document.getElementById("btn-vista-lista").style.color = "";
+    renderCronograma();
+  });
+
+  // Navegación calendario
+  document.getElementById("btn-cal-prev")?.addEventListener("click", () => {
+    cronSemana.setDate(cronSemana.getDate() - 7);
+    renderCronograma();
+  });
+  document.getElementById("btn-cal-next")?.addEventListener("click", () => {
+    cronSemana.setDate(cronSemana.getDate() + 7);
+    renderCronograma();
+  });
+  document.getElementById("btn-cal-hoy")?.addEventListener("click", () => {
+    cronSemana = new Date();
+    renderCronograma();
+  });
+  document.getElementById("search-cronograma")?.addEventListener("input", renderCronogramaLista);
+
+  // Editar apertura
+  async function editarApertura(aperturaId) {
+    const a = aperturas.find(x => x.id === aperturaId);
+    if (!a) return;
+
+    const fInicio = a.fechaInicio?.toDate?.() || new Date();
+    const fCierre = a.fechaCierreVentas?.toDate?.() || new Date();
+
+    // Formato datetime-local: YYYY-MM-DDTHH:MM (en zona local)
+    const tzOffset = fInicio.getTimezoneOffset() * 60000;
+    const fInicioStr = new Date(fInicio - tzOffset).toISOString().slice(0, 16);
+    const fCierreStr = new Date(fCierre - tzOffset).toISOString().slice(0, 10);
+
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:560px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Editar grupo programado</div>
+            <div class="modal-subtitle">${escapeHtml(a.cursoNombre || "—")}</div>
+          </div>
+          <button class="modal-close" data-close-here type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label class="field-label">📅 Fecha y hora de inicio *</label>
+            <input class="input" type="datetime-local" id="ed-fecha-inicio" value="${fInicioStr}" required>
+          </div>
+          <div class="field">
+            <label class="field-label">🛑 Última fecha de ventas</label>
+            <input class="input" type="date" id="ed-fecha-cierre" value="${fCierreStr}">
+            <div class="field-hint">Después de esta fecha, los nuevos alumnos van al siguiente grupo</div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Modalidad</label>
+              <select class="select" id="ed-modalidad">
+                <option value="En línea" ${a.modalidad === "En línea" ? "selected" : ""}>En línea</option>
+                <option value="Presencial" ${a.modalidad === "Presencial" ? "selected" : ""}>Presencial</option>
+                <option value="Híbrido" ${a.modalidad === "Híbrido" ? "selected" : ""}>Híbrido</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Duración</label>
+              <input class="input" type="text" id="ed-duracion" value="${escapeHtml(a.duracion || "")}">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Estado</label>
+            <select class="select" id="ed-estado">
+              <option value="activo" ${a.estado === "activo" ? "selected" : ""}>Activo</option>
+              <option value="cerrado" ${a.estado === "cerrado" ? "selected" : ""}>Cerrado</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-guardar-apertura">Guardar cambios</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-guardar-apertura").addEventListener("click", async () => {
+      const btn = wrap.querySelector("#btn-guardar-apertura");
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+      try {
+        const newFechaInicio = new Date(wrap.querySelector("#ed-fecha-inicio").value);
+        const newFechaCierre = new Date(wrap.querySelector("#ed-fecha-cierre").value);
+        await updateDoc(doc(db, "aperturas", aperturaId), {
+          fechaInicio: newFechaInicio,
+          fechaCierreVentas: newFechaCierre,
+          modalidad: wrap.querySelector("#ed-modalidad").value,
+          duracion: wrap.querySelector("#ed-duracion").value.trim(),
+          estado: wrap.querySelector("#ed-estado").value,
+        });
+        toast("Grupo actualizado", "success");
+        cerrar();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message, "error");
+        btn.disabled = false;
+        btn.textContent = "Guardar cambios";
+      }
+    });
+  }
+
+  // Cancelar apertura
+  async function cancelarApertura(aperturaId) {
+    const a = aperturas.find(x => x.id === aperturaId);
+    if (!a) return;
+    const ok = await confirmar({
+      titulo: "Cancelar grupo",
+      mensaje: `¿Seguro que quieres cancelar el grupo "${a.cursoNombre}"?\n\nLos alumnos no se borrarán, pero el grupo desaparecerá del cronograma.`,
+      btnOk: "Sí, cancelar",
+    });
+    if (!ok) return;
+    try {
+      await updateDoc(doc(db, "aperturas", aperturaId), {
+        estado: "cancelado",
+        canceladoEn: serverTimestamp(),
+      });
+      toast("Grupo cancelado", "success");
+    } catch (e) {
+      console.error(e);
+      toast("Error: " + e.message, "error");
+    }
   }
 
   // ═══════════════════════════════════════════════════════
