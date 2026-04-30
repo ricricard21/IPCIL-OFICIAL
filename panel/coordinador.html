@@ -1795,11 +1795,40 @@
 
     const tieneEmail = c.emailPonente && c.emailPonente.includes("@");
 
-    // Fecha tentativa default: 7 días desde hoy a las 18:00
-    const fechaDefault = new Date();
-    fechaDefault.setDate(fechaDefault.getDate() + 7);
-    fechaDefault.setHours(18, 0, 0, 0);
-    const fechaDefaultStr = fechaDefault.toISOString().slice(0, 16);
+    // ─── FECHA DEFAULT ───
+    // Buscar la primera sesión programada en el cronograma para este curso (más próxima futura)
+    let fechaDefault = null;
+    let fuenteFecha = "default"; // "cronograma" si viene del cronograma
+
+    const ahora = new Date();
+    const aperturaProgramada = aperturas
+      .filter(a =>
+        a.cursoId === cursoId &&
+        a.estado !== "cancelado" &&
+        Array.isArray(a.sesiones) &&
+        a.sesiones.length > 0
+      )
+      .map(a => {
+        const fs = a.sesiones.map(s => s.fecha?.toDate?.() || (s.fecha instanceof Date ? s.fecha : new Date(s.fecha)));
+        const primera = new Date(Math.min(...fs.map(f => f.getTime())));
+        return { apertura: a, primera };
+      })
+      .filter(x => x.primera >= ahora)
+      .sort((a, b) => a.primera - b.primera)[0];
+
+    if (aperturaProgramada) {
+      fechaDefault = aperturaProgramada.primera;
+      fuenteFecha = "cronograma";
+    } else {
+      // Si no hay apertura en cronograma, default = hoy + 7 días a las 18:00
+      fechaDefault = new Date();
+      fechaDefault.setDate(fechaDefault.getDate() + 7);
+      fechaDefault.setHours(18, 0, 0, 0);
+    }
+
+    // Formato datetime-local (YYYY-MM-DDTHH:MM en hora local)
+    const tzOffset = fechaDefault.getTimezoneOffset() * 60000;
+    const fechaDefaultStr = new Date(fechaDefault - tzOffset).toISOString().slice(0, 16);
 
     // Modal personalizado con campo fecha
     const wrap = document.createElement("div");
@@ -1824,8 +1853,16 @@
           <div class="field">
             <label class="field-label">📅 Fecha y hora tentativa de inicio del curso *</label>
             <input class="input" type="datetime-local" id="ag-fecha" value="${fechaDefaultStr}" required>
-            <div class="field-hint">Esta fecha se enviará al ponente para que se prepare</div>
+            <div class="field-hint">${fuenteFecha === "cronograma"
+              ? `✅ Fecha tomada del cronograma (próxima sesión programada)`
+              : `Esta fecha se enviará al ponente para que se prepare`}</div>
           </div>
+
+          ${fuenteFecha === "cronograma"
+            ? `<div style="background:#f3e8ff;border:1px solid #d8b4fe;border-radius:8px;padding:12px;margin-top:6px;font-size:12px;color:#6b21a8">
+                📅 <strong>Este curso ya está programado en el cronograma.</strong> La fecha mostrada es la primera sesión. Si la cambias aquí, el cronograma NO se actualiza — para reprogramar entra a Cronograma.
+              </div>`
+            : ""}
 
           ${tieneEmail
             ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-top:12px;font-size:13px;color:#166534">
