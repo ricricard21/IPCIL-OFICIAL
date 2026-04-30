@@ -575,6 +575,12 @@
           <div class="field-hint">Nombre completo del instructor que aparecerá en el certificado</div>
         </div>
 
+        <div class="field">
+          <label class="field-label">Email del ponente</label>
+          <input class="input" type="email" id="curso-email-ponente" placeholder="ponente@ejemplo.com">
+          <div class="field-hint">Se le enviará un aviso automático cuando abras el grupo</div>
+        </div>
+
         <div class="field-row">
           <div class="field">
             <label class="field-label">Modalidad *</label>
@@ -1337,6 +1343,7 @@
       document.getElementById("curso-id").value = cursoData.id;
       document.getElementById("curso-nombre").value = cursoData.nombre || "";
       document.getElementById("curso-ponente").value = cursoData.ponente || "";
+      document.getElementById("curso-email-ponente").value = cursoData.emailPonente || "";
       document.getElementById("curso-modalidad").value = cursoData.modalidad || "";
       document.getElementById("curso-duracion").value = cursoData.duracion || "";
       document.getElementById("curso-precio").value = cursoData.precio || "";
@@ -1364,6 +1371,7 @@
         consultoraId: usuario.consultoraId,
         nombre: document.getElementById("curso-nombre").value.trim(),
         ponente: document.getElementById("curso-ponente").value.trim(),
+        emailPonente: document.getElementById("curso-email-ponente").value.trim().toLowerCase(),
         modalidad: document.getElementById("curso-modalidad").value,
         duracion: document.getElementById("curso-duracion").value.trim(),
         precio: parseFloat(document.getElementById("curso-precio").value) || 0,
@@ -1596,19 +1604,46 @@
     if (!c) return;
     const estado = calcularEstadoApertura(c);
 
+    // Mensaje de confirmación: avisar si va a notificar al ponente
+    const tieneEmail = c.emailPonente && c.emailPonente.includes("@");
+    let mensaje = `Vas a marcar el grupo "${c.nombre}" como abierto hoy. Esto registra la fecha y reinicia el contador para la próxima apertura.`;
+    if (tieneEmail) {
+      mensaje += `\n\n📧 Se enviará un aviso automático a:\n${c.emailPonente}`;
+    } else {
+      mensaje += `\n\n⚠️ El curso no tiene email del ponente. No se enviará aviso por correo.`;
+    }
+    mensaje += `\n\n¿Continuar?`;
+
     const ok = await confirmar({
       titulo: "Abrir grupo",
-      mensaje: `Vas a marcar el grupo "${c.nombre}" como abierto hoy. Esto registra la fecha y reinicia el contador para la próxima apertura. ¿Continuar?`,
+      mensaje,
       btnOk: "Sí, abrir grupo",
     });
     if (!ok) return;
 
     try {
+      // 1) Marcar grupo como abierto en Firestore
       await updateDoc(doc(db, "cursos", cursoId), {
         ultimaApertura: serverTimestamp(),
         ultimaAperturaPor: usuario.uid,
       });
-      toast(`Grupo "${c.nombre}" abierto con ${estado.inscritos} alumnos 🎉`, "success");
+
+      // 2) Mandar email al ponente si tiene email
+      if (tieneEmail) {
+        try {
+          const notificar = httpsCallable(functions, "notificarApertura");
+          await notificar({
+            cursoId,
+            inscritos: estado.inscritos,
+          });
+          toast(`Grupo "${c.nombre}" abierto · Email enviado al ponente 🎉`, "success");
+        } catch (errEmail) {
+          console.error("Error enviando email al ponente:", errEmail);
+          toast(`Grupo abierto, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
+        }
+      } else {
+        toast(`Grupo "${c.nombre}" abierto con ${estado.inscritos} alumnos 🎉`, "success");
+      }
     } catch (e) {
       console.error(e);
       toast("Error: " + e.message, "error");
