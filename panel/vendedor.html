@@ -1213,26 +1213,6 @@
         </div>
 
         <div style="padding:14px 20px;background:white">
-          <!-- Resumen rango -->
-          <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:13px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
-            <div>
-              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Inicio</div>
-              <div style="color:#0f172a;font-weight:700;text-transform:capitalize;margin-top:2px">${escapeHtml(fmtFecha(primera))}</div>
-            </div>
-            <div>
-              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Fin</div>
-              <div style="color:#0f172a;font-weight:700;text-transform:capitalize;margin-top:2px">${escapeHtml(fmtFecha(ultima))}</div>
-            </div>
-            <div>
-              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Total sesiones</div>
-              <div style="color:#0b4ea2;font-weight:800;font-size:18px;margin-top:0">${x.sesionesOrden.length}</div>
-            </div>
-            ${horarioFijo ? `<div>
-              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Horario</div>
-              <div style="color:#0f172a;font-weight:700;margin-top:2px">🕐 ${escapeHtml(x.sesionesOrden[0].horaInicio)} – ${escapeHtml(x.sesionesOrden[0].horaFin)}</div>
-            </div>` : ""}
-          </div>
-
           <!-- Tabla de todas las sesiones -->
           <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">📅 Todas las fechas</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
