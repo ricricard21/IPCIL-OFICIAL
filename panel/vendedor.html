@@ -1134,13 +1134,19 @@
     const limite = new Date();
     limite.setDate(limite.getDate() + 90); // próximos 90 días
 
-    // Filtrar y mapear
+    // Filtrar y mapear (con sesiones ordenadas + originales con horas)
     const lista = aperturasVend
       .filter(a => a.estado !== "cancelado" && Array.isArray(a.sesiones) && a.sesiones.length > 0)
       .map(a => {
-        const fs = a.sesiones.map(s => s.fecha?.toDate?.() || new Date(s.fecha));
-        const min = new Date(Math.min(...fs.map(f => f.getTime())));
-        return { ap: a, primera: min, sesiones: fs };
+        // Mantener objeto sesión completo (fecha, horaInicio, horaFin) y ordenar
+        const sesionesOrden = a.sesiones
+          .map(s => ({
+            fecha: s.fecha?.toDate?.() || new Date(s.fecha),
+            horaInicio: s.horaInicio || "",
+            horaFin: s.horaFin || "",
+          }))
+          .sort((x, y) => x.fecha - y.fecha);
+        return { ap: a, primera: sesionesOrden[0]?.fecha || new Date(), sesionesOrden };
       })
       .filter(x => x.primera <= limite)
       .sort((a, b) => a.primera - b.primera);
@@ -1157,54 +1163,96 @@
 
     sub.textContent = `${lista.length} curso${lista.length !== 1 ? 's' : ''} programado${lista.length !== 1 ? 's' : ''} en los próximos 90 días`;
 
-    let html = `<table style="width:100%;border-collapse:collapse;font-size:13.5px">
-      <thead>
-        <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Curso</th>
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Fecha inicio</th>
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Hora</th>
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Ponente</th>
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Sesiones</th>
-          <th style="text-align:center;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Estado</th>
-        </tr>
-      </thead>
-      <tbody>`;
+    const fmtFecha = (d) => d.toLocaleDateString("es-MX", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+      timeZone: "America/Mexico_City",
+    });
+    const fmtFechaCorta = (d) => d.toLocaleDateString("es-MX", {
+      weekday: "short", day: "numeric", month: "short",
+      timeZone: "America/Mexico_City",
+    });
+    const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+    let html = `<div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">`;
 
     lista.forEach((x, idx) => {
       const a = x.ap;
       const primera = x.primera;
-      const horaInicio = a.sesiones[0].horaInicio || primera.toLocaleTimeString("es-MX", {
-        hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City",
-      });
-      const fechaStr = primera.toLocaleDateString("es-MX", {
-        weekday: "long", day: "numeric", month: "long", year: "numeric",
-        timeZone: "America/Mexico_City",
-      });
+      const ultima = x.sesionesOrden[x.sesionesOrden.length - 1].fecha;
 
       // Estado efectivo
       let estado = a.estado || "pendiente";
       if (estado === "activo" && primera < ahora) estado = "iniciado";
-      let badge;
-      if (estado === "activo") badge = `<span style="background:#dcfce7;color:#166534;padding:5px 12px;border-radius:14px;font-size:11.5px;font-weight:700">🟢 Abierto</span>`;
-      else if (estado === "iniciado") badge = `<span style="background:#f3e8ff;color:#6b21a8;padding:5px 12px;border-radius:14px;font-size:11.5px;font-weight:700">🟣 En curso</span>`;
-      else badge = `<span style="background:#fef3c7;color:#92400e;padding:5px 12px;border-radius:14px;font-size:11.5px;font-weight:700">🟡 Pendiente</span>`;
+      let bg, border, badgeBg, badgeColor, badgeText, headerBg;
+      if (estado === "activo") {
+        bg = "#f0fdf4"; border = "#86efac"; badgeBg = "#dcfce7"; badgeColor = "#166534"; badgeText = "🟢 Abierto";
+        headerBg = "linear-gradient(135deg,#dcfce7,#bbf7d0)";
+      } else if (estado === "iniciado") {
+        bg = "#faf5ff"; border = "#d8b4fe"; badgeBg = "#f3e8ff"; badgeColor = "#6b21a8"; badgeText = "🟣 En curso";
+        headerBg = "linear-gradient(135deg,#f3e8ff,#e9d5ff)";
+      } else {
+        bg = "#fffbeb"; border = "#fbbf24"; badgeBg = "#fef3c7"; badgeColor = "#92400e"; badgeText = "🟡 Pendiente";
+        headerBg = "linear-gradient(135deg,#fef3c7,#fde68a)";
+      }
 
-      const bgRow = idx % 2 === 0 ? "white" : "#fafbfc";
-      html += `<tr style="background:${bgRow};border-bottom:1px solid #f1f5f9">
-        <td style="padding:14px 16px;vertical-align:top">
-          <div style="font-weight:700;color:#0f172a;font-size:14px;line-height:1.3">${escapeHtml(a.cursoNombre || "—")}</div>
-          ${a.modalidad ? `<div style="font-size:11.5px;color:#64748b;margin-top:3px">${escapeHtml(a.modalidad)}</div>` : ""}
-        </td>
-        <td style="padding:14px 16px;vertical-align:top;text-transform:capitalize;color:#475569;font-size:13px">${escapeHtml(fechaStr)}</td>
-        <td style="padding:14px 16px;vertical-align:top">
-          <span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700">🕐 ${escapeHtml(horaInicio)}</span>
-        </td>
-        <td style="padding:14px 16px;vertical-align:top;color:#475569">${escapeHtml(a.ponente || "—")}</td>
-        <td style="padding:14px 16px;vertical-align:top;color:#64748b;font-size:12.5px">${a.sesiones.length} sesion${a.sesiones.length !== 1 ? 'es' : ''}</td>
-        <td style="padding:14px 16px;vertical-align:top;text-align:center">${badge}</td>
-      </tr>`;
+      // Detectar si todas las sesiones tienen el mismo horario (patrón fijo)
+      const horariosUnicos = [...new Set(x.sesionesOrden.map(s => `${s.horaInicio}-${s.horaFin}`))];
+      const horarioFijo = horariosUnicos.length === 1 && horariosUnicos[0] !== "-";
+
+      html += `<div style="background:${bg};border:1px solid ${border};border-radius:14px;overflow:hidden">
+        <div style="background:${headerBg};padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px">
+            <div style="font-weight:800;color:#0f172a;font-size:16px;line-height:1.3">${escapeHtml(a.cursoNombre || "—")}</div>
+            <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap;font-size:12.5px;color:#475569">
+              <div>👨‍🏫 <strong>${escapeHtml(a.ponente || "—")}</strong></div>
+              ${a.modalidad ? `<div>🎓 ${escapeHtml(a.modalidad)}</div>` : ""}
+              ${a.duracion ? `<div>⏱️ ${escapeHtml(a.duracion)}</div>` : ""}
+            </div>
+          </div>
+          <span style="background:${badgeBg};color:${badgeColor};padding:6px 14px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap">${badgeText}</span>
+        </div>
+
+        <div style="padding:14px 20px;background:white">
+          <!-- Resumen rango -->
+          <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:13px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
+            <div>
+              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Inicio</div>
+              <div style="color:#0f172a;font-weight:700;text-transform:capitalize;margin-top:2px">${escapeHtml(fmtFecha(primera))}</div>
+            </div>
+            <div>
+              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Fin</div>
+              <div style="color:#0f172a;font-weight:700;text-transform:capitalize;margin-top:2px">${escapeHtml(fmtFecha(ultima))}</div>
+            </div>
+            <div>
+              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Total sesiones</div>
+              <div style="color:#0b4ea2;font-weight:800;font-size:18px;margin-top:0">${x.sesionesOrden.length}</div>
+            </div>
+            ${horarioFijo ? `<div>
+              <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Horario</div>
+              <div style="color:#0f172a;font-weight:700;margin-top:2px">🕐 ${escapeHtml(x.sesionesOrden[0].horaInicio)} – ${escapeHtml(x.sesionesOrden[0].horaFin)}</div>
+            </div>` : ""}
+          </div>
+
+          <!-- Tabla de todas las sesiones -->
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">📅 Todas las fechas</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+            ${x.sesionesOrden.map((s, i) => {
+              const yaPaso = s.fecha < ahora;
+              return `<div style="background:${yaPaso ? '#f1f5f9' : '#f8fafc'};border:1px solid ${yaPaso ? '#cbd5e1' : '#e2e8f0'};border-radius:8px;padding:10px 12px;${yaPaso ? 'opacity:.65' : ''}">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Sesión ${i + 1}</span>
+                  ${yaPaso ? '<span style="font-size:10px;color:#16a34a;font-weight:700">✓ Realizada</span>' : ''}
+                </div>
+                <div style="color:#0f172a;font-weight:700;font-size:13px;text-transform:capitalize">${escapeHtml(cap(fmtFechaCorta(s.fecha)))}</div>
+                <div style="color:#475569;font-size:12px;margin-top:3px">🕐 ${escapeHtml(s.horaInicio)} – ${escapeHtml(s.horaFin)}</div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+      </div>`;
     });
-    html += `</tbody></table>`;
+
+    html += `</div>`;
     cont.innerHTML = html;
   }
 
