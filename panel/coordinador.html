@@ -505,9 +505,14 @@
       <div class="main-header">
         <div>
           <h1 class="main-title">Cronograma</h1>
-          <p class="main-subtitle">Calendario semanal · Click en cualquier celda vacía para programar un curso</p>
+          <p class="main-subtitle">Calendario semanal · Programa cursos manualmente o haz click en cualquier celda</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-primary" id="btn-cron-programar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Programar curso
+          </button>
+          <div style="width:1px;height:28px;background:#e5e7eb;margin:0 4px"></div>
           <button class="btn btn-secondary" id="btn-cal-prev" title="Semana anterior">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
@@ -1914,13 +1919,55 @@
     finSemana.setHours(23, 59, 59, 999);
     const eventos = obtenerSesionesEnRango(lunes, finSemana);
 
-    // Construir grid usando 30min como unidad (cada hora = 2 filas)
-    // Pero queremos que el rango 6pm-11pm sea más alto. Usaremos altura fija por hora,
-    // pero diferente para zona prioridad.
     const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     const hoyStr = new Date().toDateString();
 
-    let html = `<div class="gcal-grid">`;
+    // ── Detectar SOLO las horas que tienen clases esta semana ──
+    const horasUsadas = new Set();
+    eventos.forEach(ev => {
+      const f = ev.fecha;
+      const horaIni = f.getHours();
+      // Calcular hora fin de la sesión (para mostrar todas las horas que abarca)
+      let horaFin = horaIni + 1;
+      if (ev.sesion.horaInicio && ev.sesion.horaFin) {
+        const [hi] = ev.sesion.horaInicio.split(":").map(Number);
+        const [hf, mf] = ev.sesion.horaFin.split(":").map(Number);
+        horaFin = mf > 0 ? hf + 1 : hf;
+      }
+      for (let h = horaIni; h < horaFin && h <= 23; h++) {
+        horasUsadas.add(h);
+      }
+    });
+
+    // Si no hay clases esta semana → vista vacía con CTA
+    if (horasUsadas.size === 0) {
+      cont.innerHTML = `
+        <div style="padding:60px 20px;text-align:center;color:var(--muted)">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div style="font-size:16px;font-weight:700;color:#0f172a;margin-top:14px">No hay clases programadas esta semana</div>
+          <div style="font-size:13px;margin-top:6px">Click en "Programar curso" arriba para agregar uno</div>
+          <button class="btn btn-primary" id="empty-programar" style="margin-top:18px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Programar curso
+          </button>
+        </div>`;
+      cont.querySelector("#empty-programar")?.addEventListener("click", () => abrirModalProgramar());
+      return;
+    }
+
+    // Ordenar horas + agregar 1 hora antes y 1 después como buffer
+    const horasArr = [...horasUsadas].sort((a, b) => a - b);
+    const horaMin = Math.max(0, horasArr[0] - 1);
+    const horaMax = Math.min(23, horasArr[horasArr.length - 1] + 1);
+    const horasMostradas = [];
+    for (let h = horaMin; h <= horaMax; h++) horasMostradas.push(h);
+
+    // Mapeo hora → fila grid
+    const horaToRow = {};
+    horasMostradas.forEach((h, idx) => { horaToRow[h] = idx + 2; }); // +2: header(1) + 1-indexed
+
+    // Construir grid
+    let html = `<div class="gcal-grid" style="grid-template-rows: 50px repeat(${horasMostradas.length}, 64px)">`;
     html += `<div class="gcal-corner"></div>`;
     dias.forEach((d, i) => {
       const esHoy = d.toDateString() === hoyStr;
@@ -1930,19 +1977,16 @@
       </div>`;
     });
 
-    // Filas de horas (cada hora = 1 fila, con altura variable según zona prioridad)
-    for (let h = CRON_HORA_INICIO; h <= CRON_HORA_FIN; h++) {
-      const horaStr = h === 12 ? "12pm" : (h < 12 ? `${h}am` : `${h-12}pm`);
-      const enZonaPrioridad = h >= CRON_HORAS_PRIORITY_START;
-      const filaClass = enZonaPrioridad ? "gcal-row-tall" : "gcal-row-normal";
-
-      html += `<div class="gcal-hour-label ${filaClass}">${horaStr}</div>`;
+    // Filas solo para horas con actividad
+    horasMostradas.forEach(h => {
+      const horaStr = h === 12 ? "12pm" : (h < 12 ? `${h}am` : (h === 0 ? "12am" : `${h-12}pm`));
+      html += `<div class="gcal-hour-label">${horaStr}</div>`;
       for (let d = 0; d < 7; d++) {
         const fechaCelda = new Date(dias[d]);
         fechaCelda.setHours(h, 0, 0, 0);
-        html += `<div class="gcal-cell ${filaClass}" data-date="${fechaCelda.toISOString()}"></div>`;
+        html += `<div class="gcal-cell" data-date="${fechaCelda.toISOString()}"></div>`;
       }
-    }
+    });
     html += `</div>`;
     cont.innerHTML = html;
 
@@ -1972,17 +2016,19 @@
         if (durHoras <= 0) durHoras = 1;
       }
 
-      if (horaInicio < CRON_HORA_INICIO || horaInicio > CRON_HORA_FIN) return;
+      if (!horaToRow.hasOwnProperty(Math.floor(horaInicio))) return;
 
       // Color según estado
       let bg = "#16a34a", border = "#15803d";
       if (a.estado === "pendiente") { bg = "#f59e0b"; border = "#d97706"; }
       else if (a.estado === "cancelado") { bg = "#dc2626"; border = "#b91c1c"; }
 
-      // Filas para grid: header(1) + hora desde HORA_INICIO
+      // Filas para grid usando horaToRow
       const col = diaIdx + 2;
-      const filaInicio = (Math.floor(horaInicio) - CRON_HORA_INICIO) + 2;
-      const filaFin = filaInicio + Math.max(1, Math.ceil(durHoras));
+      const filaInicio = horaToRow[Math.floor(horaInicio)];
+      const horaFinNum = Math.floor(horaInicio + Math.max(1, Math.ceil(durHoras)));
+      const filaFinHora = horaToRow[horaFinNum] || (filaInicio + Math.max(1, Math.ceil(durHoras)));
+      const filaFin = filaFinHora;
 
       // Si en esta celda hay varios eventos, dividir el ancho
       const celdaKey = `${f.getDay()}-${f.getHours()}`;
@@ -2026,16 +2072,7 @@
         programarEnCelda(cell.dataset.date);
       });
     });
-
-    // Auto-scroll a 6pm si es la primera vez
-    if (!cronYaScroll) {
-      const ev = grid.querySelector(".gcal-event") || grid.querySelectorAll(".gcal-cell.gcal-row-tall")[0];
-      if (ev) ev.scrollIntoView({ block: "center" });
-      cronYaScroll = true;
-    }
   }
-
-  let cronYaScroll = false;
 
   // CSS del calendario
   if (!document.getElementById("gcal-styles")) {
@@ -2051,6 +2088,7 @@
       }
       .gcal-row-normal { height: 36px; }
       .gcal-row-tall { height: 64px; }
+      /* (no longer used, kept for backwards-compat) */
       .gcal-corner {
         position: sticky; top: 0; left: 0; z-index: 5;
         background: #f8fafc;
@@ -2123,6 +2161,8 @@
   }
 
   // Navegación
+  document.getElementById("btn-cron-programar")?.addEventListener("click", () => abrirModalProgramar());
+
   document.getElementById("btn-cal-prev")?.addEventListener("click", () => {
     cronSemana.setDate(cronSemana.getDate() - 7);
     renderCronograma();
@@ -2133,22 +2173,36 @@
   });
   document.getElementById("btn-cal-hoy")?.addEventListener("click", () => {
     cronSemana = new Date();
-    cronYaScroll = false;
     renderCronograma();
   });
 
   // ════════════════════════════════════════════════════════
   // PROGRAMAR EN CELDA — modal con patrón semanal
   // ════════════════════════════════════════════════════════
-  async function programarEnCelda(fechaIso) {
+  // Wrapper: abrir modal sin celda específica (botón "Programar curso")
+  function abrirModalProgramar() {
+    // Default: próximo lunes a las 7pm
+    const f = new Date();
+    const diasHastaLunes = (1 - f.getDay() + 7) % 7 || 7; // próximo lunes (no hoy)
+    f.setDate(f.getDate() + diasHastaLunes);
+    f.setHours(19, 0, 0, 0);
+    programarEnCelda(f.toISOString(), { sinCelda: true });
+  }
+
+  async function programarEnCelda(fechaIso, opts = {}) {
     const fechaCelda = new Date(fechaIso);
     const diaSemanaInicial = fechaCelda.getDay();      // 0..6 (Dom=0)
     const horaInicial = fechaCelda.getHours();         // ej. 19
     const horaFinInicial = Math.min(horaInicial + 1, 23);
+    const sinCelda = !!opts.sinCelda;
 
     // Pendientes (aperturas sin sesiones programadas)
     const pendientes = aperturas.filter(a => a.estado === "pendiente");
     const cursosDisponibles = cursos.filter(c => c.activo !== false);
+
+    const subtitleText = sinCelda
+      ? "Define los días, horarios y semanas del curso"
+      : `${fechaCelda.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "America/Mexico_City" })} · ${fechaCelda.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })}`;
 
     const wrap = document.createElement("div");
     wrap.className = "modal-backdrop";
@@ -2157,7 +2211,7 @@
         <div class="modal-header">
           <div>
             <div class="modal-title">Programar curso en cronograma</div>
-            <div class="modal-subtitle">${fechaCelda.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "America/Mexico_City" })} · ${fechaCelda.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })}</div>
+            <div class="modal-subtitle">${subtitleText}</div>
           </div>
           <button class="modal-close" data-close-here type="button">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
