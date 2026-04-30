@@ -2565,19 +2565,14 @@
           emailPonente = a.emailPonente;
           cursoIdFinal = a.cursoId;
           cursoObj = cursos.find(c => c.id === a.cursoId);
-          // Estado: si ya alcanzó el mínimo, queda activo; si no, pendiente
-          const minimo = cursoObj?.minimoAlumnos || 8;
-          const inscritos = alumnos.filter(al =>
-            al.cursoId === a.cursoId && al.estado !== "email_enviado"
-          ).length;
-          const estadoCalc = inscritos >= minimo ? "activo" : "pendiente";
+          // Estado: SIEMPRE pendiente al programar (pasará a activo cuando llegue al mínimo)
           await updateDoc(doc(db, "aperturas", aperturaId), {
             sesiones,
             patronSemanal: patron,
             semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
             fechaInicio,
             fechaFin,
-            estado: estadoCalc,
+            estado: "pendiente",
           });
         } else {
           const cursoId = wrap.querySelector("#cel-curso").value;
@@ -2593,12 +2588,7 @@
           cursoObj = c;
           const fechaCierre = new Date();
           fechaCierre.setDate(fechaCierre.getDate() + (c?.frecuenciaDiasApertura || 15));
-          // Estado: si ya alcanzó el mínimo, queda activo; si no, pendiente
-          const minimo = c?.minimoAlumnos || 8;
-          const inscritos = alumnos.filter(al =>
-            al.cursoId === cursoId && al.estado !== "email_enviado"
-          ).length;
-          const estadoCalc = inscritos >= minimo ? "activo" : "pendiente";
+          // Estado: SIEMPRE pendiente al programar (pasará a activo cuando llegue al mínimo)
           const docRef = await addDoc(collection(db, "aperturas"), {
             consultoraId: usuario.consultoraId,
             consultoraNombre: usuario.consultoraNombre || "",
@@ -2615,50 +2605,15 @@
             fechaFin,
             fechaCierreVentas: fechaCierre,
             alumnosAlAbrir: 0,
-            estado: estadoCalc,
+            estado: "pendiente",
             creadoPor: usuario.uid,
             creadoEn: serverTimestamp(),
           });
           aperturaId = docRef.id;
         }
 
-        // Recalcular si quedó activo automáticamente (alcanzó mínimo al programar)
         const minimoFinal = cursoObj?.minimoAlumnos || 8;
-        const inscritosFinal = alumnos.filter(al =>
-          al.cursoId === cursoIdFinal && al.estado !== "email_enviado"
-        ).length;
-        const yaActivo = inscritosFinal >= minimoFinal;
-        // Solo se envía email si quedó automáticamente activo (cruzó umbral) Y tiene email
-        const debeEnviarEmail = yaActivo && emailPonente && emailPonente.includes("@");
-
-        // Email al ponente con todas las sesiones
-        if (debeEnviarEmail) {
-          try {
-            const fn = httpsCallable(functions, "notificarApertura");
-            await fn({
-              cursoId: cursoIdFinal,
-              inscritos: inscritosFinal,
-              fechaInicio: fechaInicio.toISOString(),
-              sesiones: sesiones.map(s => ({
-                fecha: s.fecha.toISOString(),
-                horaInicio: s.horaInicio,
-                horaFin: s.horaFin,
-              })),
-              patronSemanal: patron,
-              semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
-              tipoEmail: "apertura",
-            });
-            toast(`🟢 Programado y ACTIVO (${inscritosFinal} alumnos) · Email enviado al ponente`, "success");
-          } catch (errEmail) {
-            console.error("Email falló:", errEmail);
-            toast(`Programado, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
-          }
-        } else {
-          const msg = yaActivo
-            ? `🟢 Programado y ACTIVO (${inscritosFinal} alumnos)`
-            : `🟡 Programado como pendiente · ${sesiones.length} sesiones · Pasará a verde al llegar a ${minimoFinal} alumnos`;
-          toast(msg, "success");
-        }
+        toast(`🟡 Programado · ${sesiones.length} sesion${sesiones.length !== 1 ? 'es' : ''} · Pasará a verde 🟢 al llegar a ${minimoFinal} alumnos`, "success");
         cerrar();
       } catch (e) {
         console.error(e);
@@ -2732,6 +2687,10 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-here>Cerrar</button>
+          <button type="button" class="btn" id="btn-cancelar-curso" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            Cancelar curso
+          </button>
           <button type="button" class="btn btn-primary" id="btn-guardar-apertura">Guardar cambios</button>
         </div>
       </div>`;
@@ -2755,6 +2714,27 @@
         sesionesEditadas.splice(idx, 1);
         b.closest("[data-rm-sesion]").parentElement.remove();
       });
+    });
+
+    wrap.querySelector("#btn-cancelar-curso").addEventListener("click", async () => {
+      const ok = await confirmar({
+        titulo: "Cancelar curso",
+        mensaje: `¿Seguro que quieres cancelar el curso "${a.cursoNombre}"?\n\nEl curso se marcará como 🔴 Cancelado y dejará de aparecer activo en el cronograma. Los alumnos ya inscritos NO se borran.`,
+        btnOk: "Sí, cancelar curso",
+      });
+      if (!ok) return;
+      try {
+        await updateDoc(doc(db, "aperturas", aperturaId), {
+          estado: "cancelado",
+          canceladoEn: serverTimestamp(),
+          canceladoPor: usuario.uid,
+        });
+        toast(`🔴 Curso "${a.cursoNombre}" cancelado`, "success");
+        cerrar();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message, "error");
+      }
     });
 
     wrap.querySelector("#btn-guardar-apertura").addEventListener("click", async () => {
