@@ -1012,6 +1012,7 @@
   let certificados = [];
   let unsubAlumnos = null;
   let unsubCertificados = null;
+  let unsubCursos = null;
   let pendingNewRows = [];
   let alumnoIdAGenerar = null;
   let comisionPctActual = 0; // Se calcula al generar
@@ -1046,24 +1047,36 @@
 
   document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
 
-  // ─── CARGAR CURSOS ───
-  await cargarCursos();
-
-  async function cargarCursos() {
-    try {
-      const q = query(
+  // ─── CARGAR CURSOS (tiempo real) ───
+  // ✨ MEJORA: ahora usa onSnapshot para reflejar cambios del coordinador
+  // automáticamente (nombre del ponente, duración, modalidad, activo/inactivo)
+  await new Promise((resolve) => {
+    let primeraVez = true;
+    unsubCursos = onSnapshot(
+      query(
         collection(db, "cursos"),
         where("consultoraId", "==", usuario.consultoraId),
         where("activo", "==", true)
-      );
-      const snap = await getDocs(q);
-      cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-    } catch (e) {
-      console.error(e);
-      toast("Error cargando cursos", "error");
-    }
-  }
+      ),
+      (snap) => {
+        cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+        if (!primeraVez) {
+          // El coordinador cambió algo — re-renderizar la hoja para que el vendedor lo vea
+          renderSheet();
+          if (typeof renderResumen === "function") renderResumen();
+          toast("Datos actualizados desde el coordinador", "info");
+        }
+        primeraVez = false;
+        resolve();
+      },
+      (err) => {
+        console.error(err);
+        toast("Error cargando cursos", "error");
+        resolve();
+      }
+    );
+  });
 
   // ─── SUSCRIPCIONES ───
   unsubAlumnos = onSnapshot(
@@ -2038,6 +2051,7 @@
   window.addEventListener("beforeunload", () => {
     if (unsubAlumnos) unsubAlumnos();
     if (unsubCertificados) unsubCertificados();
+    if (unsubCursos) unsubCursos();
   });
 </script>
 
