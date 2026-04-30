@@ -819,6 +819,9 @@
           // Cruzó el umbral: antes < mínimo, ahora >= mínimo
           if (inscritosAntes < minimo && inscritosAhora >= minimo) {
             mostrarNotificacionMeta(curso, inscritosAhora);
+
+            // 🟡→🟢 Pasar la apertura pendiente a activa + email al ponente
+            activarAperturaPendiente(curso, inscritosAhora);
           }
         });
       }
@@ -828,6 +831,64 @@
       actualizarDashboard();
     }
   ));
+
+  // ─── Activar apertura pendiente cuando llega al mínimo ───
+  async function activarAperturaPendiente(curso, inscritos) {
+    try {
+      // Buscar la apertura pendiente más reciente del curso CON SESIONES PROGRAMADAS
+      const pendientes = aperturas.filter(a =>
+        a.cursoId === curso.id &&
+        a.estado === "pendiente" &&
+        Array.isArray(a.sesiones) &&
+        a.sesiones.length > 0
+      ).sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+
+      if (pendientes.length === 0) {
+        // No hay apertura programada con sesiones; no se hace nada
+        // (el coordinador tiene que programarla en cronograma primero)
+        console.log(`[ACTIVAR] ${curso.nombre} llegó al mínimo pero no hay apertura programada en cronograma`);
+        return;
+      }
+
+      const apertura = pendientes[0];
+
+      // Marcar como activa
+      await updateDoc(doc(db, "aperturas", apertura.id), {
+        estado: "activo",
+        activadaEn: serverTimestamp(),
+        alumnosAlActivar: inscritos,
+      });
+
+      // Si tiene email del ponente, mandar aviso con todas las sesiones
+      if (curso.emailPonente && curso.emailPonente.includes("@")) {
+        try {
+          const fn = httpsCallable(functions, "notificarApertura");
+          const sesiones = (apertura.sesiones || []).map(s => ({
+            fecha: (s.fecha?.toDate?.() || s.fecha).toISOString(),
+            horaInicio: s.horaInicio,
+            horaFin: s.horaFin,
+          }));
+          const fechaInicio = (apertura.fechaInicio?.toDate?.() || apertura.fechaInicio || new Date()).toISOString();
+          await fn({
+            cursoId: curso.id,
+            inscritos,
+            fechaInicio,
+            sesiones,
+            patronSemanal: apertura.patronSemanal || [],
+            semanas: apertura.semanas || 0,
+          });
+          toast(`✅ ${curso.nombre} llegó al mínimo · Email enviado al ponente`, "success");
+        } catch (e) {
+          console.error("Error enviando email:", e);
+          toast(`Curso activado pero email al ponente falló: ${e.message}`, "warning");
+        }
+      } else {
+        toast(`✅ ${curso.nombre} activado en cronograma`, "success");
+      }
+    } catch (e) {
+      console.error("Error activando apertura:", e);
+    }
+  }
 
   // CERTIFICADOS
   unsubAll.push(onSnapshot(
@@ -2282,12 +2343,8 @@
             </div>
           </div>
 
-          <div class="field">
-            <label class="field-label">Estado inicial</label>
-            <select class="select" id="cel-estado">
-              <option value="activo">🟢 Activo (programado y confirmado)</option>
-              <option value="pendiente">🟡 Pendiente</option>
-            </select>
+          <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px;margin-top:6px;font-size:12px;color:#92400e">
+            🟡 <strong>Estado inicial:</strong> Pendiente. Pasará a 🟢 Activo automáticamente cuando se llegue al mínimo de alumnos configurado en el curso.
           </div>
 
           <div id="preview-sesiones" style="background:#f1f5f9;padding:12px;border-radius:8px;margin-top:10px;font-size:12px;color:#475569;max-height:120px;overflow:auto">
@@ -2295,8 +2352,8 @@
           </div>
 
           <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="cel-notificar" checked>
-            <span>📧 Enviar email al ponente con todas las sesiones</span>
+            <input type="checkbox" id="cel-notificar">
+            <span>📧 Enviar email al ponente <em>ahora mismo</em> (opcional, normalmente se envía solo cuando llega al mínimo)</span>
           </label>
         </div>
         <div class="modal-footer">
@@ -2445,12 +2502,11 @@
         }
 
         const patron = leerPatron();
-        const estadoFinal = wrap.querySelector("#cel-estado").value;
-        const notificar = wrap.querySelector("#cel-notificar").checked;
+        const notificarManual = wrap.querySelector("#cel-notificar").checked;
         const fechaInicio = sesiones[0].fecha;
         const fechaFin = sesiones[sesiones.length - 1].fecha;
 
-        let aperturaId, cursoNombre, ponente, emailPonente;
+        let aperturaId, cursoNombre, ponente, emailPonente, cursoIdFinal, cursoObj;
 
         if (modo === "pendiente") {
           aperturaId = wrap.querySelector("#cel-apertura").value;
@@ -2462,13 +2518,21 @@
           cursoNombre = a.cursoNombre;
           ponente = a.ponente;
           emailPonente = a.emailPonente;
+          cursoIdFinal = a.cursoId;
+          cursoObj = cursos.find(c => c.id === a.cursoId);
+          // Estado: si ya alcanzó el mínimo, queda activo; si no, pendiente
+          const minimo = cursoObj?.minimoAlumnos || 8;
+          const inscritos = alumnos.filter(al =>
+            al.cursoId === a.cursoId && al.estado !== "email_enviado"
+          ).length;
+          const estadoCalc = inscritos >= minimo ? "activo" : "pendiente";
           await updateDoc(doc(db, "aperturas", aperturaId), {
             sesiones,
             patronSemanal: patron,
             semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
             fechaInicio,
             fechaFin,
-            estado: estadoFinal,
+            estado: estadoCalc,
           });
         } else {
           const cursoId = wrap.querySelector("#cel-curso").value;
@@ -2480,8 +2544,16 @@
           cursoNombre = c?.nombre || "";
           ponente = c?.ponente || "";
           emailPonente = c?.emailPonente || "";
+          cursoIdFinal = cursoId;
+          cursoObj = c;
           const fechaCierre = new Date();
           fechaCierre.setDate(fechaCierre.getDate() + (c?.frecuenciaDiasApertura || 15));
+          // Estado: si ya alcanzó el mínimo, queda activo; si no, pendiente
+          const minimo = c?.minimoAlumnos || 8;
+          const inscritos = alumnos.filter(al =>
+            al.cursoId === cursoId && al.estado !== "email_enviado"
+          ).length;
+          const estadoCalc = inscritos >= minimo ? "activo" : "pendiente";
           const docRef = await addDoc(collection(db, "aperturas"), {
             consultoraId: usuario.consultoraId,
             consultoraNombre: usuario.consultoraNombre || "",
@@ -2498,20 +2570,28 @@
             fechaFin,
             fechaCierreVentas: fechaCierre,
             alumnosAlAbrir: 0,
-            estado: estadoFinal,
+            estado: estadoCalc,
             creadoPor: usuario.uid,
             creadoEn: serverTimestamp(),
           });
           aperturaId = docRef.id;
         }
 
+        // Recalcular si quedó activo automáticamente
+        const minimoFinal = cursoObj?.minimoAlumnos || 8;
+        const inscritosFinal = alumnos.filter(al =>
+          al.cursoId === cursoIdFinal && al.estado !== "email_enviado"
+        ).length;
+        const yaActivo = inscritosFinal >= minimoFinal;
+        const debeEnviarEmail = (yaActivo || notificarManual) && emailPonente && emailPonente.includes("@");
+
         // Email al ponente con todas las sesiones
-        if (notificar && emailPonente && emailPonente.includes("@")) {
+        if (debeEnviarEmail) {
           try {
             const fn = httpsCallable(functions, "notificarApertura");
             await fn({
-              cursoId: modo === "nuevo" ? wrap.querySelector("#cel-curso").value : aperturas.find(x => x.id === aperturaId).cursoId,
-              inscritos: 0,
+              cursoId: cursoIdFinal,
+              inscritos: inscritosFinal,
               fechaInicio: fechaInicio.toISOString(),
               sesiones: sesiones.map(s => ({
                 fecha: s.fecha.toISOString(),
@@ -2521,13 +2601,19 @@
               patronSemanal: patron,
               semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
             });
-            toast(`Programado · ${sesiones.length} sesiones · Email enviado al ponente 🎉`, "success");
+            const msg = yaActivo
+              ? `🟢 Programado y ACTIVO (${inscritosFinal} alumnos) · Email enviado al ponente`
+              : `Programado · ${sesiones.length} sesiones · Email enviado al ponente`;
+            toast(msg, "success");
           } catch (errEmail) {
             console.error("Email falló:", errEmail);
             toast(`Programado, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
           }
         } else {
-          toast(`Programado · ${sesiones.length} sesiones`, "success");
+          const msg = yaActivo
+            ? `🟢 Programado y ACTIVO (${inscritosFinal} alumnos)`
+            : `🟡 Programado como pendiente · ${sesiones.length} sesiones · Pasará a verde al llegar a ${minimoFinal} alumnos`;
+          toast(msg, "success");
         }
         cerrar();
       } catch (e) {
