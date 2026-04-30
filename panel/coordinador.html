@@ -701,6 +701,33 @@
           </div>
           <input type="hidden" id="curso-precio" value="0">
         </div>
+
+        <!-- ─── WhatsApp del grupo ─── -->
+        <div style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;border-radius:10px;padding:14px 16px;margin-top:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:18px">💬</span>
+            <strong style="color:#166534;font-size:14px">Grupo de WhatsApp del curso</strong>
+          </div>
+          <div style="font-size:12px;color:#15803d;margin-bottom:10px;line-height:1.4">
+            Cuando el curso inicie, se enviará el link a TODOS los alumnos + ponente por email automático.
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label class="field-label">Link del grupo de WhatsApp</label>
+            <input class="input" type="url" id="curso-whatsapp-link" placeholder="https://chat.whatsapp.com/...">
+            <div class="field-hint">Pega el link de invitación del grupo</div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Hora envío 1 (mañana)</label>
+              <input class="input" type="time" id="curso-whatsapp-hora1" value="08:00">
+            </div>
+            <div class="field">
+              <label class="field-label">Hora envío 2 (tarde)</label>
+              <input class="input" type="time" id="curso-whatsapp-hora2" value="17:00">
+            </div>
+          </div>
+          <div class="field-hint" style="margin-top:8px">Se enviará el día de la primera sesión a estas dos horas (México).</div>
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -1537,10 +1564,16 @@
       document.getElementById("curso-duracion").value = cursoData.duracion || "";
       document.getElementById("curso-precio").value = cursoData.precio || "";
       document.getElementById("curso-activo").value = String(cursoData.activo !== false);
+      document.getElementById("curso-whatsapp-link").value = cursoData.whatsappLink || "";
+      document.getElementById("curso-whatsapp-hora1").value = cursoData.whatsappHora1 || "08:00";
+      document.getElementById("curso-whatsapp-hora2").value = cursoData.whatsappHora2 || "17:00";
     } else {
       document.getElementById("modal-curso-title").textContent = "Nuevo curso";
       document.getElementById("curso-id").value = "";
       document.getElementById("curso-activo").value = "true";
+      document.getElementById("curso-whatsapp-link").value = "";
+      document.getElementById("curso-whatsapp-hora1").value = "08:00";
+      document.getElementById("curso-whatsapp-hora2").value = "17:00";
     }
     modalCurso.classList.remove("hidden");
   }
@@ -1565,6 +1598,9 @@
         duracion: document.getElementById("curso-duracion").value.trim(),
         precio: parseFloat(document.getElementById("curso-precio").value) || 0,
         activo: document.getElementById("curso-activo").value === "true",
+        whatsappLink: document.getElementById("curso-whatsapp-link").value.trim(),
+        whatsappHora1: document.getElementById("curso-whatsapp-hora1").value || "08:00",
+        whatsappHora2: document.getElementById("curso-whatsapp-hora2").value || "17:00",
         creadoPor: usuario.uid
       };
       if (id) {
