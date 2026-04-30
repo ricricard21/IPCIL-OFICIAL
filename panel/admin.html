@@ -212,6 +212,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
         Ranking
       </button>
+      <button class="sidebar-link" data-view="generar-cert" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        Generar certificado
+      </button>
+      <button class="sidebar-link" data-view="limpiar" style="background:#fee2e2;color:#991b1b;margin-top:auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Limpiar datos
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -422,16 +430,10 @@
           <h1 class="main-title">Usuarios</h1>
           <p class="main-subtitle">Coordinadores, vendedores y administradores</p>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-secondary" id="btn-crear-masivo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 11h-6M20 8v6"/></svg>
-            Crear masivo (CSV)
-          </button>
-          <button class="btn btn-primary" id="btn-nuevo-usuario">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            Nuevo usuario
-          </button>
-        </div>
+        <button class="btn btn-primary" id="btn-nuevo-usuario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo usuario
+        </button>
       </div>
 
       <div class="card">
@@ -676,6 +678,121 @@
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- GENERAR CERTIFICADO (admin)                          -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-generar-cert" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Generar certificado (admin)</h1>
+          <p class="main-subtitle">Para empresas externas que contratan cursos directamente · Folio especial IPCI-{CONSULTORA}-ADMIN-AAAA-NNNN</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📜 Datos del certificado</div>
+            <div class="card-subtitle">El certificado se generará y enviará por email al alumno</div>
+          </div>
+        </div>
+
+        <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:760px">
+          <div class="field">
+            <label class="field-label">Consultora *</label>
+            <select class="select" id="adm-consultora">
+              <option value="">— Elegir —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Curso *</label>
+            <select class="select" id="adm-curso" disabled>
+              <option value="">— Selecciona consultora primero —</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">Empresa contratante</label>
+            <input class="input" type="text" id="adm-empresa" placeholder="Ej: Industrias Alimenticias del Centro S.A. de C.V.">
+            <div class="field-hint">Aparecerá en el certificado y en el histórico admin</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Nombre del alumno *</label>
+            <input class="input" type="text" id="adm-nombre" placeholder="Nombre completo">
+          </div>
+          <div class="field">
+            <label class="field-label">Email del alumno *</label>
+            <input class="input" type="email" id="adm-email" placeholder="alumno@empresa.com">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">Teléfono (opcional)</label>
+            <input class="input" type="tel" id="adm-telefono" placeholder="555-555-5555">
+          </div>
+        </div>
+
+        <div style="padding:0 24px 24px 24px">
+          <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:12px;font-size:13px;color:#1e40af;margin-bottom:14px">
+            ℹ️ El certificado se generará con folio especial <code style="background:white;padding:2px 6px;border-radius:4px;font-weight:700">IPCI-{CODIGO}-ADMIN-{AÑO}-{NNNN}</code> y se enviará automáticamente al email del alumno.
+          </div>
+          <button class="btn btn-primary" id="btn-adm-generar" style="font-size:15px;padding:12px 24px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+            Generar y enviar certificado
+          </button>
+        </div>
+      </div>
+
+      <!-- Historial de certificados generados por admin -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📋 Histórico de certificados admin</div>
+            <div class="card-subtitle">Todos los certificados generados directamente por administradores</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-cert-admin" placeholder="Buscar...">
+          </div>
+        </div>
+        <div id="cert-admin-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- LIMPIAR DATOS (admin)                                -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-limpiar" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title" style="color:#991b1b">⚠️ Limpiar datos del sistema</h1>
+          <p class="main-subtitle">Borra TODOS los certificados, alumnos y aperturas. Mantiene cursos, consultoras y vendedores.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border:2px solid #dc2626;background:#fff5f5">
+        <div style="padding:30px;text-align:center">
+          <div style="font-size:48px;margin-bottom:14px">🗑️</div>
+          <h2 style="font-size:20px;color:#991b1b;margin:0 0 8px 0">Esta acción es PERMANENTE e irreversible</h2>
+          <p style="color:#4b5563;font-size:14px;line-height:1.5;max-width:540px;margin:14px auto">
+            Útil para limpiar datos de prueba antes de pasar a producción.<br>
+            <strong>Se borrarán:</strong> certificados · alumnos · aperturas (cronograma) · contadores de folios<br>
+            <strong>Se mantienen:</strong> cursos · consultoras · usuarios (admin/coordinadores/vendedores)
+          </p>
+
+          <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:18px auto;max-width:540px">
+            <div style="font-size:13px;color:#991b1b;margin-bottom:8px;font-weight:700">Para confirmar, escribe en mayúsculas:</div>
+            <div style="font-size:18px;color:#991b1b;font-weight:800;letter-spacing:.06em;margin-bottom:10px;font-family:monospace">BORRAR TODO</div>
+            <input class="input" type="text" id="limpiar-confirmacion" placeholder="Escribe BORRAR TODO" style="text-align:center;font-weight:700;letter-spacing:.06em">
+          </div>
+
+          <button class="btn" id="btn-limpiar-datos" style="background:#dc2626;color:white;font-size:15px;padding:12px 28px;margin-top:8px" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Limpiar datos del sistema
+          </button>
+        </div>
+      </div>
+
+      <div id="limpiar-resultado" style="margin-top:20px"></div>
+    </section>
+
   </main>
 </div>
 
@@ -817,74 +934,13 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- MODAL CREAR USUARIOS MASIVO (CSV)                    -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div class="modal-backdrop hidden" id="modal-masivo">
-  <div class="modal" style="max-width:900px">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">Crear usuarios masivamente</div>
-        <div class="modal-subtitle">Pega un CSV y crea múltiples usuarios de un solo jalón</div>
-      </div>
-      <button class="modal-close" data-close="masivo" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <div class="modal-body" id="masivo-paso-1">
-      <div class="alert alert-warning">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <div><strong>Formato CSV (4 columnas):</strong> email, nombre, rol, consultora<br>
-        <strong>Roles válidos:</strong> coordinador, vendedor<br>
-        <strong>Consultora:</strong> nombre exacto (ej: "Grupo Odonteck") o código (ej: "ODNT")</div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">Pega el CSV aquí *</label>
-        <textarea class="input" id="masivo-csv" rows="12" style="font-family:monospace;font-size:13px;white-space:pre" placeholder="email,nombre,rol,consultora&#10;synovamexico@gmail.com,Coordinador SYNOVA,coordinador,Grupo Synova&#10;odontckconsul@gmail.com,Coordinador ODONTECK,coordinador,Grupo Odonteck"></textarea>
-      </div>
-
-      <div id="masivo-preview" style="display:none">
-        <div style="margin-top:14px;padding:12px;background:var(--surface-soft);border-radius:8px">
-          <strong>Vista previa:</strong> <span id="masivo-count">0</span> usuarios listos para crear
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-body" id="masivo-paso-2" style="display:none">
-      <div class="alert alert-warning" style="background:#dcfce7;border-color:#16a34a;color:#166534">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <div><strong>¡Listo!</strong> <span id="masivo-result-summary"></span><br>
-        <strong>⚠️ IMPORTANTE:</strong> Descarga el CSV de credenciales AHORA. Las contraseñas no se vuelven a mostrar.</div>
-      </div>
-
-      <div style="margin:14px 0">
-        <button class="btn btn-primary" id="btn-descargar-creds" style="width:100%">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Descargar credenciales.csv
-        </button>
-      </div>
-
-      <div id="masivo-resultados" style="max-height:400px;overflow-y:auto"></div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-close="masivo">Cerrar</button>
-      <button type="button" class="btn btn-primary" id="btn-procesar-masivo">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Crear todos los usuarios
-      </button>
-    </div>
-  </div>
-</div>
-
 <script type="module">
   import {
-    auth, db,
+    auth, db, functions,
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, escapeHtml, iniciales, setupSidebar,
     calcularComisionPct,
-    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot,
+    httpsCallable
   } from "./firebase-config.js";
 
   let usuario = null;
@@ -925,6 +981,11 @@
       if (btn.dataset.view === "ranking") renderRanking();
       if (btn.dataset.view === "comisiones") renderComisiones();
       if (btn.dataset.view === "aperturas") renderAperturasGlobales();
+      if (btn.dataset.view === "generar-cert") {
+        llenarSelectsAdminCert();
+        llenarCursosAdminCert();
+        renderCertAdmin();
+      }
     });
   });
 
@@ -959,6 +1020,7 @@
     rellenarSelectConsultoras();
     actualizarDashboard();
     renderComisiones();
+    if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
   });
 
   onSnapshot(collection(db, "usuarios"), (snap) => {
@@ -973,6 +1035,7 @@
     renderCursos();
     actualizarDashboard();
     renderComisiones();
+    if (typeof llenarCursosAdminCert === "function") llenarCursosAdminCert();
   });
 
   onSnapshot(collection(db, "certificados"), (snap) => {
@@ -986,6 +1049,7 @@
     renderCertificados();
     actualizarDashboard();
     renderRanking();
+    if (typeof renderCertAdmin === "function") renderCertAdmin();
   });
 
   onSnapshot(collection(db, "alumnos"), (snap) => {
@@ -2085,159 +2149,174 @@
   });
 
   // ═══════════════════════════════════════════════════════
-  // CREACIÓN MASIVA DE USUARIOS (CSV)
+  // 📜 GENERAR CERTIFICADO ADMIN
   // ═══════════════════════════════════════════════════════
-  const { getApp } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js");
-  const { getFunctions, httpsCallable } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-functions.js");
-  const functions = getFunctions(getApp(), "us-central1");
-  const crearUsuariosMasivoFn = httpsCallable(functions, "crearUsuariosMasivo");
-
-  let credencialesGeneradas = [];
-
-  // Abrir modal
-  document.getElementById("btn-crear-masivo").addEventListener("click", () => {
-    document.getElementById("masivo-csv").value = "";
-    document.getElementById("masivo-preview").style.display = "none";
-    document.getElementById("masivo-paso-1").style.display = "block";
-    document.getElementById("masivo-paso-2").style.display = "none";
-    document.getElementById("btn-procesar-masivo").style.display = "inline-flex";
-    credencialesGeneradas = [];
-    document.getElementById("modal-masivo").classList.remove("hidden");
-  });
-
-  // Cerrar modal
-  document.querySelectorAll('[data-close="masivo"]').forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.getElementById("modal-masivo").classList.add("hidden");
-    });
-  });
-
-  // Preview cuando pega el CSV
-  document.getElementById("masivo-csv").addEventListener("input", () => {
-    const csv = document.getElementById("masivo-csv").value.trim();
-    const usuarios = parsearCSV(csv);
-    if (usuarios.length > 0) {
-      document.getElementById("masivo-count").textContent = usuarios.length;
-      document.getElementById("masivo-preview").style.display = "block";
-    } else {
-      document.getElementById("masivo-preview").style.display = "none";
-    }
-  });
-
-  function parsearCSV(csv) {
-    const lineas = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-    if (lineas.length === 0) return [];
-
-    // Si la primera línea es el header, lo saltamos
-    let inicio = 0;
-    const primera = lineas[0].toLowerCase();
-    if (primera.includes("email") && primera.includes("nombre") && primera.includes("rol")) {
-      inicio = 1;
-    }
-
-    const usuarios = [];
-    for (let i = inicio; i < lineas.length; i++) {
-      const cols = lineas[i].split(",").map(c => c.trim());
-      if (cols.length < 4) continue;
-      const [email, nombre, rol, ...consultoraParts] = cols;
-      const consultora = consultoraParts.join(",").trim();
-      if (!email || !nombre || !rol || !consultora) continue;
-      usuarios.push({ email, nombre, rol: rol.toLowerCase(), consultora });
-    }
-    return usuarios;
+  function llenarSelectsAdminCert() {
+    const selCons = document.getElementById("adm-consultora");
+    if (!selCons) return;
+    const valActual = selCons.value;
+    selCons.innerHTML = `<option value="">— Elegir —</option>` +
+      consultoras.slice().sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""))
+        .map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+    if (valActual) selCons.value = valActual;
   }
 
-  // Botón procesar
-  document.getElementById("btn-procesar-masivo").addEventListener("click", async () => {
-    const csv = document.getElementById("masivo-csv").value.trim();
-    const usuariosArray = parsearCSV(csv);
-
-    if (usuariosArray.length === 0) {
-      toast("No hay usuarios válidos en el CSV", "error");
+  function llenarCursosAdminCert() {
+    const consId = document.getElementById("adm-consultora").value;
+    const selCurso = document.getElementById("adm-curso");
+    if (!consId) {
+      selCurso.innerHTML = `<option value="">— Selecciona consultora primero —</option>`;
+      selCurso.disabled = true;
       return;
     }
-    if (usuariosArray.length > 100) {
-      toast("Máximo 100 usuarios por llamada", "error");
+    const cursosCons = cursos.filter(c => c.consultoraId === consId && c.activo !== false)
+      .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    if (cursosCons.length === 0) {
+      selCurso.innerHTML = `<option value="">No hay cursos activos en esta consultora</option>`;
+      selCurso.disabled = true;
       return;
     }
+    selCurso.innerHTML = `<option value="">— Elegir —</option>` +
+      cursosCons.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+    selCurso.disabled = false;
+  }
 
-    const btn = document.getElementById("btn-procesar-masivo");
+  document.getElementById("adm-consultora")?.addEventListener("change", llenarCursosAdminCert);
+
+  document.getElementById("btn-adm-generar")?.addEventListener("click", async () => {
+    const consultoraId = document.getElementById("adm-consultora").value;
+    const cursoId = document.getElementById("adm-curso").value;
+    const empresa = document.getElementById("adm-empresa").value.trim();
+    const nombre = document.getElementById("adm-nombre").value.trim();
+    const email = document.getElementById("adm-email").value.trim();
+    const telefono = document.getElementById("adm-telefono").value.trim();
+
+    if (!consultoraId) return toast("Selecciona consultora", "warning");
+    if (!cursoId) return toast("Selecciona curso", "warning");
+    if (!nombre) return toast("Captura el nombre del alumno", "warning");
+    if (!email || !email.includes("@")) return toast("Email inválido", "warning");
+
+    const btn = document.getElementById("btn-adm-generar");
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner" style="width:16px;height:16px"></div> Creando...';
+    btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Generando certificado...`;
 
     try {
-      const result = await crearUsuariosMasivoFn({ usuarios: usuariosArray });
-      const data = result.data;
-
-      credencialesGeneradas = data.resultados.filter(r => r.status === "ok");
-
-      // Cambiar a paso 2
-      document.getElementById("masivo-paso-1").style.display = "none";
-      document.getElementById("masivo-paso-2").style.display = "block";
-      document.getElementById("btn-procesar-masivo").style.display = "none";
-
-      document.getElementById("masivo-result-summary").textContent =
-        `Se crearon ${data.exitos} de ${data.total} usuarios. ${data.errores} errores.`;
-
-      // Mostrar tabla de resultados
-      const html = data.resultados.map(r => {
-        if (r.status === "ok") {
-          return `<div style="padding:10px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:center;gap:10px">
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:600;font-size:13px">✅ ${r.email}</div>
-              <div style="font-size:12px;color:var(--muted)">${r.nombre} · ${r.rol} · ${r.consultora}</div>
-            </div>
-            <div style="font-family:monospace;font-size:13px;background:var(--surface-soft);padding:6px 10px;border-radius:6px;font-weight:700;color:var(--primary)">${r.password}</div>
-          </div>`;
-        } else {
-          return `<div style="padding:10px;border-bottom:1px solid var(--line-soft);background:#fee2e2">
-            <div style="font-weight:600;font-size:13px;color:#991b1b">❌ ${r.email}</div>
-            <div style="font-size:12px;color:#991b1b">${r.error}</div>
-          </div>`;
-        }
-      }).join("");
-
-      document.getElementById("masivo-resultados").innerHTML = html;
-
-      toast(`${data.exitos} usuarios creados`, "success");
-
-      // Refrescar listado
-      const snap = await getDocs(collection(db, "usuarios"));
-      usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
+      const fn = httpsCallable(functions, "generarCertificadoAdmin");
+      const result = await fn({
+        consultoraId,
+        cursoId,
+        alumno: { nombre, email, telefono },
+        empresaContratante: empresa,
+      });
+      const data = result.data || {};
+      toast(`✅ Certificado generado · Folio: ${data.folio}`, "success");
+      // Limpiar formulario
+      document.getElementById("adm-empresa").value = "";
+      document.getElementById("adm-nombre").value = "";
+      document.getElementById("adm-email").value = "";
+      document.getElementById("adm-telefono").value = "";
     } catch (err) {
       console.error(err);
       toast("Error: " + (err.message || err), "error");
+    } finally {
       btn.disabled = false;
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Crear todos los usuarios';
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg> Generar y enviar certificado`;
     }
   });
 
-  // Descargar credenciales
-  document.getElementById("btn-descargar-creds").addEventListener("click", () => {
-    if (credencialesGeneradas.length === 0) {
-      toast("No hay credenciales para descargar", "error");
+  // Render histórico admin
+  function renderCertAdmin() {
+    const cont = document.getElementById("cert-admin-container");
+    if (!cont) return;
+    const search = (document.getElementById("search-cert-admin")?.value || "").toLowerCase();
+
+    const lista = certificados.filter(c => {
+      if (!c.generadoPorAdmin) return false;
+      if (search) {
+        const txt = `${c.folio} ${c.nombreAlumno} ${c.nombreCurso} ${c.empresaContratante || ""}`.toLowerCase();
+        if (!txt.includes(search)) return false;
+      }
+      return true;
+    }).sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+
+    if (lista.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:40px 20px"><div class="empty-text">No hay certificados generados por admin</div><div class="empty-hint">${search ? "Intenta otra búsqueda" : "Genera el primero arriba ☝️"}</div></div>`;
       return;
     }
 
-    let csv = "email,nombre,rol,consultora,password,uid\n";
-    credencialesGeneradas.forEach(r => {
-      csv += `${r.email},"${r.nombre}",${r.rol},"${r.consultora}",${r.password},${r.uid}\n`;
+    let html = `<table class="data-table"><thead><tr>
+      <th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th>
+      <th>Empresa contratante</th><th>Fecha</th><th>PDF</th>
+    </tr></thead><tbody>`;
+    lista.forEach(c => {
+      const fecha = c.creadoEn?.toDate?.()?.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric", timeZone: "America/Mexico_City" }) || "—";
+      html += `<tr>
+        <td><code style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:4px">${escapeHtml(c.folio || "—")}</code></td>
+        <td>${escapeHtml(c.nombreAlumno || "—")}<br><span style="font-size:11px;color:var(--muted)">${escapeHtml(c.emailAlumno || "")}</span></td>
+        <td>${escapeHtml(c.nombreCurso || "—")}</td>
+        <td>${escapeHtml(c.nombreConsultora || "—")}</td>
+        <td>${escapeHtml(c.empresaContratante || "—")}</td>
+        <td>${fecha}</td>
+        <td>${c.pdfUrl ? `<a href="${escapeHtml(c.pdfUrl)}" target="_blank" class="btn btn-secondary btn-sm">Ver PDF</a>` : "—"}</td>
+      </tr>`;
     });
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+  }
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const fecha = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `credenciales-ipci-${fecha}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  document.getElementById("search-cert-admin")?.addEventListener("input", renderCertAdmin);
 
-    toast("Credenciales descargadas", "success");
+  // ═══════════════════════════════════════════════════════
+  // 🗑️ LIMPIAR DATOS
+  // ═══════════════════════════════════════════════════════
+  document.getElementById("limpiar-confirmacion")?.addEventListener("input", (e) => {
+    const btn = document.getElementById("btn-limpiar-datos");
+    btn.disabled = e.target.value.trim().toUpperCase() !== "BORRAR TODO";
   });
+
+  document.getElementById("btn-limpiar-datos")?.addEventListener("click", async () => {
+    const ok = confirm("⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Borrar todos los certificados, alumnos y aperturas?\n\nEsta acción NO se puede deshacer.");
+    if (!ok) return;
+
+    const btn = document.getElementById("btn-limpiar-datos");
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Borrando datos...`;
+
+    try {
+      const fn = httpsCallable(functions, "limpiarDatos");
+      const result = await fn({ confirmacion: "BORRAR_TODO" });
+      const data = result.data || {};
+
+      const detalle = data.detalle || {};
+      const html = `<div class="card" style="background:#f0fdf4;border:1px solid #bbf7d0;padding:20px">
+        <h3 style="color:#166534;margin:0 0 12px 0">✅ Limpieza completada</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
+          ${Object.entries(detalle).map(([col, n]) => `
+            <div style="background:white;padding:12px 16px;border-radius:8px;border:1px solid #d1fae5">
+              <div style="font-size:11px;color:#166534;text-transform:uppercase;font-weight:700">${col}</div>
+              <div style="font-size:24px;font-weight:800;color:#15803d">${n}</div>
+              <div style="font-size:11px;color:var(--muted)">borrados</div>
+            </div>`).join("")}
+          <div style="background:white;padding:12px 16px;border-radius:8px;border:1px solid #d1fae5">
+            <div style="font-size:11px;color:#166534;text-transform:uppercase;font-weight:700">Cursos reseteados</div>
+            <div style="font-size:24px;font-weight:800;color:#15803d">${data.cursosReseteados || 0}</div>
+            <div style="font-size:11px;color:var(--muted)">contadores reiniciados</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#166534;margin-top:14px">Total: <strong>${data.total} documentos</strong></div>
+      </div>`;
+      document.getElementById("limpiar-resultado").innerHTML = html;
+      document.getElementById("limpiar-confirmacion").value = "";
+      toast(`✅ Limpieza completada: ${data.total} documentos borrados`, "success");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + (err.message || err), "error");
+    } finally {
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Limpiar datos del sistema`;
+    }
+  });
+
 </script>
 
 </body>

@@ -487,7 +487,7 @@
         <div class="card-header">
           <div>
             <div class="card-title">Estado de cada curso</div>
-            <div class="card-subtitle">Click en "Configurar" para ajustar mínimo y frecuencia · "Abrir grupo ahora" registra la apertura</div>
+            <div class="card-subtitle">Configuración de mínimo y frecuencia · Los grupos se abren automáticamente al iniciar la primera sesión programada en cronograma</div>
           </div>
           <div class="search-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -1699,10 +1699,10 @@
                 : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}
           </td>
           <td class="col-actions">
-            <div style="display:flex;gap:6px;justify-content:flex-end">
+            <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center">
               <button class="btn btn-secondary btn-sm" data-config="${curso.id}">Configurar</button>
               ${estado.listo
-                ? `<button class="btn btn-primary btn-sm" data-abrir="${curso.id}" style="background:var(--green);border-color:var(--green)">Abrir grupo</button>`
+                ? `<span style="font-size:11px;color:#16a34a;font-weight:600;background:#dcfce7;padding:4px 10px;border-radius:6px">⚡ Se abrirá automático</span>`
                 : ''}
             </div>
           </td>
@@ -1710,7 +1710,6 @@
       }).join("")}</tbody></table></div>`;
 
     ap.querySelectorAll("[data-config]").forEach(b => b.addEventListener("click", () => abrirModalConfigCurso(b.dataset.config)));
-    ap.querySelectorAll("[data-abrir]").forEach(b => b.addEventListener("click", () => abrirGrupo(b.dataset.abrir)));
   }
 
   document.getElementById("search-apertura").addEventListener("input", renderApertura);
