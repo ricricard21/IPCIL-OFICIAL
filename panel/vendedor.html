@@ -1026,11 +1026,39 @@
 
   setupSidebar();
 
-  // Cargar consultora para tener comisionDefault
-  try {
-    const consDoc = await getDoc(doc(db, "consultoras", usuario.consultoraId));
-    if (consDoc.exists()) consultora = { id: consDoc.id, ...consDoc.data() };
-  } catch (e) { console.warn("No se pudo leer consultora", e); }
+  // Cargar consultora para tener comisionDefault (en vivo, escucha cambios)
+  let unsubConsultora = null;
+  unsubConsultora = onSnapshot(
+    doc(db, "consultoras", usuario.consultoraId),
+    (snap) => {
+      if (snap.exists()) {
+        consultora = { id: snap.id, ...snap.data() };
+        // Re-renderizar para reflejar nuevo % de comisión
+        if (typeof renderSheet === "function") renderSheet();
+        if (typeof actualizarStats === "function") actualizarStats();
+        if (typeof renderResumen === "function") renderResumen();
+      }
+    },
+    (e) => { console.warn("Error consultora live:", e); }
+  );
+
+  // Cargar datos del usuario en vivo (por si admin cambia comisionOverride del vendedor)
+  let unsubUsuario = null;
+  unsubUsuario = onSnapshot(
+    doc(db, "usuarios", usuario.uid),
+    (snap) => {
+      if (snap.exists()) {
+        const fresh = snap.data();
+        // Solo actualizar campos relevantes (no machacar el objeto entero)
+        usuario.comisionOverride = fresh.comisionOverride;
+        usuario.consultoraNombre = fresh.consultoraNombre || usuario.consultoraNombre;
+        if (typeof renderSheet === "function") renderSheet();
+        if (typeof actualizarStats === "function") actualizarStats();
+        if (typeof renderResumen === "function") renderResumen();
+      }
+    },
+    (e) => { console.warn("Error usuario live:", e); }
+  );
 
   document.querySelectorAll(".sidebar-link").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1046,24 +1074,24 @@
 
   document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
 
-  // ─── CARGAR CURSOS ───
-  await cargarCursos();
-
-  async function cargarCursos() {
-    try {
-      const q = query(
-        collection(db, "cursos"),
-        where("consultoraId", "==", usuario.consultoraId),
-        where("activo", "==", true)
-      );
-      const snap = await getDocs(q);
+  // ─── CARGAR CURSOS (en vivo) ───
+  let unsubCursos = null;
+  unsubCursos = onSnapshot(
+    query(
+      collection(db, "cursos"),
+      where("consultoraId", "==", usuario.consultoraId),
+      where("activo", "==", true)
+    ),
+    (snap) => {
       cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-    } catch (e) {
-      console.error(e);
-      toast("Error cargando cursos", "error");
-    }
-  }
+      // Re-render para reflejar precios/comisiones nuevas
+      if (typeof renderSheet === "function") renderSheet();
+      if (typeof actualizarStats === "function") actualizarStats();
+      if (typeof renderResumen === "function") renderResumen();
+    },
+    (e) => { console.error("Error cargando cursos:", e); toast("Error cargando cursos", "error"); }
+  );
 
   // ─── SUSCRIPCIONES ───
   unsubAlumnos = onSnapshot(
