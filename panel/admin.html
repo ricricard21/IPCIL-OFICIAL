@@ -810,9 +810,9 @@
             <div class="field-hint">Aparecerá en el certificado y en el histórico admin</div>
           </div>
           <div class="field" style="grid-column:1/-1">
-            <label class="field-label">📅 Fecha y hora del curso *</label>
-            <input class="input" type="datetime-local" id="adm-fecha-curso">
-            <div class="field-hint">Esta fecha aparecerá en el certificado del alumno</div>
+            <label class="field-label">⏱️ Horas del curso *</label>
+            <input class="input" type="text" id="adm-horas-curso" placeholder="Ej: 5 horas, 10 horas, 40 horas">
+            <div class="field-hint">Texto libre — esto aparecerá en el certificado del alumno (campo DURACION)</div>
           </div>
           <div class="field">
             <label class="field-label">Nombre del alumno *</label>
@@ -2423,14 +2423,14 @@
     const consultoraId = document.getElementById("adm-consultora").value;
     const cursoId = document.getElementById("adm-curso").value;
     const empresa = document.getElementById("adm-empresa").value.trim();
-    const fechaCurso = document.getElementById("adm-fecha-curso").value;
+    const horasCurso = document.getElementById("adm-horas-curso").value.trim();
     const nombre = document.getElementById("adm-nombre").value.trim();
     const email = document.getElementById("adm-email").value.trim();
     const telefono = document.getElementById("adm-telefono").value.trim();
 
     if (!consultoraId) return toast("Selecciona consultora", "warning");
     if (!cursoId) return toast("Selecciona curso", "warning");
-    if (!fechaCurso) return toast("Captura la fecha y hora del curso", "warning");
+    if (!horasCurso) return toast("Captura las horas del curso (ej: 5 horas)", "warning");
     if (!nombre) return toast("Captura el nombre del alumno", "warning");
     if (!email || !email.includes("@")) return toast("Email inválido", "warning");
 
@@ -2439,21 +2439,19 @@
     btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Generando certificado...`;
 
     try {
-      // Convertir datetime-local a ISO con timezone local
-      const fechaISO = new Date(fechaCurso).toISOString();
       const fn = httpsCallable(functions, "generarCertificadoAdmin");
       const result = await fn({
         consultoraId,
         cursoId,
         alumno: { nombre, email, telefono },
         empresaContratante: empresa,
-        fechaCurso: fechaISO,
+        horasCurso,
       });
       const data = result.data || {};
       toast(`✅ Certificado generado · Folio: ${data.folio}`, "success");
       // Limpiar formulario
       document.getElementById("adm-empresa").value = "";
-      document.getElementById("adm-fecha-curso").value = "";
+      document.getElementById("adm-horas-curso").value = "";
       document.getElementById("adm-nombre").value = "";
       document.getElementById("adm-email").value = "";
       document.getElementById("adm-telefono").value = "";
@@ -2835,16 +2833,14 @@
           <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Curso</th>
           <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Consultora</th>
           <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Empresa contratante</th>
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Fecha curso</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Duración</th>
           <th style="text-align:center;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">PDF</th>
         </tr>
       </thead>
       <tbody>`;
 
     lista.forEach((c, idx) => {
-      const fechaCurso = c.fechaCurso?.toDate?.()
-        ? c.fechaCurso.toDate().toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })
-        : (c.fecha || "—");
+      const duracionShow = c.duracion || "—";
       const color = colorPorConsultora(c.nombreConsultora);
       const bgRow = idx % 2 === 0 ? "white" : "#fafbfc";
 
@@ -2867,7 +2863,9 @@
             ? `<span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600">🏢 ${escapeHtml(c.empresaContratante)}</span>`
             : `<span style="color:#94a3b8;font-style:italic;font-size:12px">Sin empresa</span>`}
         </td>
-        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;color:#475569;font-size:13px;font-weight:500">${escapeHtml(fechaCurso)}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top">
+          <span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700">⏱️ ${escapeHtml(duracionShow)}</span>
+        </td>
         <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;text-align:center">
           ${c.pdfUrl
             ? `<a href="${escapeHtml(c.pdfUrl)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#0b4ea2;color:white;padding:6px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#0a3d80'" onmouseout="this.style.background='#0b4ea2'">
