@@ -782,6 +782,11 @@
           <strong>Atajos:</strong> Tab para saltar al siguiente campo · Enter para guardar · El certificado se envía al alumno al dar GENERAR
         </div>
 
+        <!-- Cursos programados por coordinador -->
+        <div id="cursos-programados-vendedor" style="margin:14px 0 6px 0">
+          <!-- se llena dinámicamente -->
+        </div>
+
         <!-- Pestañas de aperturas -->
         <div class="aperturas-tabs" id="aperturas-tabs">
           <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div>
@@ -1012,7 +1017,6 @@
   let certificados = [];
   let unsubAlumnos = null;
   let unsubCertificados = null;
-  let unsubCursos = null;
   let pendingNewRows = [];
   let alumnoIdAGenerar = null;
   let comisionPctActual = 0; // Se calcula al generar
@@ -1047,36 +1051,24 @@
 
   document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
 
-  // ─── CARGAR CURSOS (tiempo real) ───
-  // ✨ MEJORA: ahora usa onSnapshot para reflejar cambios del coordinador
-  // automáticamente (nombre del ponente, duración, modalidad, activo/inactivo)
-  await new Promise((resolve) => {
-    let primeraVez = true;
-    unsubCursos = onSnapshot(
-      query(
+  // ─── CARGAR CURSOS ───
+  await cargarCursos();
+
+  async function cargarCursos() {
+    try {
+      const q = query(
         collection(db, "cursos"),
         where("consultoraId", "==", usuario.consultoraId),
         where("activo", "==", true)
-      ),
-      (snap) => {
-        cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-        if (!primeraVez) {
-          // El coordinador cambió algo — re-renderizar la hoja para que el vendedor lo vea
-          renderSheet();
-          if (typeof renderResumen === "function") renderResumen();
-          toast("Datos actualizados desde el coordinador", "info");
-        }
-        primeraVez = false;
-        resolve();
-      },
-      (err) => {
-        console.error(err);
-        toast("Error cargando cursos", "error");
-        resolve();
-      }
-    );
-  });
+      );
+      const snap = await getDocs(q);
+      cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    } catch (e) {
+      console.error(e);
+      toast("Error cargando cursos", "error");
+    }
+  }
 
   // ─── SUSCRIPCIONES ───
   unsubAlumnos = onSnapshot(
@@ -1099,6 +1091,89 @@
       renderResumen(); // Recalcula también ranking visible en la vista de ventas
     }
   );
+
+  // 📅 APERTURAS PROGRAMADAS POR COORDINADOR
+  let aperturasCron = [];
+  let unsubAperturasCron = null;
+  unsubAperturasCron = onSnapshot(
+    query(collection(db, "aperturas"), where("consultoraId", "==", usuario.consultoraId)),
+    (snap) => {
+      aperturasCron = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderCursosProgramados();
+    },
+    (err) => console.warn("Error cargando aperturas cron:", err)
+  );
+
+  function renderCursosProgramados() {
+    const cont = document.getElementById("cursos-programados-vendedor");
+    if (!cont) return;
+
+    // Filtrar: solo activos/pendientes con al menos una sesión futura
+    const ahora = new Date();
+    const fin = new Date();
+    fin.setDate(fin.getDate() + 60); // próximos 60 días
+
+    const lista = aperturasCron.filter(a => {
+      if (a.estado === "cancelado") return false;
+      const sesiones = a.sesiones || [];
+      if (sesiones.length === 0) return false;
+      const fs = sesiones.map(s => s.fecha?.toDate?.() || new Date(s.fecha));
+      const min = new Date(Math.min(...fs.map(f => f.getTime())));
+      return min >= ahora && min <= fin;
+    }).sort((a, b) => {
+      const fa = (a.sesiones[0].fecha?.toDate?.() || new Date(a.sesiones[0].fecha)).getTime();
+      const fb = (b.sesiones[0].fecha?.toDate?.() || new Date(b.sesiones[0].fecha)).getTime();
+      return fa - fb;
+    });
+
+    if (lista.length === 0) {
+      cont.innerHTML = "";
+      return;
+    }
+
+    let html = `<div style="background:linear-gradient(135deg,#dbeafe,#e0e7ff);border:1px solid #93c5fd;border-radius:12px;padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:18px">📅</span>
+        <strong style="color:#1e40af;font-size:14px">Cursos disponibles para vender</strong>
+        <span style="font-size:11px;color:#3b82f6">${lista.length} programado${lista.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">`;
+
+    lista.forEach(a => {
+      const sesiones = a.sesiones || [];
+      const fs = sesiones.map(s => s.fecha?.toDate?.() || new Date(s.fecha));
+      const primera = new Date(Math.min(...fs.map(f => f.getTime())));
+      const horaIni = sesiones[0].horaInicio || "";
+
+      // Color del badge según estado
+      let bgBadge = "#dcfce7", colorBadge = "#166534", textoBadge = "🟢 Abierto";
+      if (a.estado === "pendiente") {
+        bgBadge = "#fef3c7"; colorBadge = "#92400e"; textoBadge = "🟡 Pendiente";
+      }
+
+      // Contar inscritos
+      const inscritos = alumnos.filter(al => al.cursoId === a.cursoId && al.estado !== "email_enviado").length;
+      const minimo = 8; // se calcula del curso, default
+
+      const cursoCorto = (a.cursoNombre || "").length > 40 ? (a.cursoNombre || "").substring(0, 40) + "…" : (a.cursoNombre || "");
+
+      html += `<div style="background:white;border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;min-width:240px;flex-shrink:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+          <div style="font-weight:700;font-size:13px;color:#0f172a;line-height:1.25">${escapeHtml(cursoCorto)}</div>
+          <span style="background:${bgBadge};color:${colorBadge};padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap">${textoBadge}</span>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px">${escapeHtml(a.ponente || "—")}</div>
+        <div style="display:flex;gap:10px;font-size:11px;color:#475569">
+          <div>📆 ${primera.toLocaleDateString("es-MX", { day: "numeric", month: "short", weekday: "short", timeZone: "America/Mexico_City" })}</div>
+          <div>🕐 ${escapeHtml(horaIni)}</div>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:#64748b">${sesiones.length} sesion${sesiones.length !== 1 ? 'es' : ''}</div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+    cont.innerHTML = html;
+  }
 
   function actualizarStats() {
     document.getElementById("stat-total").textContent = alumnos.length;
@@ -2051,7 +2126,6 @@
   window.addEventListener("beforeunload", () => {
     if (unsubAlumnos) unsubAlumnos();
     if (unsubCertificados) unsubCertificados();
-    if (unsubCursos) unsubCursos();
   });
 </script>
 

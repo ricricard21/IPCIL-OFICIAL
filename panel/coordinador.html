@@ -546,6 +546,16 @@
           </div>
         </div>
         <div class="kpi-card">
+          <div class="kpi-icon" style="background:#f3e8ff;color:#9333ea">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-label">En curso (morado)</div>
+            <div class="kpi-value" id="kpi-cron-iniciados" style="color:#9333ea">0</div>
+            <span class="kpi-trend kpi-trend-flat">cursos ya iniciaron</span>
+          </div>
+        </div>
+        <div class="kpi-card">
           <div class="kpi-icon" style="background:#fee2e2;color:#dc2626">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
           </div>
@@ -564,9 +574,10 @@
             <div class="card-title" id="cron-cal-titulo">Calendario semanal</div>
             <div class="card-subtitle" id="cron-cal-rango">Cargando...</div>
           </div>
-          <div style="display:flex;gap:14px;align-items:center;font-size:12px;color:var(--muted)">
-            <div style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;background:#16a34a;border-radius:3px;display:inline-block"></span> Activo</div>
+          <div style="display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;background:#16a34a;border-radius:3px;display:inline-block"></span> Abierto</div>
             <div style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;background:#f59e0b;border-radius:3px;display:inline-block"></span> Pendiente</div>
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;background:#9333ea;border-radius:3px;display:inline-block"></span> En curso</div>
             <div style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;background:#dc2626;border-radius:3px;display:inline-block"></span> Cancelado</div>
           </div>
         </div>
@@ -863,19 +874,31 @@
       if (curso.emailPonente && curso.emailPonente.includes("@")) {
         try {
           const fn = httpsCallable(functions, "notificarApertura");
-          const sesiones = (apertura.sesiones || []).map(s => ({
-            fecha: (s.fecha?.toDate?.() || s.fecha).toISOString(),
-            horaInicio: s.horaInicio,
-            horaFin: s.horaFin,
-          }));
-          const fechaInicio = (apertura.fechaInicio?.toDate?.() || apertura.fechaInicio || new Date()).toISOString();
+          // Reconstruir sesiones (manejando Timestamp vs Date)
+          const sesiones = (apertura.sesiones || []).map(s => {
+            const f = s.fecha?.toDate?.() || s.fecha;
+            return {
+              fecha: (f instanceof Date ? f : new Date(f)).toISOString(),
+              horaInicio: s.horaInicio,
+              horaFin: s.horaFin,
+            };
+          });
+          // fechaInicio: la PRIMERA sesión cronológicamente (evita el bug de fechaFin)
+          let fechaInicioReal = null;
+          if (sesiones.length > 0) {
+            const fs = sesiones.map(s => new Date(s.fecha)).sort((a, b) => a - b);
+            fechaInicioReal = fs[0];
+          } else {
+            fechaInicioReal = apertura.fechaInicio?.toDate?.() || apertura.fechaInicio || new Date();
+          }
           await fn({
             cursoId: curso.id,
             inscritos,
-            fechaInicio,
+            fechaInicio: fechaInicioReal.toISOString(),
             sesiones,
             patronSemanal: apertura.patronSemanal || [],
             semanas: apertura.semanas || 0,
+            tipoEmail: "apertura",
           });
           toast(`✅ ${curso.nombre} llegó al mínimo · Email enviado al ponente`, "success");
         } catch (e) {
@@ -1916,17 +1939,39 @@
     renderCalendarioSemanal();
   }
 
+  // Devuelve el "estado efectivo" considerando si ya inició:
+  // - "iniciado" si está activo Y la primera sesión ya pasó
+  // - sino, el estado guardado
+  function estadoEfectivo(apertura) {
+    if (apertura.estado === "activo") {
+      const sesiones = apertura.sesiones || [];
+      if (sesiones.length > 0) {
+        const fs = sesiones.map(s => s.fecha?.toDate?.() || (s.fecha instanceof Date ? s.fecha : new Date(s.fecha)));
+        const minFecha = new Date(Math.min(...fs.map(f => f.getTime())));
+        if (minFecha < new Date()) return "iniciado";
+      }
+    }
+    return apertura.estado || "pendiente";
+  }
+
   function actualizarKpisCronograma() {
-    const activos = aperturas.filter(a => a.estado === "activo").length;
-    const pendientes = aperturas.filter(a => a.estado === "pendiente").length;
-    const cancelados = aperturas.filter(a => a.estado === "cancelado").length;
+    let activos = 0, pendientes = 0, cancelados = 0, iniciados = 0;
+    aperturas.forEach(a => {
+      const est = estadoEfectivo(a);
+      if (est === "activo") activos++;
+      else if (est === "pendiente") pendientes++;
+      else if (est === "cancelado") cancelados++;
+      else if (est === "iniciado") iniciados++;
+    });
 
     const elA = document.getElementById("kpi-cron-activos");
     const elP = document.getElementById("kpi-cron-pendientes");
     const elC = document.getElementById("kpi-cron-cancelados");
+    const elI = document.getElementById("kpi-cron-iniciados");
     if (elA) elA.textContent = activos;
     if (elP) elP.textContent = pendientes;
     if (elC) elC.textContent = cancelados;
+    if (elI) elI.textContent = iniciados;
   }
 
   // Devuelve todas las sesiones (de todas las aperturas) que caen en una fecha y hora dadas
@@ -2079,10 +2124,12 @@
 
       if (!horaToRow.hasOwnProperty(Math.floor(horaInicio))) return;
 
-      // Color según estado
+      // Color según estado efectivo (incluye morado para iniciados)
+      const est = estadoEfectivo(a);
       let bg = "#16a34a", border = "#15803d";
-      if (a.estado === "pendiente") { bg = "#f59e0b"; border = "#d97706"; }
-      else if (a.estado === "cancelado") { bg = "#dc2626"; border = "#b91c1c"; }
+      if (est === "pendiente") { bg = "#f59e0b"; border = "#d97706"; }
+      else if (est === "cancelado") { bg = "#dc2626"; border = "#b91c1c"; }
+      else if (est === "iniciado") { bg = "#9333ea"; border = "#7e22ce"; }
 
       // Filas para grid usando horaToRow
       const col = diaIdx + 2;
@@ -2351,10 +2398,9 @@
             <strong>Vista previa:</strong> <span id="preview-count">0</span> sesiones.
           </div>
 
-          <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="cel-notificar">
-            <span>📧 Enviar email al ponente <em>ahora mismo</em> (opcional, normalmente se envía solo cuando llega al mínimo)</span>
-          </label>
+          <div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:8px;padding:12px;margin-top:10px;font-size:12px;color:#1e40af">
+            📧 <strong>Email al ponente:</strong> Se enviará <em>automáticamente</em> cuando el curso llegue al mínimo de alumnos. No se envía al programar.
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
@@ -2502,7 +2548,6 @@
         }
 
         const patron = leerPatron();
-        const notificarManual = wrap.querySelector("#cel-notificar").checked;
         const fechaInicio = sesiones[0].fecha;
         const fechaFin = sesiones[sesiones.length - 1].fecha;
 
@@ -2577,13 +2622,14 @@
           aperturaId = docRef.id;
         }
 
-        // Recalcular si quedó activo automáticamente
+        // Recalcular si quedó activo automáticamente (alcanzó mínimo al programar)
         const minimoFinal = cursoObj?.minimoAlumnos || 8;
         const inscritosFinal = alumnos.filter(al =>
           al.cursoId === cursoIdFinal && al.estado !== "email_enviado"
         ).length;
         const yaActivo = inscritosFinal >= minimoFinal;
-        const debeEnviarEmail = (yaActivo || notificarManual) && emailPonente && emailPonente.includes("@");
+        // Solo se envía email si quedó automáticamente activo (cruzó umbral) Y tiene email
+        const debeEnviarEmail = yaActivo && emailPonente && emailPonente.includes("@");
 
         // Email al ponente con todas las sesiones
         if (debeEnviarEmail) {
@@ -2600,11 +2646,9 @@
               })),
               patronSemanal: patron,
               semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
+              tipoEmail: "apertura",
             });
-            const msg = yaActivo
-              ? `🟢 Programado y ACTIVO (${inscritosFinal} alumnos) · Email enviado al ponente`
-              : `Programado · ${sesiones.length} sesiones · Email enviado al ponente`;
-            toast(msg, "success");
+            toast(`🟢 Programado y ACTIVO (${inscritosFinal} alumnos) · Email enviado al ponente`, "success");
           } catch (errEmail) {
             console.error("Email falló:", errEmail);
             toast(`Programado, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
