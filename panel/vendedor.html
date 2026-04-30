@@ -1217,24 +1217,35 @@
       return f.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
     };
 
-    const comisionPorCert = (c) => {
-      if (typeof c.comisionVendedor === "number") return c.comisionVendedor;
-      const curso = cursos.find(cu => cu.id === c.cursoId);
-      return calcularComisionFija(usuario, curso, consultora);
-    };
+    // Mapa cert por alumno
+    const certPorAlumno = {};
+    certificados.forEach(c => { if (c.alumnoId) certPorAlumno[c.alumnoId] = c; });
 
-    // Agrupar por día
+    // Agrupar por día — usando ALUMNOS (no certificados)
     const porDia = {};
-    certificados.forEach(c => {
-      const fechaStr = fechaMX(c.creadoEn);
-      if (!fechaStr || fechaStr < inicioMesStr) return;
-      if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0, certs: [] };
+    alumnos.forEach(a => {
+      if (!a.email || !a.email.includes("@") || !a.nombre || !a.cursoId) return;
+      if (a.estado === "cancelado") return;
+      // Fecha: si creadoEn aún no está resuelto, usar HOY
+      let fechaStr = fechaMX(a.creadoEn);
+      if (!fechaStr) fechaStr = hoyMX;
+      if (fechaStr < inicioMesStr) return;
+
+      let monto = 0;
+      const cert = certPorAlumno[a.id];
+      if (cert && typeof cert.comisionVendedor === "number") {
+        monto = cert.comisionVendedor;
+      } else {
+        const curso = cursos.find(cu => cu.id === a.cursoId);
+        monto = calcularComisionFija(usuario, curso, consultora);
+      }
+
+      if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0 };
       porDia[fechaStr].ventas++;
-      porDia[fechaStr].monto += comisionPorCert(c);
-      porDia[fechaStr].certs.push(c);
+      porDia[fechaStr].monto += monto;
     });
 
-    const dias = Object.keys(porDia).sort().reverse(); // más reciente primero
+    const dias = Object.keys(porDia).sort().reverse();
 
     if (dias.length === 0) {
       cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
@@ -1416,6 +1427,10 @@
       alumnos.sort((a, b) => (a.creadoEn?.toMillis?.() || 0) - (b.creadoEn?.toMillis?.() || 0));
       renderSheet();
       actualizarStats();
+      // Re-render historial si está activa esa pestaña
+      if (document.getElementById("view-historial")?.classList.contains("active")) {
+        renderHistorial();
+      }
     }
   );
 
@@ -1426,7 +1441,10 @@
       certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
       renderSheet();
       actualizarStats();
-      renderResumen(); // Recalcula también ranking visible en la vista de ventas
+      renderResumen();
+      if (document.getElementById("view-historial")?.classList.contains("active")) {
+        renderHistorial();
+      }
     }
   );
 
@@ -1445,25 +1463,24 @@
     document.getElementById("stat-programados").textContent = `${programados} programados`;
 
     // ─── Comisiones por período ───
-    const comisionPorCert = (c) => {
-      if (typeof c.comisionVendedor === "number") return c.comisionVendedor;
-      const curso = cursos.find(cu => cu.id === c.cursoId);
-      return calcularComisionFija(usuario, curso, consultora);
-    };
+    // Helper: una "venta válida" = alumno con email + nombre + cursoId.
+    // Comisión = vendedorComisionFija (al momento actual) por cada alumno válido.
+    // Si ya existe certificado para ese alumno, usa el snapshot de comisionVendedor del cert.
 
-    // Helper: fecha en MX (YYYY-MM-DD)
     const fechaMX = (d) => {
       if (!d) return null;
       const f = d.toDate?.() || (d instanceof Date ? d : new Date(d));
+      if (isNaN(f.getTime())) return null;
       return f.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
     };
     const ahora = new Date();
     const hoyMX = ahora.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
-    // Lunes de esta semana (en MX)
-    const dow = parseInt(ahora.toLocaleString("en-US", { weekday: "short", timeZone: "America/Mexico_City" }) === "Sun" ? "0" : new Date(ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" })).getDay());
-    const lunesD = new Date(ahora);
+    // Lunes de esta semana en MX
+    const fechaMXObj = new Date(ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+    const dow = fechaMXObj.getDay(); // 0=domingo, 1=lunes...
     const offset = (dow === 0 ? 6 : dow - 1);
-    lunesD.setDate(ahora.getDate() - offset);
+    const lunesD = new Date(fechaMXObj);
+    lunesD.setDate(fechaMXObj.getDate() - offset);
     const lunesStr = lunesD.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
     // Día 1 del mes (en MX)
     const partesMes = hoyMX.split("-"); // YYYY-MM-DD
@@ -1478,12 +1495,36 @@
     ayer.setDate(ayer.getDate() - 1);
     const ayerStr = ayer.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
 
+    // Mapa de certificados por alumnoId para encontrar comisión guardada
+    const certPorAlumno = {};
     certificados.forEach(c => {
-      const fechaStr = fechaMX(c.creadoEn);
-      if (!fechaStr) return;
-      // Solo certificados del mes actual (vendedor)
+      if (c.alumnoId) certPorAlumno[c.alumnoId] = c;
+    });
+
+    // Iterar ALUMNOS (no certificados) — cuenta desde que se guarda con email válido
+    alumnos.forEach(a => {
+      // Validez mínima: email + nombre + cursoId + estado != cancelado
+      if (!a.email || !a.email.includes("@") || !a.nombre || !a.cursoId) return;
+      if (a.estado === "cancelado") return;
+
+      // Fecha del alumno: si creadoEn aún no está (recién insertado), usar HOY
+      let fechaStr = fechaMX(a.creadoEn);
+      if (!fechaStr) {
+        // Fallback: alumno recién creado, todavía sin serverTimestamp resuelto → asumir HOY
+        fechaStr = hoyMX;
+      }
       if (fechaStr < inicioMesStr) return;
-      const monto = comisionPorCert(c);
+
+      // Calcular comisión: si tiene cert, snapshot; si no, comisión fija actual
+      let monto = 0;
+      const cert = certPorAlumno[a.id];
+      if (cert && typeof cert.comisionVendedor === "number") {
+        monto = cert.comisionVendedor;
+      } else {
+        const curso = cursos.find(cu => cu.id === a.cursoId);
+        monto = calcularComisionFija(usuario, curso, consultora);
+      }
+
       if (fechaStr === hoyMX) { comisionHoy += monto; ventasHoy++; }
       if (fechaStr === ayerStr) { comisionAyer += monto; ventasAyer++; }
       if (fechaStr >= lunesStr) { comisionSemana += monto; ventasSemana++; }
