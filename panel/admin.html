@@ -762,31 +762,45 @@
     <section id="view-limpiar" class="section">
       <div class="main-header">
         <div>
-          <h1 class="main-title" style="color:#991b1b">⚠️ Limpiar datos del sistema</h1>
-          <p class="main-subtitle">Borra TODOS los certificados, alumnos y aperturas. Mantiene cursos, consultoras y vendedores.</p>
+          <h1 class="main-title" style="color:#991b1b">⚠️ Limpiar datos por consultora</h1>
+          <p class="main-subtitle">Borra los certificados, alumnos y aperturas SOLO de la consultora elegida. Mantiene cursos, consultoras y vendedores.</p>
         </div>
       </div>
 
       <div class="card" style="border:2px solid #dc2626;background:#fff5f5">
-        <div style="padding:30px;text-align:center">
-          <div style="font-size:48px;margin-bottom:14px">🗑️</div>
-          <h2 style="font-size:20px;color:#991b1b;margin:0 0 8px 0">Esta acción es PERMANENTE e irreversible</h2>
-          <p style="color:#4b5563;font-size:14px;line-height:1.5;max-width:540px;margin:14px auto">
-            Útil para limpiar datos de prueba antes de pasar a producción.<br>
-            <strong>Se borrarán:</strong> certificados · alumnos · aperturas (cronograma) · contadores de folios<br>
-            <strong>Se mantienen:</strong> cursos · consultoras · usuarios (admin/coordinadores/vendedores)
-          </p>
-
-          <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:18px auto;max-width:540px">
-            <div style="font-size:13px;color:#991b1b;margin-bottom:8px;font-weight:700">Para confirmar, escribe en mayúsculas:</div>
-            <div style="font-size:18px;color:#991b1b;font-weight:800;letter-spacing:.06em;margin-bottom:10px;font-family:monospace">BORRAR TODO</div>
-            <input class="input" type="text" id="limpiar-confirmacion" placeholder="Escribe BORRAR TODO" style="text-align:center;font-weight:700;letter-spacing:.06em">
+        <div style="padding:30px">
+          <div style="text-align:center">
+            <div style="font-size:48px;margin-bottom:14px">🗑️</div>
+            <h2 style="font-size:20px;color:#991b1b;margin:0 0 8px 0">Esta acción es PERMANENTE e irreversible</h2>
+            <p style="color:#4b5563;font-size:14px;line-height:1.5;max-width:560px;margin:14px auto">
+              Útil para limpiar datos de prueba de UNA consultora específica.<br>
+              <strong>Se borrarán de esa consultora:</strong> certificados · alumnos · aperturas (cronograma) · contador de folios<br>
+              <strong>Se mantiene siempre:</strong> el catálogo de cursos · datos de consultora · usuarios
+            </p>
           </div>
 
-          <button class="btn" id="btn-limpiar-datos" style="background:#dc2626;color:white;font-size:15px;padding:12px 28px;margin-top:8px" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Limpiar datos del sistema
-          </button>
+          <div style="max-width:560px;margin:24px auto 0 auto">
+            <div class="field" style="margin-bottom:14px">
+              <label class="field-label" style="color:#991b1b">1. Elige la consultora a limpiar *</label>
+              <select class="select" id="limpiar-consultora" style="border-color:#fca5a5">
+                <option value="">— Selecciona una consultora —</option>
+              </select>
+              <div class="field-hint" id="limpiar-resumen-consultora" style="color:#7f1d1d;font-weight:600;margin-top:8px"></div>
+            </div>
+
+            <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:14px 0;text-align:center">
+              <div style="font-size:13px;color:#991b1b;margin-bottom:8px;font-weight:700">2. Para confirmar, escribe en mayúsculas:</div>
+              <div style="font-size:18px;color:#991b1b;font-weight:800;letter-spacing:.06em;margin-bottom:10px;font-family:monospace">BORRAR TODO</div>
+              <input class="input" type="text" id="limpiar-confirmacion" placeholder="Escribe BORRAR TODO" style="text-align:center;font-weight:700;letter-spacing:.06em">
+            </div>
+
+            <div style="text-align:center">
+              <button class="btn" id="btn-limpiar-datos" style="background:#dc2626;color:white;font-size:15px;padding:12px 28px;margin-top:8px" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Limpiar datos de esta consultora
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -986,6 +1000,10 @@
         llenarCursosAdminCert();
         renderCertAdmin();
       }
+      if (btn.dataset.view === "limpiar") {
+        llenarSelectLimpiar();
+        actualizarResumenConsultora();
+      }
     });
   });
 
@@ -1021,6 +1039,7 @@
     actualizarDashboard();
     renderComisiones();
     if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
+    if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
   });
 
   onSnapshot(collection(db, "usuarios"), (snap) => {
@@ -2216,8 +2235,14 @@
       document.getElementById("adm-email").value = "";
       document.getElementById("adm-telefono").value = "";
     } catch (err) {
-      console.error(err);
-      toast("Error: " + (err.message || err), "error");
+      console.error("Error completo:", err);
+      console.error("err.code:", err.code);
+      console.error("err.message:", err.message);
+      console.error("err.details:", err.details);
+      const msgFull = err.message || String(err);
+      toast("Error: " + msgFull, "error");
+      // Mostrar detalle completo en pantalla
+      alert(`Error completo:\n\n${msgFull}\n\n${err.details ? 'Detalles: ' + JSON.stringify(err.details) : ''}`);
     } finally {
       btn.disabled = false;
       btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg> Generar y enviar certificado`;
@@ -2267,29 +2292,71 @@
   document.getElementById("search-cert-admin")?.addEventListener("input", renderCertAdmin);
 
   // ═══════════════════════════════════════════════════════
-  // 🗑️ LIMPIAR DATOS
+  // 🗑️ LIMPIAR DATOS — POR CONSULTORA
   // ═══════════════════════════════════════════════════════
-  document.getElementById("limpiar-confirmacion")?.addEventListener("input", (e) => {
+  function llenarSelectLimpiar() {
+    const sel = document.getElementById("limpiar-consultora");
+    if (!sel) return;
+    const valActual = sel.value;
+    sel.innerHTML = `<option value="">— Selecciona una consultora —</option>` +
+      consultoras.slice().sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""))
+        .map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}${c.codigo ? ` (${escapeHtml(c.codigo)})` : ''}</option>`).join("");
+    if (valActual) sel.value = valActual;
+  }
+
+  function actualizarBotonLimpiar() {
+    const consId = document.getElementById("limpiar-consultora")?.value || "";
+    const conf = (document.getElementById("limpiar-confirmacion")?.value || "").trim().toUpperCase();
     const btn = document.getElementById("btn-limpiar-datos");
-    btn.disabled = e.target.value.trim().toUpperCase() !== "BORRAR TODO";
+    if (!btn) return;
+    btn.disabled = !(consId && conf === "BORRAR TODO");
+  }
+
+  function actualizarResumenConsultora() {
+    const consId = document.getElementById("limpiar-consultora")?.value || "";
+    const cont = document.getElementById("limpiar-resumen-consultora");
+    if (!cont) return;
+    if (!consId) { cont.innerHTML = ""; return; }
+
+    // Contar documentos a borrar
+    const certCount = certificados.filter(c => c.consultoraId === consId).length;
+    const alumnosCount = alumnos.filter(a => a.consultoraId === consId).length;
+    // Aperturas no las cargamos en admin actualmente, mostramos guión
+    const c = consultoras.find(x => x.id === consId);
+    const nombre = c?.nombre || "esta consultora";
+
+    cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: <strong style="color:#dc2626">${certCount}</strong> certificados · <strong style="color:#dc2626">${alumnosCount}</strong> alumnos · todas sus aperturas (cronograma)`;
+  }
+
+  document.getElementById("limpiar-consultora")?.addEventListener("change", () => {
+    actualizarResumenConsultora();
+    actualizarBotonLimpiar();
   });
 
+  document.getElementById("limpiar-confirmacion")?.addEventListener("input", actualizarBotonLimpiar);
+
   document.getElementById("btn-limpiar-datos")?.addEventListener("click", async () => {
-    const ok = confirm("⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Borrar todos los certificados, alumnos y aperturas?\n\nEsta acción NO se puede deshacer.");
+    const consId = document.getElementById("limpiar-consultora").value;
+    if (!consId) return toast("Selecciona una consultora", "warning");
+
+    const c = consultoras.find(x => x.id === consId);
+    const nombre = c?.nombre || "consultora";
+
+    const ok = confirm(`⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Borrar TODOS los certificados, alumnos y aperturas de "${nombre}"?\n\nEsta acción NO se puede deshacer.`);
     if (!ok) return;
 
     const btn = document.getElementById("btn-limpiar-datos");
     btn.disabled = true;
-    btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Borrando datos...`;
+    btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Borrando datos de ${escapeHtml(nombre)}...`;
 
     try {
       const fn = httpsCallable(functions, "limpiarDatos");
-      const result = await fn({ confirmacion: "BORRAR_TODO" });
+      const result = await fn({ confirmacion: "BORRAR_TODO", consultoraId: consId });
       const data = result.data || {};
 
       const detalle = data.detalle || {};
       const html = `<div class="card" style="background:#f0fdf4;border:1px solid #bbf7d0;padding:20px">
-        <h3 style="color:#166534;margin:0 0 12px 0">✅ Limpieza completada</h3>
+        <h3 style="color:#166534;margin:0 0 12px 0">✅ Limpieza completada · ${escapeHtml(data.consultoraNombre || nombre)}</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
           ${Object.entries(detalle).map(([col, n]) => `
             <div style="background:white;padding:12px 16px;border-radius:8px;border:1px solid #d1fae5">
@@ -2303,17 +2370,19 @@
             <div style="font-size:11px;color:var(--muted)">contadores reiniciados</div>
           </div>
         </div>
-        <div style="font-size:13px;color:#166534;margin-top:14px">Total: <strong>${data.total} documentos</strong></div>
+        <div style="font-size:13px;color:#166534;margin-top:14px">Total: <strong>${data.total} documentos borrados</strong></div>
       </div>`;
       document.getElementById("limpiar-resultado").innerHTML = html;
       document.getElementById("limpiar-confirmacion").value = "";
-      toast(`✅ Limpieza completada: ${data.total} documentos borrados`, "success");
+      document.getElementById("limpiar-consultora").value = "";
+      actualizarResumenConsultora();
+      toast(`✅ Limpieza de ${data.consultoraNombre || nombre}: ${data.total} documentos borrados`, "success");
     } catch (err) {
       console.error(err);
       toast("Error: " + (err.message || err), "error");
     } finally {
       btn.disabled = true;
-      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Limpiar datos del sistema`;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Limpiar datos de esta consultora`;
     }
   });
 
