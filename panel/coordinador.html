@@ -1836,11 +1836,14 @@
   }
 
   // ═══════════════════════════════════════════════════════
-  // 📅 CRONOGRAMA DE APERTURAS — Calendario tipo Google Calendar
+  // 📅 CRONOGRAMA — Multi-sesión con patrón semanal
   // ═══════════════════════════════════════════════════════
 
-  const CRON_HORA_INICIO = 7;  // 7am
-  const CRON_HORA_FIN = 22;    // 10pm
+  const CRON_HORA_INICIO = 6;   // 6am
+  const CRON_HORA_FIN = 23;     // 11pm
+  const CRON_HORAS_PRIORITY_START = 18; // 6pm — desde aquí celdas más altas
+  const DIA_NOMBRES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  const DIA_CORTOS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
   function renderCronograma() {
     actualizarKpisCronograma();
@@ -1860,11 +1863,34 @@
     if (elC) elC.textContent = cancelados;
   }
 
+  // Devuelve todas las sesiones (de todas las aperturas) que caen en una fecha y hora dadas
+  function obtenerSesionesEnRango(lunes, finSemana) {
+    const eventos = [];
+    aperturas.forEach(a => {
+      if (a.estado === "cancelado") return;
+      const sesiones = a.sesiones || [];
+      sesiones.forEach((s, idx) => {
+        const f = s.fecha?.toDate?.() || (s.fecha instanceof Date ? s.fecha : null);
+        if (!f) return;
+        if (f >= lunes && f <= finSemana) {
+          eventos.push({
+            aperturaId: a.id,
+            sesionIdx: idx,
+            apertura: a,
+            sesion: s,
+            fecha: f,
+          });
+        }
+      });
+    });
+    return eventos;
+  }
+
   function renderCalendarioSemanal() {
     const cont = document.getElementById("cronograma-calendario-container");
     if (!cont) return;
 
-    // Calcular lunes de la semana visible
+    // Lunes de la semana visible
     const ref = new Date(cronSemana);
     const dia = ref.getDay();
     const diff = ref.getDate() - dia + (dia === 0 ? -6 : 1);
@@ -1879,28 +1905,23 @@
       dias.push(d);
     }
 
-    // Header
+    // Header rango
     const rangoStr = `${lunes.toLocaleDateString("es-MX", { day: "numeric", month: "short", timeZone: "America/Mexico_City" })} – ${dias[6].toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Mexico_City" })}`;
     document.getElementById("cron-cal-rango").textContent = rangoStr;
 
-    // Filtrar aperturas en este rango (incluso pendientes y canceladas)
+    // Sesiones de la semana
     const finSemana = new Date(dias[6]);
     finSemana.setHours(23, 59, 59, 999);
-    const aperturasSemana = aperturas.filter(a => {
-      const f = a.fechaInicio?.toDate?.();
-      return f && f >= lunes && f <= finSemana;
-    });
+    const eventos = obtenerSesionesEnRango(lunes, finSemana);
 
-    // Construir HTML
+    // Construir grid usando 30min como unidad (cada hora = 2 filas)
+    // Pero queremos que el rango 6pm-11pm sea más alto. Usaremos altura fija por hora,
+    // pero diferente para zona prioridad.
     const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     const hoyStr = new Date().toDateString();
 
     let html = `<div class="gcal-grid">`;
-
-    // Header columna horas vacía
     html += `<div class="gcal-corner"></div>`;
-
-    // Headers días
     dias.forEach((d, i) => {
       const esHoy = d.toDateString() === hoyStr;
       html += `<div class="gcal-day-header${esHoy ? ' gcal-today' : ''}">
@@ -1909,52 +1930,70 @@
       </div>`;
     });
 
-    // Filas de horas
+    // Filas de horas (cada hora = 1 fila, con altura variable según zona prioridad)
     for (let h = CRON_HORA_INICIO; h <= CRON_HORA_FIN; h++) {
       const horaStr = h === 12 ? "12pm" : (h < 12 ? `${h}am` : `${h-12}pm`);
-      html += `<div class="gcal-hour-label">${horaStr}</div>`;
+      const enZonaPrioridad = h >= CRON_HORAS_PRIORITY_START;
+      const filaClass = enZonaPrioridad ? "gcal-row-tall" : "gcal-row-normal";
 
+      html += `<div class="gcal-hour-label ${filaClass}">${horaStr}</div>`;
       for (let d = 0; d < 7; d++) {
         const fechaCelda = new Date(dias[d]);
         fechaCelda.setHours(h, 0, 0, 0);
-        const cellKey = `${fechaCelda.getFullYear()}-${fechaCelda.getMonth()}-${fechaCelda.getDate()}-${h}`;
-        html += `<div class="gcal-cell" data-date="${fechaCelda.toISOString()}" data-hour="${h}"></div>`;
+        html += `<div class="gcal-cell ${filaClass}" data-date="${fechaCelda.toISOString()}"></div>`;
       }
     }
-
     html += `</div>`;
     cont.innerHTML = html;
 
-    // Insertar eventos posicionados
+    // Agrupar eventos por celda (día+hora) para colocar lado a lado
+    const eventosPorCelda = {};
+    eventos.forEach(ev => {
+      const key = `${ev.fecha.getDay()}-${ev.fecha.getHours()}`;
+      if (!eventosPorCelda[key]) eventosPorCelda[key] = [];
+      eventosPorCelda[key].push(ev);
+    });
+
     const grid = cont.querySelector(".gcal-grid");
-    aperturasSemana.forEach(a => {
-      const f = a.fechaInicio.toDate();
+    eventos.forEach(ev => {
+      const f = ev.fecha;
+      const a = ev.apertura;
+      const s = ev.sesion;
+
       const diaIdx = (f.getDay() + 6) % 7; // Lun=0..Dom=6
       const horaInicio = f.getHours() + (f.getMinutes() / 60);
 
-      // Solo dibujar si está en rango visible
+      // Calcular duración de la sesión específica
+      let durHoras = 1;
+      if (s.horaInicio && s.horaFin) {
+        const [hi, mi] = s.horaInicio.split(":").map(Number);
+        const [hf, mf] = s.horaFin.split(":").map(Number);
+        durHoras = (hf + mf/60) - (hi + mi/60);
+        if (durHoras <= 0) durHoras = 1;
+      }
+
       if (horaInicio < CRON_HORA_INICIO || horaInicio > CRON_HORA_FIN) return;
 
-      // Calcular duración (default 1h, parsear "5 horas" si existe)
-      let durHoras = 1;
-      const durStr = (a.duracion || "").toLowerCase();
-      const m = durStr.match(/(\d+(?:\.\d+)?)\s*h/);
-      if (m) durHoras = Math.min(parseFloat(m[1]), CRON_HORA_FIN - horaInicio);
-      if (durHoras < 0.5) durHoras = 1;
-
       // Color según estado
-      let bg = "#16a34a", border = "#15803d", textColor = "#ffffff";
+      let bg = "#16a34a", border = "#15803d";
       if (a.estado === "pendiente") { bg = "#f59e0b"; border = "#d97706"; }
       else if (a.estado === "cancelado") { bg = "#dc2626"; border = "#b91c1c"; }
 
-      // Posición: columna día + 2 (porque la primera col es horas)
-      // Fila: hora - HORA_INICIO + 2 (porque la primera fila es header)
+      // Filas para grid: header(1) + hora desde HORA_INICIO
       const col = diaIdx + 2;
-      const filaInicio = (horaInicio - CRON_HORA_INICIO) + 2;
-      const filaFin = filaInicio + durHoras;
+      const filaInicio = (Math.floor(horaInicio) - CRON_HORA_INICIO) + 2;
+      const filaFin = filaInicio + Math.max(1, Math.ceil(durHoras));
 
-      const horaTxt = f.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" });
-      const cursoCorto = (a.cursoNombre || "").length > 35 ? (a.cursoNombre || "").substring(0, 35) + "…" : (a.cursoNombre || "");
+      // Si en esta celda hay varios eventos, dividir el ancho
+      const celdaKey = `${f.getDay()}-${f.getHours()}`;
+      const grupo = eventosPorCelda[celdaKey] || [ev];
+      const indiceEnGrupo = grupo.findIndex(g => g.aperturaId === ev.aperturaId && g.sesionIdx === ev.sesionIdx);
+      const totalEnGrupo = grupo.length;
+      const widthPct = 100 / totalEnGrupo;
+      const leftPct = widthPct * indiceEnGrupo;
+
+      const horaTxt = `${s.horaInicio || ""}${s.horaFin ? "–" + s.horaFin : ""}`;
+      const cursoCorto = (a.cursoNombre || "").length > 22 ? (a.cursoNombre || "").substring(0, 22) + "…" : (a.cursoNombre || "");
 
       const eventDiv = document.createElement("div");
       eventDiv.className = "gcal-event";
@@ -1963,14 +2002,17 @@
         grid-row: ${filaInicio} / ${filaFin};
         background: ${bg};
         border-left: 3px solid ${border};
-        color: ${textColor};
+        color: #fff;
+        width: calc(${widthPct}% - 6px);
+        margin-left: calc(${leftPct}% + 3px);
       `;
       eventDiv.dataset.aperturaId = a.id;
       eventDiv.innerHTML = `
         <div class="gcal-event-time">${horaTxt}</div>
         <div class="gcal-event-title">${escapeHtml(cursoCorto)}</div>
-        <div class="gcal-event-ponente">${escapeHtml(a.ponente || "")}</div>
+        ${totalEnGrupo === 1 ? `<div class="gcal-event-ponente">${escapeHtml(a.ponente || "")}</div>` : ""}
       `;
+      eventDiv.title = `${a.cursoNombre}\n${a.ponente || ""}\n${horaTxt}`;
       eventDiv.addEventListener("click", (e) => {
         e.stopPropagation();
         editarApertura(a.id);
@@ -1978,51 +2020,52 @@
       grid.appendChild(eventDiv);
     });
 
-    // Click en celda vacía para programar nuevo curso
+    // Click celda vacía
     cont.querySelectorAll(".gcal-cell").forEach(cell => {
       cell.addEventListener("click", () => {
-        const fechaIso = cell.dataset.date;
-        programarEnCelda(fechaIso);
+        programarEnCelda(cell.dataset.date);
       });
     });
+
+    // Auto-scroll a 6pm si es la primera vez
+    if (!cronYaScroll) {
+      const ev = grid.querySelector(".gcal-event") || grid.querySelectorAll(".gcal-cell.gcal-row-tall")[0];
+      if (ev) ev.scrollIntoView({ block: "center" });
+      cronYaScroll = true;
+    }
   }
 
-  // Inyectar CSS del calendario una vez
+  let cronYaScroll = false;
+
+  // CSS del calendario
   if (!document.getElementById("gcal-styles")) {
     const styles = document.createElement("style");
     styles.id = "gcal-styles";
     styles.textContent = `
       .gcal-grid {
         display: grid;
-        grid-template-columns: 60px repeat(7, minmax(120px, 1fr));
-        grid-auto-rows: 50px;
+        grid-template-columns: 64px repeat(7, minmax(140px, 1fr));
         position: relative;
         background: #fff;
-        min-width: 900px;
+        min-width: 1000px;
       }
+      .gcal-row-normal { height: 36px; }
+      .gcal-row-tall { height: 64px; }
       .gcal-corner {
-        position: sticky;
-        top: 0;
-        left: 0;
-        z-index: 5;
+        position: sticky; top: 0; left: 0; z-index: 5;
         background: #f8fafc;
         border-right: 1px solid #e5e7eb;
         border-bottom: 1px solid #e5e7eb;
       }
       .gcal-day-header {
-        position: sticky;
-        top: 0;
-        z-index: 4;
+        position: sticky; top: 0; z-index: 4;
         background: #f8fafc;
         text-align: center;
         padding: 10px 6px;
         border-right: 1px solid #e5e7eb;
         border-bottom: 1px solid #e5e7eb;
-        font-size: 12px;
       }
-      .gcal-day-header.gcal-today {
-        background: #dbeafe;
-      }
+      .gcal-day-header.gcal-today { background: #dbeafe; }
       .gcal-day-name {
         text-transform: uppercase;
         color: #64748b;
@@ -2057,46 +2100,29 @@
         box-shadow: inset 0 0 0 1px #16a34a;
       }
       .gcal-event {
-        margin: 2px 4px;
-        padding: 5px 8px;
+        padding: 4px 6px;
         border-radius: 6px;
         font-size: 11px;
-        line-height: 1.2;
+        line-height: 1.25;
         cursor: pointer;
         overflow: hidden;
         z-index: 2;
         box-shadow: 0 1px 3px rgba(0,0,0,.12);
-        transition: transform .1s, box-shadow .1s;
+        transition: transform .1s;
+        align-self: stretch;
       }
       .gcal-event:hover {
         transform: translateY(-1px);
         box-shadow: 0 3px 8px rgba(0,0,0,.18);
       }
-      .gcal-event-time {
-        font-weight: 700;
-        font-size: 10px;
-        opacity: .95;
-      }
-      .gcal-event-title {
-        font-weight: 600;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .gcal-event-ponente {
-        font-size: 10px;
-        opacity: .85;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      .gcal-event-time { font-weight: 700; font-size: 10px; opacity: .95; }
+      .gcal-event-title { font-weight: 700; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .gcal-event-ponente { font-size: 10px; opacity: .9; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     `;
     document.head.appendChild(styles);
   }
 
-  // Navegación calendario
+  // Navegación
   document.getElementById("btn-cal-prev")?.addEventListener("click", () => {
     cronSemana.setDate(cronSemana.getDate() - 7);
     renderCronograma();
@@ -2107,72 +2133,63 @@
   });
   document.getElementById("btn-cal-hoy")?.addEventListener("click", () => {
     cronSemana = new Date();
+    cronYaScroll = false;
     renderCronograma();
   });
 
-  // ─── PROGRAMAR EN CELDA (click en celda vacía) ───
+  // ════════════════════════════════════════════════════════
+  // PROGRAMAR EN CELDA — modal con patrón semanal
+  // ════════════════════════════════════════════════════════
   async function programarEnCelda(fechaIso) {
-    const fecha = new Date(fechaIso);
+    const fechaCelda = new Date(fechaIso);
+    const diaSemanaInicial = fechaCelda.getDay();      // 0..6 (Dom=0)
+    const horaInicial = fechaCelda.getHours();         // ej. 19
+    const horaFinInicial = Math.min(horaInicial + 1, 23);
 
-    // Cursos de mi consultora con apertura pendiente
-    const cursosDisponibles = cursos.filter(c => c.activo !== false);
-
-    // Aperturas pendientes (sin programar) — para resaltarlas
+    // Pendientes (aperturas sin sesiones programadas)
     const pendientes = aperturas.filter(a => a.estado === "pendiente");
+    const cursosDisponibles = cursos.filter(c => c.activo !== false);
 
     const wrap = document.createElement("div");
     wrap.className = "modal-backdrop";
     wrap.innerHTML = `
-      <div class="modal" style="max-width:560px">
+      <div class="modal" style="max-width:680px;max-height:90vh;display:flex;flex-direction:column">
         <div class="modal-header">
           <div>
             <div class="modal-title">Programar curso en cronograma</div>
-            <div class="modal-subtitle">${fecha.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "America/Mexico_City" })} · ${fecha.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })}</div>
+            <div class="modal-subtitle">${fechaCelda.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "America/Mexico_City" })} · ${fechaCelda.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })}</div>
           </div>
           <button class="modal-close" data-close-here type="button">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
-        <div class="modal-body">
-          ${pendientes.length > 0 ? `
-            <div class="alert alert-warning" style="background:#fef3c7;border-color:#f59e0b;color:#92400e">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <div>Tienes <strong>${pendientes.length} grupo(s) abiertos sin programar</strong>. Selecciónalos abajo para asignarles fecha/hora.</div>
-            </div>
-          ` : ""}
-
-          <div class="field">
-            <label class="field-label">Tipo de programación *</label>
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <button type="button" class="btn btn-secondary" id="tab-pendiente" style="flex:1;background:#f59e0b;color:white">📌 Grupo abierto pendiente</button>
-              <button type="button" class="btn btn-secondary" id="tab-nuevo" style="flex:1">➕ Nuevo cronograma</button>
-            </div>
+        <div class="modal-body" style="overflow-y:auto;flex:1">
+          <!-- Tabs -->
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button type="button" class="btn btn-secondary" id="tab-pendiente" style="flex:1;background:#f59e0b;color:white">📌 Programar grupo abierto pendiente</button>
+            <button type="button" class="btn btn-secondary" id="tab-nuevo" style="flex:1">➕ Curso nuevo</button>
           </div>
 
-          <!-- TAB PENDIENTE: elegir apertura existente -->
+          <!-- TAB PENDIENTE -->
           <div id="panel-pendiente">
             ${pendientes.length === 0 ? `
               <div class="empty-state" style="padding:30px 20px">
                 <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <div class="empty-text">No hay grupos pendientes</div>
-                <div class="empty-hint">Cambia a "Nuevo cronograma" para programar uno nuevo</div>
+                <div class="empty-hint">Cambia a "Curso nuevo" para programar uno desde cero</div>
               </div>
             ` : `
               <div class="field">
                 <label class="field-label">Selecciona el grupo abierto a programar *</label>
                 <select class="select" id="cel-apertura">
                   <option value="">— Elegir grupo —</option>
-                  ${pendientes.map(p => {
-                    const f = p.fechaInicio?.toDate?.();
-                    const fStr = f ? f.toLocaleDateString("es-MX", { day: "2-digit", month: "short", timeZone: "America/Mexico_City" }) : "—";
-                    return `<option value="${p.id}">${escapeHtml(p.cursoNombre)} (abierto ${fStr})</option>`;
-                  }).join("")}
+                  ${pendientes.map(p => `<option value="${p.id}">${escapeHtml(p.cursoNombre)} (${escapeHtml(p.ponente || '—')})</option>`).join("")}
                 </select>
               </div>
             `}
           </div>
 
-          <!-- TAB NUEVO: crear nuevo en cronograma directamente -->
+          <!-- TAB NUEVO -->
           <div id="panel-nuevo" style="display:none">
             <div class="field">
               <label class="field-label">Curso *</label>
@@ -2181,28 +2198,52 @@
                 ${cursosDisponibles.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("")}
               </select>
             </div>
-            <div class="field-row">
-              <div class="field">
-                <label class="field-label">Modalidad</label>
-                <select class="select" id="cel-modalidad">
-                  <option value="En línea">En línea</option>
-                  <option value="Presencial">Presencial</option>
-                  <option value="Híbrido">Híbrido</option>
-                </select>
-              </div>
-              <div class="field">
-                <label class="field-label">Duración (horas)</label>
-                <input class="input" type="number" id="cel-duracion" value="1" min="0.5" step="0.5">
-              </div>
+          </div>
+
+          <hr style="margin:18px 0;border:0;border-top:1px solid #e5e7eb">
+
+          <!-- Configuración de sesiones (compartido por ambos tabs) -->
+          <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin:0 0 6px 0">📅 Días y horarios de las sesiones</h3>
+          <p style="font-size:12px;color:#64748b;margin:0 0 14px 0">Define qué días de la semana y a qué hora se imparte. Se repetirá automáticamente.</p>
+
+          <!-- Lista dinámica de días -->
+          <div id="patron-container" style="display:flex;flex-direction:column;gap:8px">
+            <!-- patrones se insertan aquí -->
+          </div>
+
+          <button type="button" class="btn btn-secondary" id="btn-add-patron" style="margin-top:8px;font-size:13px">
+            + Agregar otro día
+          </button>
+
+          <hr style="margin:18px 0;border:0;border-top:1px solid #e5e7eb">
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Fecha de inicio *</label>
+              <input class="input" type="date" id="cel-fecha-inicio" value="${fechaCelda.toISOString().slice(0,10)}">
             </div>
             <div class="field">
-              <label class="field-label">Estado inicial</label>
-              <select class="select" id="cel-estado">
-                <option value="activo">🟢 Activo</option>
-                <option value="pendiente">🟡 Pendiente</option>
-              </select>
+              <label class="field-label">¿Cuántas semanas dura? *</label>
+              <input class="input" type="number" id="cel-semanas" value="4" min="1" max="20">
             </div>
           </div>
+
+          <div class="field">
+            <label class="field-label">Estado inicial</label>
+            <select class="select" id="cel-estado">
+              <option value="activo">🟢 Activo (programado y confirmado)</option>
+              <option value="pendiente">🟡 Pendiente</option>
+            </select>
+          </div>
+
+          <div id="preview-sesiones" style="background:#f1f5f9;padding:12px;border-radius:8px;margin-top:10px;font-size:12px;color:#475569;max-height:120px;overflow:auto">
+            <strong>Vista previa:</strong> <span id="preview-count">0</span> sesiones.
+          </div>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="cel-notificar" checked>
+            <span>📧 Enviar email al ponente con todas las sesiones</span>
+          </label>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
@@ -2215,6 +2256,7 @@
     wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
     wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
 
+    // Estado del modal
     let modo = pendientes.length > 0 ? "pendiente" : "nuevo";
     if (pendientes.length === 0) {
       wrap.querySelector("#panel-pendiente").style.display = "none";
@@ -2223,6 +2265,7 @@
       wrap.querySelector("#tab-pendiente").style.color = "";
       wrap.querySelector("#tab-nuevo").style.background = "var(--primary)";
       wrap.querySelector("#tab-nuevo").style.color = "white";
+      modo = "nuevo";
     }
 
     wrap.querySelector("#tab-pendiente").addEventListener("click", () => {
@@ -2245,44 +2288,192 @@
       wrap.querySelector("#tab-pendiente").style.color = "";
     });
 
+    // Patrones semanales
+    const patronContainer = wrap.querySelector("#patron-container");
+    function addPatronRow(diaIdx = 1, hi = "19:00", hf = "20:00") {
+      const row = document.createElement("div");
+      row.className = "patron-row";
+      row.style.cssText = "display:grid;grid-template-columns:1fr 90px 90px 36px;gap:8px;align-items:center";
+      row.innerHTML = `
+        <select class="select patron-dia">
+          ${DIA_NOMBRES.map((n, i) => `<option value="${i}" ${i === diaIdx ? "selected" : ""}>${n}</option>`).join("")}
+        </select>
+        <input class="input patron-hi" type="time" value="${hi}">
+        <input class="input patron-hf" type="time" value="${hf}">
+        <button type="button" class="btn-icon patron-rm" style="color:#dc2626" title="Quitar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>`;
+      row.querySelector(".patron-rm").addEventListener("click", () => {
+        if (patronContainer.children.length === 1) return toast("Debe haber al menos un día", "warning");
+        row.remove();
+        actualizarPreview();
+      });
+      row.querySelectorAll("select,input").forEach(el => el.addEventListener("change", actualizarPreview));
+      patronContainer.appendChild(row);
+      actualizarPreview();
+    }
+
+    // Patrón inicial: día y hora del click
+    const hiStr = String(horaInicial).padStart(2, "0") + ":00";
+    const hfStr = String(horaFinInicial).padStart(2, "0") + ":00";
+    addPatronRow(diaSemanaInicial, hiStr, hfStr);
+
+    wrap.querySelector("#btn-add-patron").addEventListener("click", () => addPatronRow(1, "19:00", "20:00"));
+
+    // Helpers para preview
+    function leerPatron() {
+      const filas = patronContainer.querySelectorAll(".patron-row");
+      return Array.from(filas).map(f => ({
+        dia: parseInt(f.querySelector(".patron-dia").value, 10),
+        horaInicio: f.querySelector(".patron-hi").value,
+        horaFin: f.querySelector(".patron-hf").value,
+      }));
+    }
+    function generarSesiones() {
+      const fechaInicio = wrap.querySelector("#cel-fecha-inicio").value;
+      const semanas = parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1;
+      const patron = leerPatron();
+      if (!fechaInicio || patron.length === 0) return [];
+
+      const inicio = new Date(fechaInicio + "T00:00:00");
+      const sesiones = [];
+      for (let w = 0; w < semanas; w++) {
+        for (const p of patron) {
+          // Calcular fecha del día de la semana p.dia en la semana w
+          const base = new Date(inicio);
+          base.setDate(base.getDate() + (w * 7));
+          const diff = (p.dia - base.getDay() + 7) % 7;
+          const fechaSesion = new Date(base);
+          fechaSesion.setDate(base.getDate() + diff);
+          const [hi, mi] = p.horaInicio.split(":").map(Number);
+          fechaSesion.setHours(hi, mi || 0, 0, 0);
+
+          // Solo sesiones >= fecha inicio
+          if (fechaSesion < inicio) continue;
+          sesiones.push({
+            fecha: fechaSesion,
+            horaInicio: p.horaInicio,
+            horaFin: p.horaFin,
+          });
+        }
+      }
+      sesiones.sort((a, b) => a.fecha - b.fecha);
+      return sesiones;
+    }
+    function actualizarPreview() {
+      const sesiones = generarSesiones();
+      const cnt = wrap.querySelector("#preview-count");
+      const cont = wrap.querySelector("#preview-sesiones");
+      cnt.textContent = sesiones.length;
+      if (sesiones.length === 0) {
+        cont.innerHTML = `<strong>Vista previa:</strong> 0 sesiones`;
+        return;
+      }
+      const primera = sesiones[0].fecha;
+      const ultima = sesiones[sesiones.length - 1].fecha;
+      cont.innerHTML = `<strong>${sesiones.length} sesiones</strong> · Inicia ${primera.toLocaleDateString("es-MX", { day: "numeric", month: "short", weekday: "short" })} · Termina ${ultima.toLocaleDateString("es-MX", { day: "numeric", month: "short", weekday: "short" })}`;
+    }
+
+    wrap.querySelector("#cel-fecha-inicio").addEventListener("change", actualizarPreview);
+    wrap.querySelector("#cel-semanas").addEventListener("change", actualizarPreview);
+
+    // Guardar
     wrap.querySelector("#btn-cel-guardar").addEventListener("click", async () => {
       const btn = wrap.querySelector("#btn-cel-guardar");
       btn.disabled = true;
       btn.textContent = "Guardando...";
 
       try {
+        const sesiones = generarSesiones();
+        if (sesiones.length === 0) {
+          toast("Define al menos un día y horario válido", "warning");
+          btn.disabled = false; btn.textContent = "Programar"; return;
+        }
+
+        const patron = leerPatron();
+        const estadoFinal = wrap.querySelector("#cel-estado").value;
+        const notificar = wrap.querySelector("#cel-notificar").checked;
+        const fechaInicio = sesiones[0].fecha;
+        const fechaFin = sesiones[sesiones.length - 1].fecha;
+
+        let aperturaId, cursoNombre, ponente, emailPonente;
+
         if (modo === "pendiente") {
-          const apId = wrap.querySelector("#cel-apertura").value;
-          if (!apId) { toast("Selecciona un grupo", "warning"); btn.disabled = false; btn.textContent = "Programar"; return; }
-          await updateDoc(doc(db, "aperturas", apId), {
-            fechaInicio: fecha,
-            estado: "activo",
+          aperturaId = wrap.querySelector("#cel-apertura").value;
+          if (!aperturaId) {
+            toast("Selecciona un grupo pendiente", "warning");
+            btn.disabled = false; btn.textContent = "Programar"; return;
+          }
+          const a = aperturas.find(x => x.id === aperturaId);
+          cursoNombre = a.cursoNombre;
+          ponente = a.ponente;
+          emailPonente = a.emailPonente;
+          await updateDoc(doc(db, "aperturas", aperturaId), {
+            sesiones,
+            patronSemanal: patron,
+            semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
+            fechaInicio,
+            fechaFin,
+            estado: estadoFinal,
           });
-          toast("Grupo programado en cronograma", "success");
         } else {
           const cursoId = wrap.querySelector("#cel-curso").value;
-          if (!cursoId) { toast("Selecciona un curso", "warning"); btn.disabled = false; btn.textContent = "Programar"; return; }
+          if (!cursoId) {
+            toast("Selecciona un curso", "warning");
+            btn.disabled = false; btn.textContent = "Programar"; return;
+          }
           const c = cursos.find(x => x.id === cursoId);
-          const dur = parseFloat(wrap.querySelector("#cel-duracion").value) || 1;
+          cursoNombre = c?.nombre || "";
+          ponente = c?.ponente || "";
+          emailPonente = c?.emailPonente || "";
           const fechaCierre = new Date();
           fechaCierre.setDate(fechaCierre.getDate() + (c?.frecuenciaDiasApertura || 15));
-          await addDoc(collection(db, "aperturas"), {
+          const docRef = await addDoc(collection(db, "aperturas"), {
             consultoraId: usuario.consultoraId,
             consultoraNombre: usuario.consultoraNombre || "",
             cursoId,
-            cursoNombre: c?.nombre || "",
-            ponente: c?.ponente || "",
-            emailPonente: c?.emailPonente || "",
-            modalidad: wrap.querySelector("#cel-modalidad").value,
-            duracion: `${dur} horas`,
-            fechaInicio: fecha,
+            cursoNombre,
+            ponente,
+            emailPonente,
+            modalidad: c?.modalidad || "",
+            duracion: c?.duracion || "",
+            sesiones,
+            patronSemanal: patron,
+            semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
+            fechaInicio,
+            fechaFin,
             fechaCierreVentas: fechaCierre,
             alumnosAlAbrir: 0,
-            estado: wrap.querySelector("#cel-estado").value,
+            estado: estadoFinal,
             creadoPor: usuario.uid,
             creadoEn: serverTimestamp(),
           });
-          toast("Curso agregado al cronograma", "success");
+          aperturaId = docRef.id;
+        }
+
+        // Email al ponente con todas las sesiones
+        if (notificar && emailPonente && emailPonente.includes("@")) {
+          try {
+            const fn = httpsCallable(functions, "notificarApertura");
+            await fn({
+              cursoId: modo === "nuevo" ? wrap.querySelector("#cel-curso").value : aperturas.find(x => x.id === aperturaId).cursoId,
+              inscritos: 0,
+              fechaInicio: fechaInicio.toISOString(),
+              sesiones: sesiones.map(s => ({
+                fecha: s.fecha.toISOString(),
+                horaInicio: s.horaInicio,
+                horaFin: s.horaFin,
+              })),
+              patronSemanal: patron,
+              semanas: parseInt(wrap.querySelector("#cel-semanas").value, 10) || 1,
+            });
+            toast(`Programado · ${sesiones.length} sesiones · Email enviado al ponente 🎉`, "success");
+          } catch (errEmail) {
+            console.error("Email falló:", errEmail);
+            toast(`Programado, pero el email al ponente falló: ${errEmail.message || errEmail}`, "warning");
+          }
+        } else {
+          toast(`Programado · ${sesiones.length} sesiones`, "success");
         }
         cerrar();
       } catch (e) {
@@ -2294,47 +2485,39 @@
     });
   }
 
-  // ─── EDITAR APERTURA ───
+  // ════════════════════════════════════════════════════════
+  // EDITAR APERTURA
+  // ════════════════════════════════════════════════════════
   async function editarApertura(aperturaId) {
     const a = aperturas.find(x => x.id === aperturaId);
     if (!a) return;
 
-    const fInicio = a.fechaInicio?.toDate?.() || new Date();
-    const tzOffset = fInicio.getTimezoneOffset() * 60000;
-    const fInicioStr = new Date(fInicio - tzOffset).toISOString().slice(0, 16);
+    const sesiones = a.sesiones || [];
+    const patronExistente = a.patronSemanal || [];
+    const semanasExistente = a.semanas || 1;
 
     const wrap = document.createElement("div");
     wrap.className = "modal-backdrop";
     wrap.innerHTML = `
-      <div class="modal" style="max-width:560px">
+      <div class="modal" style="max-width:680px;max-height:90vh;display:flex;flex-direction:column">
         <div class="modal-header">
           <div>
-            <div class="modal-title">Editar grupo en cronograma</div>
-            <div class="modal-subtitle">${escapeHtml(a.cursoNombre || "—")}</div>
+            <div class="modal-title">${escapeHtml(a.cursoNombre || "—")}</div>
+            <div class="modal-subtitle">${escapeHtml(a.ponente || "—")}</div>
           </div>
           <button class="modal-close" data-close-here type="button">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
-        <div class="modal-body">
-          <div class="field">
-            <label class="field-label">📅 Fecha y hora *</label>
-            <input class="input" type="datetime-local" id="ed-fecha-inicio" value="${fInicioStr}" required>
+        <div class="modal-body" style="overflow-y:auto;flex:1">
+          <div style="display:flex;gap:12px;background:#f1f5f9;padding:10px 14px;border-radius:8px;font-size:12px;color:#475569;margin-bottom:14px">
+            <div><strong>Sesiones:</strong> ${sesiones.length}</div>
+            <div>·</div>
+            <div><strong>Inscritos al abrir:</strong> ${a.alumnosAlAbrir || 0}</div>
+            <div>·</div>
+            <div><strong>Modalidad:</strong> ${escapeHtml(a.modalidad || "—")}</div>
           </div>
-          <div class="field-row">
-            <div class="field">
-              <label class="field-label">Modalidad</label>
-              <select class="select" id="ed-modalidad">
-                <option value="En línea" ${a.modalidad === "En línea" ? "selected" : ""}>En línea</option>
-                <option value="Presencial" ${a.modalidad === "Presencial" ? "selected" : ""}>Presencial</option>
-                <option value="Híbrido" ${a.modalidad === "Híbrido" ? "selected" : ""}>Híbrido</option>
-              </select>
-            </div>
-            <div class="field">
-              <label class="field-label">Duración</label>
-              <input class="input" type="text" id="ed-duracion" value="${escapeHtml(a.duracion || "")}" placeholder="ej. 5 horas">
-            </div>
-          </div>
+
           <div class="field">
             <label class="field-label">Estado</label>
             <select class="select" id="ed-estado">
@@ -2343,15 +2526,29 @@
               <option value="cancelado" ${a.estado === "cancelado" ? "selected" : ""}>🔴 Cancelado</option>
             </select>
           </div>
-          <div class="field" style="background:#f1f5f9;padding:12px;border-radius:8px;font-size:12px;color:#475569;margin-top:6px">
-            <strong>Ponente:</strong> ${escapeHtml(a.ponente || "—")}<br>
-            <strong>Inscritos al abrir:</strong> ${a.alumnosAlAbrir || 0}
+
+          <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px 0">📅 Sesiones programadas</h3>
+          <div id="ed-sesiones-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;border:1px solid #e5e7eb;border-radius:8px;padding:8px">
+            ${sesiones.length === 0 ? `
+              <div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px">No hay sesiones programadas</div>
+            ` : sesiones.map((s, idx) => {
+              const f = s.fecha?.toDate?.() || s.fecha;
+              const fStr = f ? f.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short", timeZone: "America/Mexico_City" }) : "—";
+              return `<div style="display:grid;grid-template-columns:1fr 80px 80px 36px;gap:8px;align-items:center;background:#f8fafc;padding:6px 10px;border-radius:6px">
+                <div style="font-size:13px"><strong>${idx + 1}.</strong> ${fStr}</div>
+                <div style="font-size:12px;color:#475569">${s.horaInicio || ""}</div>
+                <div style="font-size:12px;color:#475569">${s.horaFin || ""}</div>
+                <button type="button" class="btn-icon" data-rm-sesion="${idx}" style="color:#dc2626" title="Quitar sesión">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/></svg>
+                </button>
+              </div>`;
+            }).join("")}
           </div>
+          <div style="font-size:11px;color:#64748b;margin-top:6px">Para reprogramar todas las sesiones, mejor cancela este grupo y créalo de nuevo desde el cronograma.</div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
-          <button type="button" class="btn" id="btn-eliminar-apertura" style="background:#fee2e2;color:#dc2626">🗑️ Eliminar</button>
-          <button type="button" class="btn btn-primary" id="btn-guardar-apertura">Guardar</button>
+          <button type="button" class="btn btn-secondary" data-close-here>Cerrar</button>
+          <button type="button" class="btn btn-primary" id="btn-guardar-apertura">Guardar cambios</button>
         </div>
       </div>`;
 
@@ -2360,45 +2557,50 @@
     wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
     wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
 
+    // Quitar sesiones
+    let sesionesEditadas = sesiones.map(s => ({ ...s }));
+    wrap.querySelectorAll("[data-rm-sesion]").forEach(b => {
+      b.addEventListener("click", async () => {
+        const idx = parseInt(b.dataset.rmSesion, 10);
+        const ok = await confirmar({
+          titulo: "Quitar sesión",
+          mensaje: "¿Quitar esta sesión del cronograma?",
+          btnOk: "Sí, quitar",
+        });
+        if (!ok) return;
+        sesionesEditadas.splice(idx, 1);
+        b.closest("[data-rm-sesion]").parentElement.remove();
+      });
+    });
+
     wrap.querySelector("#btn-guardar-apertura").addEventListener("click", async () => {
       const btn = wrap.querySelector("#btn-guardar-apertura");
       btn.disabled = true;
       btn.textContent = "Guardando...";
       try {
-        const newFechaInicio = new Date(wrap.querySelector("#ed-fecha-inicio").value);
-        await updateDoc(doc(db, "aperturas", aperturaId), {
-          fechaInicio: newFechaInicio,
-          modalidad: wrap.querySelector("#ed-modalidad").value,
-          duracion: wrap.querySelector("#ed-duracion").value.trim(),
+        const updates = {
           estado: wrap.querySelector("#ed-estado").value,
-        });
+        };
+        if (sesionesEditadas.length !== sesiones.length) {
+          updates.sesiones = sesionesEditadas;
+          if (sesionesEditadas.length > 0) {
+            const sorted = sesionesEditadas.slice().sort((a, b) => {
+              const fa = a.fecha?.toDate?.() || a.fecha;
+              const fb = b.fecha?.toDate?.() || b.fecha;
+              return fa - fb;
+            });
+            updates.fechaInicio = sorted[0].fecha;
+            updates.fechaFin = sorted[sorted.length - 1].fecha;
+          }
+        }
+        await updateDoc(doc(db, "aperturas", aperturaId), updates);
         toast("Cambios guardados", "success");
         cerrar();
       } catch (e) {
         console.error(e);
         toast("Error: " + e.message, "error");
         btn.disabled = false;
-        btn.textContent = "Guardar";
-      }
-    });
-
-    wrap.querySelector("#btn-eliminar-apertura").addEventListener("click", async () => {
-      const ok = await confirmar({
-        titulo: "Eliminar del cronograma",
-        mensaje: `¿Quitar "${a.cursoNombre}" del cronograma? Los alumnos NO se borran, solo se quita la entrada del calendario.`,
-        btnOk: "Sí, eliminar",
-      });
-      if (!ok) return;
-      try {
-        await updateDoc(doc(db, "aperturas", aperturaId), {
-          estado: "cancelado",
-          canceladoEn: serverTimestamp(),
-        });
-        toast("Eliminado del cronograma", "success");
-        cerrar();
-      } catch (e) {
-        console.error(e);
-        toast("Error: " + e.message, "error");
+        btn.textContent = "Guardar cambios";
       }
     });
   }
