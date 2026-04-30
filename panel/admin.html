@@ -522,14 +522,14 @@
       <div class="main-header">
         <div>
           <h1 class="main-title">Comisiones</h1>
-          <p class="main-subtitle">Define qué porcentaje gana cada vendedor por venta</p>
+          <p class="main-subtitle">Define cuántos pesos gana cada vendedor por venta (cantidad fija en MXN)</p>
         </div>
       </div>
 
       <div class="alert alert-info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         <div>
-          <strong>Cómo funciona:</strong> Define un porcentaje default por consultora. Si necesitas un porcentaje especial para un curso o vendedor específico, configúralo abajo. La prioridad es: <strong>vendedor → curso → consultora</strong>.
+          <strong>Cómo funciona:</strong> Define una cantidad fija en pesos por consultora (ej. $13 MXN por cada venta). Si necesitas una cantidad especial para un curso o vendedor específico, configúrala abajo. La prioridad es: <strong>vendedor → curso → consultora</strong>.
         </div>
       </div>
 
@@ -544,8 +544,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Comisión default por consultora</div>
-              <div class="card-subtitle">Aplica a todos los vendedores y cursos de la consultora</div>
+              <div class="card-title">Comisión default por consultora ($ MXN por venta)</div>
+              <div class="card-subtitle">Aplica a todos los vendedores y cursos de la consultora · Pesos fijos por cada venta</div>
             </div>
           </div>
           <!-- Barra de acción masiva -->
@@ -557,8 +557,9 @@
             <span style="color:#94a3b8">|</span>
             <span class="contador-sel" data-tipo="consultoras" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-              <input class="input input-masivo" type="number" min="0" max="100" step="0.5" data-tipo="consultoras" placeholder="0" style="width:80px;text-align:center">
-              <span style="font-weight:700">%</span>
+              <span style="font-weight:700;color:#16a34a">$</span>
+              <input class="input input-masivo" type="number" min="0" step="1" data-tipo="consultoras" placeholder="0" style="width:90px;text-align:center">
+              <span style="font-weight:700">MXN</span>
               <button class="btn btn-primary btn-aplicar-masivo" data-tipo="consultoras">Aplicar a seleccionados</button>
             </div>
           </div>
@@ -571,8 +572,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Override por curso</div>
-              <div class="card-subtitle">Solo si el curso necesita un % distinto al de la consultora. Deja vacío para usar el default.</div>
+              <div class="card-title">Override por curso ($ MXN por venta)</div>
+              <div class="card-subtitle">Solo si el curso necesita una cantidad distinta a la de la consultora. Deja vacío para usar el default.</div>
             </div>
           </div>
           <div class="masivo-bar" data-tipo="cursos" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
@@ -583,8 +584,9 @@
             <span style="color:#94a3b8">|</span>
             <span class="contador-sel" data-tipo="cursos" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-              <input class="input input-masivo" type="number" min="0" max="100" step="0.5" data-tipo="cursos" placeholder="0" style="width:80px;text-align:center">
-              <span style="font-weight:700">%</span>
+              <span style="font-weight:700;color:#16a34a">$</span>
+              <input class="input input-masivo" type="number" min="0" step="1" data-tipo="cursos" placeholder="0" style="width:90px;text-align:center">
+              <span style="font-weight:700">MXN</span>
               <button class="btn btn-primary btn-aplicar-masivo" data-tipo="cursos">Aplicar a seleccionados</button>
               <button class="btn btn-secondary btn-limpiar-masivo" data-tipo="cursos" title="Quitar override (usar default)">Limpiar override</button>
             </div>
@@ -598,8 +600,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Override por vendedor estrella</div>
-              <div class="card-subtitle">Solo si el vendedor tiene un % especial. Deja vacío para usar el default de su consultora.</div>
+              <div class="card-title">Override por vendedor estrella ($ MXN por venta)</div>
+              <div class="card-subtitle">Solo si el vendedor tiene una cantidad especial. Deja vacío para usar el default de su consultora.</div>
             </div>
           </div>
           <div class="masivo-bar" data-tipo="vendedores" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
@@ -610,8 +612,9 @@
             <span style="color:#94a3b8">|</span>
             <span class="contador-sel" data-tipo="vendedores" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-              <input class="input input-masivo" type="number" min="0" max="100" step="0.5" data-tipo="vendedores" placeholder="0" style="width:80px;text-align:center">
-              <span style="font-weight:700">%</span>
+              <span style="font-weight:700;color:#16a34a">$</span>
+              <input class="input input-masivo" type="number" min="0" step="1" data-tipo="vendedores" placeholder="0" style="width:90px;text-align:center">
+              <span style="font-weight:700">MXN</span>
               <button class="btn btn-primary btn-aplicar-masivo" data-tipo="vendedores">Aplicar a seleccionados</button>
               <button class="btn btn-secondary btn-limpiar-masivo" data-tipo="vendedores" title="Quitar override (usar default)">Limpiar override</button>
             </div>
@@ -810,9 +813,9 @@
             <div class="field-hint">Aparecerá en el certificado y en el histórico admin</div>
           </div>
           <div class="field" style="grid-column:1/-1">
-            <label class="field-label">⏱️ Horas del curso *</label>
-            <input class="input" type="text" id="adm-horas-curso" placeholder="Ej: 5 horas, 10 horas, 40 horas">
-            <div class="field-hint">Texto libre — esto aparecerá en el certificado del alumno (campo DURACION)</div>
+            <label class="field-label">📅 Fecha y hora del curso *</label>
+            <input class="input" type="datetime-local" id="adm-fecha-curso">
+            <div class="field-hint">Esta fecha aparecerá en el certificado del alumno</div>
           </div>
           <div class="field">
             <label class="field-label">Nombre del alumno *</label>
@@ -959,12 +962,13 @@
         </div>
 
         <div class="field">
-          <label class="field-label">Comisión default (%)</label>
+          <label class="field-label">Comisión default ($ MXN por venta)</label>
           <div style="display:flex;align-items:center;gap:8px">
-            <input class="input" type="number" id="consultora-comision" min="0" max="100" step="0.5" placeholder="30" style="max-width:140px">
-            <span style="color:var(--muted);font-size:13px">% del precio del curso para el vendedor</span>
+            <span style="font-weight:700;color:#16a34a;font-size:15px">$</span>
+            <input class="input" type="number" id="consultora-comision" min="0" step="1" placeholder="13" style="max-width:140px">
+            <span style="color:var(--muted);font-size:13px">MXN por cada venta</span>
           </div>
-          <div class="field-hint">Aplica a todos los vendedores de esta consultora a menos que tengan override individual</div>
+          <div class="field-hint">Pesos fijos que gana el vendedor por cada venta (sin importar el precio del curso)</div>
         </div>
       </div>
 
@@ -1659,7 +1663,8 @@
         const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
         const certsCo = certificados.filter(ce => ce.consultoraId === co.id);
         const ingresosCo = certsCo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-        const com = typeof co.comisionDefault === "number" ? `${co.comisionDefault}%` : "—";
+        const com = typeof co.comisionFija === "number" ? `$${co.comisionFija} MXN`
+                  : typeof co.comisionDefault === "number" ? `$${co.comisionDefault} MXN` : "—";
         return `<tr>
           <td><code style="color:var(--primary);font-weight:700;font-size:11.5px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(co.codigo || "?")}</code></td>
           <td><strong>${escapeHtml(co.nombre)}</strong></td>
@@ -1722,8 +1727,8 @@
           coordinador: '<span class="chip chip-blue">Coordinador</span>',
           vendedor: '<span class="chip chip-gold">Vendedor</span>'
         }[u.rol] || '<span class="chip chip-gray">—</span>';
-        const com = u.rol === "vendedor" && typeof u.comisionOverride === "number"
-          ? `<span class="chip chip-green">${u.comisionOverride}% override</span>`
+        const com = u.rol === "vendedor" && (typeof u.comisionFija === "number" || typeof u.comisionOverride === "number")
+          ? `<span class="chip chip-green">$${u.comisionFija ?? u.comisionOverride} MXN override</span>`
           : '<span class="text-muted text-sm">—</span>';
         return `<tr>
           <td>
@@ -1767,8 +1772,8 @@
       <thead><tr><th>Curso</th><th>Consultora</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th><th>Comisión</th><th>Estado</th><th></th></tr></thead>
       <tbody>${lista.map(cu => {
         const cons = consultoras.find(co => co.id === cu.consultoraId);
-        const com = typeof cu.comisionOverride === "number"
-          ? `<span class="chip chip-green">${cu.comisionOverride}% override</span>`
+        const com = (typeof cu.comisionFija === "number" || typeof cu.comisionOverride === "number")
+          ? `<span class="chip chip-green">$${cu.comisionFija ?? cu.comisionOverride} MXN override</span>`
           : '<span class="text-muted text-sm">default</span>';
         return `<tr>
           <td><strong>${escapeHtml(cu.nombre)}</strong></td>
@@ -1946,10 +1951,11 @@
     }
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th style="width:40px;text-align:center"></th><th>Consultora</th><th>Vendedores</th><th>Comisión default</th></tr></thead>
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Consultora</th><th>Vendedores</th><th>Comisión default ($ MXN por venta)</th></tr></thead>
       <tbody>${consultoras.map(co => {
         const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
-        const valor = typeof co.comisionDefault === "number" ? co.comisionDefault : "";
+        const valor = typeof co.comisionFija === "number" ? co.comisionFija
+                    : typeof co.comisionDefault === "number" ? co.comisionDefault : "";
         return `<tr>
           <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="consultoras" data-id="${co.id}"></td>
           <td>
@@ -1961,8 +1967,9 @@
           <td>${numVend} vendedores</td>
           <td>
             <div class="comision-pct-input">
-              <input type="number" min="0" max="100" step="0.5" data-com-cons="${co.id}" value="${valor}" placeholder="0">
-              <span>%</span>
+              <span style="font-weight:700;color:#16a34a;margin-right:4px">$</span>
+              <input type="number" min="0" step="1" data-com-cons="${co.id}" value="${valor}" placeholder="0">
+              <span>MXN</span>
             </div>
           </td>
         </tr>`;
@@ -1974,9 +1981,9 @@
         const val = input.value.trim();
         debounce(`cons_${id}`, async () => {
           try {
-            const data = val === "" ? { comisionDefault: null } : { comisionDefault: parseFloat(val) };
+            const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
             await updateDoc(doc(db, "consultoras", id), data);
-            toast(`Comisión actualizada`, "success", 1500);
+            toast(`Comisión actualizada: $${val} MXN`, "success", 1500);
           } catch (e) {
             console.error(e);
             toast("Error: " + e.message, "error");
@@ -2000,11 +2007,13 @@
     });
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th style="width:40px;text-align:center"></th><th>Curso</th><th>Consultora</th><th>Default</th><th>Override</th></tr></thead>
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Curso</th><th>Consultora</th><th>Default consultora</th><th>Override curso ($ MXN por venta)</th></tr></thead>
       <tbody>${cursosOrdenados.map(cu => {
         const cons = consultoras.find(co => co.id === cu.consultoraId);
-        const def = typeof cons?.comisionDefault === "number" ? `${cons.comisionDefault}%` : "—";
-        const valor = typeof cu.comisionOverride === "number" ? cu.comisionOverride : "";
+        const def = typeof cons?.comisionFija === "number" ? `$${cons.comisionFija} MXN`
+                  : typeof cons?.comisionDefault === "number" ? `$${cons.comisionDefault} MXN` : "—";
+        const valor = typeof cu.comisionFija === "number" ? cu.comisionFija
+                    : typeof cu.comisionOverride === "number" ? cu.comisionOverride : "";
         return `<tr>
           <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="cursos" data-id="${cu.id}"></td>
           <td><strong>${escapeHtml(cu.nombre)}</strong></td>
@@ -2012,8 +2021,9 @@
           <td><span class="text-muted text-sm">${def}</span></td>
           <td>
             <div class="comision-pct-input">
-              <input type="number" min="0" max="100" step="0.5" data-com-curso="${cu.id}" value="${valor}" placeholder="—">
-              <span>%</span>
+              <span style="font-weight:700;color:#16a34a;margin-right:4px">$</span>
+              <input type="number" min="0" step="1" data-com-curso="${cu.id}" value="${valor}" placeholder="—">
+              <span>MXN</span>
             </div>
           </td>
         </tr>`;
@@ -2025,9 +2035,9 @@
         const val = input.value.trim();
         debounce(`curso_${id}`, async () => {
           try {
-            const data = val === "" ? { comisionOverride: null } : { comisionOverride: parseFloat(val) };
+            const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
             await updateDoc(doc(db, "cursos", id), data);
-            toast(`Comisión actualizada`, "success", 1500);
+            toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
           } catch (e) {
             console.error(e);
             toast("Error: " + e.message, "error");
@@ -2048,11 +2058,13 @@
     const ordenados = vendedoresList.sort((a, b) => (a.consultoraNombre || "").localeCompare(b.consultoraNombre || "") || (a.nombre || "").localeCompare(b.nombre || ""));
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th style="width:40px;text-align:center"></th><th>Vendedor</th><th>Consultora</th><th>Default</th><th>Override</th></tr></thead>
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Vendedor</th><th>Consultora</th><th>Default consultora</th><th>Override vendedor ($ MXN por venta)</th></tr></thead>
       <tbody>${ordenados.map(v => {
         const cons = consultoras.find(co => co.id === v.consultoraId);
-        const def = typeof cons?.comisionDefault === "number" ? `${cons.comisionDefault}%` : "—";
-        const valor = typeof v.comisionOverride === "number" ? v.comisionOverride : "";
+        const def = typeof cons?.comisionFija === "number" ? `$${cons.comisionFija} MXN`
+                  : typeof cons?.comisionDefault === "number" ? `$${cons.comisionDefault} MXN` : "—";
+        const valor = typeof v.comisionFija === "number" ? v.comisionFija
+                    : typeof v.comisionOverride === "number" ? v.comisionOverride : "";
         return `<tr>
           <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="vendedores" data-id="${v.id}"></td>
           <td>
@@ -2065,8 +2077,9 @@
           <td><span class="text-muted text-sm">${def}</span></td>
           <td>
             <div class="comision-pct-input">
-              <input type="number" min="0" max="100" step="0.5" data-com-vend="${v.id}" value="${valor}" placeholder="—">
-              <span>%</span>
+              <span style="font-weight:700;color:#16a34a;margin-right:4px">$</span>
+              <input type="number" min="0" step="1" data-com-vend="${v.id}" value="${valor}" placeholder="—">
+              <span>MXN</span>
             </div>
           </td>
         </tr>`;
@@ -2078,9 +2091,9 @@
         const val = input.value.trim();
         debounce(`vend_${id}`, async () => {
           try {
-            const data = val === "" ? { comisionOverride: null } : { comisionOverride: parseFloat(val) };
+            const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
             await updateDoc(doc(db, "usuarios", id), data);
-            toast(`Comisión actualizada`, "success", 1500);
+            toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
           } catch (e) {
             console.error(e);
             toast("Error: " + e.message, "error");
@@ -2310,7 +2323,8 @@
       document.getElementById("consultora-activa").value = String(data.activa !== false);
       document.getElementById("consultora-descriptivo").value = data.textoDescriptivo || "";
       document.getElementById("consultora-firma").value = data.firmaTexto || "";
-      document.getElementById("consultora-comision").value = typeof data.comisionDefault === "number" ? data.comisionDefault : "";
+      document.getElementById("consultora-comision").value = typeof data.comisionFija === "number" ? data.comisionFija
+        : typeof data.comisionDefault === "number" ? data.comisionDefault : "";
     } else {
       document.getElementById("modal-consultora-title").textContent = "Nueva consultora";
       document.getElementById("consultora-id").value = "";
@@ -2335,7 +2349,7 @@
         activa: document.getElementById("consultora-activa").value === "true",
         textoDescriptivo: document.getElementById("consultora-descriptivo").value.trim(),
         firmaTexto: document.getElementById("consultora-firma").value.trim(),
-        comisionDefault: comisionVal === "" ? null : parseFloat(comisionVal)
+        comisionFija: comisionVal === "" ? null : parseFloat(comisionVal)
       };
 
       if (id) {
@@ -2423,14 +2437,14 @@
     const consultoraId = document.getElementById("adm-consultora").value;
     const cursoId = document.getElementById("adm-curso").value;
     const empresa = document.getElementById("adm-empresa").value.trim();
-    const horasCurso = document.getElementById("adm-horas-curso").value.trim();
+    const fechaCurso = document.getElementById("adm-fecha-curso").value;
     const nombre = document.getElementById("adm-nombre").value.trim();
     const email = document.getElementById("adm-email").value.trim();
     const telefono = document.getElementById("adm-telefono").value.trim();
 
     if (!consultoraId) return toast("Selecciona consultora", "warning");
     if (!cursoId) return toast("Selecciona curso", "warning");
-    if (!horasCurso) return toast("Captura las horas del curso (ej: 5 horas)", "warning");
+    if (!fechaCurso) return toast("Captura la fecha y hora del curso", "warning");
     if (!nombre) return toast("Captura el nombre del alumno", "warning");
     if (!email || !email.includes("@")) return toast("Email inválido", "warning");
 
@@ -2439,19 +2453,21 @@
     btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Generando certificado...`;
 
     try {
+      // Convertir datetime-local a ISO con timezone local
+      const fechaISO = new Date(fechaCurso).toISOString();
       const fn = httpsCallable(functions, "generarCertificadoAdmin");
       const result = await fn({
         consultoraId,
         cursoId,
         alumno: { nombre, email, telefono },
         empresaContratante: empresa,
-        horasCurso,
+        fechaCurso: fechaISO,
       });
       const data = result.data || {};
       toast(`✅ Certificado generado · Folio: ${data.folio}`, "success");
       // Limpiar formulario
       document.getElementById("adm-empresa").value = "";
-      document.getElementById("adm-horas-curso").value = "";
+      document.getElementById("adm-fecha-curso").value = "";
       document.getElementById("adm-nombre").value = "";
       document.getElementById("adm-email").value = "";
       document.getElementById("adm-telefono").value = "";
@@ -2502,37 +2518,38 @@
       const inputMasivo = document.querySelector(`.input-masivo[data-tipo="${tipo}"]`);
       const valor = inputMasivo.value.trim();
       if (valor === "" || isNaN(parseFloat(valor))) {
-        return toast("Captura un porcentaje válido", "warning");
+        return toast("Captura una cantidad válida en pesos", "warning");
       }
-      const pct = parseFloat(valor);
-      if (pct < 0 || pct > 100) return toast("El porcentaje debe estar entre 0 y 100", "warning");
+      const pesos = parseFloat(valor);
+      if (pesos < 0) return toast("La cantidad no puede ser negativa", "warning");
 
       const seleccionados = [...document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`)].map(cb => cb.dataset.id);
       if (seleccionados.length === 0) return toast("Selecciona al menos un registro", "warning");
 
-      const ok = confirm(`¿Aplicar ${pct}% a ${seleccionados.length} registro${seleccionados.length !== 1 ? 's' : ''} de ${tipo}?`);
+      const ok = confirm(`¿Aplicar $${pesos} MXN por venta a ${seleccionados.length} registro${seleccionados.length !== 1 ? 's' : ''} de ${tipo}?`);
       if (!ok) return;
 
       e.target.disabled = true;
       e.target.textContent = "Aplicando...";
 
       try {
-        let coleccion, campo;
-        if (tipo === "consultoras") { coleccion = "consultoras"; campo = "comisionDefault"; }
-        else if (tipo === "cursos") { coleccion = "cursos"; campo = "comisionOverride"; }
-        else if (tipo === "vendedores") { coleccion = "usuarios"; campo = "comisionOverride"; }
+        let coleccion;
+        const campo = "comisionFija"; // mismo campo en las 3 colecciones
+        if (tipo === "consultoras") coleccion = "consultoras";
+        else if (tipo === "cursos") coleccion = "cursos";
+        else if (tipo === "vendedores") coleccion = "usuarios";
 
         for (const id of seleccionados) {
-          await updateDoc(doc(db, coleccion, id), { [campo]: pct });
+          await updateDoc(doc(db, coleccion, id), { [campo]: pesos });
         }
-        toast(`✅ ${pct}% aplicado a ${seleccionados.length} ${tipo}`, "success");
+        toast(`✅ $${pesos} MXN por venta aplicado a ${seleccionados.length} ${tipo}`, "success");
         // Actualizar inputs visibles
         seleccionados.forEach(id => {
           const sel = tipo === "consultoras" ? `[data-com-cons="${id}"]`
             : tipo === "cursos" ? `[data-com-curso="${id}"]`
             : `[data-com-vend="${id}"]`;
           const inp = document.querySelector(sel);
-          if (inp) inp.value = pct;
+          if (inp) inp.value = pesos;
         });
         // Limpiar selección
         document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => cb.checked = false);
@@ -2561,9 +2578,9 @@
       e.target.textContent = "Limpiando...";
       try {
         const coleccion = tipo === "cursos" ? "cursos" : "usuarios";
-        const campo = "comisionOverride";
+        const campo = "comisionFija";
         for (const id of seleccionados) {
-          await updateDoc(doc(db, coleccion, id), { [campo]: null });
+          await updateDoc(doc(db, coleccion, id), { [campo]: null, comisionOverride: null });
         }
         toast(`✅ Override quitado de ${seleccionados.length} registros`, "success");
         seleccionados.forEach(id => {
@@ -2701,9 +2718,8 @@
                   <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Folio</th>
                   <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Alumno</th>
                   <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Curso</th>
-                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">Precio</th>
-                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">% Com</th>
-                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">Pago</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">Precio venta</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">A pagar</th>
                 </tr>
               </thead>
               <tbody>
@@ -2712,7 +2728,6 @@
                   <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9">${escapeHtml(c.nombreAlumno || "—")}</td>
                   <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;color:#475569">${escapeHtml((c.nombreCurso || "—").substring(0, 50))}${(c.nombreCurso || "").length > 50 ? '…' : ''}</td>
                   <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right">${formatMoney(c.precio || 0)}</td>
-                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right;color:#64748b">${c.comisionPct || 0}%</td>
                   <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#0b4ea2">${formatMoney(c.comisionVendedor || 0)}</td>
                 </tr>`).join("")}
               </tbody>
@@ -2833,14 +2848,16 @@
           <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Curso</th>
           <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Consultora</th>
           <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Empresa contratante</th>
-          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Duración</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Fecha curso</th>
           <th style="text-align:center;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">PDF</th>
         </tr>
       </thead>
       <tbody>`;
 
     lista.forEach((c, idx) => {
-      const duracionShow = c.duracion || "—";
+      const fechaCurso = c.fechaCurso?.toDate?.()
+        ? c.fechaCurso.toDate().toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })
+        : (c.fecha || "—");
       const color = colorPorConsultora(c.nombreConsultora);
       const bgRow = idx % 2 === 0 ? "white" : "#fafbfc";
 
@@ -2863,9 +2880,7 @@
             ? `<span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600">🏢 ${escapeHtml(c.empresaContratante)}</span>`
             : `<span style="color:#94a3b8;font-style:italic;font-size:12px">Sin empresa</span>`}
         </td>
-        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top">
-          <span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700">⏱️ ${escapeHtml(duracionShow)}</span>
-        </td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;color:#475569;font-size:13px;font-weight:500">${escapeHtml(fechaCurso)}</td>
         <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;text-align:center">
           ${c.pdfUrl
             ? `<a href="${escapeHtml(c.pdfUrl)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#0b4ea2;color:white;padding:6px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#0a3d80'" onmouseout="this.style.background='#0b4ea2'">

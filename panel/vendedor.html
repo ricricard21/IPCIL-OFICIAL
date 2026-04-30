@@ -1033,10 +1033,21 @@
   import {
     auth, db, functions,
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, confirmar, escapeHtml, iniciales, setupSidebar,
-    calcularComisionPct, calcularComisionMonto,
     collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp, onSnapshot,
     httpsCallable
   } from "./firebase-config.js";
+
+  // Helper local: comisión fija en pesos por venta (vendedor → curso → consultora)
+  function calcularComisionFija(usuario, curso, consultora) {
+    if (typeof usuario?.comisionFija === "number") return usuario.comisionFija;
+    if (typeof curso?.comisionFija === "number") return curso.comisionFija;
+    if (typeof consultora?.comisionFija === "number") return consultora.comisionFija;
+    // Compatibilidad legacy
+    if (typeof usuario?.comisionOverride === "number") return usuario.comisionOverride;
+    if (typeof curso?.comisionOverride === "number") return curso.comisionOverride;
+    if (typeof consultora?.comisionDefault === "number") return consultora.comisionDefault;
+    return 0;
+  }
 
   let usuario = null;
   let consultora = null;
@@ -1290,26 +1301,29 @@
     const programados = alumnos.filter(a => a.estado === "programado").length;
     document.getElementById("stat-programados").textContent = `${programados} programados`;
 
-    // Comisión total
+    // Comisión total — pesos fijos por venta
     const comisionTotal = certificados.reduce((s, c) => {
-      if (c.comisionVendedor) return s + parseFloat(c.comisionVendedor);
+      // Si el certificado tiene comisionVendedor (snapshot guardado al crear), usar esa
+      if (typeof c.comisionVendedor === "number") return s + c.comisionVendedor;
+      // Si no, calcular con la comisión fija actual
       const curso = cursos.find(cu => cu.id === c.cursoId);
-      const pct = calcularComisionPct(usuario, curso, consultora);
-      return s + calcularComisionMonto(c.precio || 0, pct);
+      return s + calcularComisionFija(usuario, curso, consultora);
     }, 0);
 
     document.getElementById("stat-comision").textContent = formatMoney(comisionTotal);
 
-    const pctVigente = calcularComisionPct(usuario, null, consultora);
-    document.getElementById("stat-comision-pct").textContent = pctVigente > 0 ? `${pctVigente}% por venta` : "Sin comisión definida";
+    const fijaVigente = calcularComisionFija(usuario, null, consultora);
+    document.getElementById("stat-comision-pct").textContent = fijaVigente > 0
+      ? `$${fijaVigente} MXN por venta`
+      : "Sin comisión definida";
 
     document.getElementById("r-total").textContent = alumnos.length;
     document.getElementById("r-certs").textContent = certificados.length;
     const ingresos = certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
     document.getElementById("r-ingresos").textContent = formatMoney(ingresos);
     document.getElementById("r-comision").textContent = formatMoney(comisionTotal);
-    document.getElementById("r-comision-info").textContent = pctVigente > 0
-      ? `${pctVigente}% sobre ${formatMoney(ingresos)} facturados`
+    document.getElementById("r-comision-info").textContent = fijaVigente > 0
+      ? `$${fijaVigente} MXN por cada venta · ${certificados.length} ventas certificadas`
       : "Comisión sin configurar";
   }
 
@@ -1771,15 +1785,17 @@
 
     alumnoIdAGenerar = alumnoId;
 
-    // Calcular comisión
-    comisionPctActual = calcularComisionPct(usuario, curso, consultora);
-    const comisionMonto = calcularComisionMonto(curso.precio || 0, comisionPctActual);
+    // Calcular comisión fija en pesos
+    comisionPctActual = calcularComisionFija(usuario, curso, consultora);
+    const comisionMonto = comisionPctActual;
 
     document.getElementById("cf-nombre").textContent = a.nombre;
     document.getElementById("cf-curso").textContent = curso.nombre;
     document.getElementById("cf-email").textContent = a.email;
     document.getElementById("cf-precio").textContent = formatMoney(curso.precio || 0);
-    document.getElementById("cf-comision").textContent = `${formatMoney(comisionMonto)} (${comisionPctActual}%)`;
+    document.getElementById("cf-comision").textContent = comisionMonto > 0
+      ? `${formatMoney(comisionMonto)} por venta`
+      : "Sin comisión definida";
 
     // Fechas dinámicas en los botones rápidos
     const opts = { day: "2-digit", month: "long" };
@@ -2018,14 +2034,16 @@
         const a = alumnos.find(al => al.certificadoId === ce.id);
         const metodo = a?.metodoPago || "—";
         const curso = cursos.find(cu => cu.id === ce.cursoId);
-        const pct = ce.comisionPct ?? calcularComisionPct(usuario, curso, consultora);
-        const monto = ce.comisionVendedor ?? calcularComisionMonto(ce.precio || 0, pct);
+        // Comisión: snapshot del cert si existe, si no calcular con comisión fija actual
+        const monto = typeof ce.comisionVendedor === "number"
+          ? ce.comisionVendedor
+          : calcularComisionFija(usuario, curso, consultora);
         return `<tr>
           <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(ce.folio)}</code></td>
           <td><strong>${escapeHtml(ce.nombreAlumno)}</strong></td>
           <td>${escapeHtml(ce.nombreCurso)}</td>
           <td><strong>${formatMoney(ce.precio || 0)}</strong></td>
-          <td><strong style="color:var(--green)">${formatMoney(monto)}</strong> <span class="text-xs text-muted">(${pct}%)</span></td>
+          <td><strong style="color:var(--green)">${formatMoney(monto)}</strong></td>
           <td><span class="chip chip-gray">${escapeHtml(metodo)}</span></td>
           <td class="text-sm text-muted">${escapeHtml(ce.fecha || "—")}</td>
           <td class="col-actions">${ce.pdfUrl ? `<a href="${ce.pdfUrl}" target="_blank" class="btn btn-secondary btn-sm">Ver</a>` : "—"}</td>
