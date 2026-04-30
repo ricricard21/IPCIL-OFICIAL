@@ -203,6 +203,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Comisiones
       </button>
+      <button class="sidebar-link" data-view="pagos" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+        Pagos a vendedores
+      </button>
       <button class="sidebar-link" data-view="aperturas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Aperturas globales
@@ -544,6 +548,20 @@
               <div class="card-subtitle">Aplica a todos los vendedores y cursos de la consultora</div>
             </div>
           </div>
+          <!-- Barra de acción masiva -->
+          <div class="masivo-bar" data-tipo="consultoras" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1e40af;cursor:pointer">
+              <input type="checkbox" class="check-todos" data-tipo="consultoras">
+              <span>Seleccionar todos</span>
+            </label>
+            <span style="color:#94a3b8">|</span>
+            <span class="contador-sel" data-tipo="consultoras" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <input class="input input-masivo" type="number" min="0" max="100" step="0.5" data-tipo="consultoras" placeholder="0" style="width:80px;text-align:center">
+              <span style="font-weight:700">%</span>
+              <button class="btn btn-primary btn-aplicar-masivo" data-tipo="consultoras">Aplicar a seleccionados</button>
+            </div>
+          </div>
           <div id="comisiones-consultoras"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
         </div>
       </div>
@@ -555,6 +573,20 @@
             <div>
               <div class="card-title">Override por curso</div>
               <div class="card-subtitle">Solo si el curso necesita un % distinto al de la consultora. Deja vacío para usar el default.</div>
+            </div>
+          </div>
+          <div class="masivo-bar" data-tipo="cursos" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1e40af;cursor:pointer">
+              <input type="checkbox" class="check-todos" data-tipo="cursos">
+              <span>Seleccionar todos</span>
+            </label>
+            <span style="color:#94a3b8">|</span>
+            <span class="contador-sel" data-tipo="cursos" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <input class="input input-masivo" type="number" min="0" max="100" step="0.5" data-tipo="cursos" placeholder="0" style="width:80px;text-align:center">
+              <span style="font-weight:700">%</span>
+              <button class="btn btn-primary btn-aplicar-masivo" data-tipo="cursos">Aplicar a seleccionados</button>
+              <button class="btn btn-secondary btn-limpiar-masivo" data-tipo="cursos" title="Quitar override (usar default)">Limpiar override</button>
             </div>
           </div>
           <div id="comisiones-cursos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
@@ -570,8 +602,70 @@
               <div class="card-subtitle">Solo si el vendedor tiene un % especial. Deja vacío para usar el default de su consultora.</div>
             </div>
           </div>
+          <div class="masivo-bar" data-tipo="vendedores" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1e40af;cursor:pointer">
+              <input type="checkbox" class="check-todos" data-tipo="vendedores">
+              <span>Seleccionar todos</span>
+            </label>
+            <span style="color:#94a3b8">|</span>
+            <span class="contador-sel" data-tipo="vendedores" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <input class="input input-masivo" type="number" min="0" max="100" step="0.5" data-tipo="vendedores" placeholder="0" style="width:80px;text-align:center">
+              <span style="font-weight:700">%</span>
+              <button class="btn btn-primary btn-aplicar-masivo" data-tipo="vendedores">Aplicar a seleccionados</button>
+              <button class="btn btn-secondary btn-limpiar-masivo" data-tipo="vendedores" title="Quitar override (usar default)">Limpiar override</button>
+            </div>
+          </div>
           <div id="comisiones-vendedores"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PAGOS A VENDEDORES (semanal)                         -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-pagos" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">💰 Pagos a vendedores</h1>
+          <p class="main-subtitle">Resumen semanal de comisiones por pagar (lunes a domingo)</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:14px">
+          <div>
+            <div class="card-title" id="pagos-semana-titulo">Esta semana</div>
+            <div class="card-subtitle" id="pagos-semana-rango">Cargando...</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-secondary btn-sm" id="btn-pagos-prev">◀ Semana anterior</button>
+            <button class="btn btn-secondary btn-sm" id="btn-pagos-hoy">Esta semana</button>
+            <button class="btn btn-secondary btn-sm" id="btn-pagos-next">Semana siguiente ▶</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div style="padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
+          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Ventas en la semana</div>
+            <div style="font-size:24px;font-weight:800;color:#0f172a;margin-top:4px" id="pagos-kpi-ventas">0</div>
+          </div>
+          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Facturación</div>
+            <div style="font-size:24px;font-weight:800;color:#0b4ea2;margin-top:4px" id="pagos-kpi-facturacion">$0</div>
+          </div>
+          <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:14px 16px;border-radius:10px;border:1px solid #fbbf24">
+            <div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:.06em;font-weight:700">💰 Total a pagar</div>
+            <div style="font-size:24px;font-weight:800;color:#78350f;margin-top:4px" id="pagos-kpi-total">$0</div>
+          </div>
+          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Vendedores activos</div>
+            <div style="font-size:24px;font-weight:800;color:#0f172a;margin-top:4px" id="pagos-kpi-vendedores">0</div>
+          </div>
+        </div>
+
+        <div id="pagos-container" style="padding:20px"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
       </div>
     </section>
 
@@ -999,6 +1093,7 @@
       document.querySelector(".sidebar-backdrop")?.classList.remove("show");
       if (btn.dataset.view === "ranking") renderRanking();
       if (btn.dataset.view === "comisiones") renderComisiones();
+      if (btn.dataset.view === "pagos") renderPagos();
       if (btn.dataset.view === "aperturas") renderAperturasGlobales();
       if (btn.dataset.view === "generar-cert") {
         llenarSelectsAdminCert();
@@ -1074,6 +1169,7 @@
     actualizarDashboard();
     renderRanking();
     if (typeof renderCertAdmin === "function") renderCertAdmin();
+    if (typeof renderPagos === "function") renderPagos();
   });
 
   onSnapshot(collection(db, "alumnos"), (snap) => {
@@ -1668,7 +1764,7 @@
     }
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Curso</th><th>Consultora</th><th>Ponente</th><th>Modalidad</th><th>Precio</th><th>Comisión</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Curso</th><th>Consultora</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th><th>Comisión</th><th>Estado</th><th></th></tr></thead>
       <tbody>${lista.map(cu => {
         const cons = consultoras.find(co => co.id === cu.consultoraId);
         const com = typeof cu.comisionOverride === "number"
@@ -1679,13 +1775,126 @@
           <td>${escapeHtml(cons?.nombre || "—")}</td>
           <td>${escapeHtml(cu.ponente || "—")}</td>
           <td>${escapeHtml(cu.modalidad || "—")}</td>
+          <td><strong style="color:#0b4ea2">${escapeHtml(cu.duracion || "—")}</strong></td>
           <td><strong>${cu.precio ? formatMoney(cu.precio) : "—"}</strong></td>
           <td>${com}</td>
           <td>${cu.activo ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
+          <td><button class="btn btn-secondary btn-sm" data-edit-curso="${cu.id}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:3px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+            Editar
+          </button></td>
         </tr>`;
       }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-edit-curso]").forEach(b =>
+      b.addEventListener("click", () => abrirModalEditarCurso(b.dataset.editCurso))
+    );
   }
   document.getElementById("search-curso").addEventListener("input", renderCursos);
+
+  // Modal editar curso
+  function abrirModalEditarCurso(cursoId) {
+    const cu = cursos.find(c => c.id === cursoId);
+    if (!cu) return;
+    const cons = consultoras.find(co => co.id === cu.consultoraId);
+
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:620px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Editar curso</div>
+            <div class="modal-subtitle">${escapeHtml(cons?.nombre || "—")}</div>
+          </div>
+          <button class="modal-close" data-close-here>×</button>
+        </div>
+        <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">Nombre del curso *</label>
+            <input class="input" type="text" id="ec-nombre" value="${escapeHtml(cu.nombre || "")}">
+          </div>
+          <div class="field">
+            <label class="field-label">Ponente</label>
+            <input class="input" type="text" id="ec-ponente" value="${escapeHtml(cu.ponente || "")}">
+          </div>
+          <div class="field">
+            <label class="field-label">Email del ponente</label>
+            <input class="input" type="email" id="ec-email-ponente" value="${escapeHtml(cu.emailPonente || "")}">
+          </div>
+          <div class="field">
+            <label class="field-label">Modalidad</label>
+            <input class="input" type="text" id="ec-modalidad" value="${escapeHtml(cu.modalidad || "En línea")}" placeholder="Ej: En línea">
+          </div>
+          <div class="field">
+            <label class="field-label">⏱️ Duración (aparece en certificado)</label>
+            <input class="input" type="text" id="ec-duracion" value="${escapeHtml(cu.duracion || "")}" placeholder="Ej: 5 horas, 40 horas, 2 semanas">
+            <div class="field-hint">Texto libre — lo que escribas aparecerá tal cual en el PDF</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Precio (MXN)</label>
+            <input class="input" type="number" min="0" step="1" id="ec-precio" value="${cu.precio || 0}">
+          </div>
+          <div class="field">
+            <label class="field-label">Mínimo alumnos para abrir grupo</label>
+            <input class="input" type="number" min="1" step="1" id="ec-minimo" value="${cu.minimoAlumnos || 8}">
+          </div>
+          <div class="field">
+            <label class="field-label">Frecuencia de apertura (días)</label>
+            <input class="input" type="number" min="1" step="1" id="ec-frecuencia" value="${cu.frecuenciaDiasApertura || 15}">
+          </div>
+          <div class="field">
+            <label class="field-label">Cargo del firmante</label>
+            <input class="input" type="text" id="ec-cargo" value="${escapeHtml(cu.cargo || "Coordinación General")}">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="ec-activo" ${cu.activo !== false ? "checked" : ""}>
+              <span>Curso activo (se puede vender)</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-guardar-curso">Guardar cambios</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-guardar-curso").addEventListener("click", async () => {
+      const btn = wrap.querySelector("#btn-guardar-curso");
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+      try {
+        const data = {
+          nombre: wrap.querySelector("#ec-nombre").value.trim(),
+          ponente: wrap.querySelector("#ec-ponente").value.trim(),
+          emailPonente: wrap.querySelector("#ec-email-ponente").value.trim(),
+          modalidad: wrap.querySelector("#ec-modalidad").value.trim() || "En línea",
+          duracion: wrap.querySelector("#ec-duracion").value.trim(),
+          precio: parseFloat(wrap.querySelector("#ec-precio").value) || 0,
+          minimoAlumnos: parseInt(wrap.querySelector("#ec-minimo").value, 10) || 8,
+          frecuenciaDiasApertura: parseInt(wrap.querySelector("#ec-frecuencia").value, 10) || 15,
+          cargo: wrap.querySelector("#ec-cargo").value.trim() || "Coordinación General",
+          activo: wrap.querySelector("#ec-activo").checked,
+          actualizadoEn: serverTimestamp(),
+        };
+        if (!data.nombre) throw new Error("El nombre del curso es obligatorio");
+        await updateDoc(doc(db, "cursos", cursoId), data);
+        toast(`✅ Curso "${data.nombre}" actualizado`, "success");
+        cerrar();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message, "error");
+        btn.disabled = false;
+        btn.textContent = "Guardar cambios";
+      }
+    });
+  }
 
   // ═══════════════════════════════════════════════════════════
   // CERTIFICADOS
@@ -1737,11 +1946,12 @@
     }
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Consultora</th><th>Vendedores</th><th>Comisión default</th></tr></thead>
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Consultora</th><th>Vendedores</th><th>Comisión default</th></tr></thead>
       <tbody>${consultoras.map(co => {
         const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
         const valor = typeof co.comisionDefault === "number" ? co.comisionDefault : "";
         return `<tr>
+          <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="consultoras" data-id="${co.id}"></td>
           <td>
             <div style="display:flex;align-items:center;gap:10px">
               <code style="color:var(--primary);font-weight:700;font-size:11.5px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(co.codigo || "?")}</code>
@@ -1790,12 +2000,13 @@
     });
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Curso</th><th>Consultora</th><th>Default</th><th>Override</th></tr></thead>
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Curso</th><th>Consultora</th><th>Default</th><th>Override</th></tr></thead>
       <tbody>${cursosOrdenados.map(cu => {
         const cons = consultoras.find(co => co.id === cu.consultoraId);
         const def = typeof cons?.comisionDefault === "number" ? `${cons.comisionDefault}%` : "—";
         const valor = typeof cu.comisionOverride === "number" ? cu.comisionOverride : "";
         return `<tr>
+          <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="cursos" data-id="${cu.id}"></td>
           <td><strong>${escapeHtml(cu.nombre)}</strong></td>
           <td>${escapeHtml(cons?.nombre || "—")}</td>
           <td><span class="text-muted text-sm">${def}</span></td>
@@ -1837,12 +2048,13 @@
     const ordenados = vendedoresList.sort((a, b) => (a.consultoraNombre || "").localeCompare(b.consultoraNombre || "") || (a.nombre || "").localeCompare(b.nombre || ""));
 
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Vendedor</th><th>Consultora</th><th>Default</th><th>Override</th></tr></thead>
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Vendedor</th><th>Consultora</th><th>Default</th><th>Override</th></tr></thead>
       <tbody>${ordenados.map(v => {
         const cons = consultoras.find(co => co.id === v.consultoraId);
         const def = typeof cons?.comisionDefault === "number" ? `${cons.comisionDefault}%` : "—";
         const valor = typeof v.comisionOverride === "number" ? v.comisionOverride : "";
         return `<tr>
+          <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="vendedores" data-id="${v.id}"></td>
           <td>
             <div style="display:flex;align-items:center;gap:10px">
               <div class="user-avatar" style="width:30px;height:30px;font-size:10.5px">${iniciales(v.nombre)}</div>
@@ -2258,6 +2470,315 @@
       btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg> Generar y enviar certificado`;
     }
   });
+
+  // ═══════════════════════════════════════════════════════
+  // 💰 COMISIONES MASIVAS (checkboxes + aplicar)
+  // ═══════════════════════════════════════════════════════
+  function actualizarContadorSel(tipo) {
+    const cont = document.querySelector(`.contador-sel[data-tipo="${tipo}"]`);
+    if (!cont) return;
+    const sel = document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`).length;
+    cont.textContent = `${sel} seleccionado${sel !== 1 ? 's' : ''}`;
+  }
+
+  // Listener de checkbox global (delegación)
+  document.addEventListener("change", (e) => {
+    if (e.target.classList.contains("check-todos")) {
+      const tipo = e.target.dataset.tipo;
+      const checked = e.target.checked;
+      document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => {
+        cb.checked = checked;
+      });
+      actualizarContadorSel(tipo);
+    }
+    if (e.target.classList.contains("check-fila")) {
+      const tipo = e.target.dataset.tipo;
+      actualizarContadorSel(tipo);
+    }
+  });
+
+  // Aplicar masivo
+  document.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("btn-aplicar-masivo")) {
+      const tipo = e.target.dataset.tipo;
+      const inputMasivo = document.querySelector(`.input-masivo[data-tipo="${tipo}"]`);
+      const valor = inputMasivo.value.trim();
+      if (valor === "" || isNaN(parseFloat(valor))) {
+        return toast("Captura un porcentaje válido", "warning");
+      }
+      const pct = parseFloat(valor);
+      if (pct < 0 || pct > 100) return toast("El porcentaje debe estar entre 0 y 100", "warning");
+
+      const seleccionados = [...document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`)].map(cb => cb.dataset.id);
+      if (seleccionados.length === 0) return toast("Selecciona al menos un registro", "warning");
+
+      const ok = confirm(`¿Aplicar ${pct}% a ${seleccionados.length} registro${seleccionados.length !== 1 ? 's' : ''} de ${tipo}?`);
+      if (!ok) return;
+
+      e.target.disabled = true;
+      e.target.textContent = "Aplicando...";
+
+      try {
+        let coleccion, campo;
+        if (tipo === "consultoras") { coleccion = "consultoras"; campo = "comisionDefault"; }
+        else if (tipo === "cursos") { coleccion = "cursos"; campo = "comisionOverride"; }
+        else if (tipo === "vendedores") { coleccion = "usuarios"; campo = "comisionOverride"; }
+
+        for (const id of seleccionados) {
+          await updateDoc(doc(db, coleccion, id), { [campo]: pct });
+        }
+        toast(`✅ ${pct}% aplicado a ${seleccionados.length} ${tipo}`, "success");
+        // Actualizar inputs visibles
+        seleccionados.forEach(id => {
+          const sel = tipo === "consultoras" ? `[data-com-cons="${id}"]`
+            : tipo === "cursos" ? `[data-com-curso="${id}"]`
+            : `[data-com-vend="${id}"]`;
+          const inp = document.querySelector(sel);
+          if (inp) inp.value = pct;
+        });
+        // Limpiar selección
+        document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => cb.checked = false);
+        const checkTodos = document.querySelector(`.check-todos[data-tipo="${tipo}"]`);
+        if (checkTodos) checkTodos.checked = false;
+        inputMasivo.value = "";
+        actualizarContadorSel(tipo);
+      } catch (err) {
+        console.error(err);
+        toast("Error: " + err.message, "error");
+      } finally {
+        e.target.disabled = false;
+        e.target.textContent = "Aplicar a seleccionados";
+      }
+    }
+
+    if (e.target.classList.contains("btn-limpiar-masivo")) {
+      const tipo = e.target.dataset.tipo;
+      const seleccionados = [...document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`)].map(cb => cb.dataset.id);
+      if (seleccionados.length === 0) return toast("Selecciona al menos un registro", "warning");
+
+      const ok = confirm(`¿Quitar override de ${seleccionados.length} registro${seleccionados.length !== 1 ? 's' : ''}? Volverán a usar el default de su consultora.`);
+      if (!ok) return;
+
+      e.target.disabled = true;
+      e.target.textContent = "Limpiando...";
+      try {
+        const coleccion = tipo === "cursos" ? "cursos" : "usuarios";
+        const campo = "comisionOverride";
+        for (const id of seleccionados) {
+          await updateDoc(doc(db, coleccion, id), { [campo]: null });
+        }
+        toast(`✅ Override quitado de ${seleccionados.length} registros`, "success");
+        seleccionados.forEach(id => {
+          const sel = tipo === "cursos" ? `[data-com-curso="${id}"]` : `[data-com-vend="${id}"]`;
+          const inp = document.querySelector(sel);
+          if (inp) inp.value = "";
+        });
+        document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => cb.checked = false);
+        actualizarContadorSel(tipo);
+      } catch (err) {
+        console.error(err);
+        toast("Error: " + err.message, "error");
+      } finally {
+        e.target.disabled = false;
+        e.target.textContent = "Limpiar override";
+      }
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 💰 PAGOS A VENDEDORES (semanal)
+  // ═══════════════════════════════════════════════════════
+  let pagosOffset = 0; // 0 = esta semana, -1 = anterior, +1 = siguiente
+
+  function obtenerRangoSemana(offset = 0) {
+    // Lunes-Domingo (zona MX)
+    const ahora = new Date();
+    const diaActual = ahora.getDay(); // 0=dom, 1=lun
+    const diasDesdeLunes = (diaActual === 0 ? 6 : diaActual - 1);
+    const lunes = new Date(ahora);
+    lunes.setDate(ahora.getDate() - diasDesdeLunes + (offset * 7));
+    lunes.setHours(0, 0, 0, 0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    domingo.setHours(23, 59, 59, 999);
+    return { inicio: lunes, fin: domingo };
+  }
+
+  function formatRangoSemana(inicio, fin) {
+    const opts = { day: "numeric", month: "short", year: "numeric" };
+    return `${inicio.toLocaleDateString("es-MX", opts)} — ${fin.toLocaleDateString("es-MX", opts)}`;
+  }
+
+  function renderPagos() {
+    const { inicio, fin } = obtenerRangoSemana(pagosOffset);
+
+    // Título
+    let titulo = "Esta semana";
+    if (pagosOffset === -1) titulo = "Semana anterior";
+    else if (pagosOffset === 1) titulo = "Semana siguiente";
+    else if (pagosOffset !== 0) titulo = `Hace ${Math.abs(pagosOffset)} semanas`;
+    const elT = document.getElementById("pagos-semana-titulo");
+    const elR = document.getElementById("pagos-semana-rango");
+    if (elT) elT.textContent = titulo;
+    if (elR) elR.textContent = formatRangoSemana(inicio, fin);
+
+    // Filtrar certificados de la semana (excluyendo los generados por admin de empresas externas si quisieras, pero los incluimos)
+    const certsSemana = certificados.filter(c => {
+      const t = c.creadoEn?.toMillis?.() || 0;
+      return t >= inicio.getTime() && t <= fin.getTime();
+    });
+
+    // Agrupar por vendedor (generadoPor)
+    const porVendedor = {};
+    certsSemana.forEach(c => {
+      const uid = c.generadoPor || "sin-vendedor";
+      if (!porVendedor[uid]) {
+        const u = usuarios.find(x => x.id === uid);
+        porVendedor[uid] = {
+          uid,
+          nombre: u?.nombre || (c.generadoPorAdmin ? "Admin (directo)" : "Sin asignar"),
+          consultora: u?.consultoraNombre || c.nombreConsultora || "—",
+          esAdmin: !!c.generadoPorAdmin,
+          ventas: 0,
+          facturacion: 0,
+          comisionTotal: 0,
+          certificados: [],
+        };
+      }
+      porVendedor[uid].ventas++;
+      porVendedor[uid].facturacion += Number(c.precio) || 0;
+      porVendedor[uid].comisionTotal += Number(c.comisionVendedor) || 0;
+      porVendedor[uid].certificados.push(c);
+    });
+
+    const lista = Object.values(porVendedor).sort((a, b) => b.comisionTotal - a.comisionTotal);
+
+    // KPIs
+    const totalVentas = certsSemana.length;
+    const totalFact = certsSemana.reduce((s, c) => s + (Number(c.precio) || 0), 0);
+    const totalComisiones = certsSemana.reduce((s, c) => s + (Number(c.comisionVendedor) || 0), 0);
+    const numVendedores = lista.filter(v => !v.esAdmin && v.ventas > 0).length;
+
+    document.getElementById("pagos-kpi-ventas").textContent = totalVentas;
+    document.getElementById("pagos-kpi-facturacion").textContent = formatMoney(totalFact);
+    document.getElementById("pagos-kpi-total").textContent = formatMoney(totalComisiones);
+    document.getElementById("pagos-kpi-vendedores").textContent = numVendedores;
+
+    const cont = document.getElementById("pagos-container");
+    if (lista.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">💸</div>
+        <div style="font-size:16px;font-weight:600;color:#334155">Sin ventas en esta semana</div>
+        <div style="margin-top:6px;color:var(--muted);font-size:13px">No hay comisiones por pagar en este rango</div>
+      </div>`;
+      return;
+    }
+
+    let html = "";
+    lista.forEach((v, idx) => {
+      const pagado = v.certificados.every(c => c.comisionPagada === true);
+      html += `<div style="background:white;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:linear-gradient(135deg,${pagado ? '#dcfce7' : '#fef3c7'},${pagado ? '#bbf7d0' : '#fde68a'});border-bottom:1px solid ${pagado ? '#86efac' : '#fbbf24'}">
+          <div style="width:44px;height:44px;border-radius:50%;background:${pagado ? '#16a34a' : '#0b4ea2'};color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${iniciales(v.nombre)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;color:#0f172a;font-size:15px">${escapeHtml(v.nombre)}</div>
+            <div style="font-size:12px;color:#475569;margin-top:2px">${escapeHtml(v.consultora)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:${pagado ? '#15803d' : '#92400e'};text-transform:uppercase;letter-spacing:.06em;font-weight:700">${pagado ? '✅ PAGADO' : 'POR PAGAR'}</div>
+            <div style="font-size:22px;font-weight:800;color:${pagado ? '#15803d' : '#78350f'};margin-top:2px">${formatMoney(v.comisionTotal)}</div>
+            <div style="font-size:11px;color:#64748b">${v.ventas} venta${v.ventas !== 1 ? 's' : ''} · ${formatMoney(v.facturacion)} facturado</div>
+          </div>
+          ${!pagado ? `<button class="btn btn-primary btn-sm" data-marcar-pagado="${v.uid}" style="background:#16a34a;border-color:#16a34a;flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>
+            Marcar pagado
+          </button>` : `<button class="btn btn-secondary btn-sm" data-desmarcar-pagado="${v.uid}" style="flex-shrink:0">Desmarcar</button>`}
+        </div>
+        <details style="padding:0">
+          <summary style="padding:10px 20px;cursor:pointer;font-size:12px;color:#64748b;font-weight:600;background:#fafbfc;border-bottom:1px solid #f1f5f9">▸ Ver detalle de ventas (${v.certificados.length})</summary>
+          <div style="padding:12px 20px;background:white">
+            <table style="width:100%;font-size:12.5px;border-collapse:collapse">
+              <thead>
+                <tr style="text-align:left">
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Folio</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Alumno</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Curso</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">Precio</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">% Com</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">Pago</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${v.certificados.map(c => `<tr>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9"><code style="font-size:10.5px;background:#f1f5f9;padding:2px 6px;border-radius:4px">${escapeHtml(c.folio || "—")}</code></td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9">${escapeHtml(c.nombreAlumno || "—")}</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;color:#475569">${escapeHtml((c.nombreCurso || "—").substring(0, 50))}${(c.nombreCurso || "").length > 50 ? '…' : ''}</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right">${formatMoney(c.precio || 0)}</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right;color:#64748b">${c.comisionPct || 0}%</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#0b4ea2">${formatMoney(c.comisionVendedor || 0)}</td>
+                </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>`;
+    });
+
+    cont.innerHTML = html;
+
+    // Listeners marcar/desmarcar pagado
+    cont.querySelectorAll("[data-marcar-pagado]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.marcarPagado;
+        const v = lista.find(x => x.uid === uid);
+        if (!v) return;
+        const ok = confirm(`¿Marcar como PAGADO ${formatMoney(v.comisionTotal)} a ${v.nombre}?`);
+        if (!ok) return;
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+        try {
+          for (const c of v.certificados) {
+            await updateDoc(doc(db, "certificados", c.id), {
+              comisionPagada: true,
+              comisionPagadaEn: serverTimestamp(),
+              comisionPagadaPor: usuario.uid,
+            });
+          }
+          toast(`✅ Marcado como pagado: ${formatMoney(v.comisionTotal)} a ${v.nombre}`, "success");
+        } catch (err) {
+          console.error(err);
+          toast("Error: " + err.message, "error");
+        }
+      });
+    });
+    cont.querySelectorAll("[data-desmarcar-pagado]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.desmarcarPagado;
+        const v = lista.find(x => x.uid === uid);
+        if (!v) return;
+        const ok = confirm(`¿Desmarcar pago de ${v.nombre}?`);
+        if (!ok) return;
+        btn.disabled = true;
+        try {
+          for (const c of v.certificados) {
+            await updateDoc(doc(db, "certificados", c.id), {
+              comisionPagada: false,
+              comisionPagadaEn: null,
+              comisionPagadaPor: null,
+            });
+          }
+          toast(`Desmarcado pago de ${v.nombre}`, "success");
+        } catch (err) {
+          console.error(err);
+          toast("Error: " + err.message, "error");
+        }
+      });
+    });
+  }
+
+  document.getElementById("btn-pagos-prev")?.addEventListener("click", () => { pagosOffset--; renderPagos(); });
+  document.getElementById("btn-pagos-next")?.addEventListener("click", () => { pagosOffset++; renderPagos(); });
+  document.getElementById("btn-pagos-hoy")?.addEventListener("click", () => { pagosOffset = 0; renderPagos(); });
 
   // Render histórico admin
   // Genera color consistente por consultora (hash simple)
