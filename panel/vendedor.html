@@ -1403,6 +1403,9 @@
 
   // ─── CARGAR CURSOS (en vivo) ───
   // Nota: filtramos `activo` en JS para evitar requerir un índice compuesto en Firestore.
+  console.log('🔍 [DEBUG cursos] usuario.consultoraId =', usuario.consultoraId);
+  console.log('🔍 [DEBUG cursos] usuario.uid =', usuario.uid);
+  console.log('🔍 [DEBUG cursos] usuario.rol =', usuario.rol);
   let unsubCursos = null;
   unsubCursos = onSnapshot(
     query(
@@ -1410,15 +1413,23 @@
       where("consultoraId", "==", usuario.consultoraId)
     ),
     (snap) => {
+      console.log('🔍 [DEBUG cursos] snapshot recibido. Docs totales:', snap.size);
       cursos = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .filter(c => c.activo === true);
+      console.log('🔍 [DEBUG cursos] activos después del filtro:', cursos.length);
+      console.log('🔍 [DEBUG cursos] primeros 3:', cursos.slice(0, 3).map(c => c.nombre));
       cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
       if (typeof renderSheet === "function") renderSheet();
       if (typeof actualizarStats === "function") actualizarStats();
       if (typeof renderResumen === "function") renderResumen();
     },
-    (e) => { console.error("Error cargando cursos:", e); toast("Error cargando cursos", "error"); }
+    (e) => {
+      console.error("❌ [DEBUG cursos] Error cargando cursos:", e);
+      console.error("❌ [DEBUG cursos] Código de error:", e.code);
+      console.error("❌ [DEBUG cursos] Mensaje:", e.message);
+      toast("Error cargando cursos", "error");
+    }
   );
 
   // ─── SUSCRIPCIONES ───
