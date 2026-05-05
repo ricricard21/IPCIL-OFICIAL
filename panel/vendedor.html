@@ -1402,15 +1402,17 @@
   }
 
   // ─── CARGAR CURSOS (en vivo) ───
+  // Nota: filtramos `activo` en JS para evitar requerir un índice compuesto en Firestore.
   let unsubCursos = null;
   unsubCursos = onSnapshot(
     query(
       collection(db, "cursos"),
-      where("consultoraId", "==", usuario.consultoraId),
-      where("activo", "==", true)
+      where("consultoraId", "==", usuario.consultoraId)
     ),
     (snap) => {
-      cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      cursos = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(c => c.activo === true);
       cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
       if (typeof renderSheet === "function") renderSheet();
       if (typeof actualizarStats === "function") actualizarStats();
