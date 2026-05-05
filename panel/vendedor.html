@@ -1698,6 +1698,12 @@
       const totalRows = data.alumnos.length + data.pendientes.length;
       const enviados = data.alumnos.filter(a => a.estado === "email_enviado").length;
       const pendientesEnvio = data.alumnos.filter(a => a.estado !== "email_enviado").length + data.pendientes.length;
+      // Alumnos elegibles para generación masiva: tienen datos completos y no han sido enviados
+      const elegiblesGenerar = data.alumnos.filter(a =>
+        a.estado !== "email_enviado" &&
+        a.estado !== "programado" &&
+        a.nombre && a.email && a.telefono && a.cursoId
+      );
 
       html += `<div class="curso-bloque">
         <div class="curso-bloque-header">
@@ -1707,6 +1713,11 @@
           </div>
           <div class="curso-bloque-actions">
             <span class="curso-bloque-badge">${enviados} enviados · ${pendientesEnvio} pendientes</span>
+            ${elegiblesGenerar.length > 0 ? `
+              <button class="btn btn-primary btn-sm" data-generar-todos="${cursoId}" style="display:flex;align-items:center;gap:6px;background:#16a34a;border-color:#15803d">
+                ⚡ Generar todos (${elegiblesGenerar.length})
+              </button>
+            ` : ''}
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -1798,6 +1809,16 @@
         } else {
           agregarFilaPendiente(cursoId);
         }
+      });
+    });
+
+    // Botón "⚡ Generar todos" en cada bloque de curso
+    document.querySelectorAll("[data-generar-todos]").forEach(btn => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", () => {
+        const cursoId = btn.dataset.generarTodos;
+        generarTodosDelBloque(cursoId);
       });
     });
 
@@ -2124,6 +2145,100 @@
       alumnoIdAGenerar = null;
     }
   });
+
+  // ═══════════════════════════════════════════════════════════
+  // GENERAR TODOS — Procesa en serie todos los alumnos pendientes de un curso
+  // ═══════════════════════════════════════════════════════════
+  let generandoMasivo = false;
+
+  async function generarTodosDelBloque(cursoId) {
+    if (generandoMasivo) {
+      toast("Ya hay una generación masiva en curso. Espera a que termine.", "warning");
+      return;
+    }
+
+    // Filtrar elegibles: pendientes con datos completos en la apertura actual
+    const elegibles = alumnos.filter(a =>
+      getAperturaKey(a) === aperturaActual &&
+      a.cursoId === cursoId &&
+      a.estado !== "email_enviado" &&
+      a.estado !== "programado" &&
+      a.nombre && a.email && a.telefono
+    );
+
+    if (elegibles.length === 0) {
+      toast("No hay alumnos pendientes para generar en este curso", "info");
+      return;
+    }
+
+    const curso = cursos.find(c => c.id === cursoId);
+    const nombreCurso = curso?.nombre || "este curso";
+
+    const confirmar = confirm(
+      `⚡ GENERAR TODOS\n\n` +
+      `Curso: ${nombreCurso}\n` +
+      `Alumnos a procesar: ${elegibles.length}\n\n` +
+      `Cada certificado se genera y envía por email automáticamente.\n` +
+      `Tomará aproximadamente ${Math.ceil(elegibles.length * 1.5 / 60)} minuto(s).\n\n` +
+      `¿Continuar?`
+    );
+    if (!confirmar) return;
+
+    generandoMasivo = true;
+    let exitos = 0;
+    let fallos = 0;
+    const erroresDetalle = [];
+
+    // Toast persistente con progreso
+    const toastEl = document.createElement("div");
+    toastEl.className = "toast toast-info";
+    toastEl.style.cssText = "position:fixed;top:80px;right:20px;z-index:9999;padding:14px 20px;background:#1e40af;color:white;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.15);font-weight:600;min-width:280px";
+    toastEl.innerHTML = `⚡ Procesando 0/${elegibles.length}...`;
+    document.body.appendChild(toastEl);
+
+    const generarCertificado = httpsCallable(functions, "generarCertificado");
+
+    for (let i = 0; i < elegibles.length; i++) {
+      const a = elegibles[i];
+      toastEl.innerHTML = `⚡ Procesando ${i + 1}/${elegibles.length}<br><span style="font-size:12px;opacity:.85;font-weight:400">${escapeHtml(a.nombre)}</span>`;
+
+      try {
+        await generarCertificado({ alumnoId: a.id, programarEn: null });
+        exitos++;
+      } catch (err) {
+        fallos++;
+        erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err.message });
+        console.error(`Error con ${a.email}:`, err);
+      }
+
+      // Esperar 1.5s entre cada uno para no saturar Resend / Workspace
+      if (i < elegibles.length - 1) {
+        await new Promise(r => setTimeout(r, 1500));
+      }
+    }
+
+    toastEl.remove();
+    generandoMasivo = false;
+
+    // Resultado final
+    let mensaje = `✅ Generados: ${exitos}`;
+    if (fallos > 0) mensaje += `\n❌ Fallaron: ${fallos}`;
+    mensaje += `\n\nLos alumnos generados ya recibieron su certificado por email.`;
+
+    if (erroresDetalle.length > 0) {
+      mensaje += `\n\nFallos:\n` + erroresDetalle.slice(0, 5).map(e =>
+        `• ${e.nombre}: ${e.error.substring(0, 60)}`
+      ).join("\n");
+      if (erroresDetalle.length > 5) {
+        mensaje += `\n... y ${erroresDetalle.length - 5} más (ver consola)`;
+      }
+    }
+
+    alert(mensaje);
+    if (fallos > 0) {
+      console.table(erroresDetalle);
+    }
+  }
 
   // ─── BÚSQUEDA ───
   document.getElementById("search-alumno").addEventListener("input", renderBloques);
