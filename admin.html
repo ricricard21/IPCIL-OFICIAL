@@ -1,0 +1,3303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Super Admin — IPCI</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--surface-soft);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line-soft);
+    transition: all var(--t);
+  }
+
+  .ranking-item:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary-light);
+    transform: translateX(2px);
+  }
+
+  .ranking-medal {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .ranking-item:nth-child(1) .ranking-medal { background: linear-gradient(135deg, #fde68a, #f59e0b); border-color: #f59e0b; color: white; }
+  .ranking-item:nth-child(2) .ranking-medal { background: linear-gradient(135deg, #e2e8f0, #94a3b8); border-color: #94a3b8; color: white; }
+  .ranking-item:nth-child(3) .ranking-medal { background: linear-gradient(135deg, #fed7aa, #c2660b); border-color: #c2660b; color: white; }
+
+  .ranking-info { flex: 1; min-width: 0; }
+  .ranking-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ranking-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .ranking-stat {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .ranking-stat strong {
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .ranking-stat span {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+
+  /* Comisiones config card */
+  .comision-config-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    transition: all var(--t);
+  }
+
+  .comision-config-card:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .comision-pct-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-soft);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    width: 110px;
+    transition: border-color var(--t);
+  }
+
+  .comision-pct-input:focus-within {
+    border-color: var(--primary);
+    background: white;
+  }
+
+  .comision-pct-input input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    text-align: right;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0;
+  }
+
+  .comision-pct-input span {
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 12.5px;
+  }
+
+  .comision-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-soft);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 18px;
+    width: fit-content;
+  }
+
+  .comision-tab {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: calc(var(--radius-sm) - 2px);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all var(--t);
+  }
+
+  .comision-tab:hover { color: var(--text); }
+
+  .comision-tab.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: var(--shadow-xs);
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div class="sidebar-brand-text">
+        <strong>IPCI</strong>
+        <span>Super Admin</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="sidebar-link" data-view="consultoras">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+        Consultoras
+      </button>
+      <button class="sidebar-link" data-view="usuarios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Usuarios
+      </button>
+      <button class="sidebar-link" data-view="cursos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Cursos
+      </button>
+      <button class="sidebar-link" data-view="certificados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Certificados
+      </button>
+      <button class="sidebar-link" data-view="comisiones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Comisiones
+      </button>
+      <button class="sidebar-link" data-view="pagos" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+        Pagos a vendedores
+      </button>
+      <button class="sidebar-link" data-view="historial-diario">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historial diario
+      </button>
+      <button class="sidebar-link" data-view="aperturas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Aperturas globales
+        <span id="badge-aperturas" class="badge" style="background:#dcfce7;color:#166534">0</span>
+      </button>
+      <button class="sidebar-link" data-view="ranking">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
+        Ranking
+      </button>
+      <button class="sidebar-link" data-view="generar-cert" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        Generar certificado
+      </button>
+      <button class="sidebar-link" data-view="limpiar" style="background:#fee2e2;color:#991b1b;margin-top:auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Limpiar datos
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-initial">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role">Super admin</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <button class="hamburger" id="hamburger" style="position:absolute;top:16px;right:16px;z-index:30">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- DASHBOARD GLOBAL                                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-dashboard" class="section active">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Dashboard global</h1>
+          <p class="main-subtitle">Visión completa del ecosistema IPCI</p>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn" data-period="7">7 días</button>
+          <button class="filter-btn active" data-period="30">30 días</button>
+          <button class="filter-btn" data-period="90">90 días</button>
+          <button class="filter-btn" data-period="365">Año</button>
+          <button class="filter-btn" data-period="all">Histórico</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Facturación total</div>
+            <div class="kpi-value" id="kpi-ingresos">$0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-ingresos-trend">—</span>
+          </div>
+          <div class="kpi-icon kpi-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Certificados</div>
+            <div class="kpi-value" id="kpi-certs">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-certs-trend">—</span>
+          </div>
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Alumnos</div>
+            <div class="kpi-value" id="kpi-alumnos">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-alumnos-trend">—</span>
+          </div>
+          <div class="kpi-icon kpi-icon-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Consultoras activas</div>
+            <div class="kpi-value" id="kpi-consultoras">0</div>
+            <span class="kpi-trend kpi-trend-flat">de <span id="kpi-consultoras-total">0</span> totales</span>
+          </div>
+          <div class="kpi-icon kpi-icon-yellow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(3, 1fr)">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Cursos</div>
+            <div class="kpi-value" id="kpi-cursos">0</div>
+            <span class="kpi-trend kpi-trend-flat"><span id="kpi-cursos-activos">0</span> activos</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Vendedores</div>
+            <div class="kpi-value" id="kpi-vendedores">0</div>
+            <span class="kpi-trend kpi-trend-flat"><span id="kpi-vendedores-activos">0</span> activos</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Coordinadores</div>
+            <div class="kpi-value" id="kpi-coordinadores">0</div>
+            <span class="kpi-trend kpi-trend-flat">en consultoras</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-title">Facturación por mes</div>
+              <div class="chart-subtitle">Últimos 12 meses</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-facturacion"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-title">Top consultoras</div>
+              <div class="chart-subtitle">Por facturación del periodo</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-consultoras"></canvas></div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-title">Top cursos</div>
+              <div class="chart-subtitle">Más vendidos</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-cursos"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-title">Ventas diarias</div>
+              <div class="chart-subtitle">Últimos 30 días</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-diario"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Resumen por consultora</div>
+            <div class="card-subtitle">Datos financieros del periodo seleccionado</div>
+          </div>
+        </div>
+        <div id="resumen-consultoras"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Últimos certificados emitidos</div>
+            <div class="card-subtitle">Actualizado en tiempo real</div>
+          </div>
+        </div>
+        <div id="dash-ultimos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CONSULTORAS                                          -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-consultoras" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Consultoras</h1>
+          <p class="main-subtitle">Gestiona las consultoras aliadas del sistema</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nueva-consultora">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nueva consultora
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Listado</div>
+            <div class="card-subtitle"><span id="consultoras-count">0</span> consultoras registradas</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-consultora" placeholder="Buscar consultora...">
+          </div>
+        </div>
+        <div id="consultoras-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- USUARIOS                                             -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-usuarios" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Usuarios</h1>
+          <p class="main-subtitle">Coordinadores, vendedores y administradores</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nuevo-usuario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo usuario
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Listado de usuarios</div>
+            <div class="card-subtitle"><span id="usuarios-count">0</span> usuarios totales</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <select class="select" id="filter-rol" style="max-width:200px">
+              <option value="">Todos los roles</option>
+              <option value="coordinador">Coordinadores</option>
+              <option value="vendedor">Vendedores</option>
+              <option value="superadmin">Super admins</option>
+            </select>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input class="input" type="search" id="search-usuario" placeholder="Buscar nombre o email...">
+            </div>
+          </div>
+        </div>
+        <div id="usuarios-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CURSOS                                               -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-cursos" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Todos los cursos</h1>
+          <p class="main-subtitle">Cursos del ecosistema IPCI</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Listado completo</div>
+            <div class="card-subtitle"><span id="cursos-count">0</span> cursos en el sistema</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-curso" placeholder="Buscar curso...">
+          </div>
+        </div>
+        <div id="cursos-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CERTIFICADOS                                         -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-certificados" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Certificados emitidos</h1>
+          <p class="main-subtitle">Historial completo de certificaciones</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Histórico</div>
+            <div class="card-subtitle"><span id="cert-count">0</span> certificados · <span id="cert-ingresos">$0</span> facturados</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-cert" placeholder="Buscar folio o nombre...">
+          </div>
+        </div>
+        <div id="certificados-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- COMISIONES                                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-comisiones" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Comisiones</h1>
+          <p class="main-subtitle">Define cuántos pesos gana cada vendedor por venta (cantidad fija en MXN)</p>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>
+          <strong>Cómo funciona:</strong> Define una cantidad fija en pesos por consultora (ej. $13 MXN por cada venta). Si necesitas una cantidad especial para un curso o vendedor específico, configúrala abajo. La prioridad es: <strong>vendedor → curso → consultora</strong>.
+        </div>
+      </div>
+
+      <div class="comision-tabs">
+        <button class="comision-tab active" data-tab="consultoras">Por consultora</button>
+        <button class="comision-tab" data-tab="cursos">Por curso (override)</button>
+        <button class="comision-tab" data-tab="vendedores">Por vendedor (override)</button>
+      </div>
+
+      <!-- Tab: consultoras -->
+      <div id="comision-tab-consultoras" class="comision-tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Comisión default por consultora ($ MXN por venta)</div>
+              <div class="card-subtitle">Aplica a todos los vendedores y cursos de la consultora · Pesos fijos por cada venta</div>
+            </div>
+          </div>
+          <!-- Barra de acción masiva -->
+          <div class="masivo-bar" data-tipo="consultoras" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1e40af;cursor:pointer">
+              <input type="checkbox" class="check-todos" data-tipo="consultoras">
+              <span>Seleccionar todos</span>
+            </label>
+            <span style="color:#94a3b8">|</span>
+            <span class="contador-sel" data-tipo="consultoras" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <span style="font-weight:700;color:#16a34a">$</span>
+              <input class="input input-masivo" type="number" min="0" step="1" data-tipo="consultoras" placeholder="0" style="width:90px;text-align:center">
+              <span style="font-weight:700">MXN</span>
+              <button class="btn btn-primary btn-aplicar-masivo" data-tipo="consultoras">Aplicar a seleccionados</button>
+            </div>
+          </div>
+          <div id="comisiones-consultoras"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        </div>
+      </div>
+
+      <!-- Tab: cursos -->
+      <div id="comision-tab-cursos" class="comision-tab-content hidden">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Override por curso ($ MXN por venta)</div>
+              <div class="card-subtitle">Solo si el curso necesita una cantidad distinta a la de la consultora. Deja vacío para usar el default.</div>
+            </div>
+          </div>
+          <div class="masivo-bar" data-tipo="cursos" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1e40af;cursor:pointer">
+              <input type="checkbox" class="check-todos" data-tipo="cursos">
+              <span>Seleccionar todos</span>
+            </label>
+            <span style="color:#94a3b8">|</span>
+            <span class="contador-sel" data-tipo="cursos" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <span style="font-weight:700;color:#16a34a">$</span>
+              <input class="input input-masivo" type="number" min="0" step="1" data-tipo="cursos" placeholder="0" style="width:90px;text-align:center">
+              <span style="font-weight:700">MXN</span>
+              <button class="btn btn-primary btn-aplicar-masivo" data-tipo="cursos">Aplicar a seleccionados</button>
+              <button class="btn btn-secondary btn-limpiar-masivo" data-tipo="cursos" title="Quitar override (usar default)">Limpiar override</button>
+            </div>
+          </div>
+          <div id="comisiones-cursos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        </div>
+      </div>
+
+      <!-- Tab: vendedores -->
+      <div id="comision-tab-vendedores" class="comision-tab-content hidden">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Override por vendedor estrella ($ MXN por venta)</div>
+              <div class="card-subtitle">Solo si el vendedor tiene una cantidad especial. Deja vacío para usar el default de su consultora.</div>
+            </div>
+          </div>
+          <div class="masivo-bar" data-tipo="vendedores" style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #93c5fd">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#1e40af;cursor:pointer">
+              <input type="checkbox" class="check-todos" data-tipo="vendedores">
+              <span>Seleccionar todos</span>
+            </label>
+            <span style="color:#94a3b8">|</span>
+            <span class="contador-sel" data-tipo="vendedores" style="font-size:13px;color:#1e40af;font-weight:600">0 seleccionados</span>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <span style="font-weight:700;color:#16a34a">$</span>
+              <input class="input input-masivo" type="number" min="0" step="1" data-tipo="vendedores" placeholder="0" style="width:90px;text-align:center">
+              <span style="font-weight:700">MXN</span>
+              <button class="btn btn-primary btn-aplicar-masivo" data-tipo="vendedores">Aplicar a seleccionados</button>
+              <button class="btn btn-secondary btn-limpiar-masivo" data-tipo="vendedores" title="Quitar override (usar default)">Limpiar override</button>
+            </div>
+          </div>
+          <div id="comisiones-vendedores"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PAGOS A VENDEDORES (semanal)                         -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-pagos" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">💰 Pagos a vendedores</h1>
+          <p class="main-subtitle">Resumen semanal de comisiones por pagar (lunes a domingo)</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:14px">
+          <div>
+            <div class="card-title" id="pagos-semana-titulo">Esta semana</div>
+            <div class="card-subtitle" id="pagos-semana-rango">Cargando...</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-secondary btn-sm" id="btn-pagos-prev">◀ Semana anterior</button>
+            <button class="btn btn-secondary btn-sm" id="btn-pagos-hoy">Esta semana</button>
+            <button class="btn btn-secondary btn-sm" id="btn-pagos-next">Semana siguiente ▶</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div style="padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
+          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Ventas en la semana</div>
+            <div style="font-size:24px;font-weight:800;color:#0f172a;margin-top:4px" id="pagos-kpi-ventas">0</div>
+          </div>
+          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Facturación</div>
+            <div style="font-size:24px;font-weight:800;color:#0b4ea2;margin-top:4px" id="pagos-kpi-facturacion">$0</div>
+          </div>
+          <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:14px 16px;border-radius:10px;border:1px solid #fbbf24">
+            <div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:.06em;font-weight:700">💰 Total a pagar</div>
+            <div style="font-size:24px;font-weight:800;color:#78350f;margin-top:4px" id="pagos-kpi-total">$0</div>
+          </div>
+          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Vendedores activos</div>
+            <div style="font-size:24px;font-weight:800;color:#0f172a;margin-top:4px" id="pagos-kpi-vendedores">0</div>
+          </div>
+        </div>
+
+        <div id="pagos-container" style="padding:20px"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- HISTORIAL DIARIO                                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-historial-diario" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">📊 Historial diario por vendedor</h1>
+          <p class="main-subtitle">Vista global de TODAS las comisiones · El admin ve todo el histórico (no se borra)</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div class="card-title">Filtro</div>
+            <div class="card-subtitle">Selecciona vendedor y rango</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <select id="hist-filtro-vendedor" class="select" style="min-width:200px">
+              <option value="">— Todos los vendedores —</option>
+            </select>
+            <select id="hist-filtro-mes" class="select" style="min-width:160px">
+              <option value="actual">Mes actual</option>
+              <option value="anterior">Mes anterior</option>
+              <option value="3meses">Últimos 3 meses</option>
+              <option value="todo">Todo el historial</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px">
+        <div style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#15803d;font-weight:700;text-transform:uppercase;letter-spacing:.06em">HOY</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-hoy-monto">$0</div>
+          <div style="font-size:12.5px;color:#15803d;margin-top:4px" id="adm-hist-hoy-ventas">0 ventas</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fbbf24;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.06em">AYER</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-ayer-monto">$0</div>
+          <div style="font-size:12.5px;color:#92400e;margin-top:4px" id="adm-hist-ayer-ventas">0 ventas</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:1px solid #60a5fa;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:.06em">ESTA SEMANA</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-semana-monto">$0</div>
+          <div style="font-size:12.5px;color:#1e40af;margin-top:4px" id="adm-hist-semana-ventas">0 ventas</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f3e8ff,#e9d5ff);border:1px solid #a78bfa;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:.06em">RANGO</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-rango-monto">$0</div>
+          <div style="font-size:12.5px;color:#6b21a8;margin-top:4px" id="adm-hist-rango-ventas">0 ventas</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Detalle día por día</div>
+            <div class="card-subtitle" id="adm-hist-subt">Cargando...</div>
+          </div>
+        </div>
+        <div id="adm-hist-container" style="padding:0">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- APERTURAS GLOBALES                                   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-aperturas" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Aperturas globales</h1>
+          <p class="main-subtitle">Estado de apertura de todos los grupos en todas las consultoras</p>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+        <div>
+          Vista global. Cada coordinador define su propio mínimo y frecuencia desde su panel. Aquí solo monitoreas qué grupos están listos para abrir.
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Listos para abrir</div>
+            <div class="kpi-value" style="color:var(--green)" id="ag-listos">0</div>
+            <span class="kpi-trend kpi-trend-flat">cursos al mínimo</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">En proceso</div>
+            <div class="kpi-value" id="ag-proceso">0</div>
+            <span class="kpi-trend kpi-trend-flat">llenándose</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Inscritos esperando</div>
+            <div class="kpi-value" id="ag-inscritos">0</div>
+            <span class="kpi-trend kpi-trend-flat">alumnos en lista</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Consultoras con aperturas</div>
+            <div class="kpi-value" id="ag-consultoras">0</div>
+            <span class="kpi-trend kpi-trend-flat">activas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Estado por curso</div>
+            <div class="card-subtitle">Filtra por consultora o estado para encontrar grupos rápido</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <select class="select" id="ag-filter-consultora" style="max-width:200px">
+              <option value="">Todas las consultoras</option>
+            </select>
+            <select class="select" id="ag-filter-estado" style="max-width:180px">
+              <option value="">Todos los estados</option>
+              <option value="listo">🟢 Listos para abrir</option>
+              <option value="proceso">🟡 En proceso</option>
+              <option value="vacio">⚪ Sin inscritos</option>
+            </select>
+          </div>
+        </div>
+        <div id="aperturas-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- RANKING                                              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-ranking" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Ranking</h1>
+          <p class="main-subtitle">Top de consultoras y vendedores</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🏆 Top consultoras</div>
+            <div class="card-subtitle">Por facturación histórica</div>
+          </div>
+        </div>
+        <div id="ranking-consultoras"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">⭐ Top vendedores</div>
+            <div class="card-subtitle">Mejores resultados del sistema</div>
+          </div>
+        </div>
+        <div id="ranking-vendedores"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- GENERAR CERTIFICADO (admin)                          -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-generar-cert" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Generar certificado (admin)</h1>
+          <p class="main-subtitle">Para empresas externas que contratan cursos directamente · Folio especial IPCI-{CONSULTORA}-ADMIN-AAAA-NNNN</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📜 Datos del certificado</div>
+            <div class="card-subtitle">El certificado se generará y enviará por email al alumno</div>
+          </div>
+        </div>
+
+        <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:760px">
+          <div class="field">
+            <label class="field-label">Consultora *</label>
+            <select class="select" id="adm-consultora">
+              <option value="">— Elegir —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Curso *</label>
+            <select class="select" id="adm-curso" disabled>
+              <option value="">— Selecciona consultora primero —</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">Empresa contratante</label>
+            <input class="input" type="text" id="adm-empresa" placeholder="Ej: Industrias Alimenticias del Centro S.A. de C.V.">
+            <div class="field-hint">Aparecerá en el certificado y en el histórico admin</div>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">📅 Fecha y hora del curso *</label>
+            <input class="input" type="datetime-local" id="adm-fecha-curso">
+            <div class="field-hint">Esta fecha aparecerá en el certificado del alumno</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Nombre del alumno *</label>
+            <input class="input" type="text" id="adm-nombre" placeholder="Nombre completo">
+          </div>
+          <div class="field">
+            <label class="field-label">Email del alumno *</label>
+            <input class="input" type="email" id="adm-email" placeholder="alumno@empresa.com">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">Teléfono (opcional)</label>
+            <input class="input" type="tel" id="adm-telefono" placeholder="555-555-5555">
+          </div>
+        </div>
+
+        <div style="padding:0 24px 24px 24px">
+          <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:12px;font-size:13px;color:#1e40af;margin-bottom:14px">
+            ℹ️ El certificado se generará con folio especial <code style="background:white;padding:2px 6px;border-radius:4px;font-weight:700">IPCI-{CODIGO}-ADMIN-{AÑO}-{NNNN}</code> y se enviará automáticamente al email del alumno.
+          </div>
+          <button class="btn btn-primary" id="btn-adm-generar" style="font-size:15px;padding:12px 24px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+            Generar y enviar certificado
+          </button>
+        </div>
+      </div>
+
+      <!-- Historial de certificados generados por admin -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📋 Histórico de certificados admin</div>
+            <div class="card-subtitle">Todos los certificados generados directamente por administradores</div>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-cert-admin" placeholder="Buscar...">
+          </div>
+        </div>
+        <div id="cert-admin-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- LIMPIAR DATOS (admin)                                -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-limpiar" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title" style="color:#991b1b">⚠️ Limpiar datos por consultora</h1>
+          <p class="main-subtitle">Borra los certificados, alumnos y aperturas SOLO de la consultora elegida. Mantiene cursos, consultoras y vendedores.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border:2px solid #dc2626;background:#fff5f5">
+        <div style="padding:30px">
+          <div style="text-align:center">
+            <div style="font-size:48px;margin-bottom:14px">🗑️</div>
+            <h2 style="font-size:20px;color:#991b1b;margin:0 0 8px 0">Esta acción es PERMANENTE e irreversible</h2>
+            <p style="color:#4b5563;font-size:14px;line-height:1.5;max-width:560px;margin:14px auto">
+              Útil para limpiar datos de prueba de UNA consultora específica.<br>
+              <strong>Se borrarán de esa consultora:</strong> certificados · alumnos · aperturas (cronograma) · contador de folios<br>
+              <strong>Se mantiene siempre:</strong> el catálogo de cursos · datos de consultora · usuarios
+            </p>
+          </div>
+
+          <div style="max-width:560px;margin:24px auto 0 auto">
+            <div class="field" style="margin-bottom:14px">
+              <label class="field-label" style="color:#991b1b">1. Elige la consultora a limpiar *</label>
+              <select class="select" id="limpiar-consultora" style="border-color:#fca5a5">
+                <option value="">— Selecciona una consultora —</option>
+              </select>
+              <div class="field-hint" id="limpiar-resumen-consultora" style="color:#7f1d1d;font-weight:600;margin-top:8px"></div>
+            </div>
+
+            <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:14px 0;text-align:center">
+              <div style="font-size:13px;color:#991b1b;margin-bottom:8px;font-weight:700">2. Para confirmar, escribe en mayúsculas:</div>
+              <div style="font-size:18px;color:#991b1b;font-weight:800;letter-spacing:.06em;margin-bottom:10px;font-family:monospace">BORRAR TODO</div>
+              <input class="input" type="text" id="limpiar-confirmacion" placeholder="Escribe BORRAR TODO" style="text-align:center;font-weight:700;letter-spacing:.06em">
+            </div>
+
+            <div style="text-align:center">
+              <button class="btn" id="btn-limpiar-datos" style="background:#dc2626;color:white;font-size:15px;padding:12px 28px;margin-top:8px" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Limpiar datos de esta consultora
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="limpiar-resultado" style="margin-top:20px"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL CONSULTORA                                     -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-consultora">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-consultora-title">Nueva consultora</div>
+        <div class="modal-subtitle">Configura la consultora aliada</div>
+      </div>
+      <button class="modal-close" data-close="consultora" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form id="form-consultora" novalidate>
+      <div class="modal-body">
+        <input type="hidden" id="consultora-id">
+
+        <div class="field">
+          <label class="field-label">Nombre *</label>
+          <input class="input" type="text" id="consultora-nombre" required placeholder="Ej. OdonTeck">
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Código (4 letras) *</label>
+            <input class="input" type="text" id="consultora-codigo" required maxlength="4" placeholder="ODON" style="text-transform:uppercase">
+          </div>
+          <div class="field">
+            <label class="field-label">Estado</label>
+            <select class="select" id="consultora-activa">
+              <option value="true">Activa</option>
+              <option value="false">Inactiva</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Texto descriptivo (para certificados)</label>
+          <input class="input" type="text" id="consultora-descriptivo" placeholder="Ej. en el ámbito odontológico">
+          <div class="field-hint">Aparece en el cuerpo del certificado: "...en el ámbito odontológico"</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Texto de firma (para certificados)</label>
+          <input class="input" type="text" id="consultora-firma" placeholder="Ej. ODONTECK — COORDINACIÓN GENERAL">
+        </div>
+
+        <div class="field">
+          <label class="field-label">Comisión default ($ MXN por venta)</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:700;color:#16a34a;font-size:15px">$</span>
+            <input class="input" type="number" id="consultora-comision" min="0" step="1" placeholder="13" style="max-width:140px">
+            <span style="color:var(--muted);font-size:13px">MXN por cada venta</span>
+          </div>
+          <div class="field-hint">Pesos fijos que gana el vendedor por cada venta (sin importar el precio del curso)</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="consultora">Cancelar</button>
+        <button type="submit" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL USUARIO                                        -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-usuario">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Nuevo usuario</div>
+        <div class="modal-subtitle">Registra un coordinador, vendedor o admin</div>
+      </div>
+      <button class="modal-close" data-close="usuario" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form id="form-usuario" novalidate>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div><strong>Importante:</strong> Primero crea el usuario en Firebase Authentication, copia el UID y luego registra aquí los datos.</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">UID de Firebase Auth *</label>
+          <input class="input" type="text" id="usuario-uid" required placeholder="Pega aquí el UID copiado de Authentication">
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Email *</label>
+            <input class="input" type="email" id="usuario-email" required>
+          </div>
+          <div class="field">
+            <label class="field-label">Nombre completo *</label>
+            <input class="input" type="text" id="usuario-nombre" required>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Rol *</label>
+            <select class="select" id="usuario-rol" required>
+              <option value="">Selecciona...</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="coordinador">Coordinador</option>
+              <option value="superadmin">Super admin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Consultora *</label>
+            <select class="select" id="usuario-consultora" required>
+              <option value="">Selecciona...</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="usuario">Cancelar</button>
+        <button type="submit" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+          Crear usuario
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth, db, functions,
+    requireRole, cerrarSesion, formatFecha, formatMoney, toast, escapeHtml, iniciales, setupSidebar,
+    calcularComisionPct,
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot,
+    httpsCallable, callCertFunction
+  } from "./firebase-config.js";
+
+  let usuario = null;
+  let consultoras = [];
+  let usuarios = [];
+  let cursos = [];
+  let certificados = [];
+  let alumnos = [];
+
+  let chartFacturacion = null;
+  let chartConsultoras = null;
+  let chartCursos = null;
+  let chartDiario = null;
+  let periodoActual = 30;
+
+  // Debounce para inputs de comisiones — 350ms (lo más rápido cómodo)
+  const debounceTimers = {};
+  function debounce(key, fn, ms = 350) {
+    clearTimeout(debounceTimers[key]);
+    debounceTimers[key] = setTimeout(fn, ms);
+  }
+  // Forzar guardado inmediato (cancela debounce)
+  function flushDebounce(key, fn) {
+    clearTimeout(debounceTimers[key]);
+    fn();
+  }
+
+  // ─── INIT ───
+  usuario = await requireRole("superadmin");
+  document.getElementById("user-name").textContent = usuario.nombre || "Admin";
+  document.getElementById("user-initial").textContent = iniciales(usuario.nombre || "A");
+
+  setupSidebar();
+
+  document.querySelectorAll(".sidebar-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".section").forEach(v => v.classList.remove("active"));
+      document.getElementById(`view-${btn.dataset.view}`).classList.add("active");
+      document.getElementById("sidebar").classList.remove("open");
+      document.querySelector(".sidebar-backdrop")?.classList.remove("show");
+      if (btn.dataset.view === "ranking") renderRanking();
+      if (btn.dataset.view === "comisiones") renderComisiones();
+      if (btn.dataset.view === "pagos") renderPagos();
+      if (btn.dataset.view === "historial-diario") renderHistorialDiarioAdmin();
+      if (btn.dataset.view === "aperturas") renderAperturasGlobales();
+      if (btn.dataset.view === "generar-cert") {
+        llenarSelectsAdminCert();
+        llenarCursosAdminCert();
+        renderCertAdmin();
+      }
+      if (btn.dataset.view === "limpiar") {
+        llenarSelectLimpiar();
+        actualizarResumenConsultora();
+      }
+    });
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
+
+  document.querySelectorAll(".filter-btn[data-period]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn[data-period]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      periodoActual = btn.dataset.period === "all" ? "all" : parseInt(btn.dataset.period);
+      actualizarDashboard();
+    });
+  });
+
+  // Tabs comisiones
+  document.querySelectorAll(".comision-tab").forEach(t => {
+    t.addEventListener("click", () => {
+      document.querySelectorAll(".comision-tab").forEach(b => b.classList.remove("active"));
+      t.classList.add("active");
+      document.querySelectorAll(".comision-tab-content").forEach(c => c.classList.add("hidden"));
+      document.getElementById(`comision-tab-${t.dataset.tab}`).classList.remove("hidden");
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // SUSCRIPCIONES GLOBALES (TIEMPO REAL)
+  // ═══════════════════════════════════════════════════════════
+  onSnapshot(collection(db, "consultoras"), (snap) => {
+    consultoras = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    consultoras.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    renderConsultoras();
+    rellenarSelectConsultoras();
+    actualizarDashboard();
+    renderComisiones();
+    if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
+    if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
+  });
+
+  onSnapshot(collection(db, "usuarios"), (snap) => {
+    usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderUsuarios();
+    actualizarDashboard();
+    renderComisiones();
+  });
+
+  onSnapshot(collection(db, "cursos"), (snap) => {
+    cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCursos();
+    actualizarDashboard();
+    renderComisiones();
+    if (typeof llenarCursosAdminCert === "function") llenarCursosAdminCert();
+  });
+
+  onSnapshot(collection(db, "certificados"), (snap) => {
+    const prev = certificados.length;
+    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+    if (prev > 0 && certificados.length > prev) {
+      const nuevo = certificados[0];
+      toast(`Nueva venta · ${nuevo.nombreConsultora || ""} · ${formatMoney(nuevo.precio)}`, "success");
+    }
+    renderCertificados();
+    actualizarDashboard();
+    renderRanking();
+    if (typeof renderCertAdmin === "function") renderCertAdmin();
+    if (typeof renderPagos === "function") renderPagos();
+  });
+
+  onSnapshot(collection(db, "alumnos"), (snap) => {
+    alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    actualizarDashboard();
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // DASHBOARD
+  // ═══════════════════════════════════════════════════════════
+  function filtrarPorPeriodo(items, dateField = "creadoEn") {
+    if (periodoActual === "all") return items;
+    const desde = Date.now() - periodoActual * 24 * 60 * 60 * 1000;
+    return items.filter(i => (i[dateField]?.toMillis?.() || 0) >= desde);
+  }
+
+  function actualizarDashboard() {
+    const certsPeriodo = filtrarPorPeriodo(certificados);
+    const alumnosPeriodo = filtrarPorPeriodo(alumnos);
+    const ingresos = certsPeriodo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+
+    document.getElementById("kpi-ingresos").textContent = formatMoney(ingresos);
+    document.getElementById("kpi-certs").textContent = certsPeriodo.length;
+    document.getElementById("kpi-alumnos").textContent = alumnosPeriodo.length;
+
+    const consActivas = consultoras.filter(c => c.activa !== false).length;
+    document.getElementById("kpi-consultoras").textContent = consActivas;
+    document.getElementById("kpi-consultoras-total").textContent = consultoras.length;
+
+    document.getElementById("kpi-cursos").textContent = cursos.length;
+    document.getElementById("kpi-cursos-activos").textContent = cursos.filter(c => c.activo).length;
+
+    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
+    document.getElementById("kpi-vendedores").textContent = vendedoresList.length;
+    document.getElementById("kpi-vendedores-activos").textContent = vendedoresList.filter(v => v.activo).length;
+    document.getElementById("kpi-coordinadores").textContent = usuarios.filter(u => u.rol === "coordinador").length;
+
+    // Tendencias
+    if (periodoActual !== "all" && typeof periodoActual === "number") {
+      const ahora = Date.now();
+      const desde = ahora - periodoActual * 24 * 60 * 60 * 1000;
+      const desdeAnterior = desde - periodoActual * 24 * 60 * 60 * 1000;
+
+      const certsAnterior = certificados.filter(c => {
+        const t = c.creadoEn?.toMillis?.() || 0;
+        return t >= desdeAnterior && t < desde;
+      });
+      const ingresosAnterior = certsAnterior.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      const alumnosAnterior = alumnos.filter(a => {
+        const t = a.creadoEn?.toMillis?.() || 0;
+        return t >= desdeAnterior && t < desde;
+      }).length;
+
+      setTrend("kpi-ingresos-trend", ingresos, ingresosAnterior);
+      setTrend("kpi-certs-trend", certsPeriodo.length, certsAnterior.length);
+      setTrend("kpi-alumnos-trend", alumnosPeriodo.length, alumnosAnterior);
+    } else {
+      ["kpi-ingresos-trend", "kpi-certs-trend", "kpi-alumnos-trend"].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = "—";
+        el.className = "kpi-trend kpi-trend-flat";
+      });
+    }
+
+    // Counts por sección
+    document.getElementById("consultoras-count").textContent = consultoras.length;
+    document.getElementById("usuarios-count").textContent = usuarios.length;
+    document.getElementById("cursos-count").textContent = cursos.length;
+    document.getElementById("cert-count").textContent = certificados.length;
+    document.getElementById("cert-ingresos").textContent = formatMoney(certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0));
+
+    renderChartFacturacion();
+    renderChartConsultoras();
+    renderChartCursos();
+    renderChartDiario();
+    renderResumenConsultoras();
+    renderUltimos();
+    renderAperturasGlobales();
+  }
+
+  function setTrend(id, actual, anterior) {
+    const el = document.getElementById(id);
+    if (anterior === 0 && actual === 0) {
+      el.textContent = "Sin cambio";
+      el.className = "kpi-trend kpi-trend-flat";
+      return;
+    }
+    if (anterior === 0) {
+      el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 17 17 7M7 7h10v10"/></svg> Nuevo`;
+      el.className = "kpi-trend kpi-trend-up";
+      return;
+    }
+    const pct = ((actual - anterior) / anterior) * 100;
+    if (pct > 0) {
+      el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 17 17 7M7 7h10v10"/></svg> ${pct.toFixed(0)}%`;
+      el.className = "kpi-trend kpi-trend-up";
+    } else if (pct < 0) {
+      el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M17 7 7 17M17 17H7V7"/></svg> ${Math.abs(pct).toFixed(0)}%`;
+      el.className = "kpi-trend kpi-trend-down";
+    } else {
+      el.textContent = "0%";
+      el.className = "kpi-trend kpi-trend-flat";
+    }
+  }
+
+  // ─── CHART: Facturación 12 meses ───
+  function renderChartFacturacion() {
+    const ctx = document.getElementById("chart-facturacion")?.getContext("2d");
+    if (!ctx) return;
+
+    const meses = [];
+    const ahora = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+      meses.push({
+        label: d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" }),
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        ingresos: 0,
+        certs: 0
+      });
+    }
+
+    certificados.forEach(c => {
+      const t = c.creadoEn?.toDate?.();
+      if (!t) return;
+      const m = meses.find(m => m.year === t.getFullYear() && m.month === t.getMonth());
+      if (m) {
+        m.ingresos += parseFloat(c.precio) || 0;
+        m.certs++;
+      }
+    });
+
+    if (chartFacturacion) chartFacturacion.destroy();
+    chartFacturacion = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: meses.map(m => m.label),
+        datasets: [{
+          label: 'Facturación (MXN)',
+          data: meses.map(m => m.ingresos),
+          borderColor: '#0b4ea2',
+          backgroundColor: (ctx) => {
+            const chart = ctx.chart;
+            const { ctx: c, chartArea } = chart;
+            if (!chartArea) return 'rgba(11, 78, 162, 0.1)';
+            const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            grad.addColorStop(0, 'rgba(11, 78, 162, 0.25)');
+            grad.addColorStop(1, 'rgba(11, 78, 162, 0)');
+            return grad;
+          },
+          borderWidth: 2.5,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: '#0b4ea2',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f1d2e',
+            titleFont: { family: 'Montserrat', weight: '700' },
+            bodyFont: { family: 'Montserrat' },
+            padding: 12,
+            cornerRadius: 8,
+            callbacks: { label: (ctx) => `Facturación: ${formatMoney(ctx.parsed.y)}` }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: 'Montserrat' } } },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,.05)' },
+            ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' }
+          }
+        }
+      }
+    });
+  }
+
+  // ─── CHART: Top consultoras barras horizontales ───
+  function renderChartConsultoras() {
+    const ctx = document.getElementById("chart-consultoras")?.getContext("2d");
+    if (!ctx) return;
+
+    const certsPeriodo = filtrarPorPeriodo(certificados);
+    const ranking = consultoras.map(co => {
+      const sus = certsPeriodo.filter(ce => ce.consultoraId === co.id);
+      const ingresos = sus.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      return { nombre: co.nombre, ingresos, certs: sus.length };
+    }).filter(c => c.ingresos > 0).sort((a, b) => b.ingresos - a.ingresos).slice(0, 8);
+
+    if (chartConsultoras) chartConsultoras.destroy();
+
+    if (ranking.length === 0) {
+      ctx.canvas.style.display = "none";
+      const wrap = ctx.canvas.parentElement;
+      if (!wrap.querySelector('.chart-empty')) {
+        const empty = document.createElement('div');
+        empty.className = 'chart-empty empty';
+        empty.style.cssText = 'padding:60px 20px';
+        empty.innerHTML = '<div class="empty-text">Sin ventas en el periodo</div><div class="empty-hint">Cambia el filtro de tiempo</div>';
+        wrap.appendChild(empty);
+      }
+      return;
+    }
+    ctx.canvas.style.display = "";
+    ctx.canvas.parentElement.querySelector('.chart-empty')?.remove();
+
+    chartConsultoras = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ranking.map(r => r.nombre.length > 18 ? r.nombre.substring(0, 18) + '…' : r.nombre),
+        datasets: [{
+          label: 'Facturación',
+          data: ranking.map(r => r.ingresos),
+          backgroundColor: ['#0b4ea2', '#1e5fb3', '#2e6fc1', '#3e7fcf', '#4f8fdc', '#609feb', '#71afff', '#82bfff'],
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f1d2e', padding: 12, cornerRadius: 8,
+            titleFont: { family: 'Montserrat' }, bodyFont: { family: 'Montserrat' },
+            callbacks: {
+              label: (ctx) => {
+                const r = ranking[ctx.dataIndex];
+                return [`${formatMoney(r.ingresos)}`, `${r.certs} certificados`];
+              }
+            }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } },
+          y: { grid: { display: false }, ticks: { font: { family: 'Montserrat', size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // ─── CHART: Top cursos doughnut ───
+  function renderChartCursos() {
+    const ctx = document.getElementById("chart-cursos")?.getContext("2d");
+    if (!ctx) return;
+
+    const certsPeriodo = filtrarPorPeriodo(certificados);
+    const map = {};
+    certsPeriodo.forEach(c => {
+      const k = c.cursoId || "sin";
+      if (!map[k]) map[k] = { nombre: c.nombreCurso || "Sin curso", certs: 0 };
+      map[k].certs++;
+    });
+    const ranking = Object.values(map).sort((a, b) => b.certs - a.certs).slice(0, 5);
+
+    if (chartCursos) chartCursos.destroy();
+
+    if (ranking.length === 0) {
+      ctx.canvas.style.display = "none";
+      const wrap = ctx.canvas.parentElement;
+      if (!wrap.querySelector('.chart-empty')) {
+        const empty = document.createElement('div');
+        empty.className = 'chart-empty empty';
+        empty.style.cssText = 'padding:60px 20px';
+        empty.innerHTML = '<div class="empty-text">Sin datos en el periodo</div>';
+        wrap.appendChild(empty);
+      }
+      return;
+    }
+    ctx.canvas.style.display = "";
+    ctx.canvas.parentElement.querySelector('.chart-empty')?.remove();
+
+    chartCursos = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ranking.map(r => r.nombre.length > 25 ? r.nombre.substring(0, 25) + '…' : r.nombre),
+        datasets: [{
+          data: ranking.map(r => r.certs),
+          backgroundColor: ['#0b4ea2', '#C8982E', '#15803d', '#7c3aed', '#dc2626'],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11, family: 'Montserrat' } } },
+          tooltip: { backgroundColor: '#0f1d2e', padding: 12, cornerRadius: 8, titleFont: { family: 'Montserrat' }, bodyFont: { family: 'Montserrat' } }
+        }
+      }
+    });
+  }
+
+  // ─── CHART: Diario 30 días ───
+  function renderChartDiario() {
+    const ctx = document.getElementById("chart-diario")?.getContext("2d");
+    if (!ctx) return;
+
+    const dias = [];
+    const ahora = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - i);
+      dias.push({
+        label: d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
+        date: d.toISOString().split('T')[0],
+        certs: 0,
+        ingresos: 0
+      });
+    }
+
+    certificados.forEach(c => {
+      const t = c.creadoEn?.toDate?.();
+      if (!t) return;
+      const key = t.toISOString().split('T')[0];
+      const d = dias.find(x => x.date === key);
+      if (d) {
+        d.certs++;
+        d.ingresos += parseFloat(c.precio) || 0;
+      }
+    });
+
+    if (chartDiario) chartDiario.destroy();
+    chartDiario = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dias.map(d => d.label),
+        datasets: [{
+          label: 'Certificados',
+          data: dias.map(d => d.certs),
+          backgroundColor: 'rgba(200, 152, 46, 0.85)',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f1d2e', padding: 12, cornerRadius: 8,
+            titleFont: { family: 'Montserrat' }, bodyFont: { family: 'Montserrat' },
+            callbacks: {
+              label: (ctx) => {
+                const d = dias[ctx.dataIndex];
+                return [`${d.certs} certificados`, `${formatMoney(d.ingresos)}`];
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: 'Montserrat', size: 9 }, maxRotation: 0, autoSkip: true, autoSkipPadding: 8 } },
+          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, stepSize: 1 } }
+        }
+      }
+    });
+  }
+
+  // ─── RESUMEN POR CONSULTORA ───
+  function renderResumenConsultoras() {
+    const c = document.getElementById("resumen-consultoras");
+    if (consultoras.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay consultoras</div></div>';
+      return;
+    }
+
+    const certsPeriodo = filtrarPorPeriodo(certificados);
+    const alumnosPeriodo = filtrarPorPeriodo(alumnos);
+
+    // Periodo anterior para comparar
+    const ahora = Date.now();
+    let certsAnterior = [];
+    if (typeof periodoActual === "number") {
+      const desde = ahora - periodoActual * 24 * 60 * 60 * 1000;
+      const desdeAnt = desde - periodoActual * 24 * 60 * 60 * 1000;
+      certsAnterior = certificados.filter(ce => {
+        const t = ce.creadoEn?.toMillis?.() || 0;
+        return t >= desdeAnt && t < desde;
+      });
+    }
+
+    const datos = consultoras.map(co => {
+      const sus = certsPeriodo.filter(ce => ce.consultoraId === co.id);
+      const ingresos = sus.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      const ingresosAnt = certsAnterior.filter(ce => ce.consultoraId === co.id).reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      const numAlumnos = alumnosPeriodo.filter(a => a.consultoraId === co.id).length;
+      const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
+
+      let cambio = 0;
+      if (ingresosAnt > 0) cambio = ((ingresos - ingresosAnt) / ingresosAnt) * 100;
+      else if (ingresos > 0) cambio = 999;
+
+      return { consultora: co, ingresos, certs: sus.length, alumnos: numAlumnos, vendedores: numVend, cambio };
+    }).sort((a, b) => b.ingresos - a.ingresos);
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr>
+        <th>Consultora</th><th>Vendedores</th><th>Alumnos</th>
+        <th>Certificados</th><th>Facturado</th><th>vs periodo anterior</th>
+      </tr></thead>
+      <tbody>${datos.map(d => {
+        let badge = '<span class="text-muted text-sm">—</span>';
+        if (d.cambio === 999) badge = '<span class="chip chip-green">🆕 Nuevo</span>';
+        else if (d.cambio > 0) badge = `<span style="color:var(--green);font-weight:700;font-size:13px">↑ ${d.cambio.toFixed(0)}%</span>`;
+        else if (d.cambio < 0) badge = `<span style="color:var(--red);font-weight:700;font-size:13px">↓ ${Math.abs(d.cambio).toFixed(0)}%</span>`;
+        else if (d.ingresos > 0) badge = '<span class="text-muted text-sm">0%</span>';
+
+        return `<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <code style="color:var(--primary);font-weight:700;font-size:11.5px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(d.consultora.codigo || "?")}</code>
+              <strong>${escapeHtml(d.consultora.nombre)}</strong>
+            </div>
+          </td>
+          <td>${d.vendedores}</td>
+          <td>${d.alumnos}</td>
+          <td><strong>${d.certs}</strong></td>
+          <td><strong style="color:var(--primary)">${formatMoney(d.ingresos)}</strong></td>
+          <td>${badge}</td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+  }
+
+  // ─── ÚLTIMOS CERTIFICADOS ───
+  function renderUltimos() {
+    const c = document.getElementById("dash-ultimos");
+    const ultimos = certificados.slice(0, 8);
+    if (ultimos.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay certificados</div></div>';
+      return;
+    }
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th><th>Precio</th><th>Fecha</th></tr></thead>
+      <tbody>${ultimos.map(cert => `<tr>
+        <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(cert.folio)}</code></td>
+        <td><strong>${escapeHtml(cert.nombreAlumno)}</strong></td>
+        <td>${escapeHtml(cert.nombreCurso)}</td>
+        <td>${escapeHtml(cert.nombreConsultora)}</td>
+        <td><strong>${formatMoney(cert.precio || 0)}</strong></td>
+        <td class="text-sm text-muted">${escapeHtml(cert.fecha || "—")}</td>
+      </tr>`).join("")}</tbody></table></div>`;
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CONSULTORAS
+  // ═══════════════════════════════════════════════════════════
+  function renderConsultoras() {
+    const c = document.getElementById("consultoras-container");
+    const search = (document.getElementById("search-consultora")?.value || "").toLowerCase();
+    let lista = [...consultoras];
+    if (search) {
+      lista = lista.filter(co =>
+        (co.nombre || "").toLowerCase().includes(search) ||
+        (co.codigo || "").toLowerCase().includes(search)
+      );
+    }
+
+    if (lista.length === 0) {
+      c.innerHTML = `<div class="empty">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+        <div class="empty-text">${search ? 'Sin resultados' : 'Aún no hay consultoras'}</div>
+        <div class="empty-hint">${search ? 'Intenta con otra búsqueda' : 'Click en "Nueva consultora" para registrar la primera'}</div>
+      </div>`;
+      return;
+    }
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr>
+        <th>Código</th><th>Nombre</th><th>Cursos</th><th>Vendedores</th>
+        <th>Certificados</th><th>Facturado</th><th>Comisión</th><th>Estado</th><th class="col-actions">Acción</th>
+      </tr></thead>
+      <tbody>${lista.map(co => {
+        const numCursos = cursos.filter(cu => cu.consultoraId === co.id).length;
+        const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
+        const certsCo = certificados.filter(ce => ce.consultoraId === co.id);
+        const ingresosCo = certsCo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+        const com = typeof co.comisionFija === "number" ? `$${co.comisionFija} MXN`
+                  : typeof co.comisionDefault === "number" ? `$${co.comisionDefault} MXN` : "—";
+        return `<tr>
+          <td><code style="color:var(--primary);font-weight:700;font-size:11.5px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(co.codigo || "?")}</code></td>
+          <td><strong>${escapeHtml(co.nombre)}</strong></td>
+          <td>${numCursos}</td>
+          <td>${numVend}</td>
+          <td><strong>${certsCo.length}</strong></td>
+          <td><strong style="color:var(--primary)">${formatMoney(ingresosCo)}</strong></td>
+          <td><span class="chip chip-blue">${com}</span></td>
+          <td>${co.activa !== false ? '<span class="chip chip-green chip-dot">Activa</span>' : '<span class="chip chip-gray">Inactiva</span>'}</td>
+          <td class="col-actions"><button class="btn btn-secondary btn-sm" data-edit-consultora="${co.id}">Editar</button></td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-edit-consultora]").forEach(b => {
+      b.addEventListener("click", () => editarConsultora(b.dataset.editConsultora));
+    });
+  }
+
+  document.getElementById("search-consultora").addEventListener("input", renderConsultoras);
+
+  function rellenarSelectConsultoras() {
+    const sel = document.getElementById("usuario-consultora");
+    const valActual = sel.value;
+    sel.innerHTML = '<option value="">Selecciona...</option>';
+    consultoras.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.nombre;
+      sel.appendChild(opt);
+    });
+    sel.value = valActual;
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // USUARIOS
+  // ═══════════════════════════════════════════════════════════
+  function renderUsuarios() {
+    const c = document.getElementById("usuarios-container");
+    const filtroRol = document.getElementById("filter-rol")?.value || "";
+    const search = (document.getElementById("search-usuario")?.value || "").toLowerCase();
+
+    let lista = filtroRol ? usuarios.filter(u => u.rol === filtroRol) : [...usuarios];
+    if (search) {
+      lista = lista.filter(u =>
+        (u.nombre || "").toLowerCase().includes(search) ||
+        (u.email || "").toLowerCase().includes(search)
+      );
+    }
+
+    if (lista.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">' + (search || filtroRol ? 'Sin resultados' : 'Sin usuarios') + '</div></div>';
+      return;
+    }
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Consultora</th><th>Comisión</th><th>Estado</th></tr></thead>
+      <tbody>${lista.map(u => {
+        const rolBadge = {
+          superadmin: '<span class="chip chip-purple">Super admin</span>',
+          coordinador: '<span class="chip chip-blue">Coordinador</span>',
+          vendedor: '<span class="chip chip-gold">Vendedor</span>'
+        }[u.rol] || '<span class="chip chip-gray">—</span>';
+        const com = u.rol === "vendedor" && (typeof u.comisionFija === "number" || typeof u.comisionOverride === "number")
+          ? `<span class="chip chip-green">$${u.comisionFija ?? u.comisionOverride} MXN override</span>`
+          : '<span class="text-muted text-sm">—</span>';
+        return `<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="user-avatar" style="width:32px;height:32px;font-size:11px">${iniciales(u.nombre)}</div>
+              <strong>${escapeHtml(u.nombre)}</strong>
+            </div>
+          </td>
+          <td>${escapeHtml(u.email)}</td>
+          <td>${rolBadge}</td>
+          <td>${escapeHtml(u.consultoraNombre || "—")}</td>
+          <td>${com}</td>
+          <td>${u.activo ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+  }
+
+  document.getElementById("filter-rol").addEventListener("change", renderUsuarios);
+  document.getElementById("search-usuario").addEventListener("input", renderUsuarios);
+
+  // ═══════════════════════════════════════════════════════════
+  // CURSOS
+  // ═══════════════════════════════════════════════════════════
+  function renderCursos() {
+    const c = document.getElementById("cursos-container");
+    const search = (document.getElementById("search-curso")?.value || "").toLowerCase();
+    let lista = [...cursos];
+    if (search) {
+      lista = lista.filter(cu =>
+        (cu.nombre || "").toLowerCase().includes(search) ||
+        (cu.ponente || "").toLowerCase().includes(search)
+      );
+    }
+
+    if (lista.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">' + (search ? 'Sin resultados' : 'Aún no hay cursos') + '</div></div>';
+      return;
+    }
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Curso</th><th>Consultora</th><th>Ponente</th><th>Modalidad</th><th>Duración</th><th>Precio</th><th>Comisión</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${lista.map(cu => {
+        const cons = consultoras.find(co => co.id === cu.consultoraId);
+        const com = (typeof cu.comisionFija === "number" || typeof cu.comisionOverride === "number")
+          ? `<span class="chip chip-green">$${cu.comisionFija ?? cu.comisionOverride} MXN override</span>`
+          : '<span class="text-muted text-sm">default</span>';
+        return `<tr>
+          <td><strong>${escapeHtml(cu.nombre)}</strong></td>
+          <td>${escapeHtml(cons?.nombre || "—")}</td>
+          <td>${escapeHtml(cu.ponente || "—")}</td>
+          <td>${escapeHtml(cu.modalidad || "—")}</td>
+          <td><strong style="color:#0b4ea2">${escapeHtml(cu.duracion || "—")}</strong></td>
+          <td><strong>${cu.precio ? formatMoney(cu.precio) : "—"}</strong></td>
+          <td>${com}</td>
+          <td>${cu.activo ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
+          <td><button class="btn btn-secondary btn-sm" data-edit-curso="${cu.id}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:3px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+            Editar
+          </button></td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-edit-curso]").forEach(b =>
+      b.addEventListener("click", () => abrirModalEditarCurso(b.dataset.editCurso))
+    );
+  }
+  document.getElementById("search-curso").addEventListener("input", renderCursos);
+
+  // Modal editar curso
+  function abrirModalEditarCurso(cursoId) {
+    const cu = cursos.find(c => c.id === cursoId);
+    if (!cu) return;
+    const cons = consultoras.find(co => co.id === cu.consultoraId);
+
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:620px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Editar curso</div>
+            <div class="modal-subtitle">${escapeHtml(cons?.nombre || "—")}</div>
+          </div>
+          <button class="modal-close" data-close-here>×</button>
+        </div>
+        <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field" style="grid-column:1/-1">
+            <label class="field-label">Nombre del curso *</label>
+            <input class="input" type="text" id="ec-nombre" value="${escapeHtml(cu.nombre || "")}">
+          </div>
+          <div class="field">
+            <label class="field-label">Ponente</label>
+            <input class="input" type="text" id="ec-ponente" value="${escapeHtml(cu.ponente || "")}">
+          </div>
+          <div class="field">
+            <label class="field-label">Email del ponente</label>
+            <input class="input" type="email" id="ec-email-ponente" value="${escapeHtml(cu.emailPonente || "")}">
+          </div>
+          <div class="field">
+            <label class="field-label">Modalidad</label>
+            <input class="input" type="text" id="ec-modalidad" value="${escapeHtml(cu.modalidad || "En línea")}" placeholder="Ej: En línea">
+          </div>
+          <div class="field">
+            <label class="field-label">⏱️ Duración (aparece en certificado)</label>
+            <input class="input" type="text" id="ec-duracion" value="${escapeHtml(cu.duracion || "")}" placeholder="Ej: 5 horas, 40 horas, 2 semanas">
+            <div class="field-hint">Texto libre — lo que escribas aparecerá tal cual en el PDF</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Precio (MXN)</label>
+            <input class="input" type="number" min="0" step="1" id="ec-precio" value="${cu.precio || 0}">
+          </div>
+          <div class="field">
+            <label class="field-label">Mínimo alumnos para abrir grupo</label>
+            <input class="input" type="number" min="1" step="1" id="ec-minimo" value="${cu.minimoAlumnos || 8}">
+          </div>
+          <div class="field">
+            <label class="field-label">Frecuencia de apertura (días)</label>
+            <input class="input" type="number" min="1" step="1" id="ec-frecuencia" value="${cu.frecuenciaDiasApertura || 15}">
+          </div>
+          <div class="field">
+            <label class="field-label">Cargo del firmante</label>
+            <input class="input" type="text" id="ec-cargo" value="${escapeHtml(cu.cargo || "Coordinación General")}">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="ec-activo" ${cu.activo !== false ? "checked" : ""}>
+              <span>Curso activo (se puede vender)</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-guardar-curso">Guardar cambios</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-guardar-curso").addEventListener("click", async () => {
+      const btn = wrap.querySelector("#btn-guardar-curso");
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+      try {
+        const data = {
+          nombre: wrap.querySelector("#ec-nombre").value.trim(),
+          ponente: wrap.querySelector("#ec-ponente").value.trim(),
+          emailPonente: wrap.querySelector("#ec-email-ponente").value.trim(),
+          modalidad: wrap.querySelector("#ec-modalidad").value.trim() || "En línea",
+          duracion: wrap.querySelector("#ec-duracion").value.trim(),
+          precio: parseFloat(wrap.querySelector("#ec-precio").value) || 0,
+          minimoAlumnos: parseInt(wrap.querySelector("#ec-minimo").value, 10) || 8,
+          frecuenciaDiasApertura: parseInt(wrap.querySelector("#ec-frecuencia").value, 10) || 15,
+          cargo: wrap.querySelector("#ec-cargo").value.trim() || "Coordinación General",
+          activo: wrap.querySelector("#ec-activo").checked,
+          actualizadoEn: serverTimestamp(),
+        };
+        if (!data.nombre) throw new Error("El nombre del curso es obligatorio");
+        await updateDoc(doc(db, "cursos", cursoId), data);
+        toast(`✅ Curso "${data.nombre}" actualizado`, "success");
+        cerrar();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message, "error");
+        btn.disabled = false;
+        btn.textContent = "Guardar cambios";
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CERTIFICADOS
+  // ═══════════════════════════════════════════════════════════
+  function renderCertificados() {
+    const c = document.getElementById("certificados-container");
+    const search = (document.getElementById("search-cert")?.value || "").toLowerCase();
+    const filtrados = search
+      ? certificados.filter(ce =>
+          (ce.folio || "").toLowerCase().includes(search) ||
+          (ce.nombreAlumno || "").toLowerCase().includes(search))
+      : certificados;
+
+    if (filtrados.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">' + (search ? "Sin resultados" : "Aún no hay certificados") + '</div></div>';
+      return;
+    }
+
+    const mostrar = filtrados.slice(0, 200);
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th><th>Precio</th><th>Fecha</th><th class="col-actions">PDF</th></tr></thead>
+      <tbody>${mostrar.map(ce => `<tr>
+        <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(ce.folio)}</code></td>
+        <td><strong>${escapeHtml(ce.nombreAlumno)}</strong></td>
+        <td>${escapeHtml(ce.nombreCurso)}</td>
+        <td>${escapeHtml(ce.nombreConsultora)}</td>
+        <td><strong>${formatMoney(ce.precio || 0)}</strong></td>
+        <td class="text-sm text-muted">${escapeHtml(ce.fecha || "—")}</td>
+        <td class="col-actions">${ce.pdfUrl ? `<a href="${ce.pdfUrl}" target="_blank" class="btn btn-secondary btn-sm">Ver</a>` : "—"}</td>
+      </tr>`).join("")}</tbody></table></div>
+      ${filtrados.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${filtrados.length}. Usa la búsqueda para refinar.</div>` : ""}`;
+  }
+  document.getElementById("search-cert").addEventListener("input", renderCertificados);
+
+  // ═══════════════════════════════════════════════════════════
+  // COMISIONES
+  // ═══════════════════════════════════════════════════════════
+  function renderComisiones() {
+    renderComisionesConsultoras();
+    renderComisionesCursos();
+    renderComisionesVendedores();
+  }
+
+  function renderComisionesConsultoras() {
+    const c = document.getElementById("comisiones-consultoras");
+    if (consultoras.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay consultoras</div></div>';
+      return;
+    }
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Consultora</th><th>Vendedores</th><th>Comisión default ($ MXN por venta)</th></tr></thead>
+      <tbody>${consultoras.map(co => {
+        const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
+        const valor = typeof co.comisionFija === "number" ? co.comisionFija
+                    : typeof co.comisionDefault === "number" ? co.comisionDefault : "";
+        return `<tr>
+          <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="consultoras" data-id="${co.id}"></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <code style="color:var(--primary);font-weight:700;font-size:11.5px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(co.codigo || "?")}</code>
+              <strong>${escapeHtml(co.nombre)}</strong>
+            </div>
+          </td>
+          <td>${numVend} vendedores</td>
+          <td>
+            <div class="comision-pct-input">
+              <span style="font-weight:700;color:#16a34a;margin-right:4px">$</span>
+              <input type="number" min="0" step="1" data-com-cons="${co.id}" value="${valor}" placeholder="0">
+              <span>MXN</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-com-cons]").forEach(input => {
+      const guardar = async () => {
+        const id = input.dataset.comCons;
+        const val = input.value.trim();
+        try {
+          input.style.background = "#fef3c7";
+          const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
+          await updateDoc(doc(db, "consultoras", id), data);
+          input.style.background = "#dcfce7";
+          toast(`Comisión actualizada: $${val} MXN`, "success", 1500);
+          setTimeout(() => { input.style.background = ""; }, 800);
+        } catch (e) {
+          console.error(e);
+          input.style.background = "#fecaca";
+          toast("Error: " + e.message, "error");
+        }
+      };
+      input.addEventListener("input", () => {
+        const id = input.dataset.comCons;
+        debounce(`cons_${id}`, guardar);
+      });
+      // Guardado inmediato al perder foco o presionar Enter
+      input.addEventListener("blur", () => {
+        const id = input.dataset.comCons;
+        flushDebounce(`cons_${id}`, guardar);
+      });
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          input.blur();
+        }
+      });
+    });
+  }
+
+  function renderComisionesCursos() {
+    const c = document.getElementById("comisiones-cursos");
+    if (cursos.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay cursos</div></div>';
+      return;
+    }
+
+    const cursosOrdenados = [...cursos].sort((a, b) => {
+      const conA = consultoras.find(co => co.id === a.consultoraId)?.nombre || "";
+      const conB = consultoras.find(co => co.id === b.consultoraId)?.nombre || "";
+      return conA.localeCompare(conB) || (a.nombre || "").localeCompare(b.nombre || "");
+    });
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Curso</th><th>Consultora</th><th>Default consultora</th><th>Override curso ($ MXN por venta)</th></tr></thead>
+      <tbody>${cursosOrdenados.map(cu => {
+        const cons = consultoras.find(co => co.id === cu.consultoraId);
+        const def = typeof cons?.comisionFija === "number" ? `$${cons.comisionFija} MXN`
+                  : typeof cons?.comisionDefault === "number" ? `$${cons.comisionDefault} MXN` : "—";
+        const valor = typeof cu.comisionFija === "number" ? cu.comisionFija
+                    : typeof cu.comisionOverride === "number" ? cu.comisionOverride : "";
+        return `<tr>
+          <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="cursos" data-id="${cu.id}"></td>
+          <td><strong>${escapeHtml(cu.nombre)}</strong></td>
+          <td>${escapeHtml(cons?.nombre || "—")}</td>
+          <td><span class="text-muted text-sm">${def}</span></td>
+          <td>
+            <div class="comision-pct-input">
+              <span style="font-weight:700;color:#16a34a;margin-right:4px">$</span>
+              <input type="number" min="0" step="1" data-com-curso="${cu.id}" value="${valor}" placeholder="—">
+              <span>MXN</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-com-curso]").forEach(input => {
+      const guardar = async () => {
+        const id = input.dataset.comCurso;
+        const val = input.value.trim();
+        try {
+          input.style.background = "#fef3c7";
+          const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
+          await updateDoc(doc(db, "cursos", id), data);
+          input.style.background = "#dcfce7";
+          toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
+          setTimeout(() => { input.style.background = ""; }, 800);
+        } catch (e) {
+          console.error(e);
+          input.style.background = "#fecaca";
+          toast("Error: " + e.message, "error");
+        }
+      };
+      input.addEventListener("input", () => {
+        const id = input.dataset.comCurso;
+        debounce(`curso_${id}`, guardar);
+      });
+      input.addEventListener("blur", () => {
+        const id = input.dataset.comCurso;
+        flushDebounce(`curso_${id}`, guardar);
+      });
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          input.blur();
+        }
+      });
+    });
+  }
+
+  function renderComisionesVendedores() {
+    const c = document.getElementById("comisiones-vendedores");
+    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
+    if (vendedoresList.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay vendedores</div></div>';
+      return;
+    }
+
+    const ordenados = vendedoresList.sort((a, b) => (a.consultoraNombre || "").localeCompare(b.consultoraNombre || "") || (a.nombre || "").localeCompare(b.nombre || ""));
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th style="width:40px;text-align:center"></th><th>Vendedor</th><th>Consultora</th><th>Default consultora</th><th>Override vendedor ($ MXN por venta)</th></tr></thead>
+      <tbody>${ordenados.map(v => {
+        const cons = consultoras.find(co => co.id === v.consultoraId);
+        const def = typeof cons?.comisionFija === "number" ? `$${cons.comisionFija} MXN`
+                  : typeof cons?.comisionDefault === "number" ? `$${cons.comisionDefault} MXN` : "—";
+        const valor = typeof v.comisionFija === "number" ? v.comisionFija
+                    : typeof v.comisionOverride === "number" ? v.comisionOverride : "";
+        return `<tr>
+          <td style="text-align:center"><input type="checkbox" class="check-fila" data-tipo="vendedores" data-id="${v.id}"></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="user-avatar" style="width:30px;height:30px;font-size:10.5px">${iniciales(v.nombre)}</div>
+              <strong>${escapeHtml(v.nombre)}</strong>
+            </div>
+          </td>
+          <td>${escapeHtml(v.consultoraNombre || "—")}</td>
+          <td><span class="text-muted text-sm">${def}</span></td>
+          <td>
+            <div class="comision-pct-input">
+              <span style="font-weight:700;color:#16a34a;margin-right:4px">$</span>
+              <input type="number" min="0" step="1" data-com-vend="${v.id}" value="${valor}" placeholder="—">
+              <span>MXN</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-com-vend]").forEach(input => {
+      const guardar = async () => {
+        const id = input.dataset.comVend;
+        const val = input.value.trim();
+        try {
+          input.style.background = "#fef3c7";
+          const data = val === "" ? { comisionFija: null } : { comisionFija: parseFloat(val) };
+          await updateDoc(doc(db, "usuarios", id), data);
+          input.style.background = "#dcfce7";
+          toast(`Comisión actualizada${val ? ': $' + val + ' MXN' : ''}`, "success", 1500);
+          setTimeout(() => { input.style.background = ""; }, 800);
+        } catch (e) {
+          console.error(e);
+          input.style.background = "#fecaca";
+          toast("Error: " + e.message, "error");
+        }
+      };
+      input.addEventListener("input", () => {
+        const id = input.dataset.comVend;
+        debounce(`vend_${id}`, guardar);
+      });
+      input.addEventListener("blur", () => {
+        const id = input.dataset.comVend;
+        flushDebounce(`vend_${id}`, guardar);
+      });
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          input.blur();
+        }
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // APERTURAS GLOBALES
+  // ═══════════════════════════════════════════════════════════
+  function calcularEstadoCurso(curso) {
+    const minimo = curso.minimoAlumnos || 8;
+    const frecuencia = curso.frecuenciaDiasApertura || 15;
+    const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
+    const desde = ultimaApertura ? ultimaApertura.getTime() : 0;
+
+    const inscritos = alumnos.filter(a =>
+      a.cursoId === curso.id &&
+      a.estado !== "email_enviado" &&
+      (a.creadoEn?.toMillis?.() || 0) >= desde
+    ).length;
+
+    const pct = Math.min(100, Math.round((inscritos / minimo) * 100));
+    const listo = inscritos >= minimo;
+
+    let proxima = null;
+    if (ultimaApertura) {
+      proxima = new Date(ultimaApertura);
+      proxima.setDate(proxima.getDate() + frecuencia);
+    }
+
+    return { minimo, frecuencia, inscritos, pct, listo, ultimaApertura, proxima };
+  }
+
+  function renderAperturasGlobales() {
+    const container = document.getElementById("aperturas-container");
+    if (!container) return;
+
+    // Llenar select de consultoras (si está vacío)
+    const selCons = document.getElementById("ag-filter-consultora");
+    if (selCons.options.length <= 1) {
+      consultoras.forEach(co => {
+        const opt = document.createElement("option");
+        opt.value = co.id;
+        opt.textContent = co.nombre;
+        selCons.appendChild(opt);
+      });
+    }
+
+    const filtroCons = selCons.value;
+    const filtroEstado = document.getElementById("ag-filter-estado").value;
+
+    // Calcular estado de cada curso activo
+    let lista = cursos.filter(c => c.activo);
+    if (filtroCons) lista = lista.filter(c => c.consultoraId === filtroCons);
+
+    const conEstado = lista.map(c => ({
+      curso: c,
+      consultora: consultoras.find(co => co.id === c.consultoraId),
+      estado: calcularEstadoCurso(c),
+    }));
+
+    let filtrados = [...conEstado];
+    if (filtroEstado === "listo") filtrados = filtrados.filter(x => x.estado.listo);
+    else if (filtroEstado === "proceso") filtrados = filtrados.filter(x => !x.estado.listo && x.estado.inscritos > 0);
+    else if (filtroEstado === "vacio") filtrados = filtrados.filter(x => x.estado.inscritos === 0);
+
+    // Ordenar: listos primero, luego por % desc
+    filtrados.sort((a, b) => {
+      if (a.estado.listo !== b.estado.listo) return a.estado.listo ? -1 : 1;
+      return b.estado.pct - a.estado.pct;
+    });
+
+    // KPIs (sobre TODOS los cursos, no filtrados)
+    const listos = conEstado.filter(x => x.estado.listo).length;
+    const proceso = conEstado.filter(x => !x.estado.listo && x.estado.inscritos > 0).length;
+    const totalInscritos = conEstado.reduce((s, x) => s + x.estado.inscritos, 0);
+    const consultsConApertura = new Set(conEstado.filter(x => x.estado.listo).map(x => x.curso.consultoraId)).size;
+
+    document.getElementById("ag-listos").textContent = listos;
+    document.getElementById("ag-proceso").textContent = proceso;
+    document.getElementById("ag-inscritos").textContent = totalInscritos;
+    document.getElementById("ag-consultoras").textContent = consultsConApertura;
+
+    // Badge sidebar
+    const badge = document.getElementById("badge-aperturas");
+    if (badge) {
+      badge.textContent = listos;
+      badge.style.display = listos === 0 ? "none" : "";
+    }
+
+    if (filtrados.length === 0) {
+      container.innerHTML = `<div class="empty">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+        <div class="empty-text">${(filtroCons || filtroEstado) ? 'Sin resultados con esos filtros' : 'No hay cursos activos'}</div>
+        <div class="empty-hint">${(filtroCons || filtroEstado) ? 'Intenta otra combinación' : 'Espera a que las consultoras activen sus cursos'}</div>
+      </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr>
+        <th>Curso</th>
+        <th>Consultora</th>
+        <th>Inscritos / Mín</th>
+        <th>Progreso</th>
+        <th>Última apertura</th>
+        <th>Próxima</th>
+        <th>Estado</th>
+      </tr></thead>
+      <tbody>${filtrados.map(({ curso, consultora, estado }) => {
+        const fechaUlt = estado.ultimaApertura
+          ? estado.ultimaApertura.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+          : '<span class="text-muted">Nunca</span>';
+        const fechaProx = estado.proxima
+          ? estado.proxima.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+          : '<span class="text-muted">—</span>';
+        const colorBar = estado.listo ? 'var(--green)' : (estado.pct > 50 ? 'var(--gold)' : 'var(--primary)');
+        return `<tr>
+          <td>
+            <strong>${escapeHtml(curso.nombre)}</strong>
+            <div class="text-sm text-muted">${escapeHtml(curso.ponente || "Sin ponente")}</div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <code style="color:var(--primary);font-weight:700;font-size:11px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(consultora?.codigo || "?")}</code>
+              <span>${escapeHtml(consultora?.nombre || "—")}</span>
+            </div>
+          </td>
+          <td><strong style="font-size:18px;color:${estado.listo ? 'var(--green)' : 'var(--text)'}">${estado.inscritos}</strong> <span class="text-muted">/ ${estado.minimo}</span></td>
+          <td style="min-width:140px">
+            <div style="background:var(--surface-soft);border-radius:6px;height:8px;overflow:hidden;border:1px solid var(--line-soft)">
+              <div style="background:${colorBar};width:${estado.pct}%;height:100%;transition:width 0.4s ease;border-radius:6px"></div>
+            </div>
+            <div class="text-xs text-muted" style="margin-top:4px">${estado.pct}%</div>
+          </td>
+          <td class="text-sm">${fechaUlt}</td>
+          <td class="text-sm">${fechaProx}</td>
+          <td>
+            ${estado.listo
+              ? '<span class="chip chip-green chip-dot">🟢 Listo</span>'
+              : estado.inscritos === 0
+                ? '<span class="chip chip-gray">Sin inscritos</span>'
+                : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}
+          </td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+  }
+
+  document.getElementById("ag-filter-consultora").addEventListener("change", renderAperturasGlobales);
+  document.getElementById("ag-filter-estado").addEventListener("change", renderAperturasGlobales);
+
+  // ═══════════════════════════════════════════════════════════
+  // RANKING
+  // ═══════════════════════════════════════════════════════════
+  function renderRanking() {
+    const rConsultoras = consultoras.map(co => {
+      const certs = certificados.filter(ce => ce.consultoraId === co.id);
+      const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      return { consultora: co, certs: certs.length, ingresos };
+    }).filter(r => r.certs > 0).sort((a, b) => b.ingresos - a.ingresos);
+
+    if (rConsultoras.length === 0) {
+      document.getElementById("ranking-consultoras").innerHTML = '<div class="empty"><div class="empty-text">Sin datos aún</div></div>';
+    } else {
+      document.getElementById("ranking-consultoras").innerHTML = `<div class="ranking-list">${rConsultoras.slice(0, 10).map((r, i) => `
+        <div class="ranking-item">
+          <div class="ranking-medal">${i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
+          <div class="ranking-info">
+            <div class="ranking-name">${escapeHtml(r.consultora.nombre)}</div>
+            <div class="ranking-sub">${r.certs} certificados emitidos</div>
+          </div>
+          <div class="ranking-stat"><strong>${formatMoney(r.ingresos)}</strong><span>facturado</span></div>
+        </div>
+      `).join("")}</div>`;
+    }
+
+    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
+    const rVendedores = vendedoresList.map(v => {
+      const certs = certificados.filter(ce => ce.generadoPor === v.id);
+      const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+      return { vendedor: v, certs: certs.length, ingresos };
+    }).filter(r => r.certs > 0).sort((a, b) => b.ingresos - a.ingresos);
+
+    if (rVendedores.length === 0) {
+      document.getElementById("ranking-vendedores").innerHTML = '<div class="empty"><div class="empty-text">Sin datos aún</div></div>';
+    } else {
+      document.getElementById("ranking-vendedores").innerHTML = `<div class="ranking-list">${rVendedores.slice(0, 15).map((r, i) => `
+        <div class="ranking-item">
+          <div class="ranking-medal">${i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
+          <div class="ranking-info">
+            <div class="ranking-name">${escapeHtml(r.vendedor.nombre)}</div>
+            <div class="ranking-sub">${escapeHtml(r.vendedor.consultoraNombre || "—")} · ${r.certs} ventas</div>
+          </div>
+          <div class="ranking-stat"><strong>${formatMoney(r.ingresos)}</strong><span>facturado</span></div>
+        </div>
+      `).join("")}</div>`;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // MODALES
+  // ═══════════════════════════════════════════════════════════
+  document.querySelectorAll("[data-close]").forEach(b => {
+    b.addEventListener("click", () => {
+      document.getElementById(`modal-${b.dataset.close}`).classList.add("hidden");
+    });
+  });
+
+  document.querySelectorAll(".modal-backdrop").forEach(m => {
+    m.addEventListener("click", (e) => { if (e.target === m) m.classList.add("hidden"); });
+  });
+
+  // ─── Modal CONSULTORA ───
+  document.getElementById("btn-nueva-consultora").addEventListener("click", () => abrirModalConsultora());
+
+  function abrirModalConsultora(data = null) {
+    const f = document.getElementById("form-consultora");
+    f.reset();
+    if (data) {
+      document.getElementById("modal-consultora-title").textContent = "Editar consultora";
+      document.getElementById("consultora-id").value = data.id;
+      document.getElementById("consultora-nombre").value = data.nombre || "";
+      document.getElementById("consultora-codigo").value = data.codigo || "";
+      document.getElementById("consultora-activa").value = String(data.activa !== false);
+      document.getElementById("consultora-descriptivo").value = data.textoDescriptivo || "";
+      document.getElementById("consultora-firma").value = data.firmaTexto || "";
+      document.getElementById("consultora-comision").value = typeof data.comisionFija === "number" ? data.comisionFija
+        : typeof data.comisionDefault === "number" ? data.comisionDefault : "";
+    } else {
+      document.getElementById("modal-consultora-title").textContent = "Nueva consultora";
+      document.getElementById("consultora-id").value = "";
+      document.getElementById("consultora-activa").value = "true";
+    }
+    document.getElementById("modal-consultora").classList.remove("hidden");
+  }
+
+  function editarConsultora(id) {
+    const c = consultoras.find(x => x.id === id);
+    if (c) abrirModalConsultora(c);
+  }
+
+  document.getElementById("form-consultora").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const id = document.getElementById("consultora-id").value;
+      const comisionVal = document.getElementById("consultora-comision").value.trim();
+      const data = {
+        nombre: document.getElementById("consultora-nombre").value.trim(),
+        codigo: document.getElementById("consultora-codigo").value.trim().toUpperCase(),
+        activa: document.getElementById("consultora-activa").value === "true",
+        textoDescriptivo: document.getElementById("consultora-descriptivo").value.trim(),
+        firmaTexto: document.getElementById("consultora-firma").value.trim(),
+        comisionFija: comisionVal === "" ? null : parseFloat(comisionVal)
+      };
+
+      if (id) {
+        await updateDoc(doc(db, "consultoras", id), data);
+        toast("Consultora actualizada", "success");
+      } else {
+        data.contadorFolio = 0;
+        await addDoc(collection(db, "consultoras"), data);
+        toast("Consultora creada", "success");
+      }
+      document.getElementById("modal-consultora").classList.add("hidden");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    }
+  });
+
+  // ─── Modal USUARIO ───
+  document.getElementById("btn-nuevo-usuario").addEventListener("click", () => {
+    document.getElementById("form-usuario").reset();
+    document.getElementById("modal-usuario").classList.remove("hidden");
+  });
+
+  document.getElementById("form-usuario").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const uid = document.getElementById("usuario-uid").value.trim();
+      const consultoraId = document.getElementById("usuario-consultora").value;
+      const consultora = consultoras.find(c => c.id === consultoraId);
+
+      const data = {
+        email: document.getElementById("usuario-email").value.trim().toLowerCase(),
+        nombre: document.getElementById("usuario-nombre").value.trim(),
+        rol: document.getElementById("usuario-rol").value,
+        consultoraId,
+        consultoraNombre: consultora?.nombre || "",
+        activo: true
+      };
+
+      await setDoc(doc(db, "usuarios", uid), data);
+      toast("Usuario creado", "success");
+      document.getElementById("modal-usuario").classList.add("hidden");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 📜 GENERAR CERTIFICADO ADMIN
+  // ═══════════════════════════════════════════════════════
+  function llenarSelectsAdminCert() {
+    const selCons = document.getElementById("adm-consultora");
+    if (!selCons) return;
+    const valActual = selCons.value;
+    selCons.innerHTML = `<option value="">— Elegir —</option>` +
+      consultoras.slice().sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""))
+        .map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+    if (valActual) selCons.value = valActual;
+  }
+
+  function llenarCursosAdminCert() {
+    const consId = document.getElementById("adm-consultora").value;
+    const selCurso = document.getElementById("adm-curso");
+    if (!consId) {
+      selCurso.innerHTML = `<option value="">— Selecciona consultora primero —</option>`;
+      selCurso.disabled = true;
+      return;
+    }
+    const cursosCons = cursos.filter(c => c.consultoraId === consId && c.activo !== false)
+      .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    if (cursosCons.length === 0) {
+      selCurso.innerHTML = `<option value="">No hay cursos activos en esta consultora</option>`;
+      selCurso.disabled = true;
+      return;
+    }
+    selCurso.innerHTML = `<option value="">— Elegir —</option>` +
+      cursosCons.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+    selCurso.disabled = false;
+  }
+
+  document.getElementById("adm-consultora")?.addEventListener("change", llenarCursosAdminCert);
+
+  document.getElementById("btn-adm-generar")?.addEventListener("click", async () => {
+    const consultoraId = document.getElementById("adm-consultora").value;
+    const cursoId = document.getElementById("adm-curso").value;
+    const empresa = document.getElementById("adm-empresa").value.trim();
+    const fechaCurso = document.getElementById("adm-fecha-curso").value;
+    const nombre = document.getElementById("adm-nombre").value.trim();
+    const email = document.getElementById("adm-email").value.trim();
+    const telefono = document.getElementById("adm-telefono").value.trim();
+
+    if (!consultoraId) return toast("Selecciona consultora", "warning");
+    if (!cursoId) return toast("Selecciona curso", "warning");
+    if (!fechaCurso) return toast("Captura la fecha y hora del curso", "warning");
+    if (!nombre) return toast("Captura el nombre del alumno", "warning");
+    if (!email || !email.includes("@")) return toast("Email inválido", "warning");
+
+    const btn = document.getElementById("btn-adm-generar");
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Generando certificado...`;
+
+    try {
+      // Convertir datetime-local a ISO con timezone local
+      const fechaISO = new Date(fechaCurso).toISOString();
+      // PARCHE v2.5.1 — wrapper con retry, fallback y errores detallados
+      const result = await callCertFunction("generarCertificadoAdmin", {
+        consultoraId,
+        cursoId,
+        alumno: { nombre, email, telefono },
+        empresaContratante: empresa,
+        fechaCurso: fechaISO,
+      }, { contexto: `admin: ${nombre}` });
+      const data = result.data || {};
+      toast(`✅ Certificado generado · Folio: ${data.folio}`, "success");
+      // Limpiar formulario
+      document.getElementById("adm-empresa").value = "";
+      document.getElementById("adm-fecha-curso").value = "";
+      document.getElementById("adm-nombre").value = "";
+      document.getElementById("adm-email").value = "";
+      document.getElementById("adm-telefono").value = "";
+    } catch (err) {
+      console.error("Error completo:", err);
+      console.error("err.code:", err.code);
+      console.error("err.message:", err.message);
+      console.error("err.details:", err.details);
+      const msgFull = err.message || String(err);
+      toast("Error: " + msgFull, "error");
+      alert(`Error completo:\n\n${msgFull}\n\n${err.details ? 'Detalles: ' + JSON.stringify(err.details) : ''}`);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg> Generar y enviar certificado`;
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 💰 COMISIONES MASIVAS (checkboxes + aplicar)
+  // ═══════════════════════════════════════════════════════
+  function actualizarContadorSel(tipo) {
+    const cont = document.querySelector(`.contador-sel[data-tipo="${tipo}"]`);
+    if (!cont) return;
+    const sel = document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`).length;
+    cont.textContent = `${sel} seleccionado${sel !== 1 ? 's' : ''}`;
+  }
+
+  // Listener de checkbox global (delegación)
+  document.addEventListener("change", (e) => {
+    if (e.target.classList.contains("check-todos")) {
+      const tipo = e.target.dataset.tipo;
+      const checked = e.target.checked;
+      document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => {
+        cb.checked = checked;
+      });
+      actualizarContadorSel(tipo);
+    }
+    if (e.target.classList.contains("check-fila")) {
+      const tipo = e.target.dataset.tipo;
+      actualizarContadorSel(tipo);
+    }
+  });
+
+  // Aplicar masivo
+  document.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("btn-aplicar-masivo")) {
+      const tipo = e.target.dataset.tipo;
+      const inputMasivo = document.querySelector(`.input-masivo[data-tipo="${tipo}"]`);
+      const valor = inputMasivo.value.trim();
+      if (valor === "" || isNaN(parseFloat(valor))) {
+        return toast("Captura una cantidad válida en pesos", "warning");
+      }
+      const pesos = parseFloat(valor);
+      if (pesos < 0) return toast("La cantidad no puede ser negativa", "warning");
+
+      const seleccionados = [...document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`)].map(cb => cb.dataset.id);
+      if (seleccionados.length === 0) return toast("Selecciona al menos un registro", "warning");
+
+      const ok = confirm(`¿Aplicar $${pesos} MXN por venta a ${seleccionados.length} registro${seleccionados.length !== 1 ? 's' : ''} de ${tipo}?`);
+      if (!ok) return;
+
+      e.target.disabled = true;
+      e.target.textContent = "Aplicando...";
+
+      try {
+        let coleccion;
+        const campo = "comisionFija"; // mismo campo en las 3 colecciones
+        if (tipo === "consultoras") coleccion = "consultoras";
+        else if (tipo === "cursos") coleccion = "cursos";
+        else if (tipo === "vendedores") coleccion = "usuarios";
+
+        for (const id of seleccionados) {
+          await updateDoc(doc(db, coleccion, id), { [campo]: pesos });
+        }
+        toast(`✅ $${pesos} MXN por venta aplicado a ${seleccionados.length} ${tipo}`, "success");
+        // Actualizar inputs visibles
+        seleccionados.forEach(id => {
+          const sel = tipo === "consultoras" ? `[data-com-cons="${id}"]`
+            : tipo === "cursos" ? `[data-com-curso="${id}"]`
+            : `[data-com-vend="${id}"]`;
+          const inp = document.querySelector(sel);
+          if (inp) inp.value = pesos;
+        });
+        // Limpiar selección
+        document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => cb.checked = false);
+        const checkTodos = document.querySelector(`.check-todos[data-tipo="${tipo}"]`);
+        if (checkTodos) checkTodos.checked = false;
+        inputMasivo.value = "";
+        actualizarContadorSel(tipo);
+      } catch (err) {
+        console.error(err);
+        toast("Error: " + err.message, "error");
+      } finally {
+        e.target.disabled = false;
+        e.target.textContent = "Aplicar a seleccionados";
+      }
+    }
+
+    if (e.target.classList.contains("btn-limpiar-masivo")) {
+      const tipo = e.target.dataset.tipo;
+      const seleccionados = [...document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]:checked`)].map(cb => cb.dataset.id);
+      if (seleccionados.length === 0) return toast("Selecciona al menos un registro", "warning");
+
+      const ok = confirm(`¿Quitar override de ${seleccionados.length} registro${seleccionados.length !== 1 ? 's' : ''}? Volverán a usar el default de su consultora.`);
+      if (!ok) return;
+
+      e.target.disabled = true;
+      e.target.textContent = "Limpiando...";
+      try {
+        const coleccion = tipo === "cursos" ? "cursos" : "usuarios";
+        const campo = "comisionFija";
+        for (const id of seleccionados) {
+          await updateDoc(doc(db, coleccion, id), { [campo]: null, comisionOverride: null });
+        }
+        toast(`✅ Override quitado de ${seleccionados.length} registros`, "success");
+        seleccionados.forEach(id => {
+          const sel = tipo === "cursos" ? `[data-com-curso="${id}"]` : `[data-com-vend="${id}"]`;
+          const inp = document.querySelector(sel);
+          if (inp) inp.value = "";
+        });
+        document.querySelectorAll(`.check-fila[data-tipo="${tipo}"]`).forEach(cb => cb.checked = false);
+        actualizarContadorSel(tipo);
+      } catch (err) {
+        console.error(err);
+        toast("Error: " + err.message, "error");
+      } finally {
+        e.target.disabled = false;
+        e.target.textContent = "Limpiar override";
+      }
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 💰 PAGOS A VENDEDORES (semanal)
+  // ═══════════════════════════════════════════════════════
+  let pagosOffset = 0; // 0 = esta semana, -1 = anterior, +1 = siguiente
+
+  function obtenerRangoSemana(offset = 0) {
+    // Lunes-Domingo (zona MX)
+    const ahora = new Date();
+    const diaActual = ahora.getDay(); // 0=dom, 1=lun
+    const diasDesdeLunes = (diaActual === 0 ? 6 : diaActual - 1);
+    const lunes = new Date(ahora);
+    lunes.setDate(ahora.getDate() - diasDesdeLunes + (offset * 7));
+    lunes.setHours(0, 0, 0, 0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    domingo.setHours(23, 59, 59, 999);
+    return { inicio: lunes, fin: domingo };
+  }
+
+  function formatRangoSemana(inicio, fin) {
+    const opts = { day: "numeric", month: "short", year: "numeric" };
+    return `${inicio.toLocaleDateString("es-MX", opts)} — ${fin.toLocaleDateString("es-MX", opts)}`;
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // HISTORIAL DIARIO POR VENDEDOR (admin)
+  // ═══════════════════════════════════════════════════════════
+  function renderHistorialDiarioAdmin() {
+    // Llenar select de vendedores si está vacío
+    const selVend = document.getElementById("hist-filtro-vendedor");
+    if (selVend && selVend.children.length <= 1) {
+      const vendedores = usuarios.filter(u => u.rol === "vendedor");
+      vendedores.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+      vendedores.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = `${v.nombre} (${v.consultoraNombre || ""})`;
+        selVend.appendChild(opt);
+      });
+      selVend.addEventListener("change", () => renderHistorialDiarioAdmin());
+      document.getElementById("hist-filtro-mes").addEventListener("change", () => renderHistorialDiarioAdmin());
+    }
+
+    const vendId = selVend.value;
+    const filtroMes = document.getElementById("hist-filtro-mes").value;
+
+    // Filtrar certificados según vendedor
+    let certs = [...certificados];
+    if (vendId) certs = certs.filter(c => c.generadoPor === vendId);
+
+    // Determinar rango
+    const ahora = new Date();
+    const hoyMX = ahora.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const partesMes = hoyMX.split("-");
+    const inicioMesActual = `${partesMes[0]}-${partesMes[1]}-01`;
+    let inicioRango;
+    if (filtroMes === "actual") {
+      inicioRango = inicioMesActual;
+    } else if (filtroMes === "anterior") {
+      const m = parseInt(partesMes[1]) - 1;
+      const y = parseInt(partesMes[0]);
+      const mesAnt = m === 0 ? 12 : m;
+      const yAnt = m === 0 ? y - 1 : y;
+      inicioRango = `${yAnt}-${String(mesAnt).padStart(2, '0')}-01`;
+    } else if (filtroMes === "3meses") {
+      const d = new Date(hoyMX + "T12:00:00");
+      d.setMonth(d.getMonth() - 2);
+      const partes2 = d.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }).split("-");
+      inicioRango = `${partes2[0]}-${partes2[1]}-01`;
+    } else {
+      inicioRango = "2020-01-01"; // todo
+    }
+
+    let finRango = null;
+    if (filtroMes === "anterior") {
+      finRango = inicioMesActual; // < primer día del mes actual
+    }
+
+    const fechaMX = (d) => {
+      if (!d) return null;
+      const f = d.toDate?.() || (d instanceof Date ? d : new Date(d));
+      return f.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    };
+
+    const comisionPorCert = (c) => {
+      if (typeof c.comisionVendedor === "number") return c.comisionVendedor;
+      return 0; // admin no calcula al vuelo, solo lo guardado
+    };
+
+    // Calcular KPIs de hoy/ayer/semana (sin filtro de rango — siempre actuales)
+    const ayer = new Date(hoyMX + "T12:00:00");
+    ayer.setDate(ayer.getDate() - 1);
+    const ayerStr = ayer.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+
+    const dow = new Date(hoyMX + "T12:00:00").getDay();
+    const lunesD = new Date(hoyMX + "T12:00:00");
+    const offset = (dow === 0 ? 6 : dow - 1);
+    lunesD.setDate(lunesD.getDate() - offset);
+    const lunesStr = lunesD.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+
+    let cHoy = 0, vHoy = 0, cAyer = 0, vAyer = 0, cSem = 0, vSem = 0;
+    let cRango = 0, vRango = 0;
+
+    const porDia = {};
+    const porVendedor = {};
+
+    certs.forEach(c => {
+      const fechaStr = fechaMX(c.creadoEn);
+      if (!fechaStr) return;
+      const monto = comisionPorCert(c);
+
+      // KPIs siempre actuales
+      if (fechaStr === hoyMX) { cHoy += monto; vHoy++; }
+      if (fechaStr === ayerStr) { cAyer += monto; vAyer++; }
+      if (fechaStr >= lunesStr) { cSem += monto; vSem++; }
+
+      // Rango filtrado
+      if (fechaStr < inicioRango) return;
+      if (finRango && fechaStr >= finRango) return;
+
+      cRango += monto; vRango++;
+
+      if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0, vendedores: {} };
+      porDia[fechaStr].ventas++;
+      porDia[fechaStr].monto += monto;
+
+      const vendNombre = (usuarios.find(u => u.id === c.generadoPor)?.nombre) || "—";
+      porDia[fechaStr].vendedores[vendNombre] = (porDia[fechaStr].vendedores[vendNombre] || 0) + monto;
+
+      // Por vendedor
+      if (!porVendedor[c.generadoPor]) porVendedor[c.generadoPor] = { ventas: 0, monto: 0, nombre: vendNombre };
+      porVendedor[c.generadoPor].ventas++;
+      porVendedor[c.generadoPor].monto += monto;
+    });
+
+    document.getElementById("adm-hist-hoy-monto").textContent = formatMoney(cHoy);
+    document.getElementById("adm-hist-hoy-ventas").textContent = `${vHoy} venta${vHoy !== 1 ? 's' : ''}`;
+    document.getElementById("adm-hist-ayer-monto").textContent = formatMoney(cAyer);
+    document.getElementById("adm-hist-ayer-ventas").textContent = `${vAyer} venta${vAyer !== 1 ? 's' : ''}`;
+    document.getElementById("adm-hist-semana-monto").textContent = formatMoney(cSem);
+    document.getElementById("adm-hist-semana-ventas").textContent = `${vSem} venta${vSem !== 1 ? 's' : ''}`;
+    document.getElementById("adm-hist-rango-monto").textContent = formatMoney(cRango);
+    document.getElementById("adm-hist-rango-ventas").textContent = `${vRango} venta${vRango !== 1 ? 's' : ''}`;
+
+    document.getElementById("adm-hist-subt").textContent =
+      `${vendId ? selVend.options[selVend.selectedIndex].textContent : 'Todos los vendedores'} · ${filtroMes === 'actual' ? 'Mes actual' : filtroMes === 'anterior' ? 'Mes anterior' : filtroMes === '3meses' ? 'Últimos 3 meses' : 'Todo el historial'}`;
+
+    const cont = document.getElementById("adm-hist-container");
+    const dias = Object.keys(porDia).sort().reverse();
+
+    if (dias.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">📊</div>
+        <div style="font-size:16px;font-weight:600;color:#334155">Sin datos en este rango</div>
+      </div>`;
+      return;
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:13.5px">
+      <thead>
+        <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Día</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">${vendId ? 'Vendedor' : 'Vendedores'}</th>
+          <th style="text-align:center;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Ventas</th>
+          <th style="text-align:right;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Total comisiones</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    dias.forEach((fechaStr, idx) => {
+      const d = porDia[fechaStr];
+      const fecha = new Date(fechaStr + "T12:00:00");
+      const fechaStr2 = fecha.toLocaleDateString("es-MX", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric",
+        timeZone: "America/Mexico_City",
+      });
+      const esHoy = fechaStr === hoyMX;
+      const bgRow = esHoy ? "#f0fdf4" : (idx % 2 === 0 ? "white" : "#fafbfc");
+
+      const vendsStr = Object.entries(d.vendedores)
+        .map(([n, m]) => `<div style="font-size:12px;color:#475569"><strong>${escapeHtml(n)}:</strong> ${formatMoney(m)}</div>`)
+        .join("");
+
+      html += `<tr style="background:${bgRow};border-bottom:1px solid #f1f5f9">
+        <td style="padding:14px 16px;text-transform:capitalize;color:#0f172a;font-weight:${esHoy ? '700' : '500'};vertical-align:top">
+          ${escapeHtml(fechaStr2)} ${esHoy ? '<span style="background:#16a34a;color:white;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:700;margin-left:6px">HOY</span>' : ''}
+        </td>
+        <td style="padding:14px 16px;vertical-align:top">${vendsStr}</td>
+        <td style="padding:14px 16px;text-align:center;color:#475569;vertical-align:top">
+          <span style="background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700">${d.ventas}</span>
+        </td>
+        <td style="padding:14px 16px;text-align:right;font-weight:800;color:#16a34a;font-size:15px;vertical-align:top">${formatMoney(d.monto)}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+  }
+
+  function renderPagos() {
+    const { inicio, fin } = obtenerRangoSemana(pagosOffset);
+
+    // Título
+    let titulo = "Esta semana";
+    if (pagosOffset === -1) titulo = "Semana anterior";
+    else if (pagosOffset === 1) titulo = "Semana siguiente";
+    else if (pagosOffset !== 0) titulo = `Hace ${Math.abs(pagosOffset)} semanas`;
+    const elT = document.getElementById("pagos-semana-titulo");
+    const elR = document.getElementById("pagos-semana-rango");
+    if (elT) elT.textContent = titulo;
+    if (elR) elR.textContent = formatRangoSemana(inicio, fin);
+
+    // Filtrar certificados de la semana (excluyendo los generados por admin de empresas externas si quisieras, pero los incluimos)
+    const certsSemana = certificados.filter(c => {
+      const t = c.creadoEn?.toMillis?.() || 0;
+      return t >= inicio.getTime() && t <= fin.getTime();
+    });
+
+    // Agrupar por vendedor (generadoPor)
+    const porVendedor = {};
+    certsSemana.forEach(c => {
+      const uid = c.generadoPor || "sin-vendedor";
+      if (!porVendedor[uid]) {
+        const u = usuarios.find(x => x.id === uid);
+        porVendedor[uid] = {
+          uid,
+          nombre: u?.nombre || (c.generadoPorAdmin ? "Admin (directo)" : "Sin asignar"),
+          consultora: u?.consultoraNombre || c.nombreConsultora || "—",
+          esAdmin: !!c.generadoPorAdmin,
+          ventas: 0,
+          facturacion: 0,
+          comisionTotal: 0,
+          certificados: [],
+        };
+      }
+      porVendedor[uid].ventas++;
+      porVendedor[uid].facturacion += Number(c.precio) || 0;
+      porVendedor[uid].comisionTotal += Number(c.comisionVendedor) || 0;
+      porVendedor[uid].certificados.push(c);
+    });
+
+    const lista = Object.values(porVendedor).sort((a, b) => b.comisionTotal - a.comisionTotal);
+
+    // KPIs
+    const totalVentas = certsSemana.length;
+    const totalFact = certsSemana.reduce((s, c) => s + (Number(c.precio) || 0), 0);
+    const totalComisiones = certsSemana.reduce((s, c) => s + (Number(c.comisionVendedor) || 0), 0);
+    const numVendedores = lista.filter(v => !v.esAdmin && v.ventas > 0).length;
+
+    document.getElementById("pagos-kpi-ventas").textContent = totalVentas;
+    document.getElementById("pagos-kpi-facturacion").textContent = formatMoney(totalFact);
+    document.getElementById("pagos-kpi-total").textContent = formatMoney(totalComisiones);
+    document.getElementById("pagos-kpi-vendedores").textContent = numVendedores;
+
+    const cont = document.getElementById("pagos-container");
+    if (lista.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">💸</div>
+        <div style="font-size:16px;font-weight:600;color:#334155">Sin ventas en esta semana</div>
+        <div style="margin-top:6px;color:var(--muted);font-size:13px">No hay comisiones por pagar en este rango</div>
+      </div>`;
+      return;
+    }
+
+    let html = "";
+    lista.forEach((v, idx) => {
+      const pagado = v.certificados.every(c => c.comisionPagada === true);
+      html += `<div style="background:white;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:linear-gradient(135deg,${pagado ? '#dcfce7' : '#fef3c7'},${pagado ? '#bbf7d0' : '#fde68a'});border-bottom:1px solid ${pagado ? '#86efac' : '#fbbf24'}">
+          <div style="width:44px;height:44px;border-radius:50%;background:${pagado ? '#16a34a' : '#0b4ea2'};color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${iniciales(v.nombre)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;color:#0f172a;font-size:15px">${escapeHtml(v.nombre)}</div>
+            <div style="font-size:12px;color:#475569;margin-top:2px">${escapeHtml(v.consultora)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:${pagado ? '#15803d' : '#92400e'};text-transform:uppercase;letter-spacing:.06em;font-weight:700">${pagado ? '✅ PAGADO' : 'POR PAGAR'}</div>
+            <div style="font-size:22px;font-weight:800;color:${pagado ? '#15803d' : '#78350f'};margin-top:2px">${formatMoney(v.comisionTotal)}</div>
+            <div style="font-size:11px;color:#64748b">${v.ventas} venta${v.ventas !== 1 ? 's' : ''} · ${formatMoney(v.facturacion)} facturado</div>
+          </div>
+          ${!pagado ? `<button class="btn btn-primary btn-sm" data-marcar-pagado="${v.uid}" style="background:#16a34a;border-color:#16a34a;flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:3px"><polyline points="20 6 9 17 4 12"/></svg>
+            Marcar pagado
+          </button>` : `<button class="btn btn-secondary btn-sm" data-desmarcar-pagado="${v.uid}" style="flex-shrink:0">Desmarcar</button>`}
+        </div>
+        <details style="padding:0">
+          <summary style="padding:10px 20px;cursor:pointer;font-size:12px;color:#64748b;font-weight:600;background:#fafbfc;border-bottom:1px solid #f1f5f9">▸ Ver detalle de ventas (${v.certificados.length})</summary>
+          <div style="padding:12px 20px;background:white">
+            <table style="width:100%;font-size:12.5px;border-collapse:collapse">
+              <thead>
+                <tr style="text-align:left">
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Folio</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Alumno</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0">Curso</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">Precio venta</th>
+                  <th style="padding:6px 8px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;text-align:right">A pagar</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${v.certificados.map(c => `<tr>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9"><code style="font-size:10.5px;background:#f1f5f9;padding:2px 6px;border-radius:4px">${escapeHtml(c.folio || "—")}</code></td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9">${escapeHtml(c.nombreAlumno || "—")}</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;color:#475569">${escapeHtml((c.nombreCurso || "—").substring(0, 50))}${(c.nombreCurso || "").length > 50 ? '…' : ''}</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right">${formatMoney(c.precio || 0)}</td>
+                  <td style="padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;color:#0b4ea2">${formatMoney(c.comisionVendedor || 0)}</td>
+                </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>`;
+    });
+
+    cont.innerHTML = html;
+
+    // Listeners marcar/desmarcar pagado
+    cont.querySelectorAll("[data-marcar-pagado]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.marcarPagado;
+        const v = lista.find(x => x.uid === uid);
+        if (!v) return;
+        const ok = confirm(`¿Marcar como PAGADO ${formatMoney(v.comisionTotal)} a ${v.nombre}?`);
+        if (!ok) return;
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+        try {
+          for (const c of v.certificados) {
+            await updateDoc(doc(db, "certificados", c.id), {
+              comisionPagada: true,
+              comisionPagadaEn: serverTimestamp(),
+              comisionPagadaPor: usuario.uid,
+            });
+          }
+          toast(`✅ Marcado como pagado: ${formatMoney(v.comisionTotal)} a ${v.nombre}`, "success");
+        } catch (err) {
+          console.error(err);
+          toast("Error: " + err.message, "error");
+        }
+      });
+    });
+    cont.querySelectorAll("[data-desmarcar-pagado]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.desmarcarPagado;
+        const v = lista.find(x => x.uid === uid);
+        if (!v) return;
+        const ok = confirm(`¿Desmarcar pago de ${v.nombre}?`);
+        if (!ok) return;
+        btn.disabled = true;
+        try {
+          for (const c of v.certificados) {
+            await updateDoc(doc(db, "certificados", c.id), {
+              comisionPagada: false,
+              comisionPagadaEn: null,
+              comisionPagadaPor: null,
+            });
+          }
+          toast(`Desmarcado pago de ${v.nombre}`, "success");
+        } catch (err) {
+          console.error(err);
+          toast("Error: " + err.message, "error");
+        }
+      });
+    });
+  }
+
+  document.getElementById("btn-pagos-prev")?.addEventListener("click", () => { pagosOffset--; renderPagos(); });
+  document.getElementById("btn-pagos-next")?.addEventListener("click", () => { pagosOffset++; renderPagos(); });
+  document.getElementById("btn-pagos-hoy")?.addEventListener("click", () => { pagosOffset = 0; renderPagos(); });
+
+  // Render histórico admin
+  // Genera color consistente por consultora (hash simple)
+  function colorPorConsultora(nombre) {
+    if (!nombre) return { bg: "#e2e8f0", text: "#475569", border: "#cbd5e1" };
+    const palette = [
+      { bg: "#dbeafe", text: "#1e40af", border: "#93c5fd" }, // azul
+      { bg: "#fce7f3", text: "#9f1239", border: "#f9a8d4" }, // rosa
+      { bg: "#dcfce7", text: "#166534", border: "#86efac" }, // verde
+      { bg: "#fef3c7", text: "#92400e", border: "#fcd34d" }, // ámbar
+      { bg: "#f3e8ff", text: "#6b21a8", border: "#d8b4fe" }, // morado
+      { bg: "#cffafe", text: "#155e75", border: "#67e8f9" }, // cian
+      { bg: "#ffedd5", text: "#9a3412", border: "#fdba74" }, // naranja
+      { bg: "#e0e7ff", text: "#3730a3", border: "#a5b4fc" }, // índigo
+      { bg: "#fee2e2", text: "#991b1b", border: "#fca5a5" }, // rojo
+      { bg: "#ecfccb", text: "#3f6212", border: "#bef264" }, // lima
+    ];
+    let hash = 0;
+    for (let i = 0; i < nombre.length; i++) {
+      hash = ((hash << 5) - hash) + nombre.charCodeAt(i);
+      hash |= 0;
+    }
+    return palette[Math.abs(hash) % palette.length];
+  }
+
+  function renderCertAdmin() {
+    const cont = document.getElementById("cert-admin-container");
+    if (!cont) return;
+    const search = (document.getElementById("search-cert-admin")?.value || "").toLowerCase();
+
+    const lista = certificados.filter(c => {
+      if (!c.generadoPorAdmin) return false;
+      if (search) {
+        const txt = `${c.folio} ${c.nombreAlumno} ${c.nombreCurso} ${c.empresaContratante || ""}`.toLowerCase();
+        if (!txt.includes(search)) return false;
+      }
+      return true;
+    }).sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+
+    if (lista.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">📜</div>
+        <div class="empty-text" style="font-size:16px;font-weight:600;color:#334155">No hay certificados generados por admin</div>
+        <div class="empty-hint" style="margin-top:6px;color:var(--muted);font-size:13px">${search ? "Intenta otra búsqueda" : "Genera el primero arriba ☝️"}</div>
+      </div>`;
+      return;
+    }
+
+    let html = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#f8fafc,#f1f5f9)">
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Folio</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Alumno</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Curso</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Consultora</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Empresa contratante</th>
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">Fecha curso</th>
+          <th style="text-align:center;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0">PDF</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    lista.forEach((c, idx) => {
+      const fechaCurso = c.fechaCurso?.toDate?.()
+        ? c.fechaCurso.toDate().toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Mexico_City" })
+        : (c.fecha || "—");
+      const color = colorPorConsultora(c.nombreConsultora);
+      const bgRow = idx % 2 === 0 ? "white" : "#fafbfc";
+
+      html += `<tr style="background:${bgRow};transition:background .15s" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='${bgRow}'">
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top">
+          <code style="font-size:11.5px;background:#0f172a;color:#a5f3fc;padding:5px 9px;border-radius:6px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:.02em">${escapeHtml(c.folio || "—")}</code>
+        </td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top">
+          <div style="font-weight:700;color:#0f172a;font-size:14px">${escapeHtml(c.nombreAlumno || "—")}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">${escapeHtml(c.emailAlumno || "")}</div>
+        </td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:280px">
+          <div style="font-weight:600;color:#1e293b;line-height:1.3">${escapeHtml(c.nombreCurso || "—")}</div>
+        </td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top">
+          <span style="display:inline-block;background:${color.bg};color:${color.text};border:1px solid ${color.border};padding:5px 11px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap">${escapeHtml(c.nombreConsultora || "—")}</span>
+        </td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top">
+          ${c.empresaContratante
+            ? `<span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600">🏢 ${escapeHtml(c.empresaContratante)}</span>`
+            : `<span style="color:#94a3b8;font-style:italic;font-size:12px">Sin empresa</span>`}
+        </td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;color:#475569;font-size:13px;font-weight:500">${escapeHtml(fechaCurso)}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #f1f5f9;vertical-align:top;text-align:center">
+          ${c.pdfUrl
+            ? `<a href="${escapeHtml(c.pdfUrl)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#0b4ea2;color:white;padding:6px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#0a3d80'" onmouseout="this.style.background='#0b4ea2'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Ver PDF
+              </a>`
+            : `<span style="color:#94a3b8">—</span>`}
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>
+      <div style="margin-top:12px;padding:10px 16px;background:#f1f5f9;border-radius:8px;font-size:12px;color:#475569;text-align:center">
+        Mostrando <strong>${lista.length}</strong> certificado${lista.length !== 1 ? 's' : ''} generado${lista.length !== 1 ? 's' : ''} por admin
+      </div>`;
+    cont.innerHTML = html;
+  }
+
+  document.getElementById("search-cert-admin")?.addEventListener("input", renderCertAdmin);
+
+  // ═══════════════════════════════════════════════════════
+  // 🗑️ LIMPIAR DATOS — POR CONSULTORA
+  // ═══════════════════════════════════════════════════════
+  function llenarSelectLimpiar() {
+    const sel = document.getElementById("limpiar-consultora");
+    if (!sel) return;
+    const valActual = sel.value;
+    sel.innerHTML = `<option value="">— Selecciona una consultora —</option>` +
+      consultoras.slice().sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""))
+        .map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}${c.codigo ? ` (${escapeHtml(c.codigo)})` : ''}</option>`).join("");
+    if (valActual) sel.value = valActual;
+  }
+
+  function actualizarBotonLimpiar() {
+    const consId = document.getElementById("limpiar-consultora")?.value || "";
+    const conf = (document.getElementById("limpiar-confirmacion")?.value || "").trim().toUpperCase();
+    const btn = document.getElementById("btn-limpiar-datos");
+    if (!btn) return;
+    btn.disabled = !(consId && conf === "BORRAR TODO");
+  }
+
+  function actualizarResumenConsultora() {
+    const consId = document.getElementById("limpiar-consultora")?.value || "";
+    const cont = document.getElementById("limpiar-resumen-consultora");
+    if (!cont) return;
+    if (!consId) { cont.innerHTML = ""; return; }
+
+    // Contar documentos a borrar
+    const certCount = certificados.filter(c => c.consultoraId === consId).length;
+    const alumnosCount = alumnos.filter(a => a.consultoraId === consId).length;
+    // Aperturas no las cargamos en admin actualmente, mostramos guión
+    const c = consultoras.find(x => x.id === consId);
+    const nombre = c?.nombre || "esta consultora";
+
+    cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: <strong style="color:#dc2626">${certCount}</strong> certificados · <strong style="color:#dc2626">${alumnosCount}</strong> alumnos · todas sus aperturas (cronograma)`;
+  }
+
+  document.getElementById("limpiar-consultora")?.addEventListener("change", () => {
+    actualizarResumenConsultora();
+    actualizarBotonLimpiar();
+  });
+
+  document.getElementById("limpiar-confirmacion")?.addEventListener("input", actualizarBotonLimpiar);
+
+  document.getElementById("btn-limpiar-datos")?.addEventListener("click", async () => {
+    const consId = document.getElementById("limpiar-consultora").value;
+    if (!consId) return toast("Selecciona una consultora", "warning");
+
+    const c = consultoras.find(x => x.id === consId);
+    const nombre = c?.nombre || "consultora";
+
+    const ok = confirm(`⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Borrar TODOS los certificados, alumnos y aperturas de "${nombre}"?\n\nEsta acción NO se puede deshacer.`);
+    if (!ok) return;
+
+    const btn = document.getElementById("btn-limpiar-datos");
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></div> Borrando datos de ${escapeHtml(nombre)}...`;
+
+    try {
+      const fn = httpsCallable(functions, "limpiarDatos");
+      const result = await fn({ confirmacion: "BORRAR_TODO", consultoraId: consId });
+      const data = result.data || {};
+
+      const detalle = data.detalle || {};
+      const html = `<div class="card" style="background:#f0fdf4;border:1px solid #bbf7d0;padding:20px">
+        <h3 style="color:#166534;margin:0 0 12px 0">✅ Limpieza completada · ${escapeHtml(data.consultoraNombre || nombre)}</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
+          ${Object.entries(detalle).map(([col, n]) => `
+            <div style="background:white;padding:12px 16px;border-radius:8px;border:1px solid #d1fae5">
+              <div style="font-size:11px;color:#166534;text-transform:uppercase;font-weight:700">${col}</div>
+              <div style="font-size:24px;font-weight:800;color:#15803d">${n}</div>
+              <div style="font-size:11px;color:var(--muted)">borrados</div>
+            </div>`).join("")}
+          <div style="background:white;padding:12px 16px;border-radius:8px;border:1px solid #d1fae5">
+            <div style="font-size:11px;color:#166534;text-transform:uppercase;font-weight:700">Cursos reseteados</div>
+            <div style="font-size:24px;font-weight:800;color:#15803d">${data.cursosReseteados || 0}</div>
+            <div style="font-size:11px;color:var(--muted)">contadores reiniciados</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#166534;margin-top:14px">Total: <strong>${data.total} documentos borrados</strong></div>
+      </div>`;
+      document.getElementById("limpiar-resultado").innerHTML = html;
+      document.getElementById("limpiar-confirmacion").value = "";
+      document.getElementById("limpiar-consultora").value = "";
+      actualizarResumenConsultora();
+      toast(`✅ Limpieza de ${data.consultoraNombre || nombre}: ${data.total} documentos borrados`, "success");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + (err.message || err), "error");
+    } finally {
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Limpiar datos de esta consultora`;
+    }
+  });
+
+</script>
+
+</body>
+</html>

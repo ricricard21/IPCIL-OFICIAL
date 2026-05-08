@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Vendedor — IPCI</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  /* ═══ HOJA ESTILO EXCEL ═══ */
+  .sheet-wrapper {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .sheet-header {
+    padding: 18px 22px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .sheet-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .sheet-counter {
+    background: rgba(255,255,255,0.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .sheet-counter strong { color: var(--gold); font-weight: 800; }
+
+  .sheet-instructions {
+    background: var(--yellow-soft);
+    border-bottom: 1px solid var(--yellow-bg);
+    padding: 10px 22px;
+    font-size: 12px;
+    color: var(--yellow);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sheet-toolbar {
+    background: var(--surface-soft);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .sheet-toolbar .input,
+  .sheet-toolbar .select { background: white; }
+
+  .sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    table-layout: fixed;
+  }
+
+  .sheet-table th {
+    background: var(--surface-soft);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--primary);
+    border-right: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+
+  .sheet-table th:last-child { border-right: none; }
+
+  .sheet-table td {
+    padding: 0;
+    border-right: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    background: white;
+    vertical-align: middle;
+  }
+
+  .sheet-table td:last-child { border-right: none; }
+  .sheet-table tr:last-child td { border-bottom: none; }
+
+  .sheet-row-num {
+    background: var(--surface-soft) !important;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    padding: 8px 4px !important;
+    width: 50px;
+  }
+
+  .sheet-cell-input,
+  .sheet-cell-select {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 11px 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text);
+    background: transparent;
+    border-radius: 0;
+    transition: background var(--t-fast);
+  }
+
+  .sheet-cell-input:focus,
+  .sheet-cell-select:focus {
+    background: #fffbeb;
+    box-shadow: inset 0 0 0 2px var(--primary);
+  }
+
+  .sheet-cell-select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  .sheet-table tr.saved td { background: var(--primary-soft); }
+  .sheet-table tr.saved .sheet-cell-input,
+  .sheet-table tr.saved .sheet-cell-select { color: var(--text-soft); }
+
+  .sheet-cell-fixed {
+    padding: 11px 12px;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+
+  .sheet-cell-fixed.muted { color: var(--muted); }
+
+  .sheet-folio {
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    color: var(--primary);
+    font-weight: 700;
+    padding: 11px 12px;
+    letter-spacing: 0.02em;
+  }
+
+  .accion-cell { padding: 6px 8px !important; text-align: center; }
+
+  .btn-generar {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-xs);
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all var(--t);
+    box-shadow: 0 1px 2px rgba(11,78,162,0.15);
+  }
+
+  .btn-generar:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(11,78,162,0.25);
+  }
+
+  .btn-generar:disabled {
+    background: var(--line);
+    color: var(--muted-light);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-generar.success { background: var(--green); }
+  .btn-generar.success:hover { background: #166534; }
+
+  .estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .estado-pendiente { background: var(--yellow-bg); color: var(--yellow); }
+  .estado-listo { background: var(--green-bg); color: var(--green); }
+
+  .btn-add-row {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    border: 2px dashed var(--line);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-add-row:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+
+  /* Modal pago info */
+  .modal-pago-info {
+    background: var(--surface-soft);
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+  }
+
+  .modal-pago-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 13.5px;
+  }
+
+  .modal-pago-info-row strong { color: var(--text); font-weight: 600; }
+  .modal-pago-info-divider { height: 1px; background: var(--line); margin: 8px 0; }
+
+  .modal-pago-info-total {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  .modal-pago-info-total .precio {
+    color: var(--green);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  /* DROPZONE para importar */
+  .dropzone {
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    text-align: center;
+    background: var(--surface-soft);
+    transition: all var(--t);
+    cursor: pointer;
+  }
+
+  .dropzone:hover, .dropzone.drag {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+
+  .dropzone-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    color: var(--primary);
+  }
+
+  .dropzone-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .dropzone-hint {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .preview-list {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    margin-top: 14px;
+  }
+
+  .preview-row {
+    display: grid;
+    grid-template-columns: 30px 1.5fr 1fr 1.5fr 1fr 70px;
+    gap: 8px;
+    padding: 8px 12px;
+    align-items: center;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 12.5px;
+  }
+
+  .preview-row:last-child { border-bottom: none; }
+  .preview-row.header { background: var(--surface-soft); font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em; }
+  .preview-row.error { background: var(--red-soft); color: var(--red); }
+  .preview-row.ok { background: white; }
+
+  .preview-status {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .preview-status.ok { color: var(--green); }
+  .preview-status.err { color: var(--red); }
+
+  /* MI RESUMEN cards */
+  .resumen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .resumen-grid { grid-template-columns: 1fr; }
+  }
+
+  .ranking-position-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ranking-position-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gold);
+  }
+
+  .ranking-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.75;
+    font-weight: 700;
+  }
+
+  .ranking-big {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 6px 0 4px;
+    letter-spacing: -0.02em;
+  }
+
+  .ranking-big small {
+    font-size: 18px;
+    opacity: 0.7;
+    font-weight: 600;
+  }
+
+  .ranking-sublabel {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+
+  .comision-card {
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    color: white;
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .comision-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gold);
+  }
+
+  .comision-big {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 6px 0 4px;
+    letter-spacing: -0.02em;
+  }
+
+  /* Selector de programación */
+  .programar-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .prog-option {
+    background: var(--surface-soft);
+    border: 2px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all var(--t);
+    font-family: inherit;
+    text-align: left;
+  }
+
+  .prog-option:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-soft);
+  }
+
+  .prog-option.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.10);
+  }
+
+  .prog-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .prog-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .prog-text strong {
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .prog-text span {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  .prog-option.active .prog-text strong {
+    color: var(--primary);
+  }
+
+  /* Badge programado en la hoja */
+  .estado-programado {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  /* ═══ APERTURAS — Pestañas y bloques ═══ */
+  .aperturas-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--line);
+    padding: 0 16px;
+    overflow-x: auto;
+    background: var(--surface-soft);
+    margin-top: -1px;
+  }
+
+  .apertura-tab {
+    background: transparent;
+    border: none;
+    padding: 12px 18px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--t);
+  }
+
+  .apertura-tab:hover {
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .apertura-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--surface);
+  }
+
+  .apertura-tab .tab-count {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+
+  .apertura-tab.active .tab-count {
+    background: var(--primary);
+    color: white;
+  }
+
+  .aperturas-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px 12px;
+    flex-wrap: wrap;
+  }
+
+  .curso-bloque {
+    margin: 16px 20px 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .curso-bloque-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #073b80 100%);
+    color: white;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .curso-bloque-titulo {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .curso-bloque-badge {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    font-size: 10.5px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .curso-bloque-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-curso-action {
+    background: var(--gold);
+    color: #2a1a00;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all var(--t);
+    white-space: nowrap;
+  }
+
+  .btn-curso-action:hover {
+    background: #d6a435;
+    transform: translateY(-1px);
+  }
+
+  .curso-bloque .sheet-table {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+  }
+
+  .btn-add-row-bloque {
+    width: 100%;
+    background: var(--surface-soft);
+    border: none;
+    border-top: 1px dashed var(--line);
+    padding: 10px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background var(--t);
+  }
+
+  .btn-add-row-bloque:hover {
+    background: var(--primary-soft);
+  }
+
+  .empty-apertura {
+    padding: 48px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .empty-apertura strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div class="sidebar-brand-text">
+        <strong>IPCI</strong>
+        <span>Vendedor</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-view="ventas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4M9 11V7a3 3 0 0 1 6 0v4M9 11h6"/></svg>
+        Registro de ventas
+      </button>
+      <button class="sidebar-link" data-view="cronograma">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Cronograma
+      </button>
+      <button class="sidebar-link" data-view="historial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historial comisiones
+      </button>
+      <button class="sidebar-link" data-view="resumen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg>
+        Mi resumen
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-initial">?</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role" id="user-consultora">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <button class="hamburger" id="hamburger" style="position:absolute;top:16px;right:16px;z-index:30">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- VENTAS (Hoja estilo Excel)                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-ventas" class="section active">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Registro de ventas</h1>
+          <p class="main-subtitle">Registra alumnos y genera certificados rápidamente, como en Excel</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" id="btn-importar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            Importar Excel
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Mis alumnos</div>
+            <div class="kpi-value" id="stat-total">0</div>
+            <span class="kpi-trend kpi-trend-flat"><span id="stat-semana">0</span> esta semana</span>
+          </div>
+          <div class="kpi-icon kpi-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Certificados emitidos</div>
+            <div class="kpi-value" id="stat-certificados">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="stat-programados">0 programados</span>
+          </div>
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Mi comisión hoy</div>
+            <div class="kpi-value" id="stat-comision">$0</div>
+            <span class="kpi-trend kpi-trend-flat" id="stat-comision-pct">— por venta</span>
+          </div>
+          <div class="kpi-icon kpi-icon-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Mi ranking</div>
+            <div class="kpi-value" id="stat-ranking">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="stat-ranking-text">en la consultora</span>
+          </div>
+          <div class="kpi-icon kpi-icon-yellow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- HOJA NUEVA — Aperturas con pestañas + bloques curso -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="sheet-wrapper">
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-title" id="sheet-title">Aperturas de grupo</div>
+            <div style="font-size:11.5px;opacity:.85;margin-top:2px">Cada pestaña es una fecha de apertura · Cada tabla es un curso del grupo</div>
+          </div>
+          <div class="sheet-counter">
+            Total alumnos: <strong id="sheet-counter">0</strong>
+          </div>
+        </div>
+
+        <div class="sheet-instructions">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <strong>Atajos:</strong> Tab para saltar al siguiente campo · Enter para guardar · El certificado se envía al alumno al dar GENERAR
+        </div>
+
+        <!-- Pestañas de aperturas -->
+        <div class="aperturas-tabs" id="aperturas-tabs">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div>
+        </div>
+
+        <div class="aperturas-toolbar">
+          <button class="btn btn-secondary btn-sm" id="btn-nueva-apertura">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+            Nueva apertura
+          </button>
+          <div class="search-box" style="max-width:280px;margin-left:auto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="search-alumno" placeholder="Buscar alumno...">
+          </div>
+        </div>
+
+        <!-- Contenedor de bloques de cursos -->
+        <div id="aperturas-bloques">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CRONOGRAMA (solo lectura)                            -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-cronograma" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">📅 Cronograma de cursos</h1>
+          <p class="main-subtitle">Próximos cursos programados de tu consultora</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Próximos cursos</div>
+            <div class="card-subtitle" id="cron-vendedor-subtitulo">Cargando...</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#16a34a;border-radius:50%;display:inline-block"></span> Abierto</div>
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#f59e0b;border-radius:50%;display:inline-block"></span> Pendiente</div>
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#9333ea;border-radius:50%;display:inline-block"></span> En curso</div>
+          </div>
+        </div>
+        <div id="cron-vendedor-container" style="padding:0">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando cronograma...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- HISTORIAL DE COMISIONES                              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-historial" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">💰 Historial de comisiones</h1>
+          <p class="main-subtitle" id="hist-subtitulo">Tus ganancias del mes en curso · Se reinicia visualmente cada mes</p>
+        </div>
+      </div>
+
+      <!-- Cards principales -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px">
+        <div style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#15803d;font-weight:700;text-transform:uppercase;letter-spacing:.06em">HOY</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="hist-hoy-monto">$0</div>
+          <div style="font-size:12.5px;color:#15803d;margin-top:4px" id="hist-hoy-ventas">0 ventas</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fbbf24;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.06em">AYER</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="hist-ayer-monto">$0</div>
+          <div style="font-size:12.5px;color:#92400e;margin-top:4px" id="hist-ayer-ventas">0 ventas</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:1px solid #60a5fa;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:.06em">ESTA SEMANA</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="hist-semana-monto">$0</div>
+          <div style="font-size:12.5px;color:#1e40af;margin-top:4px" id="hist-semana-ventas">0 ventas</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f3e8ff,#e9d5ff);border:1px solid #a78bfa;border-radius:12px;padding:18px 20px">
+          <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:.06em">ESTE MES</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="hist-mes-monto">$0</div>
+          <div style="font-size:12.5px;color:#6b21a8;margin-top:4px" id="hist-mes-ventas">0 ventas</div>
+        </div>
+      </div>
+
+      <!-- Tabla por día -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Detalle día por día</div>
+            <div class="card-subtitle">Últimos 30 días dentro del mes actual</div>
+          </div>
+        </div>
+        <div id="hist-dias-container" style="padding:0">
+          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando historial...</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MI RESUMEN                                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-resumen" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Mi resumen</h1>
+          <p class="main-subtitle">Tu rendimiento de ventas y comisiones</p>
+        </div>
+      </div>
+
+      <div class="resumen-grid">
+        <div class="ranking-position-card">
+          <div class="ranking-label">🏆 Mi posición</div>
+          <div class="ranking-big" id="r-pos">—<small id="r-pos-total"></small></div>
+          <div class="ranking-sublabel" id="r-pos-text">en la consultora</div>
+        </div>
+        <div class="comision-card">
+          <div class="ranking-label">💰 Comisión total</div>
+          <div class="comision-big" id="r-comision">$0</div>
+          <div class="ranking-sublabel" id="r-comision-info">—</div>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Total alumnos</div>
+            <div class="kpi-value" id="r-total">0</div>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Certificados emitidos</div>
+            <div class="kpi-value" id="r-certs">0</div>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Ingresos facturados</div>
+            <div class="kpi-value" id="r-ingresos">$0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Mis certificados emitidos</div>
+            <div class="card-subtitle">Historial completo de ventas generadas</div>
+          </div>
+        </div>
+        <div id="resumen-tabla"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL CONFIRMAR GENERAR (con selector de fecha)      -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-confirmar">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Generar certificado</div>
+        <div class="modal-subtitle">¿Cuándo quieres que se envíe?</div>
+      </div>
+      <button class="modal-close" id="modal-close-confirmar" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-pago-info">
+        <div class="modal-pago-info-row"><span class="text-muted">Alumno:</span><strong id="cf-nombre">—</strong></div>
+        <div class="modal-pago-info-row"><span class="text-muted">Curso:</span><strong id="cf-curso">—</strong></div>
+        <div class="modal-pago-info-row"><span class="text-muted">Email:</span><strong id="cf-email">—</strong></div>
+        <div class="modal-pago-info-divider"></div>
+        <div class="modal-pago-info-row modal-pago-info-total">
+          <span>Total:</span>
+          <span class="precio" id="cf-precio">$0</span>
+        </div>
+        <div class="modal-pago-info-row" style="font-size:12px;margin-top:4px">
+          <span class="text-muted">Tu comisión:</span>
+          <strong style="color:var(--green)" id="cf-comision">$0</strong>
+        </div>
+      </div>
+
+      <div class="programar-block" style="margin-top:18px">
+        <label class="field-label" style="margin-bottom:10px;display:block">¿Cuándo enviar el certificado?</label>
+
+        <div class="programar-options">
+          <button type="button" class="prog-option active" data-prog="0">
+            <div class="prog-icon">⚡</div>
+            <div class="prog-text">
+              <strong>Ahora mismo</strong>
+              <span>Enviar de inmediato</span>
+            </div>
+          </button>
+          <button type="button" class="prog-option" data-prog="7">
+            <div class="prog-icon">📅</div>
+            <div class="prog-text">
+              <strong>En 7 días</strong>
+              <span id="prog-7-fecha"></span>
+            </div>
+          </button>
+          <button type="button" class="prog-option" data-prog="15">
+            <div class="prog-icon">🗓️</div>
+            <div class="prog-text">
+              <strong>En 15 días</strong>
+              <span id="prog-15-fecha"></span>
+            </div>
+          </button>
+          <button type="button" class="prog-option" data-prog="custom">
+            <div class="prog-icon">⚙️</div>
+            <div class="prog-text">
+              <strong>Otra fecha</strong>
+              <span>Elegir día específico</span>
+            </div>
+          </button>
+        </div>
+
+        <div id="prog-custom-input" class="hidden" style="margin-top:12px">
+          <label class="field-label">Fecha de envío</label>
+          <input type="date" class="input" id="cf-fecha-custom" min="">
+          <div class="field-hint">Se enviará automáticamente esa fecha a las 8:00 AM hora México</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="btn-cancelar-confirmar">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="btn-confirmar-generar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="btn-confirmar-texto">Generar y enviar ahora</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL IMPORTAR EXCEL                                 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-importar">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Importar alumnos desde Excel</div>
+        <div class="modal-subtitle">Carga masiva de alumnos. Los certificados se generan después uno por uno.</div>
+      </div>
+      <button class="modal-close" id="modal-close-importar" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="import-step1">
+        <div class="alert alert-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>
+            <strong>Formato esperado:</strong> Excel (.xlsx) o CSV con columnas: <code>NOMBRE</code>, <code>EMAIL</code>, <code>TELEFONO</code>, <code>CURSO</code>.
+            <a href="#" id="link-plantilla" style="color:var(--info);font-weight:600;text-decoration:underline">Descargar plantilla</a>
+          </div>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <div class="dropzone-title">Arrastra tu archivo aquí o haz click para seleccionar</div>
+          <div class="dropzone-hint">.xlsx · .xls · .csv (máx 500 filas)</div>
+          <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none">
+        </div>
+      </div>
+
+      <div id="import-step2" class="hidden">
+        <div class="alert alert-success" id="import-summary"></div>
+        <div class="preview-list" id="preview-container"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="btn-cancelar-importar">Cancelar</button>
+      <button type="button" class="btn btn-primary hidden" id="btn-confirmar-importar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        Importar <span id="btn-importar-count"></span> alumnos
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth, db, functions,
+    requireRole, cerrarSesion, formatFecha, formatMoney, toast, confirmar, escapeHtml, iniciales, setupSidebar,
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp, onSnapshot,
+    httpsCallable, callCertFunction
+  } from "./firebase-config.js";
+
+  // Helper local: comisión fija en pesos por venta (vendedor → curso → consultora)
+  function calcularComisionFija(usuario, curso, consultora) {
+    if (typeof usuario?.comisionFija === "number") return usuario.comisionFija;
+    if (typeof curso?.comisionFija === "number") return curso.comisionFija;
+    if (typeof consultora?.comisionFija === "number") return consultora.comisionFija;
+    // Compatibilidad legacy
+    if (typeof usuario?.comisionOverride === "number") return usuario.comisionOverride;
+    if (typeof curso?.comisionOverride === "number") return curso.comisionOverride;
+    if (typeof consultora?.comisionDefault === "number") return consultora.comisionDefault;
+    return 0;
+  }
+
+  let usuario = null;
+  let consultora = null;
+  let cursos = [];
+  let alumnos = [];
+  let certificados = [];
+  let unsubAlumnos = null;
+  let unsubCertificados = null;
+  let pendingNewRows = [];
+  let alumnoIdAGenerar = null;
+  let comisionPctActual = 0; // Se calcula al generar
+  let importedRows = []; // Filas válidas del archivo Excel
+
+  // ─── INIT ───
+  usuario = await requireRole("vendedor");
+  document.getElementById("user-name").textContent = usuario.nombre || "Vendedor";
+  document.getElementById("user-consultora").textContent = usuario.consultoraNombre || "—";
+  document.getElementById("user-initial").textContent = iniciales(usuario.nombre);
+  document.getElementById("sheet-title").textContent = `${(usuario.consultoraNombre || "").toUpperCase()} — Registro de ventas`;
+
+  setupSidebar();
+
+  // Cargar consultora para tener comisionDefault (en vivo, escucha cambios)
+  let unsubConsultora = null;
+  unsubConsultora = onSnapshot(
+    doc(db, "consultoras", usuario.consultoraId),
+    (snap) => {
+      if (snap.exists()) {
+        consultora = { id: snap.id, ...snap.data() };
+        // Re-renderizar para reflejar nuevo % de comisión
+        if (typeof renderSheet === "function") renderSheet();
+        if (typeof actualizarStats === "function") actualizarStats();
+        if (typeof renderResumen === "function") renderResumen();
+      }
+    },
+    (e) => { console.warn("Error consultora live:", e); }
+  );
+
+  // Cargar datos del usuario en vivo (por si admin cambia comisionOverride del vendedor)
+  let unsubUsuario = null;
+  unsubUsuario = onSnapshot(
+    doc(db, "usuarios", usuario.uid),
+    (snap) => {
+      if (snap.exists()) {
+        const fresh = snap.data();
+        // Solo actualizar campos relevantes (no machacar el objeto entero)
+        usuario.comisionOverride = fresh.comisionOverride;
+        usuario.consultoraNombre = fresh.consultoraNombre || usuario.consultoraNombre;
+        if (typeof renderSheet === "function") renderSheet();
+        if (typeof actualizarStats === "function") actualizarStats();
+        if (typeof renderResumen === "function") renderResumen();
+      }
+    },
+    (e) => { console.warn("Error usuario live:", e); }
+  );
+
+  document.querySelectorAll(".sidebar-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".section").forEach(v => v.classList.remove("active"));
+      document.getElementById(`view-${btn.dataset.view}`).classList.add("active");
+      document.getElementById("sidebar").classList.remove("open");
+      document.querySelector(".sidebar-backdrop")?.classList.remove("show");
+      if (btn.dataset.view === "resumen") renderResumen();
+      if (btn.dataset.view === "cronograma") renderCronogramaVendedor();
+      if (btn.dataset.view === "historial") renderHistorial();
+    });
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
+
+  // ─── CARGAR APERTURAS (cronograma read-only) ───
+  let aperturasVend = [];
+  let unsubAperturasVend = null;
+  unsubAperturasVend = onSnapshot(
+    query(
+      collection(db, "aperturas"),
+      where("consultoraId", "==", usuario.consultoraId)
+    ),
+    (snap) => {
+      aperturasVend = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (document.getElementById("view-cronograma")?.classList.contains("active")) {
+        renderCronogramaVendedor();
+      }
+    },
+    (e) => { console.warn("Error aperturas:", e); }
+  );
+
+  function renderHistorial() {
+    // Asegurar que actualizarStats ya se ejecutó
+    if (!window._comisionStats) actualizarStats();
+    const stats = window._comisionStats || { hoy: {monto:0,ventas:0}, ayer: {monto:0,ventas:0}, semana: {monto:0,ventas:0}, mes: {monto:0,ventas:0} };
+
+    document.getElementById("hist-hoy-monto").textContent = formatMoney(stats.hoy.monto);
+    document.getElementById("hist-hoy-ventas").textContent = `${stats.hoy.ventas} venta${stats.hoy.ventas !== 1 ? 's' : ''}`;
+    document.getElementById("hist-ayer-monto").textContent = formatMoney(stats.ayer.monto);
+    document.getElementById("hist-ayer-ventas").textContent = `${stats.ayer.ventas} venta${stats.ayer.ventas !== 1 ? 's' : ''}`;
+    document.getElementById("hist-semana-monto").textContent = formatMoney(stats.semana.monto);
+    document.getElementById("hist-semana-ventas").textContent = `${stats.semana.ventas} venta${stats.semana.ventas !== 1 ? 's' : ''}`;
+    document.getElementById("hist-mes-monto").textContent = formatMoney(stats.mes.monto);
+    document.getElementById("hist-mes-ventas").textContent = `${stats.mes.ventas} venta${stats.mes.ventas !== 1 ? 's' : ''}`;
+
+    // Tabla por día (últimos 30 días dentro del mes actual)
+    const cont = document.getElementById("hist-dias-container");
+    const ahora = new Date();
+    const hoyMX = ahora.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const partesMes = hoyMX.split("-");
+    const inicioMesStr = `${partesMes[0]}-${partesMes[1]}-01`;
+
+    const fechaMX = (d) => {
+      if (!d) return null;
+      const f = d.toDate?.() || (d instanceof Date ? d : new Date(d));
+      return f.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    };
+
+    // Mapa cert por alumno
+    const certPorAlumno = {};
+    certificados.forEach(c => { if (c.alumnoId) certPorAlumno[c.alumnoId] = c; });
+
+    // Agrupar por día — usando ALUMNOS (no certificados)
+    const porDia = {};
+    alumnos.forEach(a => {
+      if (!a.email || !a.email.includes("@") || !a.nombre || !a.cursoId) return;
+      if (a.estado === "cancelado") return;
+      // Fecha: si creadoEn aún no está resuelto, usar HOY
+      let fechaStr = fechaMX(a.creadoEn);
+      if (!fechaStr) fechaStr = hoyMX;
+      if (fechaStr < inicioMesStr) return;
+
+      let monto = 0;
+      const cert = certPorAlumno[a.id];
+      if (cert && typeof cert.comisionVendedor === "number") {
+        monto = cert.comisionVendedor;
+      } else {
+        const curso = cursos.find(cu => cu.id === a.cursoId);
+        monto = calcularComisionFija(usuario, curso, consultora);
+      }
+
+      if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0 };
+      porDia[fechaStr].ventas++;
+      porDia[fechaStr].monto += monto;
+    });
+
+    const dias = Object.keys(porDia).sort().reverse();
+
+    if (dias.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">💰</div>
+        <div style="font-size:16px;font-weight:600;color:#334155">Aún no tienes ventas este mes</div>
+        <div style="margin-top:6px;color:var(--muted);font-size:13px">Tus comisiones aparecerán aquí día por día</div>
+      </div>`;
+      return;
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:13.5px">
+      <thead>
+        <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
+          <th style="text-align:left;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Día</th>
+          <th style="text-align:center;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Ventas</th>
+          <th style="text-align:right;padding:14px 16px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em">Comisión ganada</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    dias.forEach((fechaStr, idx) => {
+      const d = porDia[fechaStr];
+      const fecha = new Date(fechaStr + "T12:00:00");
+      const fechaStr2 = fecha.toLocaleDateString("es-MX", {
+        weekday: "long", day: "numeric", month: "long",
+        timeZone: "America/Mexico_City",
+      });
+      const esHoy = fechaStr === hoyMX;
+      const bgRow = esHoy ? "#f0fdf4" : (idx % 2 === 0 ? "white" : "#fafbfc");
+      html += `<tr style="background:${bgRow};border-bottom:1px solid #f1f5f9">
+        <td style="padding:14px 16px;text-transform:capitalize;color:#0f172a;font-weight:${esHoy ? '700' : '500'}">
+          ${escapeHtml(fechaStr2)} ${esHoy ? '<span style="background:#16a34a;color:white;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:700;margin-left:6px">HOY</span>' : ''}
+        </td>
+        <td style="padding:14px 16px;text-align:center;color:#475569">
+          <span style="background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700">${d.ventas}</span>
+        </td>
+        <td style="padding:14px 16px;text-align:right;font-weight:800;color:#16a34a;font-size:15px">${formatMoney(d.monto)}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+  }
+
+  function renderCronogramaVendedor() {
+    const cont = document.getElementById("cron-vendedor-container");
+    const sub = document.getElementById("cron-vendedor-subtitulo");
+    if (!cont) return;
+
+    const ahora = new Date();
+    const limite = new Date();
+    limite.setDate(limite.getDate() + 90); // próximos 90 días
+
+    // Filtrar y mapear (con sesiones ordenadas + originales con horas)
+    const lista = aperturasVend
+      .filter(a => a.estado !== "cancelado" && Array.isArray(a.sesiones) && a.sesiones.length > 0)
+      .map(a => {
+        // Mantener objeto sesión completo (fecha, horaInicio, horaFin) y ordenar
+        const sesionesOrden = a.sesiones
+          .map(s => ({
+            fecha: s.fecha?.toDate?.() || new Date(s.fecha),
+            horaInicio: s.horaInicio || "",
+            horaFin: s.horaFin || "",
+          }))
+          .sort((x, y) => x.fecha - y.fecha);
+        return { ap: a, primera: sesionesOrden[0]?.fecha || new Date(), sesionesOrden };
+      })
+      .filter(x => x.primera <= limite)
+      .sort((a, b) => a.primera - b.primera);
+
+    if (lista.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:60px 20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">📅</div>
+        <div style="font-size:16px;font-weight:600;color:#334155">Sin cursos programados</div>
+        <div style="margin-top:6px;color:var(--muted);font-size:13px">Cuando el coordinador programe cursos en cronograma, aparecerán aquí</div>
+      </div>`;
+      sub.textContent = "0 cursos programados";
+      return;
+    }
+
+    sub.textContent = `${lista.length} curso${lista.length !== 1 ? 's' : ''} programado${lista.length !== 1 ? 's' : ''} en los próximos 90 días`;
+
+    const fmtFecha = (d) => d.toLocaleDateString("es-MX", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+      timeZone: "America/Mexico_City",
+    });
+    const fmtFechaCorta = (d) => d.toLocaleDateString("es-MX", {
+      weekday: "short", day: "numeric", month: "short",
+      timeZone: "America/Mexico_City",
+    });
+    const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+    let html = `<div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">`;
+
+    lista.forEach((x, idx) => {
+      const a = x.ap;
+      const primera = x.primera;
+      const ultima = x.sesionesOrden[x.sesionesOrden.length - 1].fecha;
+
+      // Estado efectivo
+      let estado = a.estado || "pendiente";
+      if (estado === "activo" && primera < ahora) estado = "iniciado";
+      let bg, border, badgeBg, badgeColor, badgeText, headerBg;
+      if (estado === "activo") {
+        bg = "#f0fdf4"; border = "#86efac"; badgeBg = "#dcfce7"; badgeColor = "#166534"; badgeText = "🟢 Abierto";
+        headerBg = "linear-gradient(135deg,#dcfce7,#bbf7d0)";
+      } else if (estado === "iniciado") {
+        bg = "#faf5ff"; border = "#d8b4fe"; badgeBg = "#f3e8ff"; badgeColor = "#6b21a8"; badgeText = "🟣 En curso";
+        headerBg = "linear-gradient(135deg,#f3e8ff,#e9d5ff)";
+      } else {
+        bg = "#fffbeb"; border = "#fbbf24"; badgeBg = "#fef3c7"; badgeColor = "#92400e"; badgeText = "🟡 Pendiente";
+        headerBg = "linear-gradient(135deg,#fef3c7,#fde68a)";
+      }
+
+      // Detectar si todas las sesiones tienen el mismo horario (patrón fijo)
+      const horariosUnicos = [...new Set(x.sesionesOrden.map(s => `${s.horaInicio}-${s.horaFin}`))];
+      const horarioFijo = horariosUnicos.length === 1 && horariosUnicos[0] !== "-";
+
+      html += `<div style="background:${bg};border:1px solid ${border};border-radius:14px;overflow:hidden">
+        <div style="background:${headerBg};padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px">
+            <div style="font-weight:800;color:#0f172a;font-size:16px;line-height:1.3">${escapeHtml(a.cursoNombre || "—")}</div>
+            <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap;font-size:12.5px;color:#475569">
+              <div>👨‍🏫 <strong>${escapeHtml(a.ponente || "—")}</strong></div>
+              ${a.modalidad ? `<div>🎓 ${escapeHtml(a.modalidad)}</div>` : ""}
+              ${a.duracion ? `<div>⏱️ ${escapeHtml(a.duracion)}</div>` : ""}
+            </div>
+          </div>
+          <span style="background:${badgeBg};color:${badgeColor};padding:6px 14px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap">${badgeText}</span>
+        </div>
+
+        <div style="padding:14px 20px;background:white">
+          <!-- Tabla de todas las sesiones -->
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">📅 Todas las fechas</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+            ${x.sesionesOrden.map((s, i) => {
+              const yaPaso = s.fecha < ahora;
+              return `<div style="background:${yaPaso ? '#f1f5f9' : '#f8fafc'};border:1px solid ${yaPaso ? '#cbd5e1' : '#e2e8f0'};border-radius:8px;padding:10px 12px;${yaPaso ? 'opacity:.65' : ''}">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Sesión ${i + 1}</span>
+                  ${yaPaso ? '<span style="font-size:10px;color:#16a34a;font-weight:700">✓ Realizada</span>' : ''}
+                </div>
+                <div style="color:#0f172a;font-weight:700;font-size:13px;text-transform:capitalize">${escapeHtml(cap(fmtFechaCorta(s.fecha)))}</div>
+                <div style="color:#475569;font-size:12px;margin-top:3px">🕐 ${escapeHtml(s.horaInicio)} – ${escapeHtml(s.horaFin)}</div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+    cont.innerHTML = html;
+  }
+
+  // ─── CARGAR CURSOS (en vivo) ───
+  // Nota: filtramos `activo` en JS para evitar requerir un índice compuesto en Firestore.
+  let unsubCursos = null;
+  unsubCursos = onSnapshot(
+    query(
+      collection(db, "cursos"),
+      where("consultoraId", "==", usuario.consultoraId)
+    ),
+    (snap) => {
+      cursos = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(c => c.activo === true);
+      cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+      if (typeof renderSheet === "function") renderSheet();
+      if (typeof actualizarStats === "function") actualizarStats();
+      if (typeof renderResumen === "function") renderResumen();
+    },
+    (e) => { console.error("Error cargando cursos:", e); toast("Error cargando cursos", "error"); }
+  );
+
+  // ─── SUSCRIPCIONES ───
+  unsubAlumnos = onSnapshot(
+    query(collection(db, "alumnos"), where("registradoPor", "==", usuario.uid)),
+    (snap) => {
+      alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      alumnos.sort((a, b) => (a.creadoEn?.toMillis?.() || 0) - (b.creadoEn?.toMillis?.() || 0));
+      renderSheet();
+      actualizarStats();
+      // Re-render historial si está activa esa pestaña
+      if (document.getElementById("view-historial")?.classList.contains("active")) {
+        renderHistorial();
+      }
+    }
+  );
+
+  unsubCertificados = onSnapshot(
+    query(collection(db, "certificados"), where("generadoPor", "==", usuario.uid)),
+    (snap) => {
+      certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+      renderSheet();
+      actualizarStats();
+      renderResumen();
+      if (document.getElementById("view-historial")?.classList.contains("active")) {
+        renderHistorial();
+      }
+    }
+  );
+
+  function actualizarStats() {
+    document.getElementById("stat-total").textContent = alumnos.length;
+
+    const semanaAtras = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const enSemana = alumnos.filter(a => (a.creadoEn?.toMillis?.() || 0) >= semanaAtras).length;
+    document.getElementById("stat-semana").textContent = enSemana;
+
+    document.getElementById("stat-certificados").textContent = certificados.length;
+    document.getElementById("sheet-counter").textContent = alumnos.length + pendingNewRows.length;
+
+    // Programados
+    const programados = alumnos.filter(a => a.estado === "programado").length;
+    document.getElementById("stat-programados").textContent = `${programados} programados`;
+
+    // ─── Comisiones por período ───
+    // Helper: una "venta válida" = alumno con email + nombre + cursoId.
+    // Comisión = vendedorComisionFija (al momento actual) por cada alumno válido.
+    // Si ya existe certificado para ese alumno, usa el snapshot de comisionVendedor del cert.
+
+    const fechaMX = (d) => {
+      if (!d) return null;
+      const f = d.toDate?.() || (d instanceof Date ? d : new Date(d));
+      if (isNaN(f.getTime())) return null;
+      return f.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    };
+    const ahora = new Date();
+    const hoyMX = ahora.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    // Lunes de esta semana en MX
+    const fechaMXObj = new Date(ahora.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+    const dow = fechaMXObj.getDay(); // 0=domingo, 1=lunes...
+    const offset = (dow === 0 ? 6 : dow - 1);
+    const lunesD = new Date(fechaMXObj);
+    lunesD.setDate(fechaMXObj.getDate() - offset);
+    const lunesStr = lunesD.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    // Día 1 del mes (en MX)
+    const partesMes = hoyMX.split("-"); // YYYY-MM-DD
+    const inicioMesStr = `${partesMes[0]}-${partesMes[1]}-01`;
+
+    let comisionHoy = 0, ventasHoy = 0;
+    let comisionAyer = 0, ventasAyer = 0;
+    let comisionSemana = 0, ventasSemana = 0;
+    let comisionMes = 0, ventasMes = 0;
+
+    const ayer = new Date(hoyMX + "T12:00:00");
+    ayer.setDate(ayer.getDate() - 1);
+    const ayerStr = ayer.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+
+    // Mapa de certificados por alumnoId para encontrar comisión guardada
+    const certPorAlumno = {};
+    certificados.forEach(c => {
+      if (c.alumnoId) certPorAlumno[c.alumnoId] = c;
+    });
+
+    // Iterar ALUMNOS (no certificados) — cuenta desde que se guarda con email válido
+    alumnos.forEach(a => {
+      // Validez mínima: email + nombre + cursoId + estado != cancelado
+      if (!a.email || !a.email.includes("@") || !a.nombre || !a.cursoId) return;
+      if (a.estado === "cancelado") return;
+
+      // Fecha del alumno: si creadoEn aún no está (recién insertado), usar HOY
+      let fechaStr = fechaMX(a.creadoEn);
+      if (!fechaStr) {
+        // Fallback: alumno recién creado, todavía sin serverTimestamp resuelto → asumir HOY
+        fechaStr = hoyMX;
+      }
+      if (fechaStr < inicioMesStr) return;
+
+      // Calcular comisión: si tiene cert, snapshot; si no, comisión fija actual
+      let monto = 0;
+      const cert = certPorAlumno[a.id];
+      if (cert && typeof cert.comisionVendedor === "number") {
+        monto = cert.comisionVendedor;
+      } else {
+        const curso = cursos.find(cu => cu.id === a.cursoId);
+        monto = calcularComisionFija(usuario, curso, consultora);
+      }
+
+      if (fechaStr === hoyMX) { comisionHoy += monto; ventasHoy++; }
+      if (fechaStr === ayerStr) { comisionAyer += monto; ventasAyer++; }
+      if (fechaStr >= lunesStr) { comisionSemana += monto; ventasSemana++; }
+      comisionMes += monto; ventasMes++;
+    });
+
+    // KPI principal: solo HOY
+    document.getElementById("stat-comision").textContent = formatMoney(comisionHoy);
+
+    const fijaVigente = calcularComisionFija(usuario, null, consultora);
+    document.getElementById("stat-comision-pct").textContent = fijaVigente > 0
+      ? `$${fijaVigente} MXN por venta · ${ventasHoy} hoy`
+      : "Sin comisión definida";
+
+    document.getElementById("r-total").textContent = alumnos.length;
+    document.getElementById("r-certs").textContent = certificados.length;
+    const ingresos = certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
+    document.getElementById("r-ingresos").textContent = formatMoney(ingresos);
+    document.getElementById("r-comision").textContent = formatMoney(comisionMes);
+    document.getElementById("r-comision-info").textContent = fijaVigente > 0
+      ? `$${fijaVigente} MXN por cada venta · ${ventasMes} ventas este mes`
+      : "Comisión sin configurar";
+
+    // Guardar globalmente para que renderHistorial use los mismos cálculos
+    window._comisionStats = {
+      hoy: { monto: comisionHoy, ventas: ventasHoy },
+      ayer: { monto: comisionAyer, ventas: ventasAyer },
+      semana: { monto: comisionSemana, ventas: ventasSemana },
+      mes: { monto: comisionMes, ventas: ventasMes },
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER HOJA
+  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════
+  // APERTURAS - Estado de pestañas
+  // ═══════════════════════════════════════════════════════════
+  // Cada alumno tiene un campo "aperturaKey" tipo "2026-04-25" que indica
+  // a qué fecha de apertura pertenece. Si no lo tiene, se usa "sin-asignar".
+  // El vendedor crea aperturas (fechas) y el alumno se asigna a una.
+
+  let aperturaActual = null; // string "YYYY-MM-DD" o "sin-asignar" o "nueva"
+
+  function getAperturaKey(alumno) {
+    return alumno.aperturaKey || "sin-asignar";
+  }
+
+  function fechaApertura(key) {
+    if (key === "sin-asignar") return null;
+    return new Date(key + "T00:00:00");
+  }
+
+  function labelApertura(key) {
+    if (key === "sin-asignar") return "Sin asignar";
+    const d = fechaApertura(key);
+    if (!d || isNaN(d)) return key;
+    return d.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "2-digit" });
+  }
+
+  function listarAperturas() {
+    // Recopila aperturas únicas de alumnos + de pendingNewRows
+    const set = new Set();
+    alumnos.forEach(a => set.add(getAperturaKey(a)));
+    pendingNewRows.forEach(r => set.add(r.aperturaKey || "sin-asignar"));
+    const arr = [...set];
+    // Ordenar: fechas válidas descendentes, "sin-asignar" al final
+    arr.sort((a, b) => {
+      if (a === "sin-asignar") return 1;
+      if (b === "sin-asignar") return -1;
+      return b.localeCompare(a);
+    });
+    return arr;
+  }
+
+  function renderTabsAperturas() {
+    const cont = document.getElementById("aperturas-tabs");
+    if (!cont) return;
+    const aps = listarAperturas();
+
+    if (aps.length === 0 || (aps.length === 1 && aps[0] === "sin-asignar" && alumnos.length === 0 && pendingNewRows.length === 0)) {
+      cont.innerHTML = `<div style="padding:14px 18px;color:var(--muted);font-size:13px">
+        Aún no hay aperturas. Click en "Nueva apertura" para crear una.
+      </div>`;
+      aperturaActual = null;
+      return;
+    }
+
+    if (!aperturaActual || !aps.includes(aperturaActual)) aperturaActual = aps[0];
+
+    cont.innerHTML = aps.map(k => {
+      const cuenta = alumnos.filter(a => getAperturaKey(a) === k).length
+                  + pendingNewRows.filter(r => (r.aperturaKey || "sin-asignar") === k).length;
+      const isActive = k === aperturaActual;
+      const icono = k === "sin-asignar" ? "📋" : "📅";
+      return `<button class="apertura-tab ${isActive ? 'active' : ''}" data-apertura="${k}">
+        <span>${icono}</span>
+        <span>${labelApertura(k)}</span>
+        <span class="tab-count">${cuenta}</span>
+      </button>`;
+    }).join("");
+
+    cont.querySelectorAll(".apertura-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        aperturaActual = btn.dataset.apertura;
+        renderTabsAperturas();
+        renderBloques();
+      });
+    });
+  }
+
+  function renderBloques() {
+    const cont = document.getElementById("aperturas-bloques");
+    if (!cont) return;
+
+    if (!aperturaActual) {
+      cont.innerHTML = `<div class="empty-apertura">
+        <strong>No hay apertura seleccionada</strong>
+        Crea una nueva apertura para empezar a registrar alumnos
+      </div>`;
+      return;
+    }
+
+    const search = (document.getElementById("search-alumno")?.value || "").toLowerCase();
+
+    // Filtrar alumnos de la apertura actual
+    let alumnosAp = alumnos.filter(a => getAperturaKey(a) === aperturaActual);
+    let pendientesAp = pendingNewRows.filter(r => (r.aperturaKey || "sin-asignar") === aperturaActual);
+
+    if (search) {
+      alumnosAp = alumnosAp.filter(a =>
+        (a.nombre || "").toLowerCase().includes(search) ||
+        (a.email || "").toLowerCase().includes(search)
+      );
+    }
+
+    // Agrupar por curso
+    const porCurso = new Map();
+    alumnosAp.forEach(a => {
+      const k = a.cursoId || "sin-curso";
+      if (!porCurso.has(k)) porCurso.set(k, { alumnos: [], pendientes: [] });
+      porCurso.get(k).alumnos.push(a);
+    });
+    pendientesAp.forEach(r => {
+      const k = r.cursoId || "sin-curso";
+      if (!porCurso.has(k)) porCurso.set(k, { alumnos: [], pendientes: [] });
+      porCurso.get(k).pendientes.push(r);
+    });
+
+    if (porCurso.size === 0) {
+      cont.innerHTML = `<div class="empty-apertura">
+        <strong>${labelApertura(aperturaActual)} — sin alumnos</strong>
+        Agrega alumnos a esta apertura con el botón "+" abajo
+      </div>
+      <button class="btn btn-primary" id="btn-add-row" style="margin:0 20px 20px;display:flex;align-items:center;gap:6px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar primer alumno
+      </button>`;
+      bindBloqueEvents();
+      return;
+    }
+
+    let html = "";
+    porCurso.forEach((data, cursoId) => {
+      const curso = cursos.find(c => c.id === cursoId);
+      const nombreCurso = curso ? curso.nombre : "(Sin curso asignado)";
+      const ponente = curso?.ponente || "";
+
+      const totalRows = data.alumnos.length + data.pendientes.length;
+      const enviados = data.alumnos.filter(a => a.estado === "email_enviado").length;
+      const pendientesEnvio = data.alumnos.filter(a => a.estado !== "email_enviado").length + data.pendientes.length;
+      // Alumnos elegibles para generación masiva: tienen datos completos y no han sido enviados
+      const elegiblesGenerar = data.alumnos.filter(a =>
+        a.estado !== "email_enviado" &&
+        a.estado !== "programado" &&
+        a.nombre && a.email && a.telefono && a.cursoId
+      );
+
+      html += `<div class="curso-bloque">
+        <div class="curso-bloque-header">
+          <div class="curso-bloque-titulo">
+            ${escapeHtml(nombreCurso)}
+            ${ponente ? `<div style="font-size:11px;font-weight:500;opacity:.85;margin-top:3px">Ponente: ${escapeHtml(ponente)}</div>` : ''}
+          </div>
+          <div class="curso-bloque-actions">
+            <span class="curso-bloque-badge">${enviados} enviados · ${pendientesEnvio} pendientes</span>
+            ${elegiblesGenerar.length > 0 ? `
+              <button class="btn btn-primary btn-sm" data-generar-todos="${cursoId}" style="display:flex;align-items:center;gap:6px;background:#16a34a;border-color:#15803d">
+                ⚡ Generar todos (${elegiblesGenerar.length})
+              </button>
+            ` : ''}
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th style="width:40px">#</th>
+                <th style="width:230px">Nombre</th>
+                <th style="width:140px">Teléfono</th>
+                <th style="width:240px">Email</th>
+                <th style="width:160px">Folio IPCI</th>
+                <th style="width:110px">Estado</th>
+                <th style="width:130px">Acción</th>
+              </tr>
+            </thead>
+            <tbody>${renderRowsBloque(data.alumnos, data.pendientes, cursoId)}</tbody>
+          </table>
+        </div>
+        <button class="btn-add-row-bloque" data-add-curso="${cursoId}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar alumno a este curso
+        </button>
+      </div>`;
+    });
+
+    // Botón general para crear fila sin curso preasignado
+    html += `<div style="text-align:center;padding:8px 20px 24px">
+      <button class="btn btn-secondary btn-sm" id="btn-add-row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar fila libre
+      </button>
+    </div>`;
+
+    cont.innerHTML = html;
+    bindBloqueEvents();
+  }
+
+  function renderRowsBloque(alumnosArr, pendientesArr, cursoIdBloque) {
+    let html = "";
+    let n = 1;
+    alumnosArr.forEach(a => {
+      const cert = certificados.find(c => c.id === a.certificadoId);
+      const yaGenerado = a.estado === "email_enviado";
+      html += `<tr data-alumno-id="${a.id}" class="${yaGenerado ? 'saved' : ''}">
+        <td class="sheet-row-num">${n++}</td>
+        <td>${yaGenerado
+          ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
+          : `<input type="text" class="sheet-cell-input" data-field="nombre" value="${escapeHtml(a.nombre)}" placeholder="Nombre completo" style="text-transform:uppercase">`}</td>
+        <td>${yaGenerado
+          ? `<div class="sheet-cell-fixed muted">${escapeHtml(a.telefono || "—")}</div>`
+          : `<input type="tel" class="sheet-cell-input" data-field="telefono" value="${escapeHtml(a.telefono || "")}" placeholder="Teléfono">`}</td>
+        <td>${yaGenerado
+          ? `<div class="sheet-cell-fixed muted">${escapeHtml(a.email)}</div>`
+          : `<input type="email" class="sheet-cell-input" data-field="email" value="${escapeHtml(a.email || "")}" placeholder="email@ejemplo.com">`}</td>
+        <td>${cert ? `<div class="sheet-folio">${escapeHtml(cert.folio)}</div>` : `<div class="sheet-cell-fixed muted">—</div>`}</td>
+        <td>${badgeEstado(a.estado, a.fechaProgramada)}</td>
+        <td class="accion-cell">${accionAlumno(a)}</td>
+      </tr>`;
+    });
+    pendientesArr.forEach(row => {
+      const tieneCurso = !!row.cursoId;
+      html += `<tr data-temp-id="${row.tempId}">
+        <td class="sheet-row-num">${n++}</td>
+        <td><input type="text" class="sheet-cell-input" data-field="nombre" data-temp="${row.tempId}" value="${escapeHtml(row.nombre || "")}" placeholder="Nombre completo" style="text-transform:uppercase"></td>
+        <td><input type="tel" class="sheet-cell-input" data-field="telefono" data-temp="${row.tempId}" value="${escapeHtml(row.telefono || "")}" placeholder="Teléfono"></td>
+        <td><input type="email" class="sheet-cell-input" data-field="email" data-temp="${row.tempId}" value="${escapeHtml(row.email || "")}" placeholder="email@ejemplo.com"></td>
+        <td>${tieneCurso
+          ? `<div class="sheet-cell-fixed muted">—</div>`
+          : `<select class="sheet-cell-select" data-field="cursoId" data-temp="${row.tempId}">
+              <option value="">— Selecciona curso —</option>
+              ${cursos.map(c => `<option value="${c.id}" ${c.id === row.cursoId ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join("")}
+            </select>`}</td>
+        <td><span class="estado-badge estado-pendiente">Sin guardar</span></td>
+        <td class="accion-cell"><button class="btn-generar" disabled>Falta info</button></td>
+      </tr>`;
+    });
+    return html;
+  }
+
+  function bindBloqueEvents() {
+    bindSheetEvents();
+
+    // Botón "Agregar a este curso" en cada bloque
+    document.querySelectorAll("[data-add-curso]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cursoId = btn.dataset.addCurso;
+        if (cursoId === "sin-curso") {
+          agregarFilaPendiente(null);
+        } else {
+          agregarFilaPendiente(cursoId);
+        }
+      });
+    });
+
+    // Botón "⚡ Generar todos" en cada bloque de curso
+    document.querySelectorAll("[data-generar-todos]").forEach(btn => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", () => {
+        const cursoId = btn.dataset.generarTodos;
+        generarTodosDelBloque(cursoId);
+      });
+    });
+
+    // Botón "Agregar fila libre"
+    const btnAdd = document.getElementById("btn-add-row");
+    if (btnAdd && !btnAdd.dataset.bound) {
+      btnAdd.dataset.bound = "1";
+      btnAdd.addEventListener("click", () => agregarFilaPendiente(null));
+    }
+  }
+
+  function agregarFilaPendiente(cursoId) {
+    if (!aperturaActual || aperturaActual === "sin-asignar") {
+      // Si no hay apertura, abrir el modal de crear
+      if (!alumnos.length && !pendingNewRows.length) {
+        toast("Crea primero una apertura con el botón \"Nueva apertura\"", "warning");
+        return;
+      }
+      aperturaActual = aperturaActual || "sin-asignar";
+    }
+    const tempId = "tmp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    pendingNewRows.push({
+      tempId,
+      nombre: "",
+      telefono: "",
+      email: "",
+      cursoId: cursoId || "",
+      aperturaKey: aperturaActual,
+    });
+    renderTabsAperturas();
+    renderBloques();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER PRINCIPAL — Reemplaza al renderSheet anterior
+  // ═══════════════════════════════════════════════════════════
+  function renderSheet() {
+    renderTabsAperturas();
+    renderBloques();
+  }
+
+  function badgeEstado(estado, fechaProgramada) {
+    if (estado === "email_enviado") return '<span class="estado-badge estado-listo">✓ Enviado</span>';
+    if (estado === "programado") {
+      const fecha = fechaProgramada?.toDate ? fechaProgramada.toDate() : null;
+      const fechaStr = fecha ? fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : "";
+      return `<span class="estado-badge estado-programado">📅 ${fechaStr}</span>`;
+    }
+    if (estado === "certificado_generado") return '<span class="estado-badge estado-pendiente">PDF listo</span>';
+    return '<span class="estado-badge estado-pendiente">Pendiente</span>';
+  }
+
+  function accionAlumno(a) {
+    if (a.estado === "email_enviado") {
+      const cert = certificados.find(c => c.id === a.certificadoId);
+      if (cert?.pdfUrl) {
+        return `<a href="${cert.pdfUrl}" target="_blank" class="btn-generar success" style="display:block;text-decoration:none;text-align:center">Ver PDF</a>`;
+      }
+      return `<button class="btn-generar success" disabled>✓ Enviado</button>`;
+    }
+    if (a.estado === "programado") {
+      return `<button class="btn-generar" data-cancelar="${a.id}" style="background:#4338ca">Cancelar</button>`;
+    }
+    return `<button class="btn-generar" data-generar="${a.id}">Generar</button>`;
+  }
+
+  function bindSheetEvents() {
+    document.querySelectorAll("[data-alumno-id]").forEach(tr => {
+      const alumnoId = tr.dataset.alumnoId;
+      const a = alumnos.find(x => x.id === alumnoId);
+      if (a && a.estado === "email_enviado") return;
+
+      tr.querySelectorAll(".sheet-cell-input, .sheet-cell-select").forEach(input => {
+        input.addEventListener("blur", async () => {
+          const field = input.dataset.field;
+          let value = input.value.trim();
+          if (field === "nombre") value = value.toUpperCase();
+          if (field === "email") value = value.toLowerCase();
+
+          if (a[field] !== value) {
+            try {
+              await updateDoc(doc(db, "alumnos", alumnoId), { [field]: value });
+            } catch (err) {
+              console.error(err);
+              toast("Error guardando", "error");
+            }
+          }
+        });
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && input.tagName !== "SELECT") {
+            e.preventDefault();
+            input.blur();
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-temp-id]").forEach(tr => {
+      const tempId = tr.dataset.tempId;
+
+      tr.querySelectorAll(".sheet-cell-input, .sheet-cell-select").forEach(input => {
+        input.addEventListener("blur", () => {
+          const field = input.dataset.field;
+          let value = input.value.trim();
+          if (field === "nombre") value = value.toUpperCase();
+          if (field === "email") value = value.toLowerCase();
+
+          const row = pendingNewRows.find(r => r.tempId === tempId);
+          if (!row) return;
+          row[field] = value;
+
+          if (row.nombre && row.email && row.cursoId) {
+            guardarFilaNueva(tempId);
+          }
+        });
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && input.tagName !== "SELECT") {
+            e.preventDefault();
+            input.blur();
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-generar]").forEach(btn => {
+      btn.addEventListener("click", () => abrirConfirmar(btn.dataset.generar));
+    });
+
+    // Cancelar programación
+    document.querySelectorAll("[data-cancelar]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const ok = await confirmar({
+          titulo: "Cancelar envío programado",
+          mensaje: "El certificado ya no se enviará automáticamente. Podrás volver a programarlo o enviarlo manualmente cuando quieras.",
+          btnOk: "Sí, cancelar",
+          peligroso: true,
+        });
+        if (!ok) return;
+        try {
+          await updateDoc(doc(db, "alumnos", btn.dataset.cancelar), {
+            estado: "registrado",
+            fechaProgramada: null,
+            programadoPor: null,
+            programadoEn: null,
+          });
+          toast("Programación cancelada", "success");
+        } catch (e) {
+          console.error(e);
+          toast("Error: " + e.message, "error");
+        }
+      });
+    });
+  }
+
+  // ─── AGREGAR FILA — Manejado por bindBloqueEvents() ───
+
+  async function guardarFilaNueva(tempId) {
+    const row = pendingNewRows.find(r => r.tempId === tempId);
+    if (!row) return;
+
+    try {
+      await addDoc(collection(db, "alumnos"), {
+        consultoraId: usuario.consultoraId,
+        cursoId: row.cursoId,
+        nombre: row.nombre,
+        email: row.email,
+        telefono: row.telefono || "",
+        aperturaKey: row.aperturaKey || aperturaActual || "sin-asignar",
+        estado: "registrado",
+        certificadoId: "",
+        registradoPor: usuario.uid,
+        creadoEn: serverTimestamp()
+      });
+      pendingNewRows = pendingNewRows.filter(r => r.tempId !== tempId);
+      toast("Alumno guardado", "success");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + err.message, "error");
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // MODAL CONFIRMAR GENERAR (con selector de fecha)
+  // ═══════════════════════════════════════════════════════════
+  const modal = document.getElementById("modal-confirmar");
+  let progSeleccionado = "0"; // 0 = ahora, 7 = 7d, 15 = 15d, custom
+
+  function fechaEn(dias) {
+    const d = new Date();
+    d.setDate(d.getDate() + dias);
+    d.setHours(8, 0, 0, 0);
+    return d;
+  }
+
+  function actualizarTextoBtnConfirmar() {
+    const btn = document.getElementById("btn-confirmar-texto");
+    if (progSeleccionado === "0") btn.textContent = "Generar y enviar ahora";
+    else if (progSeleccionado === "7") btn.textContent = "Programar en 7 días";
+    else if (progSeleccionado === "15") btn.textContent = "Programar en 15 días";
+    else btn.textContent = "Programar para fecha elegida";
+  }
+
+  function abrirConfirmar(alumnoId) {
+    const a = alumnos.find(x => x.id === alumnoId);
+    if (!a) return;
+    const curso = cursos.find(c => c.id === a.cursoId);
+    if (!curso) {
+      toast("El curso no existe o fue eliminado", "error");
+      return;
+    }
+    if (!a.nombre || !a.email) {
+      toast("Falta nombre o email del alumno", "warning");
+      return;
+    }
+
+    alumnoIdAGenerar = alumnoId;
+
+    // Calcular comisión fija en pesos
+    comisionPctActual = calcularComisionFija(usuario, curso, consultora);
+    const comisionMonto = comisionPctActual;
+
+    document.getElementById("cf-nombre").textContent = a.nombre;
+    document.getElementById("cf-curso").textContent = curso.nombre;
+    document.getElementById("cf-email").textContent = a.email;
+    document.getElementById("cf-precio").textContent = formatMoney(curso.precio || 0);
+    document.getElementById("cf-comision").textContent = comisionMonto > 0
+      ? `${formatMoney(comisionMonto)} por venta`
+      : "Sin comisión definida";
+
+    // Fechas dinámicas en los botones rápidos
+    const opts = { day: "2-digit", month: "long" };
+    document.getElementById("prog-7-fecha").textContent = fechaEn(7).toLocaleDateString("es-MX", opts);
+    document.getElementById("prog-15-fecha").textContent = fechaEn(15).toLocaleDateString("es-MX", opts);
+
+    // Reset selección
+    progSeleccionado = "0";
+    document.querySelectorAll(".prog-option").forEach(b => b.classList.remove("active"));
+    document.querySelector('.prog-option[data-prog="0"]').classList.add("active");
+    document.getElementById("prog-custom-input").classList.add("hidden");
+    actualizarTextoBtnConfirmar();
+
+    // Min date para custom
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    document.getElementById("cf-fecha-custom").min = manana.toISOString().split("T")[0];
+    document.getElementById("cf-fecha-custom").value = "";
+
+    modal.classList.remove("hidden");
+  }
+
+  // Click en botones de programación
+  document.querySelectorAll(".prog-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".prog-option").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      progSeleccionado = btn.dataset.prog;
+      const customInput = document.getElementById("prog-custom-input");
+      if (progSeleccionado === "custom") {
+        customInput.classList.remove("hidden");
+      } else {
+        customInput.classList.add("hidden");
+      }
+      actualizarTextoBtnConfirmar();
+    });
+  });
+
+  document.getElementById("modal-close-confirmar").addEventListener("click", () => modal.classList.add("hidden"));
+  document.getElementById("btn-cancelar-confirmar").addEventListener("click", () => modal.classList.add("hidden"));
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.add("hidden"); });
+
+  document.getElementById("btn-confirmar-generar").addEventListener("click", async () => {
+    if (!alumnoIdAGenerar) return;
+    const btn = document.getElementById("btn-confirmar-generar");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner spinner-sm"></div> Procesando...';
+
+    try {
+      // Determinar timestamp de programación
+      let programarEn = null;
+      if (progSeleccionado === "7") programarEn = fechaEn(7).getTime();
+      else if (progSeleccionado === "15") programarEn = fechaEn(15).getTime();
+      else if (progSeleccionado === "custom") {
+        const val = document.getElementById("cf-fecha-custom").value;
+        if (!val) {
+          toast("Selecciona una fecha", "warning");
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        const d = new Date(val + "T08:00:00");
+        if (d.getTime() < Date.now() + 60 * 1000) {
+          toast("La fecha debe ser futura", "warning");
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        programarEn = d.getTime();
+      }
+
+      // PARCHE v2.5.1 — wrapper con retry, fallback y errores detallados
+      const alumnoActual = alumnos.find(x => x.id === alumnoIdAGenerar);
+      const cursoActual = cursos.find(c => c.id === alumnoActual?.cursoId);
+      const ctx = `alumno=${alumnoActual?.nombre || alumnoIdAGenerar} | curso=${cursoActual?.nombre || "?"}`;
+
+      const result = await callCertFunction("generarCertificado", {
+        alumnoId: alumnoIdAGenerar,
+        programarEn,
+      }, { contexto: ctx });
+
+      if (result.data.programado) {
+        const fechaTxt = new Date(result.data.fechaProgramada).toLocaleDateString("es-MX", {
+          day: "2-digit", month: "long", year: "numeric",
+        });
+        toast(`Certificado programado para el ${fechaTxt}`, "success");
+      } else {
+        toast(`Certificado ${result.data.folio} enviado`, "success");
+      }
+      modal.classList.add("hidden");
+    } catch (err) {
+      console.error(err);
+      toast("Error: " + (err.message || "No se pudo generar"), "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      alumnoIdAGenerar = null;
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // GENERAR TODOS — Procesa en serie todos los alumnos pendientes de un curso
+  // ═══════════════════════════════════════════════════════════
+  let generandoMasivo = false;
+
+  async function generarTodosDelBloque(cursoId) {
+    if (generandoMasivo) {
+      toast("Ya hay una generación masiva en curso. Espera a que termine.", "warning");
+      return;
+    }
+
+    // Filtrar elegibles: pendientes con datos completos en la apertura actual
+    const elegibles = alumnos.filter(a =>
+      getAperturaKey(a) === aperturaActual &&
+      a.cursoId === cursoId &&
+      a.estado !== "email_enviado" &&
+      a.estado !== "programado" &&
+      a.nombre && a.email && a.telefono
+    );
+
+    if (elegibles.length === 0) {
+      toast("No hay alumnos pendientes para generar en este curso", "info");
+      return;
+    }
+
+    const curso = cursos.find(c => c.id === cursoId);
+    const nombreCurso = curso?.nombre || "este curso";
+
+    const confirmar = confirm(
+      `⚡ GENERAR TODOS\n\n` +
+      `Curso: ${nombreCurso}\n` +
+      `Alumnos a procesar: ${elegibles.length}\n\n` +
+      `Cada certificado se genera y envía por email automáticamente.\n` +
+      `Tomará aproximadamente ${Math.ceil(elegibles.length * 1.5 / 60)} minuto(s).\n\n` +
+      `¿Continuar?`
+    );
+    if (!confirmar) return;
+
+    generandoMasivo = true;
+    let exitos = 0;
+    let fallos = 0;
+    const erroresDetalle = [];
+
+    // Toast persistente con progreso
+    const toastEl = document.createElement("div");
+    toastEl.className = "toast toast-info";
+    toastEl.style.cssText = "position:fixed;top:80px;right:20px;z-index:9999;padding:14px 20px;background:#1e40af;color:white;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.15);font-weight:600;min-width:280px";
+    toastEl.innerHTML = `⚡ Procesando 0/${elegibles.length}...`;
+    document.body.appendChild(toastEl);
+
+    // PARCHE v2.5.1 — usar wrapper en generación masiva (sin reintentos automáticos
+    // para no multiplicar llamadas; el bucle ya procesa muchos)
+    for (let i = 0; i < elegibles.length; i++) {
+      const a = elegibles[i];
+      toastEl.innerHTML = `⚡ Procesando ${i + 1}/${elegibles.length}<br><span style="font-size:12px;opacity:.85;font-weight:400">${escapeHtml(a.nombre)}</span>`;
+
+      try {
+        await callCertFunction("generarCertificado",
+          { alumnoId: a.id, programarEn: null },
+          { contexto: `masivo: ${a.nombre}`, maxIntentos: 1 }
+        );
+        exitos++;
+      } catch (err) {
+        fallos++;
+        erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err.message });
+        console.error(`Error con ${a.email}:`, err);
+      }
+
+      // Esperar 1.5s entre cada uno para no saturar Resend / Workspace
+      if (i < elegibles.length - 1) {
+        await new Promise(r => setTimeout(r, 1500));
+      }
+    }
+
+    toastEl.remove();
+    generandoMasivo = false;
+
+    // Resultado final
+    let mensaje = `✅ Generados: ${exitos}`;
+    if (fallos > 0) mensaje += `\n❌ Fallaron: ${fallos}`;
+    mensaje += `\n\nLos alumnos generados ya recibieron su certificado por email.`;
+
+    if (erroresDetalle.length > 0) {
+      mensaje += `\n\nFallos:\n` + erroresDetalle.slice(0, 5).map(e =>
+        `• ${e.nombre}: ${e.error.substring(0, 60)}`
+      ).join("\n");
+      if (erroresDetalle.length > 5) {
+        mensaje += `\n... y ${erroresDetalle.length - 5} más (ver consola)`;
+      }
+    }
+
+    alert(mensaje);
+    if (fallos > 0) {
+      console.table(erroresDetalle);
+    }
+  }
+
+  // ─── BÚSQUEDA ───
+  document.getElementById("search-alumno").addEventListener("input", renderBloques);
+
+  // ─── BOTÓN NUEVA APERTURA ───
+  document.getElementById("btn-nueva-apertura").addEventListener("click", abrirModalNuevaApertura);
+
+  function abrirModalNuevaApertura() {
+    if (cursos.length === 0) {
+      toast("Tu coordinador no ha creado cursos todavía", "warning");
+      return;
+    }
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    const hoy = new Date();
+    hoy.setDate(hoy.getDate() + 7); // Default: en 1 semana
+    const fechaDefault = hoy.toISOString().split("T")[0];
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Nueva apertura de grupo</div>
+            <div class="modal-subtitle">Define la fecha en que abre el grupo</div>
+          </div>
+          <button class="modal-close" type="button" data-close-here>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+            <div>Esta fecha aparecerá como una pestaña arriba. Podrás registrar alumnos de esa apertura ahí.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Fecha de apertura *</label>
+            <input class="input" type="date" id="ap-fecha" value="${fechaDefault}">
+            <div class="field-hint">Generalmente cada 15 días</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-crear-apertura">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Crear apertura
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", e => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-crear-apertura").addEventListener("click", () => {
+      const fecha = wrap.querySelector("#ap-fecha").value;
+      if (!fecha) {
+        toast("Selecciona una fecha", "warning");
+        return;
+      }
+      // Activar la apertura nueva (creando una fila pendiente vacía para que aparezca la pestaña)
+      aperturaActual = fecha;
+      const tempId = "tmp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+      pendingNewRows.push({
+        tempId,
+        nombre: "",
+        telefono: "",
+        email: "",
+        cursoId: "",
+        aperturaKey: fecha,
+      });
+      renderTabsAperturas();
+      renderBloques();
+      cerrar();
+      toast(`Apertura creada para ${labelApertura(fecha)}`, "success");
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // MI RESUMEN
+  // ═══════════════════════════════════════════════════════════
+  async function renderResumen() {
+    const c = document.getElementById("resumen-tabla");
+
+    // Calcular ranking
+    try {
+      const snap = await getDocs(query(
+        collection(db, "usuarios"),
+        where("consultoraId", "==", usuario.consultoraId),
+        where("rol", "==", "vendedor")
+      ));
+      const compañeros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Para el ranking, leer certificados de toda la consultora
+      const certsSnap = await getDocs(query(
+        collection(db, "certificados"),
+        where("consultoraId", "==", usuario.consultoraId)
+      ));
+      const todosCerts = certsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      const ranking = compañeros.map(v => {
+        const sus = todosCerts.filter(ce => ce.generadoPor === v.id);
+        const ingresos = sus.reduce((s, ce) => s + (parseFloat(ce.precio) || 0), 0);
+        return { id: v.id, ingresos, certs: sus.length };
+      }).sort((a, b) => b.ingresos - a.ingresos || b.certs - a.certs);
+
+      const miPos = ranking.findIndex(r => r.id === usuario.uid) + 1;
+      document.getElementById("r-pos").innerHTML = `${miPos > 0 ? miPos : "—"}<small>/${ranking.length}</small>`;
+      const total = ranking.length;
+      let texto = "en la consultora";
+      if (miPos === 1) texto = "🥇 ¡Eres el #1!";
+      else if (miPos === 2) texto = "🥈 ¡Vas en segundo lugar!";
+      else if (miPos === 3) texto = "🥉 Top 3 de la consultora";
+      else if (miPos > 0) texto = `de ${total} vendedores en la consultora`;
+      document.getElementById("r-pos-text").textContent = texto;
+
+      // KPI principal de ranking
+      const kpiRanking = document.getElementById("stat-ranking");
+      const kpiRankingText = document.getElementById("stat-ranking-text");
+      if (kpiRanking && miPos > 0) {
+        kpiRanking.textContent = `#${miPos}`;
+        kpiRankingText.textContent = `de ${total} en la consultora`;
+      }
+    } catch (e) {
+      console.warn("No se pudo calcular ranking", e);
+      document.getElementById("r-pos").textContent = "—";
+      document.getElementById("r-pos-text").textContent = "Ranking no disponible";
+    }
+
+    if (certificados.length === 0) {
+      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no has emitido certificados</div><div class="empty-hint">Tus ventas aparecerán aquí en cuanto generes el primer certificado</div></div>';
+      return;
+    }
+
+    c.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr>
+        <th>Folio</th><th>Alumno</th><th>Curso</th>
+        <th>Precio</th><th>Mi comisión</th><th>Pago</th><th>Fecha</th>
+        <th class="col-actions">PDF</th>
+      </tr></thead>
+      <tbody>${certificados.map(ce => {
+        const a = alumnos.find(al => al.certificadoId === ce.id);
+        const metodo = a?.metodoPago || "—";
+        const curso = cursos.find(cu => cu.id === ce.cursoId);
+        // Comisión: snapshot del cert si existe, si no calcular con comisión fija actual
+        const monto = typeof ce.comisionVendedor === "number"
+          ? ce.comisionVendedor
+          : calcularComisionFija(usuario, curso, consultora);
+        return `<tr>
+          <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(ce.folio)}</code></td>
+          <td><strong>${escapeHtml(ce.nombreAlumno)}</strong></td>
+          <td>${escapeHtml(ce.nombreCurso)}</td>
+          <td><strong>${formatMoney(ce.precio || 0)}</strong></td>
+          <td><strong style="color:var(--green)">${formatMoney(monto)}</strong></td>
+          <td><span class="chip chip-gray">${escapeHtml(metodo)}</span></td>
+          <td class="text-sm text-muted">${escapeHtml(ce.fecha || "—")}</td>
+          <td class="col-actions">${ce.pdfUrl ? `<a href="${ce.pdfUrl}" target="_blank" class="btn btn-secondary btn-sm">Ver</a>` : "—"}</td>
+        </tr>`;
+      }).join("")}</tbody></table></div>`;
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // IMPORTAR EXCEL
+  // ═══════════════════════════════════════════════════════════
+  const modalImport = document.getElementById("modal-importar");
+
+  document.getElementById("btn-importar").addEventListener("click", () => {
+    if (cursos.length === 0) {
+      toast("Tu coordinador no ha creado cursos todavía", "warning");
+      return;
+    }
+    abrirImport();
+  });
+
+  document.getElementById("modal-close-importar").addEventListener("click", cerrarImport);
+  document.getElementById("btn-cancelar-importar").addEventListener("click", cerrarImport);
+  modalImport.addEventListener("click", (e) => { if (e.target === modalImport) cerrarImport(); });
+
+  function abrirImport() {
+    document.getElementById("import-step1").classList.remove("hidden");
+    document.getElementById("import-step2").classList.add("hidden");
+    document.getElementById("btn-confirmar-importar").classList.add("hidden");
+    document.getElementById("btn-cancelar-importar").textContent = "Cancelar";
+    importedRows = [];
+    modalImport.classList.remove("hidden");
+  }
+  function cerrarImport() {
+    modalImport.classList.add("hidden");
+    document.getElementById("file-input").value = "";
+  }
+
+  // PLANTILLA
+  document.getElementById("link-plantilla").addEventListener("click", (e) => {
+    e.preventDefault();
+    const data = [
+      { NOMBRE: "JUAN PÉREZ LÓPEZ", EMAIL: "juan@ejemplo.com", TELEFONO: "5512345678", CURSO: cursos[0]?.nombre || "Nombre del curso" },
+      { NOMBRE: "MARÍA LÓPEZ HERNÁNDEZ", EMAIL: "maria@ejemplo.com", TELEFONO: "5587654321", CURSO: cursos[0]?.nombre || "Nombre del curso" }
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [{wch:30},{wch:28},{wch:14},{wch:34}];
+    XLSX.utils.book_append_sheet(wb, ws, "Alumnos");
+    XLSX.writeFile(wb, "plantilla-alumnos-ipci.xlsx");
+  });
+
+  // DROPZONE
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("file-input");
+  dropzone.addEventListener("click", () => fileInput.click());
+  dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("drag"); });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag"));
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("drag");
+    if (e.dataTransfer.files[0]) procesarArchivo(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files[0]) procesarArchivo(e.target.files[0]);
+  });
+
+  async function procesarArchivo(file) {
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      if (rows.length === 0) {
+        toast("El archivo está vacío", "warning");
+        return;
+      }
+      if (rows.length > 500) {
+        toast("Máximo 500 filas por importación", "error");
+        return;
+      }
+
+      // Normalizar headers (case insensitive, sin acentos)
+      const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const findKey = (obj, candidates) => Object.keys(obj).find(k => candidates.includes(norm(k)));
+
+      const validados = rows.map((r, idx) => {
+        const kNombre = findKey(r, ["nombre", "alumno"]);
+        const kEmail = findKey(r, ["email", "correo", "mail"]);
+        const kTel = findKey(r, ["telefono", "tel", "celular", "movil"]);
+        const kCurso = findKey(r, ["curso"]);
+
+        const nombre = String(r[kNombre] || "").trim().toUpperCase();
+        const email = String(r[kEmail] || "").trim().toLowerCase();
+        const telefono = String(r[kTel] || "").trim();
+        const cursoNombre = String(r[kCurso] || "").trim();
+
+        const errores = [];
+        if (!nombre) errores.push("Nombre vacío");
+        if (!email) errores.push("Email vacío");
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errores.push("Email inválido");
+
+        let cursoId = null;
+        if (!cursoNombre) {
+          errores.push("Curso vacío");
+        } else {
+          const cursoMatch = cursos.find(c => norm(c.nombre) === norm(cursoNombre));
+          if (!cursoMatch) errores.push(`Curso "${cursoNombre}" no encontrado`);
+          else cursoId = cursoMatch.id;
+        }
+
+        return {
+          idx: idx + 1,
+          nombre, email, telefono, cursoNombre, cursoId,
+          ok: errores.length === 0,
+          errores
+        };
+      });
+
+      const okCount = validados.filter(v => v.ok).length;
+      const errCount = validados.length - okCount;
+      importedRows = validados;
+
+      // Mostrar preview
+      document.getElementById("import-step1").classList.add("hidden");
+      document.getElementById("import-step2").classList.remove("hidden");
+
+      const summary = document.getElementById("import-summary");
+      summary.className = errCount > 0 ? "alert alert-warning" : "alert alert-success";
+      summary.innerHTML = errCount > 0
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><strong>${okCount} listos</strong> · ${errCount} con errores. Solo los válidos serán importados.</div>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg><div><strong>Todos los ${okCount} alumnos están listos para importar.</strong></div>`;
+
+      const preview = document.getElementById("preview-container");
+      preview.innerHTML = `
+        <div class="preview-row header">
+          <span>#</span><span>Nombre</span><span>Email</span><span>Curso</span><span>Tel</span><span>Estado</span>
+        </div>
+        ${validados.map(v => `
+          <div class="preview-row ${v.ok ? 'ok' : 'error'}">
+            <span>${v.idx}</span>
+            <span>${escapeHtml(v.nombre || '—')}</span>
+            <span>${escapeHtml(v.email || '—')}</span>
+            <span>${escapeHtml(v.cursoNombre || '—')}</span>
+            <span>${escapeHtml(v.telefono || '—')}</span>
+            <span class="preview-status ${v.ok ? 'ok' : 'err'}" title="${v.errores.join(', ')}">${v.ok ? '✓' : '✗'}</span>
+          </div>
+        `).join("")}`;
+
+      const btnConfirmar = document.getElementById("btn-confirmar-importar");
+      if (okCount > 0) {
+        btnConfirmar.classList.remove("hidden");
+        document.getElementById("btn-importar-count").textContent = okCount;
+      }
+      document.getElementById("btn-cancelar-importar").textContent = "Volver";
+    } catch (err) {
+      console.error(err);
+      toast("Error leyendo archivo: " + err.message, "error");
+    }
+  }
+
+  document.getElementById("btn-confirmar-importar").addEventListener("click", async () => {
+    const validos = importedRows.filter(v => v.ok);
+    if (validos.length === 0) return;
+
+    const btn = document.getElementById("btn-confirmar-importar");
+    btn.disabled = true;
+
+    let ok = 0, err = 0;
+    for (let i = 0; i < validos.length; i++) {
+      btn.innerHTML = `<div class="spinner spinner-sm"></div> Importando ${i + 1}/${validos.length}...`;
+      const v = validos[i];
+      try {
+        await addDoc(collection(db, "alumnos"), {
+          consultoraId: usuario.consultoraId,
+          cursoId: v.cursoId,
+          nombre: v.nombre,
+          email: v.email,
+          telefono: v.telefono || "",
+          aperturaKey: aperturaActual || "sin-asignar",
+          estado: "registrado",
+          certificadoId: "",
+          registradoPor: usuario.uid,
+          creadoEn: serverTimestamp()
+        });
+        ok++;
+      } catch (e) {
+        console.error(e);
+        err++;
+      }
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg> Importar <span id="btn-importar-count">${validos.length}</span> alumnos`;
+    cerrarImport();
+    toast(`${ok} alumnos importados${err > 0 ? `, ${err} errores` : ''}`, ok > 0 ? "success" : "error");
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (unsubAlumnos) unsubAlumnos();
+    if (unsubCertificados) unsubCertificados();
+  });
+</script>
+
+</body>
+</html>
