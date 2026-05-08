@@ -2156,6 +2156,8 @@
   let generandoMasivo = false;
 
   async function generarTodosDelBloque(cursoId) {
+    console.log("[GENERAR TODOS] 🚀 Iniciando", { cursoId, aperturaActual });
+
     if (generandoMasivo) {
       toast("Ya hay una generación masiva en curso. Espera a que termine.", "warning");
       return;
@@ -2170,7 +2172,25 @@
       a.nombre && a.email && a.telefono
     );
 
+    console.log(`[GENERAR TODOS] 📋 Elegibles: ${elegibles.length} de ${alumnos.length} alumnos en memoria`);
+    console.log(`[GENERAR TODOS] 🎯 aperturaActual="${aperturaActual}" · cursoId="${cursoId}"`);
+
     if (elegibles.length === 0) {
+      // Diagnóstico extra: ¿por qué cero?
+      const enCurso = alumnos.filter(a => a.cursoId === cursoId);
+      const enApertura = enCurso.filter(a => getAperturaKey(a) === aperturaActual);
+      const pendientes = enApertura.filter(a => a.estado !== "email_enviado" && a.estado !== "programado");
+      const conDatos = pendientes.filter(a => a.nombre && a.email && a.telefono);
+      console.warn("[GENERAR TODOS] ⚠️ Sin elegibles. Diagnóstico:", {
+        totalEnCurso: enCurso.length,
+        enAperturaActual: enApertura.length,
+        pendientesEnApertura: pendientes.length,
+        conDatosCompletos: conDatos.length,
+        muestraAlumnos: enApertura.slice(0, 3).map(a => ({
+          nombre: a.nombre, estado: a.estado,
+          tieneTel: !!a.telefono, tieneEmail: !!a.email
+        }))
+      });
       toast("No hay alumnos pendientes para generar en este curso", "info");
       return;
     }
@@ -2186,7 +2206,12 @@
       `Tomará aproximadamente ${Math.ceil(elegibles.length * 1.5 / 60)} minuto(s).\n\n` +
       `¿Continuar?`
     );
-    if (!confirmar) return;
+    if (!confirmar) {
+      console.log("[GENERAR TODOS] ❌ Usuario canceló confirm()");
+      return;
+    }
+
+    console.log("[GENERAR TODOS] ✅ Confirmado. Iniciando bucle de", elegibles.length, "alumnos...");
 
     generandoMasivo = true;
     let exitos = 0;
@@ -2200,22 +2225,34 @@
     toastEl.innerHTML = `⚡ Procesando 0/${elegibles.length}...`;
     document.body.appendChild(toastEl);
 
-    // PARCHE v2.5.1 — usar wrapper en generación masiva (sin reintentos automáticos
-    // para no multiplicar llamadas; el bucle ya procesa muchos)
+    // PARCHE v2.5.2 — bucle masivo con logging exhaustivo y circuit breaker
     for (let i = 0; i < elegibles.length; i++) {
       const a = elegibles[i];
-      toastEl.innerHTML = `⚡ Procesando ${i + 1}/${elegibles.length}<br><span style="font-size:12px;opacity:.85;font-weight:400">${escapeHtml(a.nombre)}</span>`;
+      console.log(`[GENERAR TODOS] 📨 ${i+1}/${elegibles.length} → ${a.nombre} <${a.email}>`);
+      toastEl.innerHTML = `⚡ Procesando ${i + 1}/${elegibles.length}<br>` +
+        `<span style="font-size:12px;opacity:.85;font-weight:400">${escapeHtml(a.nombre)}</span><br>` +
+        `<span style="font-size:11px;opacity:.7">✅ ${exitos} enviados · ❌ ${fallos} fallos</span>`;
 
       try {
-        await callCertFunction("generarCertificado",
+        const resultado = await callCertFunction("generarCertificado",
           { alumnoId: a.id, programarEn: null },
           { contexto: `masivo: ${a.nombre}`, maxIntentos: 1 }
         );
         exitos++;
+        console.log(`[GENERAR TODOS] ✅ ${i+1}/${elegibles.length} OK · folio=${resultado?.data?.folio}`);
       } catch (err) {
         fallos++;
-        erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err.message });
-        console.error(`Error con ${a.email}:`, err);
+        const msg = err?.message || String(err);
+        const code = err?.code || "unknown";
+        erroresDetalle.push({ nombre: a.nombre, email: a.email, error: msg, code });
+        console.error(`[GENERAR TODOS] ❌ ${i+1}/${elegibles.length} FALLO`, { alumno: a.nombre, email: a.email, code, msg, err });
+
+        // CIRCUIT BREAKER: si los primeros 3 fallan sin ningún éxito, detener
+        if (fallos >= 3 && exitos === 0) {
+          console.error("[GENERAR TODOS] 🛑 Circuit breaker: 3 fallos consecutivos sin éxitos. Deteniendo.");
+          toastEl.innerHTML = `🛑 Detenido tras 3 fallos · revisa F12`;
+          break;
+        }
       }
 
       // Esperar 1.5s entre cada uno para no saturar Resend / Workspace
@@ -2227,18 +2264,26 @@
     toastEl.remove();
     generandoMasivo = false;
 
-    // Resultado final
-    let mensaje = `✅ Generados: ${exitos}`;
-    if (fallos > 0) mensaje += `\n❌ Fallaron: ${fallos}`;
-    mensaje += `\n\nLos alumnos generados ya recibieron su certificado por email.`;
+    console.log(`[GENERAR TODOS] 🏁 Terminado: ${exitos} ok · ${fallos} fail · ${elegibles.length} total`);
+
+    // Resultado final SIEMPRE visible
+    let mensaje = `📊 RESULTADO GENERACIÓN MASIVA\n\n`;
+    mensaje += `✅ Generados: ${exitos}\n`;
+    mensaje += `❌ Fallaron: ${fallos}\n`;
+    mensaje += `📋 Procesados: ${exitos + fallos} de ${elegibles.length}\n\n`;
+
+    if (exitos > 0) {
+      mensaje += `Los ${exitos} certificados ya fueron enviados por email.\n`;
+    }
 
     if (erroresDetalle.length > 0) {
-      mensaje += `\n\nFallos:\n` + erroresDetalle.slice(0, 5).map(e =>
-        `• ${e.nombre}: ${e.error.substring(0, 60)}`
+      mensaje += `\nFallos:\n` + erroresDetalle.slice(0, 5).map(e =>
+        `• ${e.nombre} [${e.code}]: ${e.error.substring(0, 70)}`
       ).join("\n");
       if (erroresDetalle.length > 5) {
-        mensaje += `\n... y ${erroresDetalle.length - 5} más (ver consola)`;
+        mensaje += `\n... y ${erroresDetalle.length - 5} más`;
       }
+      mensaje += `\n\n💡 Abre la consola (F12) para ver detalles completos.`;
     }
 
     alert(mensaje);
