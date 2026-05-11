@@ -2163,7 +2163,7 @@
       `Curso: ${nombreCurso}\n` +
       `Alumnos a procesar: ${elegibles.length}\n\n` +
       `Cada certificado se genera y envía por email automáticamente.\n` +
-      `Tomará aproximadamente ${Math.ceil(elegibles.length * 1.5 / 60)} minuto(s).\n\n` +
+      `Tomará aproximadamente ${Math.ceil(elegibles.length * 4 / 60)} minuto(s).\n\n` +
       `¿Continuar?`
     );
     if (!confirmar) return;
@@ -2190,14 +2190,32 @@
         await generarCertificado({ alumnoId: a.id, programarEn: null });
         exitos++;
       } catch (err) {
-        fallos++;
-        erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err.message });
-        console.error(`Error con ${a.email}:`, err);
+        // Si es rate limit de Resend, esperar 10s y reintentar UNA vez
+        const msgErr = String(err.message || "");
+        const esRateLimit = /too many|rate limit|demasiadas|429/i.test(msgErr);
+        if (esRateLimit) {
+          console.warn(`⏳ Rate limit detectado en ${a.email}, esperando 10s y reintentando...`);
+          toastEl.innerHTML = `⏳ Rate limit — esperando 10s antes de reintentar ${a.nombre}...`;
+          await new Promise(r => setTimeout(r, 10000));
+          try {
+            await generarCertificado({ alumnoId: a.id, programarEn: null });
+            exitos++;
+            continue;
+          } catch (err2) {
+            fallos++;
+            erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err2.message });
+            console.error(`❌ Falló después de reintentar ${a.email}:`, err2);
+          }
+        } else {
+          fallos++;
+          erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err.message });
+          console.error(`❌ Error con ${a.email}:`, err);
+        }
       }
 
-      // Esperar 1.5s entre cada uno para no saturar Resend / Workspace
+      // Esperar 4s entre cada uno para no saturar Resend (límite 2/seg)
       if (i < elegibles.length - 1) {
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 4000));
       }
     }
 
