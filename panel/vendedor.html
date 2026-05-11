@@ -1090,14 +1090,11 @@
     httpsCallable
   } from "./firebase-config.js";
 
-  // Helper local: comisión fija en pesos por venta (vendedor → curso → consultora)
+  // Helper local: comisión fija en pesos por venta
+  // FIX: Solo lee de la consultora (lo que define el admin) — ignora cualquier override
+  // pegado en usuario/curso que pueda estar dando valores incorrectos como $550.
   function calcularComisionFija(usuario, curso, consultora) {
-    if (typeof usuario?.comisionFija === "number") return usuario.comisionFija;
-    if (typeof curso?.comisionFija === "number") return curso.comisionFija;
     if (typeof consultora?.comisionFija === "number") return consultora.comisionFija;
-    // Compatibilidad legacy
-    if (typeof usuario?.comisionOverride === "number") return usuario.comisionOverride;
-    if (typeof curso?.comisionOverride === "number") return curso.comisionOverride;
     if (typeof consultora?.comisionDefault === "number") return consultora.comisionDefault;
     return 0;
   }
@@ -1231,9 +1228,8 @@
       if (!fechaStr) fechaStr = hoyMX;
       if (fechaStr < inicioMesStr) return;
 
-      // Comisión: siempre usar la config actual del admin (ignorar snapshot viejo)
-      const curso = cursos.find(cu => cu.id === a.cursoId);
-      const monto = calcularComisionFija(usuario, curso, consultora);
+      // FIX: usar siempre la comisión actual de la consultora (no snapshot viejo del cert)
+      const monto = calcularComisionFija(usuario, null, consultora);
 
       if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0 };
       porDia[fechaStr].ventas++;
@@ -1512,9 +1508,8 @@
       }
       if (fechaStr < inicioMesStr) return;
 
-      // Comisión: siempre usar la config actual del admin (ignorar snapshot viejo)
-      const curso = cursos.find(cu => cu.id === a.cursoId);
-      const monto = calcularComisionFija(usuario, curso, consultora);
+      // FIX: usar siempre la comisión actual de la consultora (no snapshot viejo del cert)
+      const monto = calcularComisionFija(usuario, null, consultora);
 
       if (fechaStr === hoyMX) { comisionHoy += monto; ventasHoy++; }
       if (fechaStr === ayerStr) { comisionAyer += monto; ventasAyer++; }
@@ -2370,8 +2365,8 @@
         const a = alumnos.find(al => al.certificadoId === ce.id);
         const metodo = a?.metodoPago || "—";
         const curso = cursos.find(cu => cu.id === ce.cursoId);
-        // Comisión: siempre usar la config actual del admin (ignorar snapshot viejo)
-        const monto = calcularComisionFija(usuario, curso, consultora);
+        // FIX: usar siempre la comisión actual de la consultora (no snapshot viejo)
+        const monto = calcularComisionFija(usuario, null, consultora);
         return `<tr>
           <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(ce.folio)}</code></td>
           <td><strong>${escapeHtml(ce.nombreAlumno)}</strong></td>
