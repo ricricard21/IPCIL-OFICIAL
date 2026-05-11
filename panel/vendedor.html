@@ -1231,14 +1231,9 @@
       if (!fechaStr) fechaStr = hoyMX;
       if (fechaStr < inicioMesStr) return;
 
-      let monto = 0;
-      const cert = certPorAlumno[a.id];
-      if (cert && typeof cert.comisionVendedor === "number") {
-        monto = cert.comisionVendedor;
-      } else {
-        const curso = cursos.find(cu => cu.id === a.cursoId);
-        monto = calcularComisionFija(usuario, curso, consultora);
-      }
+      // Comisión: siempre usar la config actual del admin (ignorar snapshot viejo)
+      const curso = cursos.find(cu => cu.id === a.cursoId);
+      const monto = calcularComisionFija(usuario, curso, consultora);
 
       if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0 };
       porDia[fechaStr].ventas++;
@@ -1517,15 +1512,9 @@
       }
       if (fechaStr < inicioMesStr) return;
 
-      // Calcular comisión: si tiene cert, snapshot; si no, comisión fija actual
-      let monto = 0;
-      const cert = certPorAlumno[a.id];
-      if (cert && typeof cert.comisionVendedor === "number") {
-        monto = cert.comisionVendedor;
-      } else {
-        const curso = cursos.find(cu => cu.id === a.cursoId);
-        monto = calcularComisionFija(usuario, curso, consultora);
-      }
+      // Comisión: siempre usar la config actual del admin (ignorar snapshot viejo)
+      const curso = cursos.find(cu => cu.id === a.cursoId);
+      const monto = calcularComisionFija(usuario, curso, consultora);
 
       if (fechaStr === hoyMX) { comisionHoy += monto; ventasHoy++; }
       if (fechaStr === ayerStr) { comisionAyer += monto; ventasAyer++; }
@@ -2381,10 +2370,8 @@
         const a = alumnos.find(al => al.certificadoId === ce.id);
         const metodo = a?.metodoPago || "—";
         const curso = cursos.find(cu => cu.id === ce.cursoId);
-        // Comisión: snapshot del cert si existe, si no calcular con comisión fija actual
-        const monto = typeof ce.comisionVendedor === "number"
-          ? ce.comisionVendedor
-          : calcularComisionFija(usuario, curso, consultora);
+        // Comisión: siempre usar la config actual del admin (ignorar snapshot viejo)
+        const monto = calcularComisionFija(usuario, curso, consultora);
         return `<tr>
           <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(ce.folio)}</code></td>
           <td><strong>${escapeHtml(ce.nombreAlumno)}</strong></td>
