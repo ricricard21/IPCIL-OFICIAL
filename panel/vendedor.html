@@ -664,21 +664,22 @@
   .sheet-table tr.has-row-color td,
   .sheet-table tr.saved.has-row-color td { background: var(--row-bg, transparent) !important; }
   .row-color-checkbox {
-    width: 16px;
-    height: 16px;
+    width: 13px;
+    height: 13px;
     cursor: pointer;
     accent-color: #0b4ea2;
     margin: 0;
     vertical-align: middle;
   }
   .row-color-checkbox-th {
-    width: 36px;
+    width: 24px;
     text-align: center;
-    padding: 8px 4px !important;
+    padding: 6px 2px !important;
   }
   .row-color-checkbox-td {
     text-align: center;
-    padding: 8px 4px !important;
+    padding: 6px 2px !important;
+    width: 24px;
   }
   .color-fila-wrapper {
     position: relative;
@@ -783,6 +784,191 @@
   }
   .toast-color.show {
     opacity: 1;
+  }
+
+  /* ═══════════════════════════════════════════════
+     NOTAS POR ALUMNO — v1.0
+     ═══════════════════════════════════════════════ */
+  .nota-th {
+    width: 30px;
+    text-align: center;
+    padding: 6px 2px !important;
+  }
+  .nota-td {
+    width: 30px;
+    text-align: center;
+    padding: 6px 2px !important;
+  }
+  .nota-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    font-size: 13px;
+    transition: transform 0.12s, opacity 0.12s;
+    vertical-align: middle;
+    user-select: none;
+  }
+  .nota-icon:hover { transform: scale(1.1); }
+  .nota-vacia { background: #f1f5f9; opacity: 0.55; }
+  .nota-vacia:hover { opacity: 1; }
+  .nota-pendiente { background: #fef3c7; }
+  .nota-pendiente::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #dc2626;
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+  .nota-resuelta { background: #d1fae5; }
+  .nota-resuelta::after {
+    content: "✓";
+    position: absolute;
+    top: -5px;
+    right: -4px;
+    width: 13px;
+    height: 13px;
+    background: #16a34a;
+    color: white;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid white;
+  }
+
+  /* Popover de nota */
+  .nota-popover-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 29, 46, 0.35);
+    z-index: 998;
+    display: none;
+  }
+  .nota-popover-backdrop.open { display: block; }
+  .nota-popover {
+    position: fixed;
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+    border: 1px solid #e2e8f0;
+    z-index: 999;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    display: none;
+  }
+  .nota-popover.open { display: block; }
+  .nota-popover-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5f7186;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .nota-popover-alumno {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f1d2e;
+    margin-bottom: 10px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nota-popover textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .nota-popover textarea:focus { border-color: #0b4ea2; }
+  .nota-popover-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #0f1d2e;
+    cursor: pointer;
+  }
+  .nota-popover-check input { accent-color: #16a34a; width: 14px; height: 14px; cursor: pointer; }
+  .nota-popover-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn-nota-borrar {
+    background: white;
+    color: #dc2626;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid #fca5a5;
+    cursor: pointer;
+  }
+  .btn-nota-borrar:hover { background: #fef2f2; }
+  .btn-nota-cancelar {
+    background: white;
+    color: #5f7186;
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+  }
+  .btn-nota-guardar {
+    background: #0b4ea2;
+    color: white;
+    font-size: 12px;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-nota-guardar:hover { background: #0a4490; }
+
+  /* Filtro Solo pendientes */
+  .filtro-pendientes-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+  }
+  .filtro-pendientes-btn:hover { background: rgba(255, 255, 255, 0.25); }
+  .filtro-pendientes-btn.active {
+    background: white;
+    color: #b91c1c;
   }
 </style>
 </head>
@@ -1241,6 +1427,9 @@
   // ─── Color de fila ─── (v1.0)
   let filasSeleccionadas = new Set(); // alumnoIds seleccionados con checkbox
   let lastCheckedAlumnoId = null; // último alumno checkeado (para shift+click rango)
+  // ─── Notas por alumno ─── (v1.0)
+  let notaAlumnoAbierta = null; // alumnoId cuya nota se está editando en el popover
+  let filtroSoloNotasPendientes = false; // toggle del filtro "Solo pendientes"
 
   // ─── INIT ───
   usuario = await requireRole("vendedor");
@@ -1819,6 +2008,13 @@
         a.estado !== "programado" &&
         a.nombre && a.email && a.telefono && a.cursoId
       );
+      // Notas pendientes (con nota no vacía y no resueltas)
+      const notasPendientesCurso = data.alumnos.filter(a => a.nota && !a.notaResuelta).length;
+      // Aplicar filtro si está activo
+      const alumnosFiltrados = filtroSoloNotasPendientes
+        ? data.alumnos.filter(a => a.nota && !a.notaResuelta)
+        : data.alumnos;
+      const pendientesFiltrados = filtroSoloNotasPendientes ? [] : data.pendientes;
 
       html += `<div class="curso-bloque">
         <div class="curso-bloque-header">
@@ -1828,6 +2024,11 @@
           </div>
           <div class="curso-bloque-actions">
             <span class="curso-bloque-badge">${enviados} enviados · ${pendientesEnvio} pendientes</span>
+            ${notasPendientesCurso > 0 ? `
+              <button class="filtro-pendientes-btn ${filtroSoloNotasPendientes ? 'active' : ''}" data-filtro-pendientes="${cursoId}" title="Solo casos con nota pendiente">
+                🔴 ${filtroSoloNotasPendientes ? 'Ver todos' : `Pendientes (${notasPendientesCurso})`}
+              </button>
+            ` : ''}
             <span class="contador-seleccionados" data-contador-curso="${cursoId}" style="display:none">0 seleccionados</span>
             <div class="color-fila-wrapper">
               <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
@@ -1859,6 +2060,7 @@
             <thead>
               <tr>
                 <th class="row-color-checkbox-th"></th>
+                <th class="nota-th">📝</th>
                 <th style="width:40px">#</th>
                 <th style="width:230px">Nombre</th>
                 <th style="width:140px">Teléfono</th>
@@ -1868,7 +2070,7 @@
                 <th style="width:130px">Acción</th>
               </tr>
             </thead>
-            <tbody>${renderRowsBloque(data.alumnos, data.pendientes, cursoId)}</tbody>
+            <tbody>${renderRowsBloque(alumnosFiltrados, pendientesFiltrados, cursoId)}</tbody>
           </table>
         </div>
         <button class="btn-add-row-bloque" data-add-curso="${cursoId}">
@@ -1902,6 +2104,7 @@
       const isChecked = filasSeleccionadas.has(a.id) ? "checked" : "";
       html += `<tr data-alumno-id="${a.id}" data-curso-fila="${cursoIdBloque}" class="${yaGenerado ? 'saved' : ''} ${colorClass}" ${styleBg}>
         <td class="row-color-checkbox-td"><input type="checkbox" class="row-color-checkbox" data-check-alumno="${a.id}" data-check-curso="${cursoIdBloque}" ${isChecked}></td>
+        <td class="nota-td">${notaIconHtml(a)}</td>
         <td class="sheet-row-num">${n++}</td>
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
@@ -1921,6 +2124,7 @@
       const tieneCurso = !!row.cursoId;
       html += `<tr data-temp-id="${row.tempId}">
         <td class="row-color-checkbox-td"></td>
+        <td class="nota-td"></td>
         <td class="sheet-row-num">${n++}</td>
         <td><input type="text" class="sheet-cell-input" data-field="nombre" data-temp="${row.tempId}" value="${escapeHtml(row.nombre || "")}" placeholder="Nombre completo" style="text-transform:uppercase"></td>
         <td><input type="tel" class="sheet-cell-input" data-field="telefono" data-temp="${row.tempId}" value="${escapeHtml(row.telefono || "")}" placeholder="Teléfono"></td>
@@ -1972,6 +2176,8 @@
 
     // ─── COLOR DE FILA (v1.0) ───
     bindColorFilaEvents();
+    // ─── NOTAS (v1.0) ───
+    bindNotasEvents();
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -2133,6 +2339,185 @@
   }
   // ═══════════════════════════════════════════════════════════
   // FIN Color de fila
+  // ═══════════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════════
+  // NOTAS POR ALUMNO (v1.0)
+  // ═══════════════════════════════════════════════════════════
+  function notaIconHtml(a) {
+    const nota = (a.nota || "").trim();
+    if (!nota) {
+      return `<span class="nota-icon nota-vacia" data-nota-alumno="${a.id}" title="Agregar nota">📝</span>`;
+    }
+    if (a.notaResuelta) {
+      const preview = escapeHtml(nota.length > 80 ? nota.slice(0, 80) + "…" : nota);
+      return `<span class="nota-icon nota-resuelta" data-nota-alumno="${a.id}" title="Resuelto: ${preview}">📝</span>`;
+    }
+    const preview = escapeHtml(nota.length > 80 ? nota.slice(0, 80) + "…" : nota);
+    return `<span class="nota-icon nota-pendiente" data-nota-alumno="${a.id}" title="Pendiente: ${preview}">📝</span>`;
+  }
+
+  function bindNotasEvents() {
+    // Clic en icono de nota → abrir popover
+    document.querySelectorAll("[data-nota-alumno]").forEach(icon => {
+      if (icon.dataset.bound === "1") return;
+      icon.dataset.bound = "1";
+      icon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        abrirPopoverNota(icon.dataset.notaAlumno, icon);
+      });
+    });
+
+    // Botón filtro "Solo pendientes"
+    document.querySelectorAll("[data-filtro-pendientes]").forEach(btn => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        filtroSoloNotasPendientes = !filtroSoloNotasPendientes;
+        renderBloques();
+      });
+    });
+  }
+
+  function abrirPopoverNota(alumnoId, anchorEl) {
+    const alumno = alumnos.find(a => a.id === alumnoId);
+    if (!alumno) return;
+    notaAlumnoAbierta = alumnoId;
+
+    let popover = document.getElementById("nota-popover");
+    let backdrop = document.getElementById("nota-popover-backdrop");
+
+    if (!popover) {
+      backdrop = document.createElement("div");
+      backdrop.id = "nota-popover-backdrop";
+      backdrop.className = "nota-popover-backdrop";
+      backdrop.addEventListener("click", cerrarPopoverNota);
+      document.body.appendChild(backdrop);
+
+      popover = document.createElement("div");
+      popover.id = "nota-popover";
+      popover.className = "nota-popover";
+      popover.innerHTML = `
+        <div class="nota-popover-titulo">Nota del alumno</div>
+        <div class="nota-popover-alumno" id="nota-popover-alumno-nombre"></div>
+        <textarea id="nota-popover-textarea" placeholder="Ej: Pagó la mitad — falta cobrar $500 antes del viernes"></textarea>
+        <label class="nota-popover-check">
+          <input type="checkbox" id="nota-popover-resuelta">
+          <span>Marcar como <strong>resuelto</strong></span>
+        </label>
+        <div class="nota-popover-actions">
+          <button class="btn-nota-borrar" id="btn-nota-borrar" style="display:none">Borrar nota</button>
+          <div style="display:flex;gap:8px;margin-left:auto">
+            <button class="btn-nota-cancelar" id="btn-nota-cancelar">Cancelar</button>
+            <button class="btn-nota-guardar" id="btn-nota-guardar">Guardar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(popover);
+
+      document.getElementById("btn-nota-cancelar").addEventListener("click", cerrarPopoverNota);
+      document.getElementById("btn-nota-guardar").addEventListener("click", guardarNota);
+      document.getElementById("btn-nota-borrar").addEventListener("click", borrarNota);
+      // Cerrar con Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && popover.classList.contains("open")) cerrarPopoverNota();
+      });
+    }
+
+    // Cargar datos del alumno
+    document.getElementById("nota-popover-alumno-nombre").textContent = alumno.nombre || "(sin nombre)";
+    document.getElementById("nota-popover-textarea").value = alumno.nota || "";
+    document.getElementById("nota-popover-resuelta").checked = !!alumno.notaResuelta;
+    document.getElementById("btn-nota-borrar").style.display = (alumno.nota || "").trim() ? "inline-flex" : "none";
+
+    // Posicionar popover cerca del icono
+    backdrop.classList.add("open");
+    popover.classList.add("open");
+    posicionarPopover(popover, anchorEl);
+
+    // Focus en textarea
+    setTimeout(() => document.getElementById("nota-popover-textarea").focus(), 50);
+  }
+
+  function posicionarPopover(popover, anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    const popW = 340;
+    const popH = popover.offsetHeight || 240;
+    let top = rect.bottom + 8;
+    let left = rect.left;
+    // Si se sale por la derecha, alinear con borde derecho del icono
+    if (left + popW > window.innerWidth - 16) {
+      left = window.innerWidth - popW - 16;
+    }
+    // Si se sale por abajo, mostrar arriba del icono
+    if (top + popH > window.innerHeight - 16) {
+      top = Math.max(16, rect.top - popH - 8);
+    }
+    popover.style.top = top + "px";
+    popover.style.left = left + "px";
+  }
+
+  function cerrarPopoverNota() {
+    notaAlumnoAbierta = null;
+    document.getElementById("nota-popover")?.classList.remove("open");
+    document.getElementById("nota-popover-backdrop")?.classList.remove("open");
+  }
+
+  async function guardarNota() {
+    if (!notaAlumnoAbierta) return;
+    const id = notaAlumnoAbierta;
+    const texto = document.getElementById("nota-popover-textarea").value.trim();
+    const resuelta = document.getElementById("nota-popover-resuelta").checked;
+
+    const datos = {
+      nota: texto || null,
+      notaResuelta: texto ? resuelta : false,
+      notaActualizadaEn: serverTimestamp(),
+    };
+
+    // Optimista: actualizar UI local
+    const a = alumnos.find(x => x.id === id);
+    if (a) {
+      a.nota = datos.nota;
+      a.notaResuelta = datos.notaResuelta;
+    }
+
+    cerrarPopoverNota();
+    showToastColor(texto ? "✓ Nota guardada" : "✓ Nota eliminada");
+
+    try {
+      await updateDoc(doc(db, "alumnos", id), datos);
+    } catch (err) {
+      console.error("[Nota] Error guardando:", err);
+      showToastColor("⚠ Error al guardar la nota");
+    }
+    renderBloques();
+  }
+
+  async function borrarNota() {
+    if (!notaAlumnoAbierta) return;
+    const id = notaAlumnoAbierta;
+    const a = alumnos.find(x => x.id === id);
+    if (a) {
+      a.nota = null;
+      a.notaResuelta = false;
+    }
+    cerrarPopoverNota();
+    showToastColor("✓ Nota eliminada");
+    try {
+      await updateDoc(doc(db, "alumnos", id), {
+        nota: null,
+        notaResuelta: false,
+        notaActualizadaEn: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("[Nota] Error borrando:", err);
+    }
+    renderBloques();
+  }
+  // ═══════════════════════════════════════════════════════════
+  // FIN Notas por alumno
   // ═══════════════════════════════════════════════════════════
 
   function agregarFilaPendiente(cursoId) {
