@@ -2073,6 +2073,33 @@
     return apertura.estado || "pendiente";
   }
 
+  // Paleta de 12 colores únicos para distinguir cursos (no se confunden con colores de estado)
+  const CRON_PALETA_CURSOS = [
+    "#1E40AF", // azul marino
+    "#6D28D9", // morado profundo
+    "#BE185D", // rosa intenso
+    "#0F766E", // teal oscuro
+    "#B45309", // ámbar oscuro
+    "#075985", // azul océano
+    "#7C2D12", // marrón
+    "#831843", // vino
+    "#166534", // verde bosque
+    "#4C1D95", // violeta oscuro
+    "#0C4A6E", // azul petróleo
+    "#581C87", // púrpura
+  ];
+
+  // Hash simple de un string a un índice de la paleta
+  function getColorCurso(cursoId) {
+    if (!cursoId) return CRON_PALETA_CURSOS[0];
+    let hash = 0;
+    for (let i = 0; i < cursoId.length; i++) {
+      hash = ((hash << 5) - hash) + cursoId.charCodeAt(i);
+      hash |= 0; // Convertir a 32bit int
+    }
+    return CRON_PALETA_CURSOS[Math.abs(hash) % CRON_PALETA_CURSOS.length];
+  }
+
   function actualizarKpisCronograma() {
     let activos = 0, pendientes = 0, cancelados = 0, iniciados = 0;
     aperturas.forEach(a => {
@@ -2243,12 +2270,14 @@
 
       if (!horaToRow.hasOwnProperty(Math.floor(horaInicio))) return;
 
-      // Color según estado efectivo (incluye morado para iniciados)
+      // Color de fondo según estado efectivo (incluye morado para iniciados)
       const est = estadoEfectivo(a);
-      let bg = "#16a34a", border = "#15803d";
-      if (est === "pendiente") { bg = "#f59e0b"; border = "#d97706"; }
-      else if (est === "cancelado") { bg = "#dc2626"; border = "#b91c1c"; }
-      else if (est === "iniciado") { bg = "#9333ea"; border = "#7e22ce"; }
+      let bg = "#16a34a";
+      if (est === "pendiente") { bg = "#f59e0b"; }
+      else if (est === "cancelado") { bg = "#dc2626"; }
+      else if (est === "iniciado") { bg = "#9333ea"; }
+      // Color identidad del curso (para la franja lateral) — único por cursoId
+      const colorCurso = getColorCurso(a.cursoId);
 
       // Filas para grid usando horaToRow
       const col = diaIdx + 2;
@@ -2266,7 +2295,11 @@
       const leftPct = widthPct * indiceEnGrupo;
 
       const horaTxt = `${s.horaInicio || ""}${s.horaFin ? "–" + s.horaFin : ""}`;
-      const cursoCorto = (a.cursoNombre || "").length > 22 ? (a.cursoNombre || "").substring(0, 22) + "…" : (a.cursoNombre || "");
+      // Cortar el nombre del curso según ancho disponible (cuantos más eventos coincidan, más corto)
+      const maxChars = totalEnGrupo >= 4 ? 8 : totalEnGrupo === 3 ? 12 : totalEnGrupo === 2 ? 18 : 22;
+      const cursoCorto = (a.cursoNombre || "").length > maxChars
+        ? (a.cursoNombre || "").substring(0, maxChars) + "…"
+        : (a.cursoNombre || "");
 
       const eventDiv = document.createElement("div");
       eventDiv.className = "gcal-event";
@@ -2274,7 +2307,7 @@
         grid-column: ${col};
         grid-row: ${filaInicio} / ${filaFin};
         background: ${bg};
-        border-left: 3px solid ${border};
+        border-left: 10px solid ${colorCurso};
         color: #fff;
         width: calc(${widthPct}% - 6px);
         margin-left: calc(${leftPct}% + 3px);
