@@ -800,18 +800,19 @@
     padding: 6px 2px !important;
   }
   .nota-icon {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     position: relative;
-    font-size: 13px;
+    font-size: 12px;
     transition: transform 0.12s, opacity 0.12s;
     vertical-align: middle;
     user-select: none;
+    flex-shrink: 0;
   }
   .nota-icon:hover { transform: scale(1.1); }
   .nota-vacia { background: #f1f5f9; opacity: 0.55; }
@@ -2060,14 +2061,13 @@
             <thead>
               <tr>
                 <th class="row-color-checkbox-th"></th>
-                <th class="nota-th">📝</th>
                 <th style="width:40px">#</th>
                 <th style="width:230px">Nombre</th>
                 <th style="width:140px">Teléfono</th>
                 <th style="width:240px">Email</th>
                 <th style="width:160px">Folio IPCI</th>
                 <th style="width:110px">Estado</th>
-                <th style="width:130px">Acción</th>
+                <th style="width:160px">Acción</th>
               </tr>
             </thead>
             <tbody>${renderRowsBloque(alumnosFiltrados, pendientesFiltrados, cursoId)}</tbody>
@@ -2104,7 +2104,6 @@
       const isChecked = filasSeleccionadas.has(a.id) ? "checked" : "";
       html += `<tr data-alumno-id="${a.id}" data-curso-fila="${cursoIdBloque}" class="${yaGenerado ? 'saved' : ''} ${colorClass}" ${styleBg}>
         <td class="row-color-checkbox-td"><input type="checkbox" class="row-color-checkbox" data-check-alumno="${a.id}" data-check-curso="${cursoIdBloque}" ${isChecked}></td>
-        <td class="nota-td">${notaIconHtml(a)}</td>
         <td class="sheet-row-num">${n++}</td>
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
@@ -2124,7 +2123,6 @@
       const tieneCurso = !!row.cursoId;
       html += `<tr data-temp-id="${row.tempId}">
         <td class="row-color-checkbox-td"></td>
-        <td class="nota-td"></td>
         <td class="sheet-row-num">${n++}</td>
         <td><input type="text" class="sheet-cell-input" data-field="nombre" data-temp="${row.tempId}" value="${escapeHtml(row.nombre || "")}" placeholder="Nombre completo" style="text-transform:uppercase"></td>
         <td><input type="tel" class="sheet-cell-input" data-field="telefono" data-temp="${row.tempId}" value="${escapeHtml(row.telefono || "")}" placeholder="Teléfono"></td>
@@ -2562,17 +2560,20 @@
   }
 
   function accionAlumno(a) {
+    let botonHtml;
     if (a.estado === "email_enviado") {
       const cert = certificados.find(c => c.id === a.certificadoId);
       if (cert?.pdfUrl) {
-        return `<a href="${cert.pdfUrl}" target="_blank" class="btn-generar success" style="display:block;text-decoration:none;text-align:center">Ver PDF</a>`;
+        botonHtml = `<a href="${cert.pdfUrl}" target="_blank" class="btn-generar success" style="flex:1;text-decoration:none;text-align:center">Ver PDF</a>`;
+      } else {
+        botonHtml = `<button class="btn-generar success" style="flex:1" disabled>✓ Enviado</button>`;
       }
-      return `<button class="btn-generar success" disabled>✓ Enviado</button>`;
+    } else if (a.estado === "programado") {
+      botonHtml = `<button class="btn-generar" style="flex:1;background:#4338ca" data-cancelar="${a.id}">Cancelar</button>`;
+    } else {
+      botonHtml = `<button class="btn-generar" style="flex:1" data-generar="${a.id}">Generar</button>`;
     }
-    if (a.estado === "programado") {
-      return `<button class="btn-generar" data-cancelar="${a.id}" style="background:#4338ca">Cancelar</button>`;
-    }
-    return `<button class="btn-generar" data-generar="${a.id}">Generar</button>`;
+    return `<div style="display:flex;align-items:center;gap:6px">${notaIconHtml(a)}${botonHtml}</div>`;
   }
 
   function bindSheetEvents() {
