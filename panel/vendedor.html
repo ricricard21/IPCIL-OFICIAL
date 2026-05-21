@@ -656,6 +656,131 @@
     color: var(--text);
     margin-bottom: 6px;
   }
+
+  /* ═══════════════════════════════════════════════
+     COLOR DE FILA (Excel-style) — v1.0
+     ═══════════════════════════════════════════════ */
+  .row-color-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #0b4ea2;
+    margin: 0;
+    vertical-align: middle;
+  }
+  .row-color-checkbox-th {
+    width: 36px;
+    text-align: center;
+    padding: 8px 4px !important;
+  }
+  .row-color-checkbox-td {
+    text-align: center;
+    padding: 8px 4px !important;
+  }
+  .color-fila-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .btn-color-fila {
+    background: #fff;
+    color: #0b4ea2;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t);
+  }
+  .btn-color-fila:hover {
+    opacity: 0.9;
+  }
+  .btn-color-fila:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .contador-seleccionados {
+    background: rgba(255, 255, 255, 0.22);
+    color: white;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .color-palette-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    border: 1px solid #e2e8f0;
+    z-index: 50;
+    width: 220px;
+    display: none;
+  }
+  .color-palette-dropdown.open {
+    display: block;
+  }
+  .color-palette-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5f7186;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .color-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .color-chip-mini {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    transition: transform 0.12s;
+  }
+  .color-chip-mini:hover {
+    transform: scale(1.08);
+  }
+  .color-chip-sin {
+    background: white;
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+  .toast-color {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f1d2e;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .toast-color.show {
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
@@ -1110,6 +1235,9 @@
   let alumnoIdAGenerar = null;
   let comisionPctActual = 0; // Se calcula al generar
   let importedRows = []; // Filas válidas del archivo Excel
+  // ─── Color de fila ─── (v1.0)
+  let filasSeleccionadas = new Set(); // alumnoIds seleccionados con checkbox
+  let lastCheckedAlumnoId = null; // último alumno checkeado (para shift+click rango)
 
   // ─── INIT ───
   usuario = await requireRole("vendedor");
@@ -1697,6 +1825,25 @@
           </div>
           <div class="curso-bloque-actions">
             <span class="curso-bloque-badge">${enviados} enviados · ${pendientesEnvio} pendientes</span>
+            <span class="contador-seleccionados" data-contador-curso="${cursoId}" style="display:none">0 seleccionados</span>
+            <div class="color-fila-wrapper">
+              <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
+                🎨 Color
+              </button>
+              <div class="color-palette-dropdown" data-palette-curso="${cursoId}">
+                <div class="color-palette-titulo">Elegir color de fila</div>
+                <div class="color-palette-grid">
+                  <div class="color-chip-mini" data-color="#FEF08A" data-curso-paleta="${cursoId}" style="background:#FEF08A" title="Amarillo"></div>
+                  <div class="color-chip-mini" data-color="#7DD3FC" data-curso-paleta="${cursoId}" style="background:#7DD3FC" title="Azul"></div>
+                  <div class="color-chip-mini" data-color="#86EFAC" data-curso-paleta="${cursoId}" style="background:#86EFAC" title="Verde"></div>
+                  <div class="color-chip-mini" data-color="#FCA5A5" data-curso-paleta="${cursoId}" style="background:#FCA5A5" title="Rojo"></div>
+                  <div class="color-chip-mini" data-color="#F9A8D4" data-curso-paleta="${cursoId}" style="background:#F9A8D4" title="Rosa"></div>
+                  <div class="color-chip-mini" data-color="#FDBA74" data-curso-paleta="${cursoId}" style="background:#FDBA74" title="Naranja"></div>
+                  <div class="color-chip-mini" data-color="#C4B5FD" data-curso-paleta="${cursoId}" style="background:#C4B5FD" title="Morado"></div>
+                  <div class="color-chip-mini color-chip-sin" data-color="" data-curso-paleta="${cursoId}" title="Sin color">✕</div>
+                </div>
+              </div>
+            </div>
             ${elegiblesGenerar.length > 0 ? `
               <button class="btn btn-primary btn-sm" data-generar-todos="${cursoId}" style="display:flex;align-items:center;gap:6px;background:#16a34a;border-color:#15803d">
                 ⚡ Generar todos (${elegiblesGenerar.length})
@@ -1708,6 +1855,7 @@
           <table class="sheet-table">
             <thead>
               <tr>
+                <th class="row-color-checkbox-th"></th>
                 <th style="width:40px">#</th>
                 <th style="width:230px">Nombre</th>
                 <th style="width:140px">Teléfono</th>
@@ -1745,7 +1893,11 @@
     alumnosArr.forEach(a => {
       const cert = certificados.find(c => c.id === a.certificadoId);
       const yaGenerado = a.estado === "email_enviado";
-      html += `<tr data-alumno-id="${a.id}" class="${yaGenerado ? 'saved' : ''}">
+      const bgColor = a.colorFila || "";
+      const styleBg = bgColor ? `background:${bgColor};` : "";
+      const isChecked = filasSeleccionadas.has(a.id) ? "checked" : "";
+      html += `<tr data-alumno-id="${a.id}" data-curso-fila="${cursoIdBloque}" class="${yaGenerado ? 'saved' : ''}" style="${styleBg}">
+        <td class="row-color-checkbox-td"><input type="checkbox" class="row-color-checkbox" data-check-alumno="${a.id}" data-check-curso="${cursoIdBloque}" ${isChecked}></td>
         <td class="sheet-row-num">${n++}</td>
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
@@ -1764,6 +1916,7 @@
     pendientesArr.forEach(row => {
       const tieneCurso = !!row.cursoId;
       html += `<tr data-temp-id="${row.tempId}">
+        <td class="row-color-checkbox-td"></td>
         <td class="sheet-row-num">${n++}</td>
         <td><input type="text" class="sheet-cell-input" data-field="nombre" data-temp="${row.tempId}" value="${escapeHtml(row.nombre || "")}" placeholder="Nombre completo" style="text-transform:uppercase"></td>
         <td><input type="tel" class="sheet-cell-input" data-field="telefono" data-temp="${row.tempId}" value="${escapeHtml(row.telefono || "")}" placeholder="Teléfono"></td>
@@ -1812,7 +1965,163 @@
       btnAdd.dataset.bound = "1";
       btnAdd.addEventListener("click", () => agregarFilaPendiente(null));
     }
+
+    // ─── COLOR DE FILA (v1.0) ───
+    bindColorFilaEvents();
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // COLOR DE FILA (v1.0) — Sistema Excel-style
+  // ═══════════════════════════════════════════════════════════
+  function bindColorFilaEvents() {
+    // Checkbox de cada fila (con soporte shift+click para rango)
+    document.querySelectorAll(".row-color-checkbox").forEach(cb => {
+      if (cb.dataset.bound === "1") return;
+      cb.dataset.bound = "1";
+      cb.addEventListener("click", (e) => {
+        const alumnoId = cb.dataset.checkAlumno;
+        const cursoId = cb.dataset.checkCurso;
+        const shift = e.shiftKey;
+        toggleCheckRow(alumnoId, cursoId, shift, cb.checked);
+      });
+    });
+
+    // Botón "🎨 Color" → toggle paleta
+    document.querySelectorAll("[data-toggle-color]").forEach(btn => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cursoId = btn.dataset.toggleColor;
+        const paleta = document.querySelector(`[data-palette-curso="${cursoId}"]`);
+        const yaAbierta = paleta && paleta.classList.contains("open");
+        cerrarPaletas();
+        if (paleta && !yaAbierta) paleta.classList.add("open");
+      });
+    });
+
+    // Cada chip de color → aplicar a las filas seleccionadas
+    document.querySelectorAll(".color-chip-mini").forEach(chip => {
+      if (chip.dataset.bound === "1") return;
+      chip.dataset.bound = "1";
+      chip.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const color = chip.dataset.color || null; // "" → null (sin color)
+        aplicarColorAFilas(color);
+      });
+    });
+
+    // Click fuera de paleta → cerrar todas
+    if (!document.body.dataset.cerrarPaletasBound) {
+      document.body.dataset.cerrarPaletasBound = "1";
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".color-fila-wrapper")) cerrarPaletas();
+      });
+    }
+
+    // Sincronizar UI inicial del botón/contador para cada bloque visible
+    document.querySelectorAll("[data-toggle-color]").forEach(btn => {
+      actualizarUIColor(btn.dataset.toggleColor);
+    });
+  }
+
+  function cerrarPaletas() {
+    document.querySelectorAll(".color-palette-dropdown.open").forEach(p => p.classList.remove("open"));
+  }
+
+  function toggleCheckRow(alumnoId, cursoId, shift, isChecked) {
+    if (shift && lastCheckedAlumnoId && lastCheckedAlumnoId !== alumnoId) {
+      // Selección de rango: marcar todos los checkboxes del mismo bloque entre lastChecked y este
+      const checks = Array.from(document.querySelectorAll(`.row-color-checkbox[data-check-curso="${cursoId}"]`));
+      const idxA = checks.findIndex(c => c.dataset.checkAlumno === lastCheckedAlumnoId);
+      const idxB = checks.findIndex(c => c.dataset.checkAlumno === alumnoId);
+      if (idxA !== -1 && idxB !== -1) {
+        const [start, end] = idxA < idxB ? [idxA, idxB] : [idxB, idxA];
+        for (let i = start; i <= end; i++) {
+          const id = checks[i].dataset.checkAlumno;
+          checks[i].checked = isChecked;
+          if (isChecked) filasSeleccionadas.add(id);
+          else filasSeleccionadas.delete(id);
+        }
+      }
+    } else {
+      if (isChecked) filasSeleccionadas.add(alumnoId);
+      else filasSeleccionadas.delete(alumnoId);
+    }
+    lastCheckedAlumnoId = alumnoId;
+    actualizarUIColor(cursoId);
+  }
+
+  function actualizarUIColor(cursoId) {
+    // Cuenta seleccionados de este curso
+    const checks = document.querySelectorAll(`.row-color-checkbox[data-check-curso="${cursoId}"]:checked`);
+    const count = checks.length;
+    const contador = document.querySelector(`[data-contador-curso="${cursoId}"]`);
+    const btn = document.querySelector(`[data-toggle-color="${cursoId}"]`);
+    if (contador) {
+      contador.style.display = count > 0 ? "inline-block" : "none";
+      contador.textContent = `${count} seleccionado${count === 1 ? "" : "s"}`;
+    }
+    if (btn) {
+      btn.disabled = count === 0;
+      btn.title = count === 0
+        ? "Selecciona filas con el checkbox para pintarlas"
+        : `Aplicar color a ${count} fila${count === 1 ? "" : "s"}`;
+    }
+  }
+
+  async function aplicarColorAFilas(color) {
+    cerrarPaletas();
+    if (filasSeleccionadas.size === 0) return;
+    const ids = Array.from(filasSeleccionadas);
+    const colorValor = color || null;
+
+    // Optimista: pintar UI antes de Firestore
+    ids.forEach(id => {
+      const tr = document.querySelector(`tr[data-alumno-id="${id}"]`);
+      if (tr) tr.style.background = colorValor || "";
+      // También actualiza el array local
+      const a = alumnos.find(x => x.id === id);
+      if (a) a.colorFila = colorValor;
+    });
+
+    // Toast de progreso
+    showToastColor(`Aplicando color a ${ids.length} fila${ids.length === 1 ? "" : "s"}...`);
+
+    // Guardar en Firestore en paralelo
+    try {
+      await Promise.all(
+        ids.map(id => updateDoc(doc(db, "alumnos", id), { colorFila: colorValor }))
+      );
+      showToastColor(colorValor ? `✓ ${ids.length} fila${ids.length === 1 ? "" : "s"} pintada${ids.length === 1 ? "" : "s"}` : `✓ Color removido de ${ids.length} fila${ids.length === 1 ? "" : "s"}`);
+    } catch (err) {
+      console.error("[ColorFila] Error guardando:", err);
+      showToastColor("⚠ Error al guardar el color. Recarga la página.");
+    }
+
+    // Limpiar selección
+    filasSeleccionadas.clear();
+    lastCheckedAlumnoId = null;
+    document.querySelectorAll(".row-color-checkbox:checked").forEach(cb => { cb.checked = false; });
+    document.querySelectorAll("[data-toggle-color]").forEach(btn => actualizarUIColor(btn.dataset.toggleColor));
+  }
+
+  function showToastColor(msg) {
+    let t = document.getElementById("toast-color-fila");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "toast-color-fila";
+      t.className = "toast-color";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+  // ═══════════════════════════════════════════════════════════
+  // FIN Color de fila
+  // ═══════════════════════════════════════════════════════════
 
   function agregarFilaPendiente(cursoId) {
     if (!aperturaActual || aperturaActual === "sin-asignar") {
