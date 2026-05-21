@@ -660,6 +660,9 @@
   /* ═══════════════════════════════════════════════
      COLOR DE FILA (Excel-style) — v1.0
      ═══════════════════════════════════════════════ */
+  /* Aplica el color al td (gana sobre tr.saved td que también está en td) */
+  .sheet-table tr.has-row-color td,
+  .sheet-table tr.saved.has-row-color td { background: var(--row-bg, transparent) !important; }
   .row-color-checkbox {
     width: 16px;
     height: 16px;
@@ -1894,9 +1897,10 @@
       const cert = certificados.find(c => c.id === a.certificadoId);
       const yaGenerado = a.estado === "email_enviado";
       const bgColor = a.colorFila || "";
-      const styleBg = bgColor ? `background:${bgColor};` : "";
+      const styleBg = bgColor ? `style="--row-bg:${bgColor}"` : "";
+      const colorClass = bgColor ? "has-row-color" : "";
       const isChecked = filasSeleccionadas.has(a.id) ? "checked" : "";
-      html += `<tr data-alumno-id="${a.id}" data-curso-fila="${cursoIdBloque}" class="${yaGenerado ? 'saved' : ''}" style="${styleBg}">
+      html += `<tr data-alumno-id="${a.id}" data-curso-fila="${cursoIdBloque}" class="${yaGenerado ? 'saved' : ''} ${colorClass}" ${styleBg}>
         <td class="row-color-checkbox-td"><input type="checkbox" class="row-color-checkbox" data-check-alumno="${a.id}" data-check-curso="${cursoIdBloque}" ${isChecked}></td>
         <td class="sheet-row-num">${n++}</td>
         <td>${yaGenerado
@@ -2079,7 +2083,15 @@
     // Optimista: pintar UI antes de Firestore
     ids.forEach(id => {
       const tr = document.querySelector(`tr[data-alumno-id="${id}"]`);
-      if (tr) tr.style.background = colorValor || "";
+      if (tr) {
+        if (colorValor) {
+          tr.style.setProperty("--row-bg", colorValor);
+          tr.classList.add("has-row-color");
+        } else {
+          tr.style.removeProperty("--row-bg");
+          tr.classList.remove("has-row-color");
+        }
+      }
       // También actualiza el array local
       const a = alumnos.find(x => x.id === id);
       if (a) a.colorFila = colorValor;
