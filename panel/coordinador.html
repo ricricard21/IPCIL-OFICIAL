@@ -1735,8 +1735,14 @@
                 : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}
           </td>
           <td class="col-actions">
-            <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center">
+            <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center;flex-wrap:wrap">
               <button class="btn btn-secondary btn-sm" data-config="${curso.id}">Configurar</button>
+              ${curso.whatsappLink && curso.ultimaApertura
+                ? `<button class="btn btn-sm" data-enviar-wa="${curso.id}" title="Enviar el link de WhatsApp a todos los alumnos ahora" style="background:#25D366;color:white;border-color:#1da856">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-1.3-.6-2.2-1.2-3-2.7-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4 0-.1-.6-1.6-.9-2.2-.2-.6-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.4-.3.3-.9 1-.9 2.3 0 1.4 1 2.7 1.1 2.9.1.2 1.9 3.1 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>
+                    Enviar link ahora
+                  </button>`
+                : ''}
               ${estado.listo
                 ? `<span style="font-size:11px;color:#16a34a;font-weight:600;background:#dcfce7;padding:4px 10px;border-radius:6px">⚡ Se abrirá automático</span>`
                 : ''}
@@ -1746,6 +1752,42 @@
       }).join("")}</tbody></table></div>`;
 
     ap.querySelectorAll("[data-config]").forEach(b => b.addEventListener("click", () => abrirModalConfigCurso(b.dataset.config)));
+    ap.querySelectorAll("[data-enviar-wa]").forEach(b => b.addEventListener("click", () => enviarLinkWhatsAppManual(b.dataset.enviarWa, b)));
+  }
+
+  // ─── Envío manual del link de WhatsApp ───
+  async function enviarLinkWhatsAppManual(cursoId, btnElement) {
+    const c = cursos.find(x => x.id === cursoId);
+    if (!c) return;
+
+    const confirmado = await confirmar({
+      titulo: "Enviar link de WhatsApp ahora",
+      mensaje: `Se enviará el link del grupo de WhatsApp a TODOS los alumnos registrados en "${c.nombre}". ¿Continuar?`,
+      btnOk: "Sí, enviar",
+      btnCancel: "Cancelar",
+    });
+    if (!confirmado) return;
+
+    const txtOriginal = btnElement.innerHTML;
+    btnElement.disabled = true;
+    btnElement.innerHTML = '<div class="spinner" style="width:12px;height:12px;display:inline-block;vertical-align:middle"></div> Enviando...';
+
+    try {
+      const enviar = httpsCallable(functions, "enviarLinkWhatsAppAhora");
+      const res = await enviar({ cursoId });
+      const data = res.data || {};
+      if (data.fallos > 0) {
+        toast(`Enviado a ${data.exitos}/${data.totales}. ${data.fallos} fallos (revisa los emails)`, "warning", 5000);
+      } else {
+        toast(`✓ Link enviado a ${data.exitos} alumno${data.exitos === 1 ? "" : "s"} 📲`, "success");
+      }
+    } catch (err) {
+      console.error("[WA-Manual] Error:", err);
+      toast("Error: " + (err.message || "no se pudo enviar"), "error", 6000);
+    } finally {
+      btnElement.disabled = false;
+      btnElement.innerHTML = txtOriginal;
+    }
   }
 
   document.getElementById("search-apertura").addEventListener("input", renderApertura);
@@ -1985,6 +2027,11 @@
         } else {
           toast(`Grupo "${c.nombre}" abierto con ${estado.inscritos} alumnos 🎉`, "success");
         }
+
+        // Aviso adicional: recordar programar cronograma para que se active el envío automático a alumnos
+        setTimeout(() => {
+          toast(`⚠️ Programa las sesiones en Cronograma para activar los recordatorios automáticos a alumnos`, "warning", 6000);
+        }, 1200);
 
         cerrar();
       } catch (e) {
