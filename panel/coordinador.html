@@ -839,14 +839,19 @@
       // ✨ MEJORA: Detectar cursos que llegaron al mínimo de alumnos
       // (solo después del primer load, para no notificar cursos ya listos)
       if (alumnosPrev.length > 0 && cursos && cursos.length > 0) {
+        const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
         cursos.forEach(curso => {
           if (!curso.activo) return;
           const minimo = curso.minimoAlumnos || 8;
 
-          // Misma lógica que calcularEstadoApertura: todos los del curso sin certificado
-          const filtroPendiente = (a) =>
-            a.cursoId === curso.id &&
-            a.estado !== "email_enviado";
+          // Misma lógica que calcularEstadoApertura: pendientes con apertura hoy/futuro/sin-asignar
+          const filtroPendiente = (a) => {
+            if (a.cursoId !== curso.id) return false;
+            if (a.estado === "email_enviado") return false;
+            const ak = a.aperturaKey || "sin-asignar";
+            if (ak === "sin-asignar") return true;
+            return ak >= hoyMX;
+          };
 
           const inscritosAntes = alumnosPrev.filter(filtroPendiente).length;
           const inscritosAhora = alumnos.filter(filtroPendiente).length;
@@ -1627,13 +1632,21 @@
     const frecuencia = curso.frecuenciaDiasApertura || 15;
     const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
 
-    // Cuenta TODOS los alumnos del curso que aún no tienen certificado emitido
-    // (sin filtrar por fecha ni por aperturaKey — refleja exactamente lo que el
-    // vendedor tiene como inventario pendiente real, sumando todas las pestañas)
-    const inscritos = alumnos.filter(a =>
-      a.cursoId === curso.id &&
-      a.estado !== "email_enviado"
-    ).length;
+    // Fecha de hoy en zona MX (formato YYYY-MM-DD para comparar contra aperturaKey)
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+
+    // Cuenta alumnos pendientes REALES:
+    // - Sin certificado emitido
+    // - Y cuya apertura asignada sea HOY o futuro (o "sin-asignar")
+    //   → excluye alumnos huérfanos de grupos del pasado que nunca se certificaron
+    const inscritos = alumnos.filter(a => {
+      if (a.cursoId !== curso.id) return false;
+      if (a.estado === "email_enviado") return false;
+      const ak = a.aperturaKey || "sin-asignar";
+      if (ak === "sin-asignar") return true;
+      // Si aperturaKey tiene formato YYYY-MM-DD, comparar con hoy
+      return ak >= hoyMX;
+    }).length;
 
     const pct = Math.min(100, Math.round((inscritos / minimo) * 100));
     const listo = inscritos >= minimo;
