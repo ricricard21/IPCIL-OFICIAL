@@ -842,20 +842,18 @@
         cursos.forEach(curso => {
           if (!curso.activo) return;
           const minimo = curso.minimoAlumnos || 8;
-          const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
-          const desde = ultimaApertura ? ultimaApertura.getTime() : 0;
 
-          const inscritosAntes = alumnosPrev.filter(a =>
-            a.cursoId === curso.id &&
-            a.estado !== "email_enviado" &&
-            (a.creadoEn?.toMillis?.() || 0) >= desde
-          ).length;
+          // Misma lógica que calcularEstadoApertura: contar solo alumnos
+          // del curso que NO tienen certificado y NO están asignados a apertura
+          const filtroPendiente = (a) => {
+            if (a.cursoId !== curso.id) return false;
+            if (a.estado === "email_enviado") return false;
+            const ak = a.aperturaKey || "sin-asignar";
+            return ak === "sin-asignar";
+          };
 
-          const inscritosAhora = alumnos.filter(a =>
-            a.cursoId === curso.id &&
-            a.estado !== "email_enviado" &&
-            (a.creadoEn?.toMillis?.() || 0) >= desde
-          ).length;
+          const inscritosAntes = alumnosPrev.filter(filtroPendiente).length;
+          const inscritosAhora = alumnos.filter(filtroPendiente).length;
 
           // Cruzó el umbral: antes < mínimo, ahora >= mínimo
           if (inscritosAntes < minimo && inscritosAhora >= minimo) {
@@ -1633,13 +1631,16 @@
     const frecuencia = curso.frecuenciaDiasApertura || 15;
     const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
 
-    // Cuenta alumnos del curso desde la última apertura (o todos si nunca se ha abierto)
-    const desde = ultimaApertura ? ultimaApertura.getTime() : 0;
-    const inscritos = alumnos.filter(a =>
-      a.cursoId === curso.id &&
-      a.estado !== "email_enviado" && // ya certificados ya tomaron el curso
-      (a.creadoEn?.toMillis?.() || 0) >= desde
-    ).length;
+    // Cuenta alumnos del curso que están REALMENTE pendientes de programar:
+    // - Sin certificado emitido (estado !== "email_enviado")
+    // - Sin asignar a una apertura programada (aperturaKey vacío o "sin-asignar")
+    // Esto coincide con lo que el vendedor ve en la pestaña "Sin asignar" / nueva apertura
+    const inscritos = alumnos.filter(a => {
+      if (a.cursoId !== curso.id) return false;
+      if (a.estado === "email_enviado") return false;
+      const ak = a.aperturaKey || "sin-asignar";
+      return ak === "sin-asignar";
+    }).length;
 
     const pct = Math.min(100, Math.round((inscritos / minimo) * 100));
     const listo = inscritos >= minimo;
