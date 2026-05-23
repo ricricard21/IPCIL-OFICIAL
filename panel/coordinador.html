@@ -821,6 +821,9 @@
         sel.appendChild(opt);
       });
       sel.value = valActual;
+      // 🔄 FIX tiempo real: si cambia config de un curso (mínimo, frecuencia, whatsapp link), refresca Apertura y Cronograma
+      renderApertura();
+      renderCronograma();
     }
   ));
 
@@ -867,6 +870,9 @@
       renderAlumnos();
       renderHistoricos();
       actualizarDashboard();
+      // 🔄 FIX tiempo real: refrescar también las secciones que dependen del conteo de alumnos
+      renderApertura();
+      renderCronograma();
     }
   ));
 
@@ -984,10 +990,9 @@
       const activas = aperturas.filter(a => a.estado !== "cancelado" && a.estado !== "cerrado").length;
       const badge = document.getElementById("badge-cronograma");
       if (badge) badge.textContent = activas;
-      // Re-render si está visible
-      if (document.getElementById("view-cronograma")?.classList.contains("active")) {
-        renderCronograma();
-      }
+      // 🔄 FIX tiempo real: refrescar siempre las 2 secciones que dependen de aperturas
+      renderApertura();
+      renderCronograma();
     }
   ));
 
