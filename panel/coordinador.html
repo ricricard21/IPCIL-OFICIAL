@@ -1748,7 +1748,6 @@
           </td>
           <td class="col-actions">
             <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center;flex-wrap:wrap">
-              <button class="btn btn-sm" data-debug-curso="${curso.id}" title="Ver detalle de alumnos contados (consola F12)" style="background:#f1f5f9;color:#5f7186;border:1px solid #cbd5e1;font-size:11px;padding:5px 9px">🔍</button>
               <button class="btn btn-secondary btn-sm" data-config="${curso.id}">Configurar</button>
               ${curso.whatsappLink && curso.ultimaApertura
                 ? `<button class="btn btn-sm" data-enviar-wa="${curso.id}" title="Enviar el link de WhatsApp a todos los alumnos ahora" style="background:#25D366;color:white;border-color:#1da856">
@@ -1766,54 +1765,6 @@
 
     ap.querySelectorAll("[data-config]").forEach(b => b.addEventListener("click", () => abrirModalConfigCurso(b.dataset.config)));
     ap.querySelectorAll("[data-enviar-wa]").forEach(b => b.addEventListener("click", () => enviarLinkWhatsAppManual(b.dataset.enviarWa, b)));
-    ap.querySelectorAll("[data-debug-curso]").forEach(b => b.addEventListener("click", () => debugConteoCurso(b.dataset.debugCurso)));
-  }
-
-  // ─── Debug temporal: ver qué alumnos cuenta el coordinador ───
-  function debugConteoCurso(cursoId) {
-    const curso = cursos.find(c => c.id === cursoId);
-    if (!curso) return;
-    const todosDelCurso = alumnos.filter(a => a.cursoId === cursoId);
-    const noEnviados = todosDelCurso.filter(a => a.estado !== "email_enviado");
-
-    console.log("════════════════════════════════════════════════════");
-    console.log(`🔍 DEBUG: ${curso.nombre}`);
-    console.log(`   cursoId: ${cursoId}`);
-    console.log(`   Mínimo configurado: ${curso.minimoAlumnos || 8}`);
-    console.log("════════════════════════════════════════════════════");
-    console.log(`📊 TOTAL alumnos con este cursoId: ${todosDelCurso.length}`);
-    console.log(`📊 Sin certificado (lo que cuenta el coordinador): ${noEnviados.length}`);
-    console.log("");
-    console.log("DETALLE de cada alumno NO enviado:");
-    console.table(noEnviados.map(a => ({
-      nombre: a.nombre,
-      email: a.email,
-      estado: a.estado || "(sin estado)",
-      aperturaKey: a.aperturaKey || "(vacío)",
-      registradoPor: a.registradoPor || "(desconocido)",
-      creadoEn: a.creadoEn?.toDate?.()?.toLocaleString("es-MX") || "?",
-      cursoNombre: a.cursoNombre || "(sin nombre)",
-      id: a.id,
-    })));
-    console.log("");
-    console.log("Agrupado por ESTADO:");
-    const porEstado = {};
-    noEnviados.forEach(a => {
-      const e = a.estado || "(sin estado)";
-      porEstado[e] = (porEstado[e] || 0) + 1;
-    });
-    console.table(porEstado);
-    console.log("");
-    console.log("Agrupado por APERTURAKEY:");
-    const porAK = {};
-    noEnviados.forEach(a => {
-      const k = a.aperturaKey || "(vacío)";
-      porAK[k] = (porAK[k] || 0) + 1;
-    });
-    console.table(porAK);
-    console.log("════════════════════════════════════════════════════");
-
-    toast(`🔍 Revisa la consola (F12 → Console) para ver el detalle de ${noEnviados.length} alumnos`, "info", 5000);
   }
 
   // ─── Envío manual del link de WhatsApp ───
