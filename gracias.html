@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¡Gracias! | IPCI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f8fc; --surface: #ffffff; --text: #112338; --muted: #5f7186;
+      --primary: #0b4ea2; --primary-dark: #083a79; --line: #d9e3ef; --radius: 22px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+      color: var(--text); background: var(--bg);
+      background-image:
+        radial-gradient(circle at top left, rgba(19,92,190,.14), transparent 40%),
+        radial-gradient(circle at right center, rgba(11,78,162,.10), transparent 36%);
+      min-height: 100vh; display: grid; place-items: center; padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); box-shadow: 0 18px 45px rgba(15,44,84,.10);
+      max-width: 520px; width: 100%; padding: clamp(32px, 5vw, 52px);
+      text-align: center; animation: rise .6s ease both;
+    }
+    @keyframes rise { from { opacity:0; transform: translateY(24px);} to {opacity:1; transform: translateY(0);} }
+    .check {
+      width: 76px; height: 76px; margin: 0 auto 24px; border-radius: 50%;
+      background: linear-gradient(135deg, #0e9f6e, #0b7a54);
+      display: grid; place-items: center;
+      box-shadow: 0 12px 28px rgba(14,159,110,.35);
+      animation: pop .5s .2s ease both;
+    }
+    @keyframes pop { from { transform: scale(.5); opacity:0;} to { transform: scale(1); opacity:1;} }
+    .check svg { width: 40px; height: 40px; color: #fff; }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 900; letter-spacing: -.02em; margin-bottom: 14px; }
+    p { color: var(--muted); font-size: 1.02rem; line-height: 1.6; margin-bottom: 14px; }
+    .steps {
+      text-align: left; background: #f4f8fd; border: 1px solid var(--line);
+      border-radius: 16px; padding: 20px 22px; margin: 26px 0; display: grid; gap: 14px;
+    }
+    .steps li { list-style: none; display: flex; gap: 12px; align-items: flex-start; font-size: .92rem; color: #2a3c52; line-height: 1.4; }
+    .steps svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--primary); margin-top: 1px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff;
+      font-weight: 800; font-size: 1rem; padding: 15px 28px; border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(11,78,162,.30); transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(11,78,162,.38); }
+    .btn svg { width: 18px; height: 18px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h1>¡Pago recibido!</h1>
+    <p>Bienvenido al ecosistema de certificación del <strong>IPCI</strong>. Tu suscripción quedó activa.</p>
+
+    <ul class="steps">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg> Recibirás un correo de confirmación en tu bandeja.</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg> En menos de <strong>24 horas</strong> dejamos lista tu plataforma: tu plantilla de certificado con tu marca y tus accesos.</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Nuestro equipo te contactará para la capacitación.</li>
+    </ul>
+
+    <a class="btn" href="https://ipcil.org">
+      Volver al sitio
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</body>
+</html>
