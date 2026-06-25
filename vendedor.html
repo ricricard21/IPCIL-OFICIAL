@@ -656,6 +656,357 @@
     color: var(--text);
     margin-bottom: 6px;
   }
+
+  /* ═══════════════════════════════════════════════
+     COLOR DE FILA (Excel-style) — v1.0
+     ═══════════════════════════════════════════════ */
+  /* Aplica el color al td (gana sobre tr.saved td que también está en td) */
+  .sheet-table tr.has-row-color td,
+  .sheet-table tr.saved.has-row-color td { background: var(--row-bg, transparent) !important; }
+  .row-color-checkbox {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    accent-color: #0b4ea2;
+    margin: 0;
+    vertical-align: middle;
+  }
+  .row-color-checkbox-th {
+    width: 24px;
+    text-align: center;
+    padding: 6px 2px !important;
+  }
+  .row-color-checkbox-td {
+    text-align: center;
+    padding: 6px 2px !important;
+    width: 24px;
+  }
+  .color-fila-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .btn-color-fila {
+    background: #fff;
+    color: #0b4ea2;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t);
+  }
+  .btn-color-fila:hover {
+    opacity: 0.9;
+  }
+  .btn-color-fila:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  /* MODIFICADO: botón copiar teléfonos (header de bloque) */
+  .btn-copiar-tels {
+    background: #fff;
+    color: #0b4ea2;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t), transform var(--t);
+  }
+  .btn-copiar-tels:hover { opacity: 0.9; }
+  .btn-copiar-tels:active { transform: scale(0.97); }
+  /* MODIFICADO: botón basurita para eliminar alumno */
+  .btn-borrar-alumno {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--t), background var(--t), transform var(--t);
+    flex-shrink: 0;
+  }
+  .btn-borrar-alumno:hover {
+    color: #dc2626;
+    background: #fef2f2;
+  }
+  .btn-borrar-alumno:active { transform: scale(0.92); }
+  .contador-seleccionados {
+    background: rgba(255, 255, 255, 0.22);
+    color: white;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .color-palette-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    border: 1px solid #e2e8f0;
+    z-index: 50;
+    width: 220px;
+    display: none;
+  }
+  .color-palette-dropdown.open {
+    display: block;
+  }
+  .color-palette-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5f7186;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .color-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .color-chip-mini {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    transition: transform 0.12s;
+  }
+  .color-chip-mini:hover {
+    transform: scale(1.08);
+  }
+  .color-chip-sin {
+    background: white;
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+  .toast-color {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f1d2e;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .toast-color.show {
+    opacity: 1;
+  }
+
+  /* ═══════════════════════════════════════════════
+     NOTAS POR ALUMNO — v1.0
+     ═══════════════════════════════════════════════ */
+  .nota-th {
+    width: 30px;
+    text-align: center;
+    padding: 6px 2px !important;
+  }
+  .nota-td {
+    width: 30px;
+    text-align: center;
+    padding: 6px 2px !important;
+  }
+  .nota-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    font-size: 12px;
+    transition: transform 0.12s, opacity 0.12s;
+    vertical-align: middle;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .nota-icon:hover { transform: scale(1.1); }
+  .nota-vacia { background: #f1f5f9; opacity: 0.55; }
+  .nota-vacia:hover { opacity: 1; }
+  .nota-pendiente { background: #fef3c7; }
+  .nota-pendiente::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #dc2626;
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+  .nota-resuelta { background: #d1fae5; }
+  .nota-resuelta::after {
+    content: "✓";
+    position: absolute;
+    top: -5px;
+    right: -4px;
+    width: 13px;
+    height: 13px;
+    background: #16a34a;
+    color: white;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid white;
+  }
+
+  /* Popover de nota */
+  .nota-popover-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 29, 46, 0.35);
+    z-index: 998;
+    display: none;
+  }
+  .nota-popover-backdrop.open { display: block; }
+  .nota-popover {
+    position: fixed;
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+    border: 1px solid #e2e8f0;
+    z-index: 999;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    display: none;
+  }
+  .nota-popover.open { display: block; }
+  .nota-popover-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5f7186;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .nota-popover-alumno {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f1d2e;
+    margin-bottom: 10px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nota-popover textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .nota-popover textarea:focus { border-color: #0b4ea2; }
+  .nota-popover-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #0f1d2e;
+    cursor: pointer;
+  }
+  .nota-popover-check input { accent-color: #16a34a; width: 14px; height: 14px; cursor: pointer; }
+  .nota-popover-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn-nota-borrar {
+    background: white;
+    color: #dc2626;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid #fca5a5;
+    cursor: pointer;
+  }
+  .btn-nota-borrar:hover { background: #fef2f2; }
+  .btn-nota-cancelar {
+    background: white;
+    color: #5f7186;
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+  }
+  .btn-nota-guardar {
+    background: #0b4ea2;
+    color: white;
+    font-size: 12px;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-nota-guardar:hover { background: #0a4490; }
+
+  /* Filtro Solo pendientes */
+  .filtro-pendientes-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+  }
+  .filtro-pendientes-btn:hover { background: rgba(255, 255, 255, 0.25); }
+  .filtro-pendientes-btn.active {
+    background: white;
+    color: #b91c1c;
+  }
 </style>
 </head>
 <body>
@@ -1086,18 +1437,15 @@
   import {
     auth, db, functions,
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, confirmar, escapeHtml, iniciales, setupSidebar,
-    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp, onSnapshot,
-    httpsCallable, callCertFunction
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot,
+    httpsCallable
   } from "./firebase-config.js";
 
-  // Helper local: comisión fija en pesos por venta (vendedor → curso → consultora)
+  // Helper local: comisión fija en pesos por venta
+  // FIX: Solo lee de la consultora (lo que define el admin) — ignora cualquier override
+  // pegado en usuario/curso que pueda estar dando valores incorrectos como $550.
   function calcularComisionFija(usuario, curso, consultora) {
-    if (typeof usuario?.comisionFija === "number") return usuario.comisionFija;
-    if (typeof curso?.comisionFija === "number") return curso.comisionFija;
     if (typeof consultora?.comisionFija === "number") return consultora.comisionFija;
-    // Compatibilidad legacy
-    if (typeof usuario?.comisionOverride === "number") return usuario.comisionOverride;
-    if (typeof curso?.comisionOverride === "number") return curso.comisionOverride;
     if (typeof consultora?.comisionDefault === "number") return consultora.comisionDefault;
     return 0;
   }
@@ -1113,6 +1461,12 @@
   let alumnoIdAGenerar = null;
   let comisionPctActual = 0; // Se calcula al generar
   let importedRows = []; // Filas válidas del archivo Excel
+  // ─── Color de fila ─── (v1.0)
+  let filasSeleccionadas = new Set(); // alumnoIds seleccionados con checkbox
+  let lastCheckedAlumnoId = null; // último alumno checkeado (para shift+click rango)
+  // ─── Notas por alumno ─── (v1.0)
+  let notaAlumnoAbierta = null; // alumnoId cuya nota se está editando en el popover
+  let filtroSoloNotasPendientes = false; // toggle del filtro "Solo pendientes"
 
   // ─── INIT ───
   usuario = await requireRole("vendedor");
@@ -1231,14 +1585,8 @@
       if (!fechaStr) fechaStr = hoyMX;
       if (fechaStr < inicioMesStr) return;
 
-      let monto = 0;
-      const cert = certPorAlumno[a.id];
-      if (cert && typeof cert.comisionVendedor === "number") {
-        monto = cert.comisionVendedor;
-      } else {
-        const curso = cursos.find(cu => cu.id === a.cursoId);
-        monto = calcularComisionFija(usuario, curso, consultora);
-      }
+      // FIX: usar siempre la comisión actual de la consultora (no snapshot viejo del cert)
+      const monto = calcularComisionFija(usuario, null, consultora);
 
       if (!porDia[fechaStr]) porDia[fechaStr] = { ventas: 0, monto: 0 };
       porDia[fechaStr].ventas++;
@@ -1517,15 +1865,8 @@
       }
       if (fechaStr < inicioMesStr) return;
 
-      // Calcular comisión: si tiene cert, snapshot; si no, comisión fija actual
-      let monto = 0;
-      const cert = certPorAlumno[a.id];
-      if (cert && typeof cert.comisionVendedor === "number") {
-        monto = cert.comisionVendedor;
-      } else {
-        const curso = cursos.find(cu => cu.id === a.cursoId);
-        monto = calcularComisionFija(usuario, curso, consultora);
-      }
+      // FIX: usar siempre la comisión actual de la consultora (no snapshot viejo del cert)
+      const monto = calcularComisionFija(usuario, null, consultora);
 
       if (fechaStr === hoyMX) { comisionHoy += monto; ventasHoy++; }
       if (fechaStr === ayerStr) { comisionAyer += monto; ventasAyer++; }
@@ -1704,6 +2045,13 @@
         a.estado !== "programado" &&
         a.nombre && a.email && a.telefono && a.cursoId
       );
+      // Notas pendientes (con nota no vacía y no resueltas)
+      const notasPendientesCurso = data.alumnos.filter(a => a.nota && !a.notaResuelta).length;
+      // Aplicar filtro si está activo
+      const alumnosFiltrados = filtroSoloNotasPendientes
+        ? data.alumnos.filter(a => a.nota && !a.notaResuelta)
+        : data.alumnos;
+      const pendientesFiltrados = filtroSoloNotasPendientes ? [] : data.pendientes;
 
       html += `<div class="curso-bloque">
         <div class="curso-bloque-header">
@@ -1713,6 +2061,34 @@
           </div>
           <div class="curso-bloque-actions">
             <span class="curso-bloque-badge">${enviados} enviados · ${pendientesEnvio} pendientes</span>
+            ${notasPendientesCurso > 0 ? `
+              <button class="filtro-pendientes-btn ${filtroSoloNotasPendientes ? 'active' : ''}" data-filtro-pendientes="${cursoId}" title="Solo casos con nota pendiente">
+                🔴 ${filtroSoloNotasPendientes ? 'Ver todos' : `Pendientes (${notasPendientesCurso})`}
+              </button>
+            ` : ''}
+            <span class="contador-seleccionados" data-contador-curso="${cursoId}" style="display:none">0 seleccionados</span>
+            <button class="btn-copiar-tels" data-copiar-tels="${cursoId}" title="Copiar teléfonos. Marca filas con el checkbox para copiar solo esas, o cópialos todos del curso.">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copiar tels
+            </button>
+            <div class="color-fila-wrapper">
+              <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
+                🎨 Color
+              </button>
+              <div class="color-palette-dropdown" data-palette-curso="${cursoId}">
+                <div class="color-palette-titulo">Elegir color de fila</div>
+                <div class="color-palette-grid">
+                  <div class="color-chip-mini" data-color="#FEF08A" data-curso-paleta="${cursoId}" style="background:#FEF08A" title="Amarillo"></div>
+                  <div class="color-chip-mini" data-color="#7DD3FC" data-curso-paleta="${cursoId}" style="background:#7DD3FC" title="Azul"></div>
+                  <div class="color-chip-mini" data-color="#86EFAC" data-curso-paleta="${cursoId}" style="background:#86EFAC" title="Verde"></div>
+                  <div class="color-chip-mini" data-color="#FCA5A5" data-curso-paleta="${cursoId}" style="background:#FCA5A5" title="Rojo"></div>
+                  <div class="color-chip-mini" data-color="#F9A8D4" data-curso-paleta="${cursoId}" style="background:#F9A8D4" title="Rosa"></div>
+                  <div class="color-chip-mini" data-color="#FDBA74" data-curso-paleta="${cursoId}" style="background:#FDBA74" title="Naranja"></div>
+                  <div class="color-chip-mini" data-color="#C4B5FD" data-curso-paleta="${cursoId}" style="background:#C4B5FD" title="Morado"></div>
+                  <div class="color-chip-mini color-chip-sin" data-color="" data-curso-paleta="${cursoId}" title="Sin color">✕</div>
+                </div>
+              </div>
+            </div>
             ${elegiblesGenerar.length > 0 ? `
               <button class="btn btn-primary btn-sm" data-generar-todos="${cursoId}" style="display:flex;align-items:center;gap:6px;background:#16a34a;border-color:#15803d">
                 ⚡ Generar todos (${elegiblesGenerar.length})
@@ -1724,16 +2100,17 @@
           <table class="sheet-table">
             <thead>
               <tr>
+                <th class="row-color-checkbox-th"></th>
                 <th style="width:40px">#</th>
                 <th style="width:230px">Nombre</th>
                 <th style="width:140px">Teléfono</th>
                 <th style="width:240px">Email</th>
                 <th style="width:160px">Folio IPCI</th>
                 <th style="width:110px">Estado</th>
-                <th style="width:130px">Acción</th>
+                <th style="width:160px">Acción</th>
               </tr>
             </thead>
-            <tbody>${renderRowsBloque(data.alumnos, data.pendientes, cursoId)}</tbody>
+            <tbody>${renderRowsBloque(alumnosFiltrados, pendientesFiltrados, cursoId)}</tbody>
           </table>
         </div>
         <button class="btn-add-row-bloque" data-add-curso="${cursoId}">
@@ -1761,12 +2138,17 @@
     alumnosArr.forEach(a => {
       const cert = certificados.find(c => c.id === a.certificadoId);
       const yaGenerado = a.estado === "email_enviado";
-      html += `<tr data-alumno-id="${a.id}" class="${yaGenerado ? 'saved' : ''}">
+      const bgColor = a.colorFila || "";
+      const styleBg = bgColor ? `style="--row-bg:${bgColor}"` : "";
+      const colorClass = bgColor ? "has-row-color" : "";
+      const isChecked = filasSeleccionadas.has(a.id) ? "checked" : "";
+      html += `<tr data-alumno-id="${a.id}" data-curso-fila="${cursoIdBloque}" class="${yaGenerado ? 'saved' : ''} ${colorClass}" ${styleBg}>
+        <td class="row-color-checkbox-td"><input type="checkbox" class="row-color-checkbox" data-check-alumno="${a.id}" data-check-curso="${cursoIdBloque}" ${isChecked}></td>
         <td class="sheet-row-num">${n++}</td>
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
           : `<input type="text" class="sheet-cell-input" data-field="nombre" value="${escapeHtml(a.nombre)}" placeholder="Nombre completo" style="text-transform:uppercase">`}</td>
-        <td>${yaGenerado
+        <td data-tel="${escapeHtml(a.telefono || "")}">${yaGenerado
           ? `<div class="sheet-cell-fixed muted">${escapeHtml(a.telefono || "—")}</div>`
           : `<input type="tel" class="sheet-cell-input" data-field="telefono" value="${escapeHtml(a.telefono || "")}" placeholder="Teléfono">`}</td>
         <td>${yaGenerado
@@ -1780,6 +2162,7 @@
     pendientesArr.forEach(row => {
       const tieneCurso = !!row.cursoId;
       html += `<tr data-temp-id="${row.tempId}">
+        <td class="row-color-checkbox-td"></td>
         <td class="sheet-row-num">${n++}</td>
         <td><input type="text" class="sheet-cell-input" data-field="nombre" data-temp="${row.tempId}" value="${escapeHtml(row.nombre || "")}" placeholder="Nombre completo" style="text-transform:uppercase"></td>
         <td><input type="tel" class="sheet-cell-input" data-field="telefono" data-temp="${row.tempId}" value="${escapeHtml(row.telefono || "")}" placeholder="Teléfono"></td>
@@ -1828,7 +2211,352 @@
       btnAdd.dataset.bound = "1";
       btnAdd.addEventListener("click", () => agregarFilaPendiente(null));
     }
+
+    // ─── COLOR DE FILA (v1.0) ───
+    bindColorFilaEvents();
+    // ─── NOTAS (v1.0) ───
+    bindNotasEvents();
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // COLOR DE FILA (v1.0) — Sistema Excel-style
+  // ═══════════════════════════════════════════════════════════
+  function bindColorFilaEvents() {
+    // Checkbox de cada fila (con soporte shift+click para rango)
+    document.querySelectorAll(".row-color-checkbox").forEach(cb => {
+      if (cb.dataset.bound === "1") return;
+      cb.dataset.bound = "1";
+      cb.addEventListener("click", (e) => {
+        const alumnoId = cb.dataset.checkAlumno;
+        const cursoId = cb.dataset.checkCurso;
+        const shift = e.shiftKey;
+        toggleCheckRow(alumnoId, cursoId, shift, cb.checked);
+      });
+    });
+
+    // Botón "🎨 Color" → toggle paleta
+    document.querySelectorAll("[data-toggle-color]").forEach(btn => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cursoId = btn.dataset.toggleColor;
+        const paleta = document.querySelector(`[data-palette-curso="${cursoId}"]`);
+        const yaAbierta = paleta && paleta.classList.contains("open");
+        cerrarPaletas();
+        if (paleta && !yaAbierta) paleta.classList.add("open");
+      });
+    });
+
+    // Cada chip de color → aplicar a las filas seleccionadas
+    document.querySelectorAll(".color-chip-mini").forEach(chip => {
+      if (chip.dataset.bound === "1") return;
+      chip.dataset.bound = "1";
+      chip.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const color = chip.dataset.color || null; // "" → null (sin color)
+        aplicarColorAFilas(color);
+      });
+    });
+
+    // Click fuera de paleta → cerrar todas
+    if (!document.body.dataset.cerrarPaletasBound) {
+      document.body.dataset.cerrarPaletasBound = "1";
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".color-fila-wrapper")) cerrarPaletas();
+      });
+    }
+
+    // Sincronizar UI inicial del botón/contador para cada bloque visible
+    document.querySelectorAll("[data-toggle-color]").forEach(btn => {
+      actualizarUIColor(btn.dataset.toggleColor);
+    });
+  }
+
+  function cerrarPaletas() {
+    document.querySelectorAll(".color-palette-dropdown.open").forEach(p => p.classList.remove("open"));
+  }
+
+  function toggleCheckRow(alumnoId, cursoId, shift, isChecked) {
+    if (shift && lastCheckedAlumnoId && lastCheckedAlumnoId !== alumnoId) {
+      // Selección de rango: marcar todos los checkboxes del mismo bloque entre lastChecked y este
+      const checks = Array.from(document.querySelectorAll(`.row-color-checkbox[data-check-curso="${cursoId}"]`));
+      const idxA = checks.findIndex(c => c.dataset.checkAlumno === lastCheckedAlumnoId);
+      const idxB = checks.findIndex(c => c.dataset.checkAlumno === alumnoId);
+      if (idxA !== -1 && idxB !== -1) {
+        const [start, end] = idxA < idxB ? [idxA, idxB] : [idxB, idxA];
+        for (let i = start; i <= end; i++) {
+          const id = checks[i].dataset.checkAlumno;
+          checks[i].checked = isChecked;
+          if (isChecked) filasSeleccionadas.add(id);
+          else filasSeleccionadas.delete(id);
+        }
+      }
+    } else {
+      if (isChecked) filasSeleccionadas.add(alumnoId);
+      else filasSeleccionadas.delete(alumnoId);
+    }
+    lastCheckedAlumnoId = alumnoId;
+    actualizarUIColor(cursoId);
+  }
+
+  function actualizarUIColor(cursoId) {
+    // Cuenta seleccionados de este curso
+    const checks = document.querySelectorAll(`.row-color-checkbox[data-check-curso="${cursoId}"]:checked`);
+    const count = checks.length;
+    const contador = document.querySelector(`[data-contador-curso="${cursoId}"]`);
+    const btn = document.querySelector(`[data-toggle-color="${cursoId}"]`);
+    if (contador) {
+      contador.style.display = count > 0 ? "inline-block" : "none";
+      contador.textContent = `${count} seleccionado${count === 1 ? "" : "s"}`;
+    }
+    if (btn) {
+      btn.disabled = count === 0;
+      btn.title = count === 0
+        ? "Selecciona filas con el checkbox para pintarlas"
+        : `Aplicar color a ${count} fila${count === 1 ? "" : "s"}`;
+    }
+  }
+
+  async function aplicarColorAFilas(color) {
+    cerrarPaletas();
+    if (filasSeleccionadas.size === 0) return;
+    const ids = Array.from(filasSeleccionadas);
+    const colorValor = color || null;
+
+    // Optimista: pintar UI antes de Firestore
+    ids.forEach(id => {
+      const tr = document.querySelector(`tr[data-alumno-id="${id}"]`);
+      if (tr) {
+        if (colorValor) {
+          tr.style.setProperty("--row-bg", colorValor);
+          tr.classList.add("has-row-color");
+        } else {
+          tr.style.removeProperty("--row-bg");
+          tr.classList.remove("has-row-color");
+        }
+      }
+      // También actualiza el array local
+      const a = alumnos.find(x => x.id === id);
+      if (a) a.colorFila = colorValor;
+    });
+
+    // Toast de progreso
+    showToastColor(`Aplicando color a ${ids.length} fila${ids.length === 1 ? "" : "s"}...`);
+
+    // Guardar en Firestore en paralelo
+    try {
+      await Promise.all(
+        ids.map(id => updateDoc(doc(db, "alumnos", id), { colorFila: colorValor }))
+      );
+      showToastColor(colorValor ? `✓ ${ids.length} fila${ids.length === 1 ? "" : "s"} pintada${ids.length === 1 ? "" : "s"}` : `✓ Color removido de ${ids.length} fila${ids.length === 1 ? "" : "s"}`);
+    } catch (err) {
+      console.error("[ColorFila] Error guardando:", err);
+      showToastColor("⚠ Error al guardar el color. Recarga la página.");
+    }
+
+    // Limpiar selección
+    filasSeleccionadas.clear();
+    lastCheckedAlumnoId = null;
+    document.querySelectorAll(".row-color-checkbox:checked").forEach(cb => { cb.checked = false; });
+    document.querySelectorAll("[data-toggle-color]").forEach(btn => actualizarUIColor(btn.dataset.toggleColor));
+  }
+
+  function showToastColor(msg) {
+    let t = document.getElementById("toast-color-fila");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "toast-color-fila";
+      t.className = "toast-color";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+  // ═══════════════════════════════════════════════════════════
+  // FIN Color de fila
+  // ═══════════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════════
+  // NOTAS POR ALUMNO (v1.0)
+  // ═══════════════════════════════════════════════════════════
+  function notaIconHtml(a) {
+    const nota = (a.nota || "").trim();
+    if (!nota) {
+      return `<span class="nota-icon nota-vacia" data-nota-alumno="${a.id}" title="Agregar nota">📝</span>`;
+    }
+    if (a.notaResuelta) {
+      const preview = escapeHtml(nota.length > 80 ? nota.slice(0, 80) + "…" : nota);
+      return `<span class="nota-icon nota-resuelta" data-nota-alumno="${a.id}" title="Resuelto: ${preview}">📝</span>`;
+    }
+    const preview = escapeHtml(nota.length > 80 ? nota.slice(0, 80) + "…" : nota);
+    return `<span class="nota-icon nota-pendiente" data-nota-alumno="${a.id}" title="Pendiente: ${preview}">📝</span>`;
+  }
+
+  function bindNotasEvents() {
+    // Clic en icono de nota → abrir popover
+    document.querySelectorAll("[data-nota-alumno]").forEach(icon => {
+      if (icon.dataset.bound === "1") return;
+      icon.dataset.bound = "1";
+      icon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        abrirPopoverNota(icon.dataset.notaAlumno, icon);
+      });
+    });
+
+    // Botón filtro "Solo pendientes"
+    document.querySelectorAll("[data-filtro-pendientes]").forEach(btn => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        filtroSoloNotasPendientes = !filtroSoloNotasPendientes;
+        renderBloques();
+      });
+    });
+  }
+
+  function abrirPopoverNota(alumnoId, anchorEl) {
+    const alumno = alumnos.find(a => a.id === alumnoId);
+    if (!alumno) return;
+    notaAlumnoAbierta = alumnoId;
+
+    let popover = document.getElementById("nota-popover");
+    let backdrop = document.getElementById("nota-popover-backdrop");
+
+    if (!popover) {
+      backdrop = document.createElement("div");
+      backdrop.id = "nota-popover-backdrop";
+      backdrop.className = "nota-popover-backdrop";
+      backdrop.addEventListener("click", cerrarPopoverNota);
+      document.body.appendChild(backdrop);
+
+      popover = document.createElement("div");
+      popover.id = "nota-popover";
+      popover.className = "nota-popover";
+      popover.innerHTML = `
+        <div class="nota-popover-titulo">Nota del alumno</div>
+        <div class="nota-popover-alumno" id="nota-popover-alumno-nombre"></div>
+        <textarea id="nota-popover-textarea" placeholder="Ej: Pagó la mitad — falta cobrar $500 antes del viernes"></textarea>
+        <label class="nota-popover-check">
+          <input type="checkbox" id="nota-popover-resuelta">
+          <span>Marcar como <strong>resuelto</strong></span>
+        </label>
+        <div class="nota-popover-actions">
+          <button class="btn-nota-borrar" id="btn-nota-borrar" style="display:none">Borrar nota</button>
+          <div style="display:flex;gap:8px;margin-left:auto">
+            <button class="btn-nota-cancelar" id="btn-nota-cancelar">Cancelar</button>
+            <button class="btn-nota-guardar" id="btn-nota-guardar">Guardar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(popover);
+
+      document.getElementById("btn-nota-cancelar").addEventListener("click", cerrarPopoverNota);
+      document.getElementById("btn-nota-guardar").addEventListener("click", guardarNota);
+      document.getElementById("btn-nota-borrar").addEventListener("click", borrarNota);
+      // Cerrar con Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && popover.classList.contains("open")) cerrarPopoverNota();
+      });
+    }
+
+    // Cargar datos del alumno
+    document.getElementById("nota-popover-alumno-nombre").textContent = alumno.nombre || "(sin nombre)";
+    document.getElementById("nota-popover-textarea").value = alumno.nota || "";
+    document.getElementById("nota-popover-resuelta").checked = !!alumno.notaResuelta;
+    document.getElementById("btn-nota-borrar").style.display = (alumno.nota || "").trim() ? "inline-flex" : "none";
+
+    // Posicionar popover cerca del icono
+    backdrop.classList.add("open");
+    popover.classList.add("open");
+    posicionarPopover(popover, anchorEl);
+
+    // Focus en textarea
+    setTimeout(() => document.getElementById("nota-popover-textarea").focus(), 50);
+  }
+
+  function posicionarPopover(popover, anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    const popW = 340;
+    const popH = popover.offsetHeight || 240;
+    let top = rect.bottom + 8;
+    let left = rect.left;
+    // Si se sale por la derecha, alinear con borde derecho del icono
+    if (left + popW > window.innerWidth - 16) {
+      left = window.innerWidth - popW - 16;
+    }
+    // Si se sale por abajo, mostrar arriba del icono
+    if (top + popH > window.innerHeight - 16) {
+      top = Math.max(16, rect.top - popH - 8);
+    }
+    popover.style.top = top + "px";
+    popover.style.left = left + "px";
+  }
+
+  function cerrarPopoverNota() {
+    notaAlumnoAbierta = null;
+    document.getElementById("nota-popover")?.classList.remove("open");
+    document.getElementById("nota-popover-backdrop")?.classList.remove("open");
+  }
+
+  async function guardarNota() {
+    if (!notaAlumnoAbierta) return;
+    const id = notaAlumnoAbierta;
+    const texto = document.getElementById("nota-popover-textarea").value.trim();
+    const resuelta = document.getElementById("nota-popover-resuelta").checked;
+
+    const datos = {
+      nota: texto || null,
+      notaResuelta: texto ? resuelta : false,
+      notaActualizadaEn: serverTimestamp(),
+    };
+
+    // Optimista: actualizar UI local
+    const a = alumnos.find(x => x.id === id);
+    if (a) {
+      a.nota = datos.nota;
+      a.notaResuelta = datos.notaResuelta;
+    }
+
+    cerrarPopoverNota();
+    showToastColor(texto ? "✓ Nota guardada" : "✓ Nota eliminada");
+
+    try {
+      await updateDoc(doc(db, "alumnos", id), datos);
+    } catch (err) {
+      console.error("[Nota] Error guardando:", err);
+      showToastColor("⚠ Error al guardar la nota");
+    }
+    renderBloques();
+  }
+
+  async function borrarNota() {
+    if (!notaAlumnoAbierta) return;
+    const id = notaAlumnoAbierta;
+    const a = alumnos.find(x => x.id === id);
+    if (a) {
+      a.nota = null;
+      a.notaResuelta = false;
+    }
+    cerrarPopoverNota();
+    showToastColor("✓ Nota eliminada");
+    try {
+      await updateDoc(doc(db, "alumnos", id), {
+        nota: null,
+        notaResuelta: false,
+        notaActualizadaEn: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("[Nota] Error borrando:", err);
+    }
+    renderBloques();
+  }
+  // ═══════════════════════════════════════════════════════════
+  // FIN Notas por alumno
+  // ═══════════════════════════════════════════════════════════
 
   function agregarFilaPendiente(cursoId) {
     if (!aperturaActual || aperturaActual === "sin-asignar") {
@@ -1872,17 +2600,24 @@
   }
 
   function accionAlumno(a) {
+    let botonHtml;
     if (a.estado === "email_enviado") {
       const cert = certificados.find(c => c.id === a.certificadoId);
       if (cert?.pdfUrl) {
-        return `<a href="${cert.pdfUrl}" target="_blank" class="btn-generar success" style="display:block;text-decoration:none;text-align:center">Ver PDF</a>`;
+        botonHtml = `<a href="${cert.pdfUrl}" target="_blank" class="btn-generar success" style="flex:1;text-decoration:none;text-align:center">Ver PDF</a>`;
+      } else {
+        botonHtml = `<button class="btn-generar success" style="flex:1" disabled>✓ Enviado</button>`;
       }
-      return `<button class="btn-generar success" disabled>✓ Enviado</button>`;
+    } else if (a.estado === "programado") {
+      botonHtml = `<button class="btn-generar" style="flex:1;background:#4338ca" data-cancelar="${a.id}">Cancelar</button>`;
+    } else {
+      botonHtml = `<button class="btn-generar" style="flex:1" data-generar="${a.id}">Generar</button>`;
     }
-    if (a.estado === "programado") {
-      return `<button class="btn-generar" data-cancelar="${a.id}" style="background:#4338ca">Cancelar</button>`;
-    }
-    return `<button class="btn-generar" data-generar="${a.id}">Generar</button>`;
+    // MODIFICADO: botón basurita para eliminar alumno (con confirmación)
+    const borrarHtml = `<button class="btn-borrar-alumno" data-borrar="${a.id}" data-nombre-borrar="${escapeHtml(a.nombre || '')}" data-enviado-borrar="${a.estado === 'email_enviado' ? '1' : '0'}" title="Eliminar alumno">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+    </button>`;
+    return `<div style="display:flex;align-items:center;gap:6px">${notaIconHtml(a)}${botonHtml}${borrarHtml}</div>`;
   }
 
   function bindSheetEvents() {
@@ -1970,6 +2705,69 @@
         } catch (e) {
           console.error(e);
           toast("Error: " + e.message, "error");
+        }
+      });
+    });
+
+    // MODIFICADO: Eliminar alumno (con confirmación). onSnapshot refresca la lista solo.
+    document.querySelectorAll("[data-borrar]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.borrar;
+        const nombre = btn.dataset.nombreBorrar || "este alumno";
+        const yaEnviado = btn.dataset.enviadoBorrar === "1";
+        const ok = await confirmar({
+          titulo: "Eliminar alumno",
+          mensaje: yaEnviado
+            ? `¿Deseas borrar a ${nombre}? Ya tiene certificado emitido: se quitará de tu lista, pero el certificado seguirá siendo válido.`
+            : `¿Deseas borrar a ${nombre}? Esta acción no se puede deshacer.`,
+          btnOk: "Sí, borrar",
+          btnCancel: "No",
+          peligroso: true,
+        });
+        if (!ok) return;
+        try {
+          await deleteDoc(doc(db, "alumnos", id));
+          toast("Alumno eliminado", "success");
+        } catch (e) {
+          console.error(e);
+          toast("Error: " + e.message, "error");
+        }
+      });
+    });
+
+    // MODIFICADO: Copiar teléfonos del bloque (los marcados con checkbox, o todos si no hay marcados)
+    document.querySelectorAll("[data-copiar-tels]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const bloque = btn.closest(".curso-bloque");
+        if (!bloque) return;
+        const marcadas = bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked");
+        let filas;
+        if (marcadas.length > 0) {
+          filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
+        } else {
+          filas = Array.from(bloque.querySelectorAll("tr[data-alumno-id]"));
+        }
+        const tels = filas
+          .map(tr => (tr.querySelector("[data-tel]")?.getAttribute("data-tel") || "").trim())
+          .filter(t => t.length > 0);
+        if (tels.length === 0) {
+          toast("No hay teléfonos para copiar", "info");
+          return;
+        }
+        const texto = tels.join("\n");
+        try {
+          await navigator.clipboard.writeText(texto);
+          toast(`${tels.length} teléfono${tels.length === 1 ? '' : 's'} copiado${tels.length === 1 ? '' : 's'}`, "success");
+        } catch (e) {
+          const ta = document.createElement("textarea");
+          ta.value = texto;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); toast(`${tels.length} teléfonos copiados`, "success"); }
+          catch (_) { toast("No se pudo copiar", "error"); }
+          document.body.removeChild(ta);
         }
       });
     });
@@ -2121,15 +2919,11 @@
         programarEn = d.getTime();
       }
 
-      // PARCHE v2.5.1 — wrapper con retry, fallback y errores detallados
-      const alumnoActual = alumnos.find(x => x.id === alumnoIdAGenerar);
-      const cursoActual = cursos.find(c => c.id === alumnoActual?.cursoId);
-      const ctx = `alumno=${alumnoActual?.nombre || alumnoIdAGenerar} | curso=${cursoActual?.nombre || "?"}`;
-
-      const result = await callCertFunction("generarCertificado", {
+      const generarCertificado = httpsCallable(functions, "generarCertificado");
+      const result = await generarCertificado({
         alumnoId: alumnoIdAGenerar,
         programarEn,
-      }, { contexto: ctx });
+      });
 
       if (result.data.programado) {
         const fechaTxt = new Date(result.data.fechaProgramada).toLocaleDateString("es-MX", {
@@ -2156,8 +2950,6 @@
   let generandoMasivo = false;
 
   async function generarTodosDelBloque(cursoId) {
-    console.log("[GENERAR TODOS] 🚀 Iniciando", { cursoId, aperturaActual });
-
     if (generandoMasivo) {
       toast("Ya hay una generación masiva en curso. Espera a que termine.", "warning");
       return;
@@ -2172,25 +2964,7 @@
       a.nombre && a.email && a.telefono
     );
 
-    console.log(`[GENERAR TODOS] 📋 Elegibles: ${elegibles.length} de ${alumnos.length} alumnos en memoria`);
-    console.log(`[GENERAR TODOS] 🎯 aperturaActual="${aperturaActual}" · cursoId="${cursoId}"`);
-
     if (elegibles.length === 0) {
-      // Diagnóstico extra: ¿por qué cero?
-      const enCurso = alumnos.filter(a => a.cursoId === cursoId);
-      const enApertura = enCurso.filter(a => getAperturaKey(a) === aperturaActual);
-      const pendientes = enApertura.filter(a => a.estado !== "email_enviado" && a.estado !== "programado");
-      const conDatos = pendientes.filter(a => a.nombre && a.email && a.telefono);
-      console.warn("[GENERAR TODOS] ⚠️ Sin elegibles. Diagnóstico:", {
-        totalEnCurso: enCurso.length,
-        enAperturaActual: enApertura.length,
-        pendientesEnApertura: pendientes.length,
-        conDatosCompletos: conDatos.length,
-        muestraAlumnos: enApertura.slice(0, 3).map(a => ({
-          nombre: a.nombre, estado: a.estado,
-          tieneTel: !!a.telefono, tieneEmail: !!a.email
-        }))
-      });
       toast("No hay alumnos pendientes para generar en este curso", "info");
       return;
     }
@@ -2203,15 +2977,10 @@
       `Curso: ${nombreCurso}\n` +
       `Alumnos a procesar: ${elegibles.length}\n\n` +
       `Cada certificado se genera y envía por email automáticamente.\n` +
-      `Tomará aproximadamente ${Math.ceil(elegibles.length * 1.5 / 60)} minuto(s).\n\n` +
+      `Tomará aproximadamente ${Math.ceil(elegibles.length * 4 / 60)} minuto(s).\n\n` +
       `¿Continuar?`
     );
-    if (!confirmar) {
-      console.log("[GENERAR TODOS] ❌ Usuario canceló confirm()");
-      return;
-    }
-
-    console.log("[GENERAR TODOS] ✅ Confirmado. Iniciando bucle de", elegibles.length, "alumnos...");
+    if (!confirmar) return;
 
     generandoMasivo = true;
     let exitos = 0;
@@ -2225,65 +2994,60 @@
     toastEl.innerHTML = `⚡ Procesando 0/${elegibles.length}...`;
     document.body.appendChild(toastEl);
 
-    // PARCHE v2.5.2 — bucle masivo con logging exhaustivo y circuit breaker
+    const generarCertificado = httpsCallable(functions, "generarCertificado");
+
     for (let i = 0; i < elegibles.length; i++) {
       const a = elegibles[i];
-      console.log(`[GENERAR TODOS] 📨 ${i+1}/${elegibles.length} → ${a.nombre} <${a.email}>`);
-      toastEl.innerHTML = `⚡ Procesando ${i + 1}/${elegibles.length}<br>` +
-        `<span style="font-size:12px;opacity:.85;font-weight:400">${escapeHtml(a.nombre)}</span><br>` +
-        `<span style="font-size:11px;opacity:.7">✅ ${exitos} enviados · ❌ ${fallos} fallos</span>`;
+      toastEl.innerHTML = `⚡ Procesando ${i + 1}/${elegibles.length}<br><span style="font-size:12px;opacity:.85;font-weight:400">${escapeHtml(a.nombre)}</span>`;
 
       try {
-        const resultado = await callCertFunction("generarCertificado",
-          { alumnoId: a.id, programarEn: null },
-          { contexto: `masivo: ${a.nombre}`, maxIntentos: 1 }
-        );
+        await generarCertificado({ alumnoId: a.id, programarEn: null });
         exitos++;
-        console.log(`[GENERAR TODOS] ✅ ${i+1}/${elegibles.length} OK · folio=${resultado?.data?.folio}`);
       } catch (err) {
-        fallos++;
-        const msg = err?.message || String(err);
-        const code = err?.code || "unknown";
-        erroresDetalle.push({ nombre: a.nombre, email: a.email, error: msg, code });
-        console.error(`[GENERAR TODOS] ❌ ${i+1}/${elegibles.length} FALLO`, { alumno: a.nombre, email: a.email, code, msg, err });
-
-        // CIRCUIT BREAKER: si los primeros 3 fallan sin ningún éxito, detener
-        if (fallos >= 3 && exitos === 0) {
-          console.error("[GENERAR TODOS] 🛑 Circuit breaker: 3 fallos consecutivos sin éxitos. Deteniendo.");
-          toastEl.innerHTML = `🛑 Detenido tras 3 fallos · revisa F12`;
-          break;
+        // Si es rate limit de Resend, esperar 10s y reintentar UNA vez
+        const msgErr = String(err.message || "");
+        const esRateLimit = /too many|rate limit|demasiadas|429/i.test(msgErr);
+        if (esRateLimit) {
+          console.warn(`⏳ Rate limit detectado en ${a.email}, esperando 10s y reintentando...`);
+          toastEl.innerHTML = `⏳ Rate limit — esperando 10s antes de reintentar ${a.nombre}...`;
+          await new Promise(r => setTimeout(r, 10000));
+          try {
+            await generarCertificado({ alumnoId: a.id, programarEn: null });
+            exitos++;
+            continue;
+          } catch (err2) {
+            fallos++;
+            erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err2.message });
+            console.error(`❌ Falló después de reintentar ${a.email}:`, err2);
+          }
+        } else {
+          fallos++;
+          erroresDetalle.push({ nombre: a.nombre, email: a.email, error: err.message });
+          console.error(`❌ Error con ${a.email}:`, err);
         }
       }
 
-      // Esperar 1.5s entre cada uno para no saturar Resend / Workspace
+      // Esperar 4s entre cada uno para no saturar Resend (límite 2/seg)
       if (i < elegibles.length - 1) {
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 4000));
       }
     }
 
     toastEl.remove();
     generandoMasivo = false;
 
-    console.log(`[GENERAR TODOS] 🏁 Terminado: ${exitos} ok · ${fallos} fail · ${elegibles.length} total`);
-
-    // Resultado final SIEMPRE visible
-    let mensaje = `📊 RESULTADO GENERACIÓN MASIVA\n\n`;
-    mensaje += `✅ Generados: ${exitos}\n`;
-    mensaje += `❌ Fallaron: ${fallos}\n`;
-    mensaje += `📋 Procesados: ${exitos + fallos} de ${elegibles.length}\n\n`;
-
-    if (exitos > 0) {
-      mensaje += `Los ${exitos} certificados ya fueron enviados por email.\n`;
-    }
+    // Resultado final
+    let mensaje = `✅ Generados: ${exitos}`;
+    if (fallos > 0) mensaje += `\n❌ Fallaron: ${fallos}`;
+    mensaje += `\n\nLos alumnos generados ya recibieron su certificado por email.`;
 
     if (erroresDetalle.length > 0) {
-      mensaje += `\nFallos:\n` + erroresDetalle.slice(0, 5).map(e =>
-        `• ${e.nombre} [${e.code}]: ${e.error.substring(0, 70)}`
+      mensaje += `\n\nFallos:\n` + erroresDetalle.slice(0, 5).map(e =>
+        `• ${e.nombre}: ${e.error.substring(0, 60)}`
       ).join("\n");
       if (erroresDetalle.length > 5) {
-        mensaje += `\n... y ${erroresDetalle.length - 5} más`;
+        mensaje += `\n... y ${erroresDetalle.length - 5} más (ver consola)`;
       }
-      mensaje += `\n\n💡 Abre la consola (F12) para ver detalles completos.`;
     }
 
     alert(mensaje);
@@ -2433,10 +3197,8 @@
         const a = alumnos.find(al => al.certificadoId === ce.id);
         const metodo = a?.metodoPago || "—";
         const curso = cursos.find(cu => cu.id === ce.cursoId);
-        // Comisión: snapshot del cert si existe, si no calcular con comisión fija actual
-        const monto = typeof ce.comisionVendedor === "number"
-          ? ce.comisionVendedor
-          : calcularComisionFija(usuario, curso, consultora);
+        // FIX: usar siempre la comisión actual de la consultora (no snapshot viejo)
+        const monto = calcularComisionFija(usuario, null, consultora);
         return `<tr>
           <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(ce.folio)}</code></td>
           <td><strong>${escapeHtml(ce.nombreAlumno)}</strong></td>
