@@ -706,6 +706,42 @@
     opacity: 0.45;
     cursor: not-allowed;
   }
+  /* MODIFICADO: botón copiar teléfonos (header de bloque) */
+  .btn-copiar-tels {
+    background: #fff;
+    color: #0b4ea2;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t), transform var(--t);
+  }
+  .btn-copiar-tels:hover { opacity: 0.9; }
+  .btn-copiar-tels:active { transform: scale(0.97); }
+  /* MODIFICADO: botón basurita para eliminar alumno */
+  .btn-borrar-alumno {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--t), background var(--t), transform var(--t);
+    flex-shrink: 0;
+  }
+  .btn-borrar-alumno:hover {
+    color: #dc2626;
+    background: #fef2f2;
+  }
+  .btn-borrar-alumno:active { transform: scale(0.92); }
   .contador-seleccionados {
     background: rgba(255, 255, 255, 0.22);
     color: white;
@@ -1401,7 +1437,7 @@
   import {
     auth, db, functions,
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, confirmar, escapeHtml, iniciales, setupSidebar,
-    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, serverTimestamp, onSnapshot,
+    collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot,
     httpsCallable
   } from "./firebase-config.js";
 
@@ -2031,6 +2067,10 @@
               </button>
             ` : ''}
             <span class="contador-seleccionados" data-contador-curso="${cursoId}" style="display:none">0 seleccionados</span>
+            <button class="btn-copiar-tels" data-copiar-tels="${cursoId}" title="Copiar teléfonos. Marca filas con el checkbox para copiar solo esas, o cópialos todos del curso.">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copiar tels
+            </button>
             <div class="color-fila-wrapper">
               <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
                 🎨 Color
@@ -2108,7 +2148,7 @@
         <td>${yaGenerado
           ? `<div class="sheet-cell-fixed">${escapeHtml(a.nombre)}</div>`
           : `<input type="text" class="sheet-cell-input" data-field="nombre" value="${escapeHtml(a.nombre)}" placeholder="Nombre completo" style="text-transform:uppercase">`}</td>
-        <td>${yaGenerado
+        <td data-tel="${escapeHtml(a.telefono || "")}">${yaGenerado
           ? `<div class="sheet-cell-fixed muted">${escapeHtml(a.telefono || "—")}</div>`
           : `<input type="tel" class="sheet-cell-input" data-field="telefono" value="${escapeHtml(a.telefono || "")}" placeholder="Teléfono">`}</td>
         <td>${yaGenerado
@@ -2573,7 +2613,11 @@
     } else {
       botonHtml = `<button class="btn-generar" style="flex:1" data-generar="${a.id}">Generar</button>`;
     }
-    return `<div style="display:flex;align-items:center;gap:6px">${notaIconHtml(a)}${botonHtml}</div>`;
+    // MODIFICADO: botón basurita para eliminar alumno (con confirmación)
+    const borrarHtml = `<button class="btn-borrar-alumno" data-borrar="${a.id}" data-nombre-borrar="${escapeHtml(a.nombre || '')}" data-enviado-borrar="${a.estado === 'email_enviado' ? '1' : '0'}" title="Eliminar alumno">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+    </button>`;
+    return `<div style="display:flex;align-items:center;gap:6px">${notaIconHtml(a)}${botonHtml}${borrarHtml}</div>`;
   }
 
   function bindSheetEvents() {
@@ -2661,6 +2705,69 @@
         } catch (e) {
           console.error(e);
           toast("Error: " + e.message, "error");
+        }
+      });
+    });
+
+    // MODIFICADO: Eliminar alumno (con confirmación). onSnapshot refresca la lista solo.
+    document.querySelectorAll("[data-borrar]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.borrar;
+        const nombre = btn.dataset.nombreBorrar || "este alumno";
+        const yaEnviado = btn.dataset.enviadoBorrar === "1";
+        const ok = await confirmar({
+          titulo: "Eliminar alumno",
+          mensaje: yaEnviado
+            ? `¿Deseas borrar a ${nombre}? Ya tiene certificado emitido: se quitará de tu lista, pero el certificado seguirá siendo válido.`
+            : `¿Deseas borrar a ${nombre}? Esta acción no se puede deshacer.`,
+          btnOk: "Sí, borrar",
+          btnCancel: "No",
+          peligroso: true,
+        });
+        if (!ok) return;
+        try {
+          await deleteDoc(doc(db, "alumnos", id));
+          toast("Alumno eliminado", "success");
+        } catch (e) {
+          console.error(e);
+          toast("Error: " + e.message, "error");
+        }
+      });
+    });
+
+    // MODIFICADO: Copiar teléfonos del bloque (los marcados con checkbox, o todos si no hay marcados)
+    document.querySelectorAll("[data-copiar-tels]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const bloque = btn.closest(".curso-bloque");
+        if (!bloque) return;
+        const marcadas = bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked");
+        let filas;
+        if (marcadas.length > 0) {
+          filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
+        } else {
+          filas = Array.from(bloque.querySelectorAll("tr[data-alumno-id]"));
+        }
+        const tels = filas
+          .map(tr => (tr.querySelector("[data-tel]")?.getAttribute("data-tel") || "").trim())
+          .filter(t => t.length > 0);
+        if (tels.length === 0) {
+          toast("No hay teléfonos para copiar", "info");
+          return;
+        }
+        const texto = tels.join("\n");
+        try {
+          await navigator.clipboard.writeText(texto);
+          toast(`${tels.length} teléfono${tels.length === 1 ? '' : 's'} copiado${tels.length === 1 ? '' : 's'}`, "success");
+        } catch (e) {
+          const ta = document.createElement("textarea");
+          ta.value = texto;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); toast(`${tels.length} teléfonos copiados`, "success"); }
+          catch (_) { toast("No se pudo copiar", "error"); }
+          document.body.removeChild(ta);
         }
       });
     });
