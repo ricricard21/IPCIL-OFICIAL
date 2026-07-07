@@ -2203,7 +2203,7 @@
               Copiar tels
             </button>
             ${cursoId ? `
-            <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar el enlace del grupo de WhatsApp por correo a los alumnos de este curso">
+            <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar el enlace del grupo de WhatsApp por correo a los alumnos de este curso">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
               Enviar enlace
             </button>
@@ -2912,16 +2912,18 @@
     // MODIFICADO: Botón "Enviar enlace" — abre el modal para pegar el link del grupo
     document.querySelectorAll("[data-enviar-link]").forEach(btn => {
       btn.addEventListener("click", () => {
-        abrirModalEnviarLink(btn.dataset.enviarLink, btn.dataset.cursoNombre || "este curso");
+        abrirModalEnviarLink(btn.dataset.enviarLink, btn.dataset.cursoNombre || "este curso", btn.dataset.apertura || "");
       });
     });
   }
 
   // ─── MODIFICADO: Modal para enviar enlace de grupo de WhatsApp (vendedor) ───
   let waLinkCursoActual = null;
+  let waLinkAperturaActual = null;
 
-  function abrirModalEnviarLink(cursoId, cursoNombre) {
+  function abrirModalEnviarLink(cursoId, cursoNombre, aperturaKey) {
     waLinkCursoActual = cursoId;
+    waLinkAperturaActual = aperturaKey || null;
     const overlay = document.getElementById("waLinkOverlay");
     document.getElementById("waLinkCursoNombre").textContent = cursoNombre;
     document.getElementById("waLinkInput").value = "";
@@ -2936,6 +2938,7 @@
   function cerrarModalEnviarLink() {
     document.getElementById("waLinkOverlay").classList.remove("open");
     waLinkCursoActual = null;
+    waLinkAperturaActual = null;
   }
 
   async function enviarLinkAhora() {
@@ -2959,7 +2962,7 @@
 
     try {
       const fn = httpsCallable(functions, "enviarLinkWhatsAppAhora");
-      const res = await fn({ cursoId: waLinkCursoActual, whatsappLink: link });
+      const res = await fn({ cursoId: waLinkCursoActual, whatsappLink: link, aperturaKey: waLinkAperturaActual });
       const d = res.data || {};
       cerrarModalEnviarLink();
       if (d.exitos > 0) {
