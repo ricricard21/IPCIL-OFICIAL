@@ -723,6 +723,118 @@
   }
   .btn-copiar-tels:hover { opacity: 0.9; }
   .btn-copiar-tels:active { transform: scale(0.97); }
+  /* MODIFICADO: botón enviar enlace de WhatsApp (header de bloque) */
+  .btn-enviar-link {
+    background: #16a34a;
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #15803d;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t), transform var(--t);
+  }
+  .btn-enviar-link:hover { opacity: 0.9; }
+  .btn-enviar-link:active { transform: scale(0.97); }
+  /* MODIFICADO: modal para enviar enlace de WhatsApp */
+  .wa-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .wa-modal-overlay.open { display: flex; }
+  .wa-modal {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  }
+  .wa-modal-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .wa-modal-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #16a34a;
+  }
+  .wa-modal-desc {
+    margin: 10px 0 16px;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+  }
+  .wa-modal-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+  .wa-modal-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color var(--t);
+  }
+  .wa-modal-input:focus { border-color: #16a34a; }
+  .wa-modal-error {
+    color: #dc2626;
+    font-size: 12px;
+    min-height: 16px;
+    margin-top: 6px;
+  }
+  .wa-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .wa-btn-cancel {
+    background: #f1f5f9;
+    color: #334155;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background var(--t);
+  }
+  .wa-btn-cancel:hover { background: #e2e8f0; }
+  .wa-btn-send {
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity var(--t);
+  }
+  .wa-btn-send:hover { opacity: 0.9; }
+  .wa-btn-send:disabled { opacity: 0.55; cursor: not-allowed; }
   /* MODIFICADO: botón basurita para eliminar alumno */
   .btn-borrar-alumno {
     background: transparent;
@@ -1433,6 +1545,25 @@
   </div>
 </div>
 
+<!-- MODIFICADO: Modal para enviar el enlace del grupo de WhatsApp (vendedor) -->
+<div class="wa-modal-overlay" id="waLinkOverlay">
+  <div class="wa-modal">
+    <div class="wa-modal-titulo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      Enviar enlace del grupo
+    </div>
+    <div class="wa-modal-sub" id="waLinkCursoNombre">Curso</div>
+    <p class="wa-modal-desc">Se enviará por correo a todos los alumnos de este curso que tengan email registrado.</p>
+    <label class="wa-modal-label">Link del grupo de WhatsApp</label>
+    <input type="url" id="waLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
+    <div class="wa-modal-error" id="waLinkError"></div>
+    <div class="wa-modal-actions">
+      <button class="wa-btn-cancel" id="waLinkCancel">Cancelar</button>
+      <button class="wa-btn-send" id="waLinkSend">Enviar</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import {
     auth, db, functions,
@@ -2071,6 +2202,12 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               Copiar tels
             </button>
+            ${cursoId ? `
+            <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar el enlace del grupo de WhatsApp por correo a los alumnos de este curso">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              Enviar enlace
+            </button>
+            ` : ''}
             <div class="color-fila-wrapper">
               <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
                 🎨 Color
@@ -2771,7 +2908,84 @@
         }
       });
     });
+
+    // MODIFICADO: Botón "Enviar enlace" — abre el modal para pegar el link del grupo
+    document.querySelectorAll("[data-enviar-link]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        abrirModalEnviarLink(btn.dataset.enviarLink, btn.dataset.cursoNombre || "este curso");
+      });
+    });
   }
+
+  // ─── MODIFICADO: Modal para enviar enlace de grupo de WhatsApp (vendedor) ───
+  let waLinkCursoActual = null;
+
+  function abrirModalEnviarLink(cursoId, cursoNombre) {
+    waLinkCursoActual = cursoId;
+    const overlay = document.getElementById("waLinkOverlay");
+    document.getElementById("waLinkCursoNombre").textContent = cursoNombre;
+    document.getElementById("waLinkInput").value = "";
+    document.getElementById("waLinkError").textContent = "";
+    const sendBtn = document.getElementById("waLinkSend");
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Enviar";
+    overlay.classList.add("open");
+    setTimeout(() => document.getElementById("waLinkInput").focus(), 50);
+  }
+
+  function cerrarModalEnviarLink() {
+    document.getElementById("waLinkOverlay").classList.remove("open");
+    waLinkCursoActual = null;
+  }
+
+  async function enviarLinkAhora() {
+    const input = document.getElementById("waLinkInput");
+    const errorBox = document.getElementById("waLinkError");
+    const sendBtn = document.getElementById("waLinkSend");
+    const link = input.value.trim();
+
+    if (!link || !link.toLowerCase().includes("chat.whatsapp.com")) {
+      errorBox.textContent = "Pega un link válido de grupo (https://chat.whatsapp.com/...)";
+      return;
+    }
+    if (!waLinkCursoActual) {
+      errorBox.textContent = "No se identificó el curso. Cierra y vuelve a intentar.";
+      return;
+    }
+
+    errorBox.textContent = "";
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Enviando…";
+
+    try {
+      const fn = httpsCallable(functions, "enviarLinkWhatsAppAhora");
+      const res = await fn({ cursoId: waLinkCursoActual, whatsappLink: link });
+      const d = res.data || {};
+      cerrarModalEnviarLink();
+      if (d.exitos > 0) {
+        toast(`Enlace enviado a ${d.exitos} de ${d.totales} alumno${d.totales === 1 ? '' : 's'}`, "success");
+      } else {
+        toast("No se pudo enviar a ningún alumno. Revisa que tengan correo registrado.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      errorBox.textContent = err.message || "Error al enviar. Intenta de nuevo.";
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Enviar";
+    }
+  }
+
+  // Listeners del modal (una sola vez)
+  (function setupModalEnviarLink() {
+    const overlay = document.getElementById("waLinkOverlay");
+    if (!overlay) return;
+    document.getElementById("waLinkCancel").addEventListener("click", cerrarModalEnviarLink);
+    document.getElementById("waLinkSend").addEventListener("click", enviarLinkAhora);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) cerrarModalEnviarLink(); });
+    document.getElementById("waLinkInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); enviarLinkAhora(); }
+    });
+  })();
 
   // ─── AGREGAR FILA — Manejado por bindBloqueEvents() ───
 
