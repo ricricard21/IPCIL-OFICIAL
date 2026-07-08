@@ -835,6 +835,31 @@
   }
   .wa-btn-send:hover { opacity: 0.9; }
   .wa-btn-send:disabled { opacity: 0.55; cursor: not-allowed; }
+  /* MODIFICADO: chips de tipo de aviso y descuento */
+  .wa-tipos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .wa-tipo-chip, .wa-desc-chip {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t);
+    font-family: inherit;
+  }
+  .wa-tipo-chip:hover, .wa-desc-chip:hover { background: #e2e8f0; }
+  .wa-tipo-chip.active, .wa-desc-chip.active {
+    background: #16a34a;
+    color: #fff;
+    border-color: #15803d;
+  }
   /* MODIFICADO: botón basurita para eliminar alumno */
   .btn-borrar-alumno {
     background: transparent;
@@ -1545,16 +1570,34 @@
   </div>
 </div>
 
-<!-- MODIFICADO: Modal para enviar el enlace del grupo de WhatsApp (vendedor) -->
+<!-- MODIFICADO: Modal para enviar avisos (varios tipos) al correo de los alumnos -->
 <div class="wa-modal-overlay" id="waLinkOverlay">
   <div class="wa-modal">
     <div class="wa-modal-titulo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      Enviar enlace del grupo
+      Enviar aviso
     </div>
     <div class="wa-modal-sub" id="waLinkCursoNombre">Curso</div>
-    <p class="wa-modal-desc">Se enviará por correo a todos los alumnos de este curso que tengan email registrado.</p>
-    <label class="wa-modal-label">Link del grupo de WhatsApp</label>
+    <p class="wa-modal-desc">Se enviará por correo a los alumnos de esta apertura que tengan email registrado.</p>
+
+    <label class="wa-modal-label">¿Qué quieres enviar?</label>
+    <div class="wa-tipos" id="waTipos">
+      <button type="button" class="wa-tipo-chip active" data-tipo="whatsapp">💬 Grupo WhatsApp</button>
+      <button type="button" class="wa-tipo-chip" data-tipo="membresia">⭐ Membresía</button>
+      <button type="button" class="wa-tipo-chip" data-tipo="software">🚀 Software</button>
+      <button type="button" class="wa-tipo-chip" data-tipo="canales">📢 Canales VIP</button>
+      <button type="button" class="wa-tipo-chip" data-tipo="catalogo">🎓 Catálogo</button>
+    </div>
+
+    <div id="waDescuentoWrap" style="display:none">
+      <label class="wa-modal-label">Descuento a ofrecer</label>
+      <div class="wa-tipos">
+        <button type="button" class="wa-desc-chip active" data-desc="10">10%</button>
+        <button type="button" class="wa-desc-chip" data-desc="20">20%</button>
+      </div>
+    </div>
+
+    <label class="wa-modal-label" id="waLinkLabel">Link del grupo de WhatsApp</label>
     <input type="url" id="waLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
     <div class="wa-modal-error" id="waLinkError"></div>
     <div class="wa-modal-actions">
@@ -2203,9 +2246,9 @@
               Copiar tels
             </button>
             ${cursoId ? `
-            <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar el enlace del grupo de WhatsApp por correo a los alumnos de este curso">
+            <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar un aviso por correo a los alumnos de esta apertura (grupo, membresía, software, canales o catálogo)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              Enviar enlace
+              Enviar aviso
             </button>
             ` : ''}
             <div class="color-fila-wrapper">
@@ -2917,21 +2960,46 @@
     });
   }
 
-  // ─── MODIFICADO: Modal para enviar enlace de grupo de WhatsApp (vendedor) ───
+  // ─── MODIFICADO: Modal para enviar avisos (varios tipos) al correo de los alumnos ───
   let waLinkCursoActual = null;
   let waLinkAperturaActual = null;
+  let waTipoActual = "whatsapp";
+  let waDescuentoActual = "10";
+
+  // Config por tipo: label del input, placeholder y validación del link
+  const WA_TIPOS_CFG = {
+    whatsapp:  { label: "Link del grupo de WhatsApp",       ph: "https://chat.whatsapp.com/...",      check: (l) => l.includes("whatsapp.com"), err: "Pega un link válido de WhatsApp (https://chat.whatsapp.com/...)" },
+    membresia: { label: "Link de la membresía",             ph: "https://...",                        check: (l) => l.startsWith("http"),       err: "Pega un link válido (que empiece con https://)" },
+    software:  { label: "Link del software",                ph: "https://...",                        check: (l) => l.startsWith("http"),       err: "Pega un link válido (que empiece con https://)" },
+    canales:   { label: "Link del canal VIP de WhatsApp",   ph: "https://whatsapp.com/channel/...",   check: (l) => l.includes("whatsapp.com"), err: "Pega un link válido de WhatsApp (canal o grupo)" },
+    catalogo:  { label: "Link del catálogo de cursos",      ph: "https://...",                        check: (l) => l.startsWith("http"),       err: "Pega un link válido (que empiece con https://)" },
+  };
+
+  function waSetTipo(tipo) {
+    waTipoActual = tipo;
+    document.querySelectorAll("#waTipos .wa-tipo-chip").forEach(ch => {
+      ch.classList.toggle("active", ch.dataset.tipo === tipo);
+    });
+    document.getElementById("waDescuentoWrap").style.display = (tipo === "catalogo") ? "block" : "none";
+    const cfg = WA_TIPOS_CFG[tipo];
+    document.getElementById("waLinkLabel").textContent = cfg.label;
+    document.getElementById("waLinkInput").placeholder = cfg.ph;
+    document.getElementById("waLinkError").textContent = "";
+  }
 
   function abrirModalEnviarLink(cursoId, cursoNombre, aperturaKey) {
     waLinkCursoActual = cursoId;
     waLinkAperturaActual = aperturaKey || null;
-    const overlay = document.getElementById("waLinkOverlay");
     document.getElementById("waLinkCursoNombre").textContent = cursoNombre;
     document.getElementById("waLinkInput").value = "";
     document.getElementById("waLinkError").textContent = "";
     const sendBtn = document.getElementById("waLinkSend");
     sendBtn.disabled = false;
     sendBtn.textContent = "Enviar";
-    overlay.classList.add("open");
+    waSetTipo("whatsapp");
+    waDescuentoActual = "10";
+    document.querySelectorAll(".wa-desc-chip").forEach(ch => ch.classList.toggle("active", ch.dataset.desc === "10"));
+    document.getElementById("waLinkOverlay").classList.add("open");
     setTimeout(() => document.getElementById("waLinkInput").focus(), 50);
   }
 
@@ -2946,9 +3014,10 @@
     const errorBox = document.getElementById("waLinkError");
     const sendBtn = document.getElementById("waLinkSend");
     const link = input.value.trim();
+    const cfg = WA_TIPOS_CFG[waTipoActual];
 
-    if (!link || !link.toLowerCase().includes("chat.whatsapp.com")) {
-      errorBox.textContent = "Pega un link válido de grupo (https://chat.whatsapp.com/...)";
+    if (!link || !cfg.check(link.toLowerCase())) {
+      errorBox.textContent = cfg.err;
       return;
     }
     if (!waLinkCursoActual) {
@@ -2962,11 +3031,17 @@
 
     try {
       const fn = httpsCallable(functions, "enviarLinkWhatsAppAhora");
-      const res = await fn({ cursoId: waLinkCursoActual, whatsappLink: link, aperturaKey: waLinkAperturaActual });
+      const res = await fn({
+        cursoId: waLinkCursoActual,
+        whatsappLink: link,
+        aperturaKey: waLinkAperturaActual,
+        tipoAviso: waTipoActual,
+        descuento: waTipoActual === "catalogo" ? waDescuentoActual : null,
+      });
       const d = res.data || {};
       cerrarModalEnviarLink();
       if (d.exitos > 0) {
-        toast(`Enlace enviado a ${d.exitos} de ${d.totales} alumno${d.totales === 1 ? '' : 's'}`, "success");
+        toast(`Aviso enviado a ${d.exitos} de ${d.totales} alumno${d.totales === 1 ? '' : 's'}`, "success");
       } else {
         toast("No se pudo enviar a ningún alumno. Revisa que tengan correo registrado.", "error");
       }
@@ -2987,6 +3062,15 @@
     overlay.addEventListener("click", (e) => { if (e.target === overlay) cerrarModalEnviarLink(); });
     document.getElementById("waLinkInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); enviarLinkAhora(); }
+    });
+    document.querySelectorAll("#waTipos .wa-tipo-chip").forEach(ch => {
+      ch.addEventListener("click", () => waSetTipo(ch.dataset.tipo));
+    });
+    document.querySelectorAll(".wa-desc-chip").forEach(ch => {
+      ch.addEventListener("click", () => {
+        waDescuentoActual = ch.dataset.desc;
+        document.querySelectorAll(".wa-desc-chip").forEach(c => c.classList.toggle("active", c === ch));
+      });
     });
   })();
 
