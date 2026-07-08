@@ -1628,6 +1628,13 @@
       </div>
     </div>
 
+    <div id="waCursoCatWrap" style="display:none">
+      <label class="wa-modal-label">Curso a promocionar</label>
+      <select id="waCursoCatSelect" class="wa-modal-input">
+        <option value="">— Elige un curso —</option>
+      </select>
+    </div>
+
     <label class="wa-modal-label" id="waLinkLabel">Link del grupo de WhatsApp</label>
     <input type="text" id="waLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
     <div class="wa-modal-error" id="waLinkError"></div>
@@ -3030,7 +3037,9 @@
     document.querySelectorAll("#waTipos .wa-tipo-chip").forEach(ch => {
       ch.classList.toggle("active", ch.dataset.tipo === tipo);
     });
-    document.getElementById("waDescuentoWrap").style.display = (tipo === "catalogo") ? "block" : "none";
+    const esCatalogo = (tipo === "catalogo");
+    document.getElementById("waDescuentoWrap").style.display = esCatalogo ? "block" : "none";
+    document.getElementById("waCursoCatWrap").style.display = esCatalogo ? "block" : "none";
     const cfg = WA_TIPOS_CFG[tipo];
     document.getElementById("waLinkLabel").textContent = cfg.label;
     document.getElementById("waLinkInput").placeholder = cfg.ph;
@@ -3043,6 +3052,10 @@
     document.getElementById("waLinkCursoNombre").textContent = cursoNombre;
     document.getElementById("waLinkInput").value = "";
     document.getElementById("waLinkError").textContent = "";
+    // Llenar el desplegable de cursos de la consultora (para el catálogo)
+    const sel = document.getElementById("waCursoCatSelect");
+    sel.innerHTML = '<option value="">— Elige un curso —</option>' +
+      cursos.map(c => `<option value="${escapeHtml(c.nombre)}">${escapeHtml(c.nombre)}</option>`).join("");
     const sendBtn = document.getElementById("waLinkSend");
     sendBtn.disabled = false;
     sendBtn.textContent = "Enviar";
@@ -3074,6 +3087,15 @@
       errorBox.textContent = "No se identificó el curso. Cierra y vuelve a intentar.";
       return;
     }
+    // Para catálogo: debe haberse elegido un curso a promocionar
+    let cursoCatalogo = "";
+    if (waTipoActual === "catalogo") {
+      cursoCatalogo = document.getElementById("waCursoCatSelect").value;
+      if (!cursoCatalogo) {
+        errorBox.textContent = "Elige el curso que quieres promocionar";
+        return;
+      }
+    }
 
     errorBox.textContent = "";
     sendBtn.disabled = true;
@@ -3087,6 +3109,7 @@
         aperturaKey: waLinkAperturaActual,
         tipoAviso: waTipoActual,
         descuento: waTipoActual === "catalogo" ? waDescuentoActual : null,
+        cursoCatalogo: waTipoActual === "catalogo" ? cursoCatalogo : null,
       });
       const d = res.data || {};
       cerrarModalEnviarLink();
