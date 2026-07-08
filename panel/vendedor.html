@@ -740,6 +740,23 @@
   }
   .btn-enviar-link:hover { opacity: 0.9; }
   .btn-enviar-link:active { transform: scale(0.97); }
+  /* MODIFICADO: botón reprogramar (header de bloque) */
+  .btn-reprogramar {
+    background: #fff;
+    color: #b45309;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #fcd34d;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t), transform var(--t), background var(--t);
+  }
+  .btn-reprogramar:hover { background: #fffbeb; }
+  .btn-reprogramar:active { transform: scale(0.97); }
   /* MODIFICADO: modal para enviar enlace de WhatsApp */
   .wa-modal-overlay {
     display: none;
@@ -2253,6 +2270,10 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
               Enviar aviso
             </button>
+            <button class="btn-reprogramar" data-reprogramar="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Recorrer este curso a otra fecha (mueve a todos sus alumnos de esta apertura)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 15l2 2 4-4"></path></svg>
+              Reprogramar
+            </button>
             ` : ''}
             <div class="color-fila-wrapper">
               <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
@@ -2961,6 +2982,13 @@
         abrirModalEnviarLink(btn.dataset.enviarLink, btn.dataset.cursoNombre || "este curso", btn.dataset.apertura || "");
       });
     });
+
+    // MODIFICADO: Botón "Reprogramar" — recorre el curso a otra fecha
+    document.querySelectorAll("[data-reprogramar]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        abrirModalReprogramar(btn.dataset.reprogramar, btn.dataset.cursoNombre || "este curso", btn.dataset.apertura || "");
+      });
+    });
   }
 
   // ─── MODIFICADO: Modal para enviar avisos (varios tipos) al correo de los alumnos ───
@@ -3432,6 +3460,80 @@
       renderBloques();
       cerrar();
       toast(`Apertura creada para ${labelApertura(fecha)}`, "success");
+    });
+  }
+
+  // ─── MODIFICADO: Reprogramar un curso a otra fecha (mueve sus alumnos de esta apertura) ───
+  function abrirModalReprogramar(cursoId, cursoNombre, aperturaVieja) {
+    const guardados = alumnos.filter(a => a.cursoId === cursoId && getAperturaKey(a) === aperturaVieja);
+    const pendientes = pendingNewRows.filter(r => r.cursoId === cursoId && (r.aperturaKey || "sin-asignar") === aperturaVieja);
+    const total = guardados.length + pendientes.length;
+
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    const hoy = new Date();
+    hoy.setDate(hoy.getDate() + 7);
+    const fechaDefault = hoy.toISOString().split("T")[0];
+
+    wrap.innerHTML = `
+      <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Reprogramar curso</div>
+            <div class="modal-subtitle">${escapeHtml(cursoNombre)}</div>
+          </div>
+          <button class="modal-close" type="button" data-close-here>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/></svg>
+            <div>Se moverán <strong>${total} alumno${total === 1 ? '' : 's'}</strong> de <strong>${labelApertura(aperturaVieja)}</strong> a la nueva fecha, con todos sus datos.</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Nueva fecha del curso *</label>
+            <input class="input" type="date" id="rp-fecha" value="${fechaDefault}">
+            <div class="field-hint">El curso se recorrerá a esta fecha</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-here>Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-confirmar-reprogramar" style="background:#d97706;border-color:#b45309">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="M8 15l2 2 4-4"/></svg>
+            Reprogramar
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", e => { if (e.target === wrap) cerrar(); });
+
+    wrap.querySelector("#btn-confirmar-reprogramar").addEventListener("click", async () => {
+      const fechaNueva = wrap.querySelector("#rp-fecha").value;
+      if (!fechaNueva) { toast("Selecciona una fecha", "warning"); return; }
+      if (fechaNueva === aperturaVieja) { toast("Es la misma fecha actual", "warning"); return; }
+      if (total === 0) { toast("No hay alumnos para reprogramar en este curso", "info"); cerrar(); return; }
+
+      const btnC = wrap.querySelector("#btn-confirmar-reprogramar");
+      btnC.disabled = true;
+      btnC.textContent = "Reprogramando…";
+
+      try {
+        await Promise.all(guardados.map(a => updateDoc(doc(db, "alumnos", a.id), { aperturaKey: fechaNueva })));
+        pendientes.forEach(r => { r.aperturaKey = fechaNueva; });
+        aperturaActual = fechaNueva;
+        renderTabsAperturas();
+        renderBloques();
+        cerrar();
+        toast(`Curso reprogramado a ${labelApertura(fechaNueva)} · ${total} alumno${total === 1 ? '' : 's'} movido${total === 1 ? '' : 's'}`, "success");
+      } catch (e) {
+        console.error(e);
+        toast("Error al reprogramar: " + e.message, "error");
+        btnC.disabled = false;
+        btnC.textContent = "Reprogramar";
+      }
     });
   }
 
