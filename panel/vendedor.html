@@ -1594,11 +1594,14 @@
       <div class="wa-tipos">
         <button type="button" class="wa-desc-chip active" data-desc="10">10%</button>
         <button type="button" class="wa-desc-chip" data-desc="20">20%</button>
+        <button type="button" class="wa-desc-chip" data-desc="30">30%</button>
+        <button type="button" class="wa-desc-chip" data-desc="40">40%</button>
+        <button type="button" class="wa-desc-chip" data-desc="50">50%</button>
       </div>
     </div>
 
     <label class="wa-modal-label" id="waLinkLabel">Link del grupo de WhatsApp</label>
-    <input type="url" id="waLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
+    <input type="text" id="waLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
     <div class="wa-modal-error" id="waLinkError"></div>
     <div class="wa-modal-actions">
       <button class="wa-btn-cancel" id="waLinkCancel">Cancelar</button>
@@ -2972,7 +2975,7 @@
     membresia: { label: "Link de la membresía",             ph: "https://...",                        check: (l) => l.startsWith("http"),       err: "Pega un link válido (que empiece con https://)" },
     software:  { label: "Link del software",                ph: "https://...",                        check: (l) => l.startsWith("http"),       err: "Pega un link válido (que empiece con https://)" },
     canales:   { label: "Link del canal VIP de WhatsApp",   ph: "https://whatsapp.com/channel/...",   check: (l) => l.includes("whatsapp.com"), err: "Pega un link válido de WhatsApp (canal o grupo)" },
-    catalogo:  { label: "Link del catálogo de cursos",      ph: "https://...",                        check: (l) => l.startsWith("http"),       err: "Pega un link válido (que empiece con https://)" },
+    catalogo:  { label: "Tu número de WhatsApp (10 dígitos)", ph: "Ej. 2381234567", check: (l) => l.replace(/\D/g, "").length >= 10, err: "Escribe un número de WhatsApp válido (10 dígitos)" },
   };
 
   function waSetTipo(tipo) {
