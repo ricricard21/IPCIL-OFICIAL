@@ -723,6 +723,23 @@
   }
   .btn-copiar-tels:hover { opacity: 0.9; }
   .btn-copiar-tels:active { transform: scale(0.97); }
+  /* MODIFICADO: botón descargar Excel para WATI (header de bloque) */
+  .btn-excel-wati {
+    background: #107c41;
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #0b5e31;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t), transform var(--t);
+  }
+  .btn-excel-wati:hover { opacity: 0.9; }
+  .btn-excel-wati:active { transform: scale(0.97); }
   /* MODIFICADO: botón enviar enlace de WhatsApp (header de bloque) */
   .btn-enviar-link {
     background: #16a34a;
@@ -2283,6 +2300,10 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               Copiar tels
             </button>
+            <button class="btn-excel-wati" data-excel-wati="${cursoId}" data-curso-nombre-excel="${escapeHtml(nombreCurso)}" title="Descargar Excel de contactos (Name, CountryCode, Phone) para importar en WATI">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Excel
+            </button>
             ${cursoId ? `
             <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar un aviso por correo a los alumnos de esta apertura (grupo, membresía, software, canales o catálogo)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -3009,12 +3030,83 @@
       });
     });
 
+    // MODIFICADO: Botón "Excel" — descarga contactos del curso en formato WATI (Name, CountryCode, Phone)
+    document.querySelectorAll("[data-excel-wati]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        descargarExcelWati(btn);
+      });
+    });
+
     // MODIFICADO: Botón "Reprogramar" — recorre el curso a otra fecha
     document.querySelectorAll("[data-reprogramar]").forEach(btn => {
       btn.addEventListener("click", () => {
         abrirModalReprogramar(btn.dataset.reprogramar, btn.dataset.cursoNombre || "este curso", btn.dataset.apertura || "");
       });
     });
+  }
+
+  // ─── MODIFICADO: Descargar Excel de contactos para WATI (Name, CountryCode, Phone) ───
+  // Carga SheetJS solo la primera vez que se usa (no pesa en la carga del panel).
+  function cargarSheetJS() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      s.onload = () => resolve(window.XLSX);
+      s.onerror = () => reject(new Error("No se pudo cargar el generador de Excel"));
+      document.head.appendChild(s);
+    });
+  }
+
+  // Limpia el teléfono al formato WATI: solo dígitos, sin el prefijo 52/521
+  // (el país va aparte en la columna CountryCode).
+  function telefonoParaWati(tel) {
+    let d = String(tel || "").replace(/\D/g, "");
+    if (d.length === 13 && d.startsWith("521")) d = d.slice(3);
+    else if (d.length === 12 && d.startsWith("52")) d = d.slice(2);
+    return d;
+  }
+
+  async function descargarExcelWati(btn) {
+    const bloque = btn.closest(".curso-bloque");
+    if (!bloque) return;
+    // Mismo criterio que "Copiar tels": si hay filas marcadas usa esas, si no todas
+    const marcadas = bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked");
+    let filas;
+    if (marcadas.length > 0) {
+      filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
+    } else {
+      filas = Array.from(bloque.querySelectorAll("tr[data-alumno-id]"));
+    }
+
+    const datos = filas.map(tr => {
+      const nombre = (tr.querySelector('[data-field="nombre"]')?.value
+        || tr.querySelector("td:nth-child(3)")?.textContent || "").trim();
+      const telCrudo = (tr.querySelector('[data-field="telefono"]')?.value
+        || tr.querySelector("[data-tel]")?.getAttribute("data-tel") || "").trim();
+      const tel = telefonoParaWati(telCrudo);
+      return { Name: nombre, CountryCode: 52, Phone: tel };
+    }).filter(r => r.Name && r.Phone);
+
+    if (datos.length === 0) {
+      toast("No hay alumnos con nombre y teléfono para exportar", "info");
+      return;
+    }
+
+    try {
+      const XLSX = await cargarSheetJS();
+      const ws = XLSX.utils.json_to_sheet(datos, { header: ["Name", "CountryCode", "Phone"] });
+      ws["!cols"] = [{ wch: 34 }, { wch: 12 }, { wch: 16 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Contactos");
+      const nombreCurso = (btn.dataset.cursoNombreExcel || "curso")
+        .replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60);
+      XLSX.writeFile(wb, `${nombreCurso} - ${aperturaActual || "contactos"}.xlsx`);
+      toast(`Excel descargado: ${datos.length} contacto${datos.length === 1 ? '' : 's'}`, "success");
+    } catch (e) {
+      console.error(e);
+      toast("Error al generar el Excel: " + e.message, "error");
+    }
   }
 
   // ─── MODIFICADO: Modal para enviar avisos (varios tipos) al correo de los alumnos ───
@@ -3089,12 +3181,15 @@
     }
     // Para catálogo: debe haberse elegido un curso a promocionar
     let cursoCatalogo = "";
+    let ponenteCatalogo = "";
     if (waTipoActual === "catalogo") {
       cursoCatalogo = document.getElementById("waCursoCatSelect").value;
       if (!cursoCatalogo) {
         errorBox.textContent = "Elige el curso que quieres promocionar";
         return;
       }
+      const cObj = cursos.find(c => c.nombre === cursoCatalogo);
+      ponenteCatalogo = (cObj && cObj.ponente) ? cObj.ponente : "";
     }
 
     errorBox.textContent = "";
@@ -3110,6 +3205,7 @@
         tipoAviso: waTipoActual,
         descuento: waTipoActual === "catalogo" ? waDescuentoActual : null,
         cursoCatalogo: waTipoActual === "catalogo" ? cursoCatalogo : null,
+        ponenteCatalogo: waTipoActual === "catalogo" ? ponenteCatalogo : null,
       });
       const d = res.data || {};
       cerrarModalEnviarLink();
