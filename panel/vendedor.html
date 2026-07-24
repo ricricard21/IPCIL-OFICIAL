@@ -3045,19 +3045,7 @@
     });
   }
 
-  // ─── MODIFICADO: Descargar Excel de contactos para WATI (Name, CountryCode, Phone) ───
-  // Carga SheetJS solo la primera vez que se usa (no pesa en la carga del panel).
-  function cargarSheetJS() {
-    if (window.XLSX) return Promise.resolve(window.XLSX);
-    return new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-      s.onload = () => resolve(window.XLSX);
-      s.onerror = () => reject(new Error("No se pudo cargar el generador de Excel"));
-      document.head.appendChild(s);
-    });
-  }
-
+  // ─── MODIFICADO: Descargar CSV de contactos para WATI (Name, CountryCode, Phone) ───
   // Limpia el teléfono al formato WATI: solo dígitos, sin el prefijo 52/521
   // (el país va aparte en la columna CountryCode).
   function telefonoParaWati(tel) {
@@ -3085,8 +3073,8 @@
       const telCrudo = (tr.querySelector('[data-field="telefono"]')?.value
         || tr.querySelector("[data-tel]")?.getAttribute("data-tel") || "").trim();
       const tel = telefonoParaWati(telCrudo);
-      return { Name: nombre, CountryCode: 52, Phone: tel };
-    }).filter(r => r.Name && r.Phone);
+      return { nombre, tel };
+    }).filter(r => r.nombre && r.tel);
 
     if (datos.length === 0) {
       toast("No hay alumnos con nombre y teléfono para exportar", "info");
@@ -3094,18 +3082,28 @@
     }
 
     try {
-      const XLSX = await cargarSheetJS();
-      const ws = XLSX.utils.json_to_sheet(datos, { header: ["Name", "CountryCode", "Phone"] });
-      ws["!cols"] = [{ wch: 34 }, { wch: 12 }, { wch: 16 }];
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Contactos");
+      // CSV con el mismo formato del archivo original (Name,CountryCode,Phone).
+      // Las comas en el nombre se quitan para no romper columnas.
+      const lineas = ["Name,CountryCode,Phone"];
+      datos.forEach(r => {
+        const nombreLimpio = r.nombre.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+        lineas.push(`${nombreLimpio},52,${r.tel}`);
+      });
+      const csv = "\uFEFF" + lineas.join("\r\n"); // BOM para que Excel respete acentos
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const nombreCurso = (btn.dataset.cursoNombreExcel || "curso")
         .replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60);
-      XLSX.writeFile(wb, `${nombreCurso} - ${aperturaActual || "contactos"}.xlsx`);
-      toast(`Excel descargado: ${datos.length} contacto${datos.length === 1 ? '' : 's'}`, "success");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${nombreCurso} - ${aperturaActual || "contactos"}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast(`CSV descargado: ${datos.length} contacto${datos.length === 1 ? '' : 's'}`, "success");
     } catch (e) {
       console.error(e);
-      toast("Error al generar el Excel: " + e.message, "error");
+      toast("Error al generar el archivo: " + e.message, "error");
     }
   }
 
