@@ -788,6 +788,21 @@
     transition: opacity var(--t), transform var(--t), background var(--t);
   }
   .btn-wa-directo:hover { background: #1fb959; }
+  .btn-vip-membresia {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #b45309;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity var(--t), transform var(--t);
+  }
+  .btn-vip-membresia:hover { opacity: 0.9; }
   .wa-directo-lista {
     max-height: 260px;
     overflow-y: auto;
@@ -1732,6 +1747,34 @@
   </div>
 </div>
 
+<!-- Modal: Oferta de membresía VIP por WhatsApp (vía WATI) -->
+<div class="wa-modal-overlay" id="vipOverlay">
+  <div class="wa-modal">
+    <div class="wa-modal-titulo">
+      <span style="font-size:20px">⭐</span>
+      Oferta de membresía VIP
+    </div>
+    <div class="wa-modal-sub" id="vipCursoNombre">Curso</div>
+    <p class="wa-modal-desc">Se enviará la oferta de membresía por WhatsApp. Por defecto se seleccionan los alumnos que <strong>ya concluyeron</strong> el curso (con certificado).</p>
+
+    <label class="wa-modal-label">Nombre de la membresía</label>
+    <input type="text" id="vipNombreInput" class="wa-modal-input" placeholder="Ej. Club ICADEM VIP" autocomplete="off">
+
+    <label class="wa-modal-label">Link de la página de la membresía</label>
+    <input type="text" id="vipLinkInput" class="wa-modal-input" placeholder="https://icademx.com" autocomplete="off" spellcheck="false">
+    <div class="wa-modal-error" id="vipError"></div>
+
+    <div class="wa-directo-lista" id="vipLista"></div>
+
+    <div class="wa-directo-resultado" id="vipResultado"></div>
+
+    <div class="wa-modal-actions">
+      <button class="wa-btn-cancel" id="vipCancel">Cancelar</button>
+      <button class="wa-btn-send" id="vipSend" style="background:#f59e0b;border-color:#b45309">Enviar a <span id="vipCount">0</span></button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import {
     auth, db, functions,
@@ -2382,6 +2425,9 @@
             <button class="btn-wa-directo" data-wa-directo="${cursoId}" data-curso-nombre-wa="${escapeHtml(nombreCurso)}" title="Enviar recordatorio por WhatsApp directo a los alumnos (vía WATI). Marca filas con el checkbox para enviar solo a esas, o se envía a todos los del curso.">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               WhatsApp
+            </button>
+            <button class="btn-vip-membresia" data-vip-membresia="${cursoId}" data-curso-nombre-vip="${escapeHtml(nombreCurso)}" title="Enviar oferta de membresía VIP por WhatsApp a los alumnos que ya concluyeron el curso. Marca filas con el checkbox para enviar solo a esas.">
+              ⭐ VIP
             </button>
             <button class="btn-reprogramar" data-reprogramar="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Recorrer este curso a otra fecha (mueve a todos sus alumnos de esta apertura)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 15l2 2 4-4"></path></svg>
@@ -3111,6 +3157,13 @@
       });
     });
 
+    // Botón "⭐ VIP" — oferta de membresía vía WATI
+    document.querySelectorAll("[data-vip-membresia]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        abrirModalVip(btn.dataset.vipMembresia, btn.dataset.cursoNombreVip || "este curso", btn);
+      });
+    });
+
     // MODIFICADO: Botón "Excel" — descarga contactos del curso en formato WATI (Name, CountryCode, Phone)
     document.querySelectorAll("[data-excel-wati]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -3384,6 +3437,149 @@
   });
   // ═══════════════════════════════════════════════════════════
   // FIN Recordatorio WhatsApp directo
+  // ═══════════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════════
+  // OFERTA MEMBRESÍA VIP POR WHATSAPP (vía WATI) — v1.0
+  // ═══════════════════════════════════════════════════════════
+  let vipAlumnos = [];
+  let vipCursoId = null;
+
+  function abrirModalVip(cursoId, cursoNombre, btnOrigen) {
+    vipCursoId = cursoId;
+    document.getElementById("vipCursoNombre").textContent = cursoNombre;
+
+    // Precargar membresía de la consultora si ya se configuró antes
+    document.getElementById("vipNombreInput").value = (consultora?.membresiaNombre || "").trim();
+    document.getElementById("vipLinkInput").value = (consultora?.membresiaLink || "").trim();
+    document.getElementById("vipError").textContent = "";
+
+    // Criterio de selección: filas marcadas → esas; ninguna → SOLO los que ya tienen certificado (email_enviado)
+    const bloque = btnOrigen.closest(".curso-bloque");
+    let filas;
+    const marcadas = bloque ? bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked") : [];
+    if (marcadas.length > 0) {
+      filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
+    } else {
+      filas = bloque
+        ? Array.from(bloque.querySelectorAll("tr[data-alumno-id]")).filter(tr => {
+            const a = alumnos.find(x => x.id === tr.dataset.alumnoId);
+            return a && a.estado === "email_enviado";
+          })
+        : [];
+    }
+
+    vipAlumnos = filas.map(tr => {
+      const id = tr.dataset.alumnoId;
+      const a = alumnos.find(x => x.id === id) || {};
+      const telNorm = waDirectoNormalizarTel(a.telefono);
+      return {
+        id,
+        nombre: a.nombre || "(sin nombre)",
+        telRaw: a.telefono || "",
+        tel: telNorm,
+        telValido: !!telNorm,
+      };
+    });
+
+    const lista = document.getElementById("vipLista");
+    if (vipAlumnos.length === 0) {
+      lista.innerHTML = `<div class="wa-directo-item"><span class="nombre" style="color:var(--muted)">No hay alumnos con certificado en este curso. Marca filas con el checkbox para elegir manualmente.</span></div>`;
+    } else {
+      lista.innerHTML = vipAlumnos.map(a => `
+        <div class="wa-directo-item">
+          <span class="nombre">${escapeHtml(a.nombre)}</span>
+          ${a.telValido
+            ? `<span class="tel">📱 +${a.tel}</span>`
+            : `<span class="tel-malo">⚠ Tel inválido: "${escapeHtml(a.telRaw || "vacío")}"</span>`}
+        </div>
+      `).join("");
+    }
+
+    const validos = vipAlumnos.filter(a => a.telValido).length;
+    document.getElementById("vipCount").textContent = validos;
+    document.getElementById("vipSend").disabled = validos === 0;
+
+    const res = document.getElementById("vipResultado");
+    res.className = "wa-directo-resultado";
+    res.textContent = "";
+
+    document.getElementById("vipOverlay").classList.add("open");
+  }
+
+  function cerrarModalVip() {
+    document.getElementById("vipOverlay").classList.remove("open");
+    vipCursoId = null;
+    vipAlumnos = [];
+  }
+
+  document.getElementById("vipCancel").addEventListener("click", cerrarModalVip);
+  document.getElementById("vipOverlay").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) cerrarModalVip();
+  });
+
+  document.getElementById("vipSend").addEventListener("click", async () => {
+    if (!vipCursoId) return;
+    const ids = vipAlumnos.filter(a => a.telValido).map(a => a.id);
+    if (ids.length === 0) return;
+
+    const nombreInput = document.getElementById("vipNombreInput");
+    const linkInput = document.getElementById("vipLinkInput");
+    const errEl = document.getElementById("vipError");
+    const nombreMem = (nombreInput.value || "").trim();
+    const linkMem = (linkInput.value || "").trim();
+    errEl.textContent = "";
+
+    if (!nombreMem) {
+      errEl.textContent = "Escribe el nombre de la membresía (ej. Club ICADEM VIP).";
+      nombreInput.focus();
+      return;
+    }
+    if (!/^https?:\/\/.+\..+/.test(linkMem)) {
+      errEl.textContent = "El link no parece válido. Debe empezar con https://";
+      linkInput.focus();
+      return;
+    }
+
+    const sendBtn = document.getElementById("vipSend");
+    const res = document.getElementById("vipResultado");
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Enviando...";
+    res.className = "wa-directo-resultado";
+
+    try {
+      const fn = httpsCallable(functions, "enviarOfertaMembresia");
+      const r = await fn({ cursoId: vipCursoId, alumnoIds: ids, membresiaNombre: nombreMem, membresiaLink: linkMem });
+      const d = r.data || {};
+
+      // Actualizar consultora local para precargar sin recargar
+      if (consultora) {
+        consultora.membresiaNombre = nombreMem;
+        consultora.membresiaLink = linkMem;
+      }
+
+      if (d.fallos === 0 && d.sinTelefono === 0) {
+        res.className = "wa-directo-resultado ok";
+        res.textContent = `✓ Oferta enviada a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} ⭐`;
+        toast(`Oferta VIP enviada a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} ⭐`, "success");
+        setTimeout(cerrarModalVip, 2500);
+      } else {
+        res.className = "wa-directo-resultado warn";
+        const detalleFallos = (d.detalle || []).filter(x => !x.ok).slice(0, 3)
+          .map(x => `${x.nombre || x.id}: ${x.motivo || "?"}`).join(" · ");
+        res.textContent = `Enviados ${d.exitos}/${d.totales}. Fallos: ${d.fallos + (d.sinTelefono || 0)}. ${detalleFallos}`;
+      }
+    } catch (err) {
+      console.error("[VIP] Error:", err);
+      res.className = "wa-directo-resultado err";
+      res.textContent = "Error: " + (err.message || "no se pudo enviar. Revisa la consola.");
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = `Enviar a <span id="vipCount">${ids.length}</span>`;
+    }
+  });
+  // ═══════════════════════════════════════════════════════════
+  // FIN Oferta membresía VIP
   // ═══════════════════════════════════════════════════════════
 
   function cerrarModalEnviarLink() {
