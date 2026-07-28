@@ -1717,6 +1717,10 @@
     <div class="wa-modal-sub" id="waDirectoCursoNombre">Curso</div>
     <p class="wa-modal-desc">Se enviará la plantilla de recordatorio (con el link del grupo) directo al WhatsApp de cada alumno vía WATI.</p>
 
+    <label class="wa-modal-label">Link del grupo de WhatsApp</label>
+    <input type="text" id="waDirectoLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
+    <div class="wa-modal-error" id="waDirectoLinkError"></div>
+
     <div class="wa-directo-lista" id="waDirectoLista"></div>
 
     <div class="wa-directo-resultado" id="waDirectoResultado"></div>
@@ -3254,6 +3258,11 @@
     waDirectoCursoId = cursoId;
     document.getElementById("waDirectoCursoNombre").textContent = cursoNombre;
 
+    // Precargar el link del grupo si el curso ya lo tiene (editable por el vendedor)
+    const cursoObj = cursos.find(c => c.id === cursoId);
+    document.getElementById("waDirectoLinkInput").value = (cursoObj?.whatsappLink || "").trim();
+    document.getElementById("waDirectoLinkError").textContent = "";
+
     // Mismo criterio que "Copiar tels": filas marcadas → esas; ninguna → todas las del bloque
     const bloque = btnOrigen.closest(".curso-bloque");
     let filas;
@@ -3322,6 +3331,22 @@
     const ids = waDirectoAlumnos.filter(a => a.telValido).map(a => a.id);
     if (ids.length === 0) return;
 
+    // Validar el link del grupo (obligatorio, formato chat.whatsapp.com)
+    const linkInput = document.getElementById("waDirectoLinkInput");
+    const linkError = document.getElementById("waDirectoLinkError");
+    const waLink = (linkInput.value || "").trim();
+    linkError.textContent = "";
+    if (!waLink) {
+      linkError.textContent = "Pega el link del grupo de WhatsApp para poder enviar.";
+      linkInput.focus();
+      return;
+    }
+    if (!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/.test(waLink)) {
+      linkError.textContent = "El link no parece válido. Debe ser tipo https://chat.whatsapp.com/XXXX";
+      linkInput.focus();
+      return;
+    }
+
     const sendBtn = document.getElementById("waDirectoSend");
     const res = document.getElementById("waDirectoResultado");
     sendBtn.disabled = true;
@@ -3330,8 +3355,12 @@
 
     try {
       const fn = httpsCallable(functions, "enviarRecordatorioWhatsApp");
-      const r = await fn({ cursoId: waDirectoCursoId, alumnoIds: ids });
+      const r = await fn({ cursoId: waDirectoCursoId, alumnoIds: ids, whatsappLink: waLink });
       const d = r.data || {};
+
+      // Actualizar el array local para que el link quede precargado sin recargar
+      const cLocal = cursos.find(c => c.id === waDirectoCursoId);
+      if (cLocal) cLocal.whatsappLink = waLink;
 
       if (d.fallos === 0 && d.sinTelefono === 0) {
         res.className = "wa-directo-resultado ok";
