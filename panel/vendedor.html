@@ -1722,18 +1722,63 @@
   </div>
 </div>
 
-<!-- Modal: Recordatorio por WhatsApp directo (vía WATI) -->
+<!-- Modal: Envíos por WhatsApp directo (vía WATI) — Grupo / Membresía / Invitación -->
 <div class="wa-modal-overlay" id="waDirectoOverlay">
   <div class="wa-modal">
     <div class="wa-modal-titulo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      Recordatorio por WhatsApp
+      Enviar WhatsApp
     </div>
     <div class="wa-modal-sub" id="waDirectoCursoNombre">Curso</div>
-    <p class="wa-modal-desc">Se enviará la plantilla de recordatorio (con el link del grupo) directo al WhatsApp de cada alumno vía WATI.</p>
 
-    <label class="wa-modal-label">Link del grupo de WhatsApp</label>
-    <input type="text" id="waDirectoLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
+    <label class="wa-modal-label">¿Qué quieres enviar?</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="waDirectoTipos">
+      <button type="button" class="wa-tipo-chip active" data-watipo="grupo">💬 Abrir grupo</button>
+      <button type="button" class="wa-tipo-chip" data-watipo="membresia">⭐ Membresía</button>
+      <button type="button" class="wa-tipo-chip" data-watipo="invitacion">🎓 Invitar a curso</button>
+      <button type="button" class="wa-tipo-chip" data-watipo="software">🚀 Software</button>
+    </div>
+
+    <!-- Campos: Abrir grupo -->
+    <div id="waCamposGrupo">
+      <label class="wa-modal-label">Link del grupo de WhatsApp</label>
+      <input type="text" id="waDirectoLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
+    </div>
+
+    <!-- Campos: Membresía -->
+    <div id="waCamposMembresia" style="display:none">
+      <label class="wa-modal-label">Nombre de la membresía</label>
+      <input type="text" id="vipNombreInput" class="wa-modal-input" placeholder="Ej. Membresía Visión Pecuaria" autocomplete="off">
+      <label class="wa-modal-label">Link de la página oficial</label>
+      <input type="text" id="vipLinkInput" class="wa-modal-input" placeholder="https://www.visionpecuariamx.com/" autocomplete="off" spellcheck="false">
+    </div>
+
+    <!-- Campos: Invitación a curso -->
+    <div id="waCamposInvitacion" style="display:none">
+      <label class="wa-modal-label">Curso que quieres promocionar</label>
+      <select id="invCursoSelect" class="wa-modal-input">
+        <option value="">— Elige un curso —</option>
+      </select>
+      <label class="wa-modal-label">Descuento para este cliente</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px" id="invDescuentos">
+        <button type="button" class="wa-desc-chip" data-invdesc="5">5%</button>
+        <button type="button" class="wa-desc-chip active" data-invdesc="10">10%</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="15">15%</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="20">20%</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="25">25%</button>
+      </div>
+    </div>
+
+    <!-- Campos: Software -->
+    <div id="waCamposSoftware" style="display:none">
+      <label class="wa-modal-label">Nombre del software</label>
+      <input type="text" id="softNombreInput" class="wa-modal-input" placeholder="Ej. FeedMix MX" autocomplete="off">
+      <label class="wa-modal-label">¿Qué hace? (descripción corta)</label>
+      <input type="text" id="softDescInput" class="wa-modal-input" placeholder="Ej. formulación de dietas para aves al mínimo costo" autocomplete="off">
+      <label class="wa-modal-label">Link de la página del software</label>
+      <input type="text" id="softLinkInput" class="wa-modal-input" placeholder="https://..." autocomplete="off" spellcheck="false">
+    </div>
+
     <div class="wa-modal-error" id="waDirectoLinkError"></div>
 
     <div class="wa-directo-lista" id="waDirectoLista"></div>
@@ -1743,34 +1788,6 @@
     <div class="wa-modal-actions">
       <button class="wa-btn-cancel" id="waDirectoCancel">Cancelar</button>
       <button class="wa-btn-send" id="waDirectoSend" style="background:#25D366;border-color:#1da856">Enviar a <span id="waDirectoCount">0</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Oferta de membresía VIP por WhatsApp (vía WATI) -->
-<div class="wa-modal-overlay" id="vipOverlay">
-  <div class="wa-modal">
-    <div class="wa-modal-titulo">
-      <span style="font-size:20px">⭐</span>
-      Oferta de membresía VIP
-    </div>
-    <div class="wa-modal-sub" id="vipCursoNombre">Curso</div>
-    <p class="wa-modal-desc">Se enviará la oferta de membresía por WhatsApp. Por defecto se seleccionan los alumnos que <strong>ya concluyeron</strong> el curso (con certificado).</p>
-
-    <label class="wa-modal-label">Nombre de la membresía</label>
-    <input type="text" id="vipNombreInput" class="wa-modal-input" placeholder="Ej. Club ICADEM VIP" autocomplete="off">
-
-    <label class="wa-modal-label">Link de la página de la membresía</label>
-    <input type="text" id="vipLinkInput" class="wa-modal-input" placeholder="https://icademx.com" autocomplete="off" spellcheck="false">
-    <div class="wa-modal-error" id="vipError"></div>
-
-    <div class="wa-directo-lista" id="vipLista"></div>
-
-    <div class="wa-directo-resultado" id="vipResultado"></div>
-
-    <div class="wa-modal-actions">
-      <button class="wa-btn-cancel" id="vipCancel">Cancelar</button>
-      <button class="wa-btn-send" id="vipSend" style="background:#f59e0b;border-color:#b45309">Enviar a <span id="vipCount">0</span></button>
     </div>
   </div>
 </div>
@@ -2413,10 +2430,6 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               Copiar tels
             </button>
-            <button class="btn-excel-wati" data-excel-wati="${cursoId}" data-curso-nombre-excel="${escapeHtml(nombreCurso)}" title="Descargar Excel de contactos (Name, CountryCode, Phone) para importar en WATI">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Excel
-            </button>
             ${cursoId ? `
             <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar un aviso por correo a los alumnos de esta apertura (grupo, membresía, software, canales o catálogo)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -2425,9 +2438,6 @@
             <button class="btn-wa-directo" data-wa-directo="${cursoId}" data-curso-nombre-wa="${escapeHtml(nombreCurso)}" title="Enviar recordatorio por WhatsApp directo a los alumnos (vía WATI). Marca filas con el checkbox para enviar solo a esas, o se envía a todos los del curso.">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               WhatsApp
-            </button>
-            <button class="btn-vip-membresia" data-vip-membresia="${cursoId}" data-curso-nombre-vip="${escapeHtml(nombreCurso)}" title="Enviar oferta de membresía VIP por WhatsApp a los alumnos que ya concluyeron el curso. Marca filas con el checkbox para enviar solo a esas.">
-              ⭐ VIP
             </button>
             <button class="btn-reprogramar" data-reprogramar="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Recorrer este curso a otra fecha (mueve a todos sus alumnos de esta apertura)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 15l2 2 4-4"></path></svg>
@@ -3150,24 +3160,10 @@
       });
     });
 
-    // Botón "WhatsApp" — recordatorio directo vía WATI
+    // Botón "WhatsApp" — modal unificado (grupo / membresía / invitación / software)
     document.querySelectorAll("[data-wa-directo]").forEach(btn => {
       btn.addEventListener("click", () => {
         abrirModalWaDirecto(btn.dataset.waDirecto, btn.dataset.cursoNombreWa || "este curso", btn);
-      });
-    });
-
-    // Botón "⭐ VIP" — oferta de membresía vía WATI
-    document.querySelectorAll("[data-vip-membresia]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        abrirModalVip(btn.dataset.vipMembresia, btn.dataset.cursoNombreVip || "este curso", btn);
-      });
-    });
-
-    // MODIFICADO: Botón "Excel" — descarga contactos del curso en formato WATI (Name, CountryCode, Phone)
-    document.querySelectorAll("[data-excel-wati]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        descargarExcelWati(btn);
       });
     });
 
@@ -3187,58 +3183,6 @@
     if (d.length === 13 && d.startsWith("521")) d = d.slice(3);
     else if (d.length === 12 && d.startsWith("52")) d = d.slice(2);
     return d;
-  }
-
-  async function descargarExcelWati(btn) {
-    const bloque = btn.closest(".curso-bloque");
-    if (!bloque) return;
-    // Mismo criterio que "Copiar tels": si hay filas marcadas usa esas, si no todas
-    const marcadas = bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked");
-    let filas;
-    if (marcadas.length > 0) {
-      filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
-    } else {
-      filas = Array.from(bloque.querySelectorAll("tr[data-alumno-id]"));
-    }
-
-    const datos = filas.map(tr => {
-      const nombre = (tr.querySelector('[data-field="nombre"]')?.value
-        || tr.querySelector("td:nth-child(3)")?.textContent || "").trim();
-      const telCrudo = (tr.querySelector('[data-field="telefono"]')?.value
-        || tr.querySelector("[data-tel]")?.getAttribute("data-tel") || "").trim();
-      const tel = telefonoParaWati(telCrudo);
-      return { nombre, tel };
-    }).filter(r => r.nombre && r.tel);
-
-    if (datos.length === 0) {
-      toast("No hay alumnos con nombre y teléfono para exportar", "info");
-      return;
-    }
-
-    try {
-      // CSV con el mismo formato del archivo original (Name,CountryCode,Phone).
-      // Las comas en el nombre se quitan para no romper columnas.
-      const lineas = ["Name,CountryCode,Phone"];
-      datos.forEach(r => {
-        const nombreLimpio = r.nombre.replace(/,/g, " ").replace(/\s+/g, " ").trim();
-        lineas.push(`${nombreLimpio},52,${r.tel}`);
-      });
-      const csv = "\uFEFF" + lineas.join("\r\n"); // BOM para que Excel respete acentos
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const nombreCurso = (btn.dataset.cursoNombreExcel || "curso")
-        .replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60);
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${nombreCurso} - ${aperturaActual || "contactos"}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(a.href);
-      toast(`CSV descargado: ${datos.length} contacto${datos.length === 1 ? '' : 's'}`, "success");
-    } catch (e) {
-      console.error(e);
-      toast("Error al generar el archivo: " + e.message, "error");
-    }
   }
 
   // ─── MODIFICADO: Modal para enviar avisos (varios tipos) al correo de los alumnos ───
@@ -3291,12 +3235,17 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // RECORDATORIO WHATSAPP DIRECTO (vía WATI) — v1.0
+  // ENVÍOS WHATSAPP DIRECTO (vía WATI) — v2.0 UNIFICADO
+  // Tipos: grupo · membresia · invitacion · software
   // ═══════════════════════════════════════════════════════════
   let waDirectoAlumnos = []; // [{id, nombre, tel, telValido}]
   let waDirectoCursoId = null;
+  let waDirectoCursoNombre = "";
+  let waDirectoBloqueEl = null;
+  let waDirectoTipo = "grupo"; // grupo | membresia | invitacion | software
+  let invDescuentoActual = "10";
 
-  // Normalización local (espejo de la del backend) solo para PREVIEW en el modal
+  // Normalización local (espejo del backend) solo para PREVIEW en el modal
   function waDirectoNormalizarTel(telRaw) {
     if (!telRaw) return null;
     let tel = String(telRaw).replace(/[\s\-().+]/g, "");
@@ -3307,26 +3256,40 @@
     return null;
   }
 
-  function abrirModalWaDirecto(cursoId, cursoNombre, btnOrigen) {
-    waDirectoCursoId = cursoId;
-    document.getElementById("waDirectoCursoNombre").textContent = cursoNombre;
-
-    // Precargar el link del grupo si el curso ya lo tiene (editable por el vendedor)
-    const cursoObj = cursos.find(c => c.id === cursoId);
-    document.getElementById("waDirectoLinkInput").value = (cursoObj?.whatsappLink || "").trim();
+  function waDirectoSetTipo(tipo) {
+    waDirectoTipo = tipo;
+    document.querySelectorAll("#waDirectoTipos .wa-tipo-chip").forEach(ch => {
+      ch.classList.toggle("active", ch.dataset.watipo === tipo);
+    });
+    document.getElementById("waCamposGrupo").style.display = tipo === "grupo" ? "block" : "none";
+    document.getElementById("waCamposMembresia").style.display = tipo === "membresia" ? "block" : "none";
+    document.getElementById("waCamposInvitacion").style.display = tipo === "invitacion" ? "block" : "none";
+    document.getElementById("waCamposSoftware").style.display = tipo === "software" ? "block" : "none";
     document.getElementById("waDirectoLinkError").textContent = "";
+    // Recalcular la lista de alumnos según el tipo
+    waDirectoRecalcularLista();
+  }
 
-    // Mismo criterio que "Copiar tels": filas marcadas → esas; ninguna → todas las del bloque
-    const bloque = btnOrigen.closest(".curso-bloque");
+  function waDirectoRecalcularLista() {
+    const bloque = waDirectoBloqueEl;
     let filas;
     const marcadas = bloque ? bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked") : [];
     if (marcadas.length > 0) {
+      // Filas marcadas manualmente → esas, en cualquier tipo
       filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
-    } else {
+    } else if (waDirectoTipo === "grupo") {
+      // Abrir grupo → todos los del bloque
       filas = bloque ? Array.from(bloque.querySelectorAll("tr[data-alumno-id]")) : [];
+    } else {
+      // Membresía / Invitación / Software → solo los que YA concluyeron (con certificado)
+      filas = bloque
+        ? Array.from(bloque.querySelectorAll("tr[data-alumno-id]")).filter(tr => {
+            const a = alumnos.find(x => x.id === tr.dataset.alumnoId);
+            return a && a.estado === "email_enviado";
+          })
+        : [];
     }
 
-    // Armar la lista con datos del array local `alumnos`
     waDirectoAlumnos = filas.map(tr => {
       const id = tr.dataset.alumnoId;
       const a = alumnos.find(x => x.id === id) || {};
@@ -3340,10 +3303,12 @@
       };
     });
 
-    // Pintar la lista
     const lista = document.getElementById("waDirectoLista");
     if (waDirectoAlumnos.length === 0) {
-      lista.innerHTML = `<div class="wa-directo-item"><span class="nombre" style="color:var(--muted)">No hay alumnos en este curso</span></div>`;
+      const hint = waDirectoTipo === "grupo"
+        ? "No hay alumnos en este curso."
+        : "No hay alumnos con certificado en este curso. Marca filas con el checkbox para elegir manualmente.";
+      lista.innerHTML = `<div class="wa-directo-item"><span class="nombre" style="color:var(--muted)">${hint}</span></div>`;
     } else {
       lista.innerHTML = waDirectoAlumnos.map(a => `
         <div class="wa-directo-item">
@@ -3357,13 +3322,40 @@
 
     const validos = waDirectoAlumnos.filter(a => a.telValido).length;
     document.getElementById("waDirectoCount").textContent = validos;
-    const sendBtn = document.getElementById("waDirectoSend");
-    sendBtn.disabled = validos === 0;
+    document.getElementById("waDirectoSend").disabled = validos === 0;
+  }
 
-    // Resetear resultado
+  function abrirModalWaDirecto(cursoId, cursoNombre, btnOrigen) {
+    waDirectoCursoId = cursoId;
+    waDirectoCursoNombre = cursoNombre;
+    waDirectoBloqueEl = btnOrigen.closest(".curso-bloque");
+    document.getElementById("waDirectoCursoNombre").textContent = cursoNombre;
+
+    // Precargar campos guardados
+    const cursoObj = cursos.find(c => c.id === cursoId);
+    document.getElementById("waDirectoLinkInput").value = (cursoObj?.whatsappLink || "").trim();
+    document.getElementById("vipNombreInput").value = (consultora?.membresiaNombre || "").trim();
+    document.getElementById("vipLinkInput").value = (consultora?.membresiaLink || "").trim();
+    document.getElementById("softNombreInput").value = (consultora?.softwareNombre || "").trim();
+    document.getElementById("softDescInput").value = (consultora?.softwareDesc || "").trim();
+    document.getElementById("softLinkInput").value = (consultora?.softwareLink || "").trim();
+
+    // Llenar dropdown de cursos a promocionar (todos menos el actual)
+    const sel = document.getElementById("invCursoSelect");
+    sel.innerHTML = '<option value="">— Elige un curso —</option>' +
+      cursos.filter(c => c.id !== cursoId)
+        .map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+
+    // Reset descuento a 10%
+    invDescuentoActual = "10";
+    document.querySelectorAll("#invDescuentos .wa-desc-chip").forEach(ch =>
+      ch.classList.toggle("active", ch.dataset.invdesc === "10"));
+
+    // Reset resultado y tipo inicial
     const res = document.getElementById("waDirectoResultado");
     res.className = "wa-directo-resultado";
     res.textContent = "";
+    waDirectoSetTipo("grupo");
 
     document.getElementById("waDirectoOverlay").classList.add("open");
   }
@@ -3372,7 +3364,22 @@
     document.getElementById("waDirectoOverlay").classList.remove("open");
     waDirectoCursoId = null;
     waDirectoAlumnos = [];
+    waDirectoBloqueEl = null;
   }
+
+  // Chips de tipo
+  document.querySelectorAll("#waDirectoTipos .wa-tipo-chip").forEach(ch => {
+    ch.addEventListener("click", () => waDirectoSetTipo(ch.dataset.watipo));
+  });
+
+  // Chips de descuento (invitación)
+  document.querySelectorAll("#invDescuentos .wa-desc-chip").forEach(ch => {
+    ch.addEventListener("click", () => {
+      invDescuentoActual = ch.dataset.invdesc;
+      document.querySelectorAll("#invDescuentos .wa-desc-chip").forEach(c2 =>
+        c2.classList.toggle("active", c2 === ch));
+    });
+  });
 
   document.getElementById("waDirectoCancel").addEventListener("click", cerrarModalWaDirecto);
   document.getElementById("waDirectoOverlay").addEventListener("click", (e) => {
@@ -3384,20 +3391,47 @@
     const ids = waDirectoAlumnos.filter(a => a.telValido).map(a => a.id);
     if (ids.length === 0) return;
 
-    // Validar el link del grupo (obligatorio, formato chat.whatsapp.com)
-    const linkInput = document.getElementById("waDirectoLinkInput");
-    const linkError = document.getElementById("waDirectoLinkError");
-    const waLink = (linkInput.value || "").trim();
-    linkError.textContent = "";
-    if (!waLink) {
-      linkError.textContent = "Pega el link del grupo de WhatsApp para poder enviar.";
-      linkInput.focus();
-      return;
-    }
-    if (!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/.test(waLink)) {
-      linkError.textContent = "El link no parece válido. Debe ser tipo https://chat.whatsapp.com/XXXX";
-      linkInput.focus();
-      return;
+    const errEl = document.getElementById("waDirectoLinkError");
+    errEl.textContent = "";
+
+    // Validación + armado del payload según tipo
+    let fnName = null;
+    let payload = { cursoId: waDirectoCursoId, alumnoIds: ids };
+
+    if (waDirectoTipo === "grupo") {
+      const waLink = (document.getElementById("waDirectoLinkInput").value || "").trim();
+      if (!waLink) { errEl.textContent = "Pega el link del grupo de WhatsApp."; return; }
+      if (!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/.test(waLink)) {
+        errEl.textContent = "El link no parece válido. Debe ser tipo https://chat.whatsapp.com/XXXX";
+        return;
+      }
+      fnName = "enviarRecordatorioWhatsApp";
+      payload.whatsappLink = waLink;
+    } else if (waDirectoTipo === "membresia") {
+      const nombreMem = (document.getElementById("vipNombreInput").value || "").trim();
+      const linkMem = (document.getElementById("vipLinkInput").value || "").trim();
+      if (!nombreMem) { errEl.textContent = "Escribe el nombre de la membresía."; return; }
+      if (!/^https?:\/\/.+\..+/.test(linkMem)) { errEl.textContent = "El link de la membresía no es válido."; return; }
+      fnName = "enviarOfertaMembresia";
+      payload.membresiaNombre = nombreMem;
+      payload.membresiaLink = linkMem;
+    } else if (waDirectoTipo === "invitacion") {
+      const cursoPromoId = document.getElementById("invCursoSelect").value;
+      if (!cursoPromoId) { errEl.textContent = "Elige el curso que quieres promocionar."; return; }
+      fnName = "enviarInvitacionCurso";
+      payload.cursoPromoId = cursoPromoId;
+      payload.descuento = invDescuentoActual;
+    } else if (waDirectoTipo === "software") {
+      const softNombre = (document.getElementById("softNombreInput").value || "").trim();
+      const softDesc = (document.getElementById("softDescInput").value || "").trim();
+      const softLink = (document.getElementById("softLinkInput").value || "").trim();
+      if (!softNombre) { errEl.textContent = "Escribe el nombre del software."; return; }
+      if (!softDesc) { errEl.textContent = "Escribe una descripción corta del software."; return; }
+      if (!/^https?:\/\/.+\..+/.test(softLink)) { errEl.textContent = "El link del software no es válido."; return; }
+      fnName = "enviarOfertaSoftware";
+      payload.softwareNombre = softNombre;
+      payload.softwareDesc = softDesc;
+      payload.softwareLink = softLink;
     }
 
     const sendBtn = document.getElementById("waDirectoSend");
@@ -3407,17 +3441,26 @@
     res.className = "wa-directo-resultado";
 
     try {
-      const fn = httpsCallable(functions, "enviarRecordatorioWhatsApp");
-      const r = await fn({ cursoId: waDirectoCursoId, alumnoIds: ids, whatsappLink: waLink });
+      const fn = httpsCallable(functions, fnName);
+      const r = await fn(payload);
       const d = r.data || {};
 
-      // Actualizar el array local para que el link quede precargado sin recargar
-      const cLocal = cursos.find(c => c.id === waDirectoCursoId);
-      if (cLocal) cLocal.whatsappLink = waLink;
+      // Actualizar cachés locales para precargar sin recargar
+      if (waDirectoTipo === "grupo") {
+        const cLocal = cursos.find(c => c.id === waDirectoCursoId);
+        if (cLocal) cLocal.whatsappLink = payload.whatsappLink;
+      } else if (waDirectoTipo === "membresia" && consultora) {
+        consultora.membresiaNombre = payload.membresiaNombre;
+        consultora.membresiaLink = payload.membresiaLink;
+      } else if (waDirectoTipo === "software" && consultora) {
+        consultora.softwareNombre = payload.softwareNombre;
+        consultora.softwareDesc = payload.softwareDesc;
+        consultora.softwareLink = payload.softwareLink;
+      }
 
       if (d.fallos === 0 && d.sinTelefono === 0) {
         res.className = "wa-directo-resultado ok";
-        res.textContent = `✓ Recordatorio enviado a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} por WhatsApp 📲`;
+        res.textContent = `✓ Enviado a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} por WhatsApp 📲`;
         toast(`WhatsApp enviado a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} 📲`, "success");
         setTimeout(cerrarModalWaDirecto, 2500);
       } else {
@@ -3436,150 +3479,7 @@
     }
   });
   // ═══════════════════════════════════════════════════════════
-  // FIN Recordatorio WhatsApp directo
-  // ═══════════════════════════════════════════════════════════
-
-  // ═══════════════════════════════════════════════════════════
-  // OFERTA MEMBRESÍA VIP POR WHATSAPP (vía WATI) — v1.0
-  // ═══════════════════════════════════════════════════════════
-  let vipAlumnos = [];
-  let vipCursoId = null;
-
-  function abrirModalVip(cursoId, cursoNombre, btnOrigen) {
-    vipCursoId = cursoId;
-    document.getElementById("vipCursoNombre").textContent = cursoNombre;
-
-    // Precargar membresía de la consultora si ya se configuró antes
-    document.getElementById("vipNombreInput").value = (consultora?.membresiaNombre || "").trim();
-    document.getElementById("vipLinkInput").value = (consultora?.membresiaLink || "").trim();
-    document.getElementById("vipError").textContent = "";
-
-    // Criterio de selección: filas marcadas → esas; ninguna → SOLO los que ya tienen certificado (email_enviado)
-    const bloque = btnOrigen.closest(".curso-bloque");
-    let filas;
-    const marcadas = bloque ? bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked") : [];
-    if (marcadas.length > 0) {
-      filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
-    } else {
-      filas = bloque
-        ? Array.from(bloque.querySelectorAll("tr[data-alumno-id]")).filter(tr => {
-            const a = alumnos.find(x => x.id === tr.dataset.alumnoId);
-            return a && a.estado === "email_enviado";
-          })
-        : [];
-    }
-
-    vipAlumnos = filas.map(tr => {
-      const id = tr.dataset.alumnoId;
-      const a = alumnos.find(x => x.id === id) || {};
-      const telNorm = waDirectoNormalizarTel(a.telefono);
-      return {
-        id,
-        nombre: a.nombre || "(sin nombre)",
-        telRaw: a.telefono || "",
-        tel: telNorm,
-        telValido: !!telNorm,
-      };
-    });
-
-    const lista = document.getElementById("vipLista");
-    if (vipAlumnos.length === 0) {
-      lista.innerHTML = `<div class="wa-directo-item"><span class="nombre" style="color:var(--muted)">No hay alumnos con certificado en este curso. Marca filas con el checkbox para elegir manualmente.</span></div>`;
-    } else {
-      lista.innerHTML = vipAlumnos.map(a => `
-        <div class="wa-directo-item">
-          <span class="nombre">${escapeHtml(a.nombre)}</span>
-          ${a.telValido
-            ? `<span class="tel">📱 +${a.tel}</span>`
-            : `<span class="tel-malo">⚠ Tel inválido: "${escapeHtml(a.telRaw || "vacío")}"</span>`}
-        </div>
-      `).join("");
-    }
-
-    const validos = vipAlumnos.filter(a => a.telValido).length;
-    document.getElementById("vipCount").textContent = validos;
-    document.getElementById("vipSend").disabled = validos === 0;
-
-    const res = document.getElementById("vipResultado");
-    res.className = "wa-directo-resultado";
-    res.textContent = "";
-
-    document.getElementById("vipOverlay").classList.add("open");
-  }
-
-  function cerrarModalVip() {
-    document.getElementById("vipOverlay").classList.remove("open");
-    vipCursoId = null;
-    vipAlumnos = [];
-  }
-
-  document.getElementById("vipCancel").addEventListener("click", cerrarModalVip);
-  document.getElementById("vipOverlay").addEventListener("click", (e) => {
-    if (e.target === e.currentTarget) cerrarModalVip();
-  });
-
-  document.getElementById("vipSend").addEventListener("click", async () => {
-    if (!vipCursoId) return;
-    const ids = vipAlumnos.filter(a => a.telValido).map(a => a.id);
-    if (ids.length === 0) return;
-
-    const nombreInput = document.getElementById("vipNombreInput");
-    const linkInput = document.getElementById("vipLinkInput");
-    const errEl = document.getElementById("vipError");
-    const nombreMem = (nombreInput.value || "").trim();
-    const linkMem = (linkInput.value || "").trim();
-    errEl.textContent = "";
-
-    if (!nombreMem) {
-      errEl.textContent = "Escribe el nombre de la membresía (ej. Club ICADEM VIP).";
-      nombreInput.focus();
-      return;
-    }
-    if (!/^https?:\/\/.+\..+/.test(linkMem)) {
-      errEl.textContent = "El link no parece válido. Debe empezar con https://";
-      linkInput.focus();
-      return;
-    }
-
-    const sendBtn = document.getElementById("vipSend");
-    const res = document.getElementById("vipResultado");
-    sendBtn.disabled = true;
-    sendBtn.textContent = "Enviando...";
-    res.className = "wa-directo-resultado";
-
-    try {
-      const fn = httpsCallable(functions, "enviarOfertaMembresia");
-      const r = await fn({ cursoId: vipCursoId, alumnoIds: ids, membresiaNombre: nombreMem, membresiaLink: linkMem });
-      const d = r.data || {};
-
-      // Actualizar consultora local para precargar sin recargar
-      if (consultora) {
-        consultora.membresiaNombre = nombreMem;
-        consultora.membresiaLink = linkMem;
-      }
-
-      if (d.fallos === 0 && d.sinTelefono === 0) {
-        res.className = "wa-directo-resultado ok";
-        res.textContent = `✓ Oferta enviada a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} ⭐`;
-        toast(`Oferta VIP enviada a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} ⭐`, "success");
-        setTimeout(cerrarModalVip, 2500);
-      } else {
-        res.className = "wa-directo-resultado warn";
-        const detalleFallos = (d.detalle || []).filter(x => !x.ok).slice(0, 3)
-          .map(x => `${x.nombre || x.id}: ${x.motivo || "?"}`).join(" · ");
-        res.textContent = `Enviados ${d.exitos}/${d.totales}. Fallos: ${d.fallos + (d.sinTelefono || 0)}. ${detalleFallos}`;
-      }
-    } catch (err) {
-      console.error("[VIP] Error:", err);
-      res.className = "wa-directo-resultado err";
-      res.textContent = "Error: " + (err.message || "no se pudo enviar. Revisa la consola.");
-    } finally {
-      sendBtn.disabled = false;
-      sendBtn.innerHTML = `Enviar a <span id="vipCount">${ids.length}</span>`;
-    }
-  });
-  // ═══════════════════════════════════════════════════════════
-  // FIN Oferta membresía VIP
+  // FIN Envíos WhatsApp directo unificado
   // ═══════════════════════════════════════════════════════════
 
   function cerrarModalEnviarLink() {
