@@ -1758,13 +1758,13 @@
       <select id="invCursoSelect" class="wa-modal-input">
         <option value="">— Elige un curso —</option>
       </select>
-      <label class="wa-modal-label">Descuento para este cliente</label>
+      <label class="wa-modal-label">Descuento para este cliente (pesos MXN)</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px" id="invDescuentos">
-        <button type="button" class="wa-desc-chip" data-invdesc="5">5%</button>
-        <button type="button" class="wa-desc-chip active" data-invdesc="10">10%</button>
-        <button type="button" class="wa-desc-chip" data-invdesc="15">15%</button>
-        <button type="button" class="wa-desc-chip" data-invdesc="20">20%</button>
-        <button type="button" class="wa-desc-chip" data-invdesc="25">25%</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="25">$25</button>
+        <button type="button" class="wa-desc-chip active" data-invdesc="50">$50</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="100">$100</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="150">$150</button>
+        <button type="button" class="wa-desc-chip" data-invdesc="200">$200</button>
       </div>
     </div>
 
@@ -3232,7 +3232,7 @@
   let waDirectoCursoNombre = "";
   let waDirectoBloqueEl = null;
   let waDirectoTipo = "grupo"; // grupo | membresia | invitacion | software
-  let invDescuentoActual = "10";
+  let invDescuentoActual = "50";
 
   // Normalización local (espejo del backend) solo para PREVIEW en el modal
   function waDirectoNormalizarTel(telRaw) {
@@ -3332,9 +3332,9 @@
         .map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
 
     // Reset descuento a 10%
-    invDescuentoActual = "10";
+    invDescuentoActual = "50";
     document.querySelectorAll("#invDescuentos .wa-desc-chip").forEach(ch =>
-      ch.classList.toggle("active", ch.dataset.invdesc === "10"));
+      ch.classList.toggle("active", ch.dataset.invdesc === "50"));
 
     // Reset resultado y tipo inicial
     const res = document.getElementById("waDirectoResultado");
