@@ -1742,7 +1742,8 @@
     <div id="waCamposGrupo">
       <label class="wa-modal-label">Link del grupo de WhatsApp — <span id="waDirectoAperturaLabel" style="color:#16a34a;font-weight:700">esta apertura</span></label>
       <input type="text" id="waDirectoLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
-      <div style="margin-top:6px;font-size:11px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px">⚠️ Este link se guarda <strong>solo para esta fecha de apertura</strong>. Cada apertura usa su propio grupo nuevo.</div>
+      <div id="waDirectoLinkStatus" style="margin-top:4px;font-size:11px;font-weight:600;display:none"></div>
+      <div style="margin-top:6px;font-size:11px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px">⚠️ Este link se guarda <strong>solo para esta fecha de apertura</strong> en cuanto lo pegas — el ponente lo recibirá automáticamente en su aviso. Cada apertura usa su propio grupo nuevo.</div>
     </div>
 
     <!-- Campos: Membresía -->
@@ -3233,6 +3234,7 @@
   let waDirectoCursoNombre = "";
   let waDirectoBloqueEl = null;
   let waDirectoTipo = "grupo"; // grupo | membresia | invitacion | software
+  let waDirectoLinkGuardado = ""; // último link guardado en Firestore para esta apertura
   let invDescuentoActual = "50";
 
   // Normalización local (espejo del backend) solo para PREVIEW en el modal
@@ -3325,6 +3327,9 @@
     const akActual = (aperturaActual && /^\d{4}-\d{2}-\d{2}$/.test(aperturaActual)) ? aperturaActual : null;
     const linkPorApertura = akActual ? ((cursoObj?.whatsappLinks || {})[akActual] || "").trim() : "";
     document.getElementById("waDirectoLinkInput").value = linkPorApertura || (cursoObj?.whatsappLink || "").trim();
+    waDirectoLinkGuardado = document.getElementById("waDirectoLinkInput").value.trim();
+    const stEl = document.getElementById("waDirectoLinkStatus");
+    stEl.style.display = "none"; stEl.textContent = "";
     // Mostrar la fecha de la apertura en el label
     const lblAp = document.getElementById("waDirectoAperturaLabel");
     if (akActual) {
@@ -3375,6 +3380,40 @@
       document.querySelectorAll("#invDescuentos .wa-desc-chip").forEach(c2 =>
         c2.classList.toggle("active", c2 === ch));
     });
+  });
+
+  // Auto-guardar el link al salir del campo — así el ponente ya lo tiene aunque no se envíe nada
+  document.getElementById("waDirectoLinkInput").addEventListener("blur", async () => {
+    if (!waDirectoCursoId) return;
+    const input = document.getElementById("waDirectoLinkInput");
+    const stEl = document.getElementById("waDirectoLinkStatus");
+    const link = (input.value || "").trim();
+    if (!link || link === waDirectoLinkGuardado) return;
+    if (!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/.test(link)) return; // solo guardar links válidos
+
+    stEl.style.display = "block";
+    stEl.style.color = "#5f7186";
+    stEl.textContent = "Guardando link…";
+    try {
+      const fnG = httpsCallable(functions, "guardarLinkApertura");
+      const akOk = (aperturaActual && /^\d{4}-\d{2}-\d{2}$/.test(aperturaActual)) ? aperturaActual : null;
+      await fnG({ cursoId: waDirectoCursoId, aperturaKey: akOk, whatsappLink: link });
+      waDirectoLinkGuardado = link;
+      // Cache local para precargas sin recargar
+      const cL = cursos.find(c => c.id === waDirectoCursoId);
+      if (cL) {
+        cL.whatsappLink = link;
+        if (akOk) cL.whatsappLinks = { ...(cL.whatsappLinks || {}), [akOk]: link };
+      }
+      stEl.style.color = "#16a34a";
+      stEl.textContent = akOk
+        ? "✓ Link guardado para esta apertura — el ponente lo recibirá en su aviso"
+        : "✓ Link guardado";
+    } catch (err) {
+      console.error("[LINK-APERTURA] Error guardando:", err);
+      stEl.style.color = "#dc2626";
+      stEl.textContent = "✗ No se pudo guardar el link: " + (err.message || "error");
+    }
   });
 
   document.getElementById("waDirectoCancel").addEventListener("click", cerrarModalWaDirecto);
