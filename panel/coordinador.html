@@ -675,6 +675,12 @@
           <div class="field-hint">Se le enviará un aviso automático cuando abras el grupo</div>
         </div>
 
+        <div class="field">
+          <label class="field-label">WhatsApp del ponente</label>
+          <input class="input" type="tel" id="curso-tel-ponente" placeholder="Ej. 2211234567 (10 dígitos)">
+          <div class="field-hint">También recibirá el aviso de apertura por WhatsApp (además del correo)</div>
+        </div>
+
         <div class="field-row">
           <div class="field">
             <label class="field-label">Modalidad *</label>
@@ -1564,6 +1570,7 @@
       document.getElementById("curso-nombre").value = cursoData.nombre || "";
       document.getElementById("curso-ponente").value = cursoData.ponente || "";
       document.getElementById("curso-email-ponente").value = cursoData.emailPonente || "";
+      document.getElementById("curso-tel-ponente").value = cursoData.telefonoPonente || "";
       document.getElementById("curso-modalidad").value = cursoData.modalidad || "";
       document.getElementById("curso-duracion").value = cursoData.duracion || "";
       document.getElementById("curso-precio").value = cursoData.precio || "";
@@ -1598,6 +1605,7 @@
         nombre: document.getElementById("curso-nombre").value.trim(),
         ponente: document.getElementById("curso-ponente").value.trim(),
         emailPonente: document.getElementById("curso-email-ponente").value.trim().toLowerCase(),
+        telefonoPonente: document.getElementById("curso-tel-ponente").value.trim(),
         modalidad: document.getElementById("curso-modalidad").value,
         duracion: document.getElementById("curso-duracion").value.trim(),
         precio: parseFloat(document.getElementById("curso-precio").value) || 0,
