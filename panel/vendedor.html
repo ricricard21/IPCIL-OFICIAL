@@ -1740,9 +1740,9 @@
 
     <!-- Campos: Abrir grupo -->
     <div id="waCamposGrupo">
-      <label class="wa-modal-label">Link del grupo de WhatsApp</label>
+      <label class="wa-modal-label">Link del grupo de WhatsApp — <span id="waDirectoAperturaLabel" style="color:#16a34a;font-weight:700">esta apertura</span></label>
       <input type="text" id="waDirectoLinkInput" class="wa-modal-input" placeholder="https://chat.whatsapp.com/..." autocomplete="off" spellcheck="false">
-      <div style="margin-top:6px;font-size:11px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px">⚠️ Cada apertura usa un grupo <strong>nuevo</strong> — verifica que este link sea el del grupo actual, no el de la apertura pasada.</div>
+      <div style="margin-top:6px;font-size:11px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px">⚠️ Este link se guarda <strong>solo para esta fecha de apertura</strong>. Cada apertura usa su propio grupo nuevo.</div>
     </div>
 
     <!-- Campos: Membresía -->
@@ -3320,9 +3320,19 @@
     waDirectoBloqueEl = btnOrigen.closest(".curso-bloque");
     document.getElementById("waDirectoCursoNombre").textContent = cursoNombre;
 
-    // Precargar campos guardados
+    // Precargar campos guardados — link POR APERTURA (fecha activa), con respaldo al global
     const cursoObj = cursos.find(c => c.id === cursoId);
-    document.getElementById("waDirectoLinkInput").value = (cursoObj?.whatsappLink || "").trim();
+    const akActual = (aperturaActual && /^\d{4}-\d{2}-\d{2}$/.test(aperturaActual)) ? aperturaActual : null;
+    const linkPorApertura = akActual ? ((cursoObj?.whatsappLinks || {})[akActual] || "").trim() : "";
+    document.getElementById("waDirectoLinkInput").value = linkPorApertura || (cursoObj?.whatsappLink || "").trim();
+    // Mostrar la fecha de la apertura en el label
+    const lblAp = document.getElementById("waDirectoAperturaLabel");
+    if (akActual) {
+      const dAp = new Date(akActual + "T12:00:00");
+      lblAp.textContent = "apertura del " + dAp.toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
+    } else {
+      lblAp.textContent = "sin fecha asignada";
+    }
     document.getElementById("vipNombreInput").value = (consultora?.membresiaNombre || "").trim();
     document.getElementById("vipLinkInput").value = (consultora?.membresiaLink || "").trim();
 
@@ -3393,6 +3403,7 @@
       }
       fnName = "enviarRecordatorioWhatsApp";
       payload.whatsappLink = waLink;
+      if (aperturaActual && /^\d{4}-\d{2}-\d{2}$/.test(aperturaActual)) payload.aperturaKey = aperturaActual;
     } else if (waDirectoTipo === "membresia") {
       const nombreMem = (document.getElementById("vipNombreInput").value || "").trim();
       const linkMem = (document.getElementById("vipLinkInput").value || "").trim();
@@ -3423,7 +3434,12 @@
       // Actualizar cachés locales para precargar sin recargar
       if (waDirectoTipo === "grupo") {
         const cLocal = cursos.find(c => c.id === waDirectoCursoId);
-        if (cLocal) cLocal.whatsappLink = payload.whatsappLink;
+        if (cLocal) {
+          cLocal.whatsappLink = payload.whatsappLink;
+          if (payload.aperturaKey) {
+            cLocal.whatsappLinks = { ...(cLocal.whatsappLinks || {}), [payload.aperturaKey]: payload.whatsappLink };
+          }
+        }
       } else if (waDirectoTipo === "membresia" && consultora) {
         consultora.membresiaNombre = payload.membresiaNombre;
         consultora.membresiaLink = payload.membresiaLink;
