@@ -3559,6 +3559,10 @@
   async function guardarFilaNueva(tempId) {
     const row = pendingNewRows.find(r => r.tempId === tempId);
     if (!row) return;
+    // 🔒 Candado: si ya hay un guardado en vuelo para esta fila, ignorar disparos repetidos
+    // (blur duplicados o re-renders del snapshot pueden re-invocar mientras el addDoc termina)
+    if (row._guardando) return;
+    row._guardando = true;
 
     try {
       await addDoc(collection(db, "alumnos"), {
@@ -3577,6 +3581,7 @@
       toast("Alumno guardado", "success");
     } catch (err) {
       console.error(err);
+      row._guardando = false; // liberar el candado para permitir reintentar
       toast("Error: " + err.message, "error");
     }
   }

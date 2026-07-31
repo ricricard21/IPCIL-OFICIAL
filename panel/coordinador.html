@@ -724,6 +724,7 @@
             <div style="margin-top:8px;padding:8px 12px;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.5">
               ℹ️ El link de cada apertura se captura <strong>por fecha</strong> desde el panel de ventas (botón WhatsApp de cada pestaña). Este campo solo se usa como <strong>respaldo</strong> si una apertura no tiene link propio.
             </div>
+            <div id="curso-links-apertura" style="margin-top:10px"></div>
           </div>
           <div class="field-hint" style="margin-top:8px">El link se enviará automáticamente a los alumnos el día de la primera sesión a las 8:00 AM (hora de México).</div>
         </div>
@@ -1555,6 +1556,31 @@
   document.getElementById("btn-cancelar-curso").addEventListener("click", () => modalCurso.classList.add("hidden"));
   modalCurso.addEventListener("click", (e) => { if (e.target === modalCurso) modalCurso.classList.add("hidden"); });
 
+  function renderLinksApertura(mapa) {
+    const cont = document.getElementById("curso-links-apertura");
+    if (!cont) return;
+    const fechas = Object.keys(mapa || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort().reverse();
+    if (fechas.length === 0) {
+      cont.innerHTML = "";
+      return;
+    }
+    const filas = fechas.map(f => {
+      const d = new Date(f + "T12:00:00");
+      const fechaTxt = d.toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
+      const link = String(mapa[f] || "");
+      const linkCorto = link.length > 42 ? link.slice(0, 42) + "…" : link;
+      return `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px">
+        <span style="font-weight:600;color:#0f1d2e;white-space:nowrap">📅 ${fechaTxt}</span>
+        <a href="${link}" target="_blank" rel="noopener" style="color:#16a34a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${linkCorto}</a>
+      </div>`;
+    }).join("");
+    cont.innerHTML = `
+      <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+        <div style="background:#f8fafc;padding:6px 10px;font-size:11px;font-weight:700;color:#5f7186;text-transform:uppercase;letter-spacing:.04em">Links capturados por apertura (panel de ventas)</div>
+        ${filas}
+      </div>`;
+  }
+
   function abrirModalCurso(cursoData = null) {
     document.getElementById("form-curso").reset();
     if (cursoData) {
@@ -1569,9 +1595,12 @@
       document.getElementById("curso-precio").value = cursoData.precio || "";
       document.getElementById("curso-activo").value = String(cursoData.activo !== false);
       document.getElementById("curso-whatsapp-link").value = cursoData.whatsappLink || "";
+      // Mostrar links por apertura capturados desde el panel de ventas (solo lectura)
+      renderLinksApertura(cursoData.whatsappLinks || {});
 
     } else {
       document.getElementById("modal-curso-title").textContent = "Nuevo curso";
+      renderLinksApertura({});
       document.getElementById("curso-id").value = "";
       document.getElementById("curso-activo").value = "true";
       document.getElementById("curso-whatsapp-link").value = "";
