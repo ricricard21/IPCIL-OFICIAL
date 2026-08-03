@@ -2421,6 +2421,10 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               Copiar tels
             </button>
+            <button class="btn-excel-wati" data-excel-wati="${cursoId}" data-curso-nombre-excel="${escapeHtml(nombreCurso)}" title="Descargar Excel de contactos para importar en WATI (Name, CountryCode, Phone, program). La columna program lleva el día de esta apertura para filtrar campañas.">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Excel
+            </button>
             ${cursoId ? `
             <button class="btn-enviar-link" data-enviar-link="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Enviar un aviso por correo a los alumnos de esta apertura (grupo, membresía, software, canales o catálogo)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -3158,6 +3162,13 @@
       });
     });
 
+    // Botón "Excel" — descarga contactos en formato WATI con atributo program (día de la apertura)
+    document.querySelectorAll("[data-excel-wati]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        descargarExcelWati(btn);
+      });
+    });
+
     // MODIFICADO: Botón "Reprogramar" — recorre el curso a otra fecha
     document.querySelectorAll("[data-reprogramar]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -3594,6 +3605,51 @@
   })();
 
   // ─── AGREGAR FILA — Manejado por bindBloqueEvents() ───
+
+  function descargarExcelWati(btn) {
+    const bloque = btn.closest(".curso-bloque");
+    if (!bloque) return;
+    // Mismo criterio de siempre: filas marcadas → esas; ninguna → todas las del curso
+    const marcadas = bloque.querySelectorAll("tr[data-alumno-id] .row-color-checkbox:checked");
+    let filas;
+    if (marcadas.length > 0) {
+      filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
+    } else {
+      filas = Array.from(bloque.querySelectorAll("tr[data-alumno-id]"));
+    }
+    if (filas.length === 0) { toast("No hay alumnos para exportar", "error"); return; }
+
+    // Atributo program: día (2 dígitos) de la apertura activa — para filtrar campañas en WATI
+    const mAp = /^(\d{4})-(\d{2})-(\d{2})$/.exec(aperturaActual || "");
+    const programVal = mAp ? mAp[3] : "";
+
+    const filasCsv = [["Name", "CountryCode", "Phone", "program"]];
+    let omitidos = 0;
+    filas.forEach(tr => {
+      const a = alumnos.find(x => x.id === tr.dataset.alumnoId);
+      if (!a) return;
+      let d = String(a.telefono || "").replace(/\D/g, "");
+      if (d.length === 13 && d.startsWith("521")) d = d.slice(3);
+      else if (d.length === 12 && d.startsWith("52")) d = d.slice(2);
+      if (d.length !== 10) { omitidos++; return; }
+      filasCsv.push([a.nombre || "", "+52", d, programVal]);
+    });
+
+    if (filasCsv.length === 1) { toast("Ningún alumno tiene teléfono válido de 10 dígitos", "error"); return; }
+
+    const csv = "\uFEFF" + filasCsv.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const nombreCursoEx = (btn.dataset.cursoNombreExcel || "curso").slice(0, 30).replace(/[^\w\sáéíóúñÁÉÍÓÚÑ-]/g, "").trim().replace(/\s+/g, "-");
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = `contactos-wati-${nombreCursoEx}-${aperturaActual || "sin-fecha"}.csv`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    URL.revokeObjectURL(enlace.href);
+
+    toast(`Excel descargado: ${filasCsv.length - 1} contactos · program=${programVal || "—"}${omitidos ? ` · ${omitidos} sin tel válido omitidos` : ""}`, "success");
+  }
 
   async function guardarFilaNueva(tempId) {
     const row = pendingNewRows.find(r => r.tempId === tempId);
