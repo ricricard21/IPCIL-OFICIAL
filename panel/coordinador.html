@@ -307,6 +307,96 @@
     .al-item-vend, .al-item-folio { display: none; }
     .al-count { min-width: 96px; }
   }
+
+  /* ═══ Dashboard operativo del coordinador ═══ */
+  .dash-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .dash-2col { grid-template-columns: 1fr; } }
+
+  /* Requieren atención */
+  .dash-alert {
+    display: flex; align-items: center; gap: 14px; cursor: pointer;
+    padding: 13px 16px; border-radius: var(--radius); margin-bottom: 10px;
+    border: 1px solid var(--line); background: var(--surface); transition: all var(--t-fast);
+  }
+  .dash-alert:last-child { margin-bottom: 0; }
+  .dash-alert:hover { box-shadow: var(--shadow-sm); transform: translateX(2px); }
+  .dash-alert.is-warn { border-left: 3px solid var(--yellow); background: var(--yellow-soft); }
+  .dash-alert.is-ok { border-left: 3px solid var(--green); background: var(--green-soft); }
+  .dash-alert-ico { width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .dash-alert-ico svg { width: 18px; height: 18px; }
+  .dash-alert.is-warn .dash-alert-ico { background: var(--yellow-bg); color: var(--yellow); }
+  .dash-alert.is-ok .dash-alert-ico { background: var(--green-bg); color: var(--green); }
+  .dash-alert-main { flex: 1; min-width: 0; }
+  .dash-alert-title { font-size: 13.5px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dash-alert-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .dash-alert-arrow { width: 18px; height: 18px; color: var(--muted-light); flex-shrink: 0; }
+
+  .dash-ok { display: flex; align-items: center; gap: 14px; padding: 8px 4px; }
+  .dash-ok svg { width: 30px; height: 30px; color: var(--green); flex-shrink: 0; }
+  .dash-ok-t { font-size: 14px; font-weight: 700; color: var(--text); }
+  .dash-ok-s { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Próximas aperturas */
+  .dash-list { display: flex; flex-direction: column; }
+  .dash-apt { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .dash-apt:last-child { border-bottom: none; }
+  .dash-apt-date {
+    width: 46px; height: 46px; flex-shrink: 0; border-radius: 10px;
+    background: var(--primary-light); color: var(--primary);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .dash-apt-day { font-size: 17px; font-weight: 800; line-height: 1; }
+  .dash-apt-mon { font-size: 10px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+  .dash-apt-main { flex: 1; min-width: 0; }
+  .dash-apt-title { font-size: 13.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dash-apt-sub { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Cursos rumbo a apertura */
+  .dash-bars { display: flex; flex-direction: column; gap: 16px; }
+  .dash-bar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .dash-bar-name { font-size: 13px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dash-bar-val { font-size: 13px; font-weight: 800; color: var(--primary); flex-shrink: 0; }
+  .dash-bar-val span { color: var(--muted-light); font-weight: 600; }
+  .dash-bar-track { height: 8px; border-radius: 5px; background: var(--line); overflow: hidden; margin: 7px 0 5px; }
+  .dash-bar-fill { height: 100%; border-radius: 5px; background: var(--primary); transition: width var(--t-slow); }
+  .dash-bar-fill.is-listo { background: var(--green); }
+  .dash-bar-foot { display: flex; }
+  .dash-faltan { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+
+  /* Feed últimos inscritos (reusa .al-item) */
+  .dash-feed .al-item { padding-left: 0; padding-right: 0; }
+  .dash-feed .al-item:last-child { border-bottom: none; }
+  .dash-feed .al-item:hover { background: transparent; }
+
+  /* Tarjeta de Análisis con IA */
+  .ia-card { border: 1px solid var(--primary-light); }
+  .card-title .ia-spark { width: 18px; height: 18px; vertical-align: -3px; margin-right: 5px; color: var(--primary); }
+  .ia-empty { text-align: center; padding: 26px 16px; }
+  .ia-empty svg { width: 34px; height: 34px; color: var(--primary-light); }
+  .ia-empty-title { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 10px; }
+  .ia-empty-hint { font-size: 12.5px; color: var(--muted); margin-top: 4px; max-width: 380px; margin-left: auto; margin-right: auto; }
+  .ia-loading, .loading { }
+  .ia-resumen { font-size: 13.5px; line-height: 1.55; color: var(--text-soft); background: var(--primary-soft); border: 1px solid var(--primary-light); border-radius: var(--radius); padding: 13px 15px; margin-bottom: 16px; }
+  .ia-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .ia-2col { grid-template-columns: 1fr; } }
+  .ia-box { border-radius: var(--radius); padding: 14px 16px; border: 1px solid var(--line); }
+  .ia-box-good { background: var(--green-soft); border-color: var(--green-bg); }
+  .ia-box-bad { background: var(--yellow-soft); border-color: var(--yellow-bg); }
+  .ia-box-tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .ia-box-good .ia-box-tag { color: var(--green); }
+  .ia-box-bad .ia-box-tag { color: var(--yellow); }
+  .ia-box-name { font-size: 14.5px; font-weight: 700; color: var(--text); margin: 6px 0 6px; line-height: 1.3; }
+  .ia-box-why { font-size: 12.5px; color: var(--text-soft); line-height: 1.5; }
+  .ia-recs-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 18px 0 10px; }
+  .ia-recs { display: flex; flex-direction: column; gap: 10px; }
+  .ia-rec { border: 1px solid var(--line); border-radius: var(--radius); padding: 11px 14px; background: var(--surface); }
+  .ia-rec-head { display: flex; align-items: center; gap: 9px; }
+  .ia-rec-curso { font-size: 13px; font-weight: 600; color: var(--text); }
+  .ia-rec-detail { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .ia-fecha { font-size: 11px; color: var(--muted-light); margin-top: 16px; text-align: right; }
+  .ia-error { font-size: 13px; color: var(--red); background: var(--red-soft); border: 1px solid var(--red-bg); border-radius: var(--radius); padding: 14px 16px; font-weight: 600; }
+  .ia-error-sub { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 6px; }
+  .ia-error-sub code { background: var(--surface-soft); padding: 1px 6px; border-radius: 5px; color: var(--text); }
 </style>
 </head>
 <body>
@@ -398,6 +488,16 @@
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-content">
+            <div class="kpi-label">Cursos listos para abrir</div>
+            <div class="kpi-value" id="kpi-listos">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-listos-sub">llegaron al mínimo</span>
+          </div>
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
             <div class="kpi-label">Próxima apertura</div>
             <div class="kpi-value" id="kpi-prox-apertura" style="font-size:20px">—</div>
             <span class="kpi-trend kpi-trend-flat" id="kpi-prox-apertura-trend">grupo más cercano</span>
@@ -408,29 +508,19 @@
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Certificados</div>
-            <div class="kpi-value" id="kpi-certs">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-certs-trend">—</span>
+            <div class="kpi-label">Pendientes de certificado</div>
+            <div class="kpi-value" id="kpi-pend-cert">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-pend-cert-sub">por enviar</span>
           </div>
-          <div class="kpi-icon kpi-icon-green">
+          <div class="kpi-icon kpi-icon-gold">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Alumnos</div>
-            <div class="kpi-value" id="kpi-alumnos">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-alumnos-trend">—</span>
-          </div>
-          <div class="kpi-icon kpi-icon-gold">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Vendedores activos</div>
-            <div class="kpi-value" id="kpi-vendedores">0</div>
-            <span class="kpi-trend kpi-trend-flat">de <span id="kpi-vendedores-total">0</span> totales</span>
+            <div class="kpi-label">Nuevos inscritos (7 días)</div>
+            <div class="kpi-value" id="kpi-nuevos">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-nuevos-sub">esta semana</span>
           </div>
           <div class="kpi-icon kpi-icon-yellow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
@@ -438,35 +528,65 @@
         </div>
       </div>
 
-      <div class="chart-grid">
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div>
-              <div class="chart-title">Ventas por mes</div>
-              <div class="chart-subtitle">Certificados emitidos por mes</div>
-            </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Requieren tu atención</div>
+            <div class="card-subtitle">Lo urgente para hoy · da clic para ir a la sección</div>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-ventas"></canvas></div>
         </div>
-        <div class="chart-card">
-          <div class="chart-card-header">
+        <div id="dash-atencion"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+
+      <div class="dash-2col">
+        <div class="card">
+          <div class="card-header">
             <div>
-              <div class="chart-title">Cursos más vendidos</div>
-              <div class="chart-subtitle">Top 5</div>
+              <div class="card-title">Próximas aperturas</div>
+              <div class="card-subtitle">Siguientes 14 días</div>
             </div>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-cursos"></canvas></div>
+          <div id="dash-proximas"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Cursos rumbo a apertura</div>
+              <div class="card-subtitle">Inscritos vs mínimo · a quién empujar</div>
+            </div>
+          </div>
+          <div id="dash-rumbo"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">🏆 Top vendedores</div>
-            <div class="card-subtitle">Mejores resultados del periodo</div>
+            <div class="card-title">Últimos alumnos inscritos</div>
+            <div class="card-subtitle">Actividad más reciente de tus vendedores</div>
           </div>
         </div>
-        <div id="top-vendedores"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        <div id="dash-ultimos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+
+      <div class="card ia-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><svg class="ia-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.5"/></svg> Análisis con IA</div>
+            <div class="card-subtitle">Diagnóstico de tus cursos: cuál jala, cuál no, y qué hacer</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-analizar-ia">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+            Actualizar análisis
+          </button>
+        </div>
+        <div id="ia-resultado">
+          <div class="ia-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/></svg>
+            <div class="ia-empty-title">Aún no has generado un análisis</div>
+            <div class="ia-empty-hint">Presiona “Actualizar análisis” para que la IA revise tus cursos y te dé recomendaciones.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1174,44 +1294,26 @@
       elProxTrend.textContent = "sin cursos abiertos";
     }
 
-    // KPI: certificados
-    document.getElementById("kpi-certs").textContent = certsPeriodo.length;
+    // KPI: Cursos listos para abrir (llegaron al mínimo)
+    const _cursosAct = cursos.filter(c => c.activo);
+    const _listos = _cursosAct.map(c => calcularEstadoApertura(c)).filter(e => e.listo).length;
+    document.getElementById("kpi-listos").textContent = _listos;
+    const _subListos = document.getElementById("kpi-listos-sub");
+    if (_subListos) _subListos.textContent = _listos > 0 ? "toca abrir grupo" : "ninguno por ahora";
 
-    // KPI: alumnos
-    document.getElementById("kpi-alumnos").textContent = alumnosPeriodo.length;
+    // KPI: Pendientes de certificado (alumnos aún no enviados)
+    document.getElementById("kpi-pend-cert").textContent = alumnos.filter(a => a.estado !== "email_enviado").length;
 
-    // KPI: vendedores activos
-    const activos = vendedores.filter(v => v.activo).length;
-    document.getElementById("kpi-vendedores").textContent = activos;
-    document.getElementById("kpi-vendedores-total").textContent = vendedores.length;
-
-    // Tendencias (vs periodo anterior) - sin ingresos
-    if (periodoActual !== "all" && typeof periodoActual === "number") {
-      const ahora = Date.now();
-      const desde = ahora - periodoActual * 24 * 60 * 60 * 1000;
-      const desdeAnterior = desde - periodoActual * 24 * 60 * 60 * 1000;
-
-      const certsAnterior = certificados.filter(c => {
-        const t = c.creadoEn?.toMillis?.() || 0;
-        return t >= desdeAnterior && t < desde;
-      });
-
-      const alumnosAnterior = alumnos.filter(a => {
-        const t = a.creadoEn?.toMillis?.() || 0;
-        return t >= desdeAnterior && t < desde;
-      }).length;
-
-      setTrend("kpi-certs-trend", certsPeriodo.length, certsAnterior.length);
-      setTrend("kpi-alumnos-trend", alumnosPeriodo.length, alumnosAnterior);
-    } else {
-      ["kpi-certs-trend", "kpi-alumnos-trend"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.textContent = "—";
-          el.className = "kpi-trend kpi-trend-flat";
-        }
-      });
-    }
+    // KPI: Nuevos inscritos (7 días) + tendencia vs 7 días previos (sin dinero)
+    const _hace7 = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const _hace14 = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const _nuevos7 = alumnos.filter(a => (a.creadoEn?.toMillis?.() || 0) >= _hace7).length;
+    const _nuevosPrev = alumnos.filter(a => {
+      const t = a.creadoEn?.toMillis?.() || 0;
+      return t >= _hace14 && t < _hace7;
+    }).length;
+    document.getElementById("kpi-nuevos").textContent = _nuevos7;
+    setTrend("kpi-nuevos-sub", _nuevos7, _nuevosPrev);
 
     // Cursos sidebar
     document.getElementById("cursos-total").textContent = cursos.length;
@@ -1235,11 +1337,14 @@
     badge.textContent = pendientes;
     badge.style.display = pendientes === 0 ? "none" : "";
 
-    // Charts
-    renderChartVentas();
-    renderChartCursos();
-    renderTopVendedores();
+    // Módulos operativos del dashboard del coordinador
+    renderAtencion();
+    renderProximasAperturas();
+    renderRumboApertura();
+    renderUltimosInscritos();
     renderApertura();
+
+    if (!_iaCargada && usuario?.consultoraId) { _iaCargada = true; cargarIACache(); }
   }
 
   function setTrend(id, actual, anterior) {
@@ -1266,6 +1371,267 @@
       el.className = "kpi-trend kpi-trend-flat";
     }
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // MÓDULOS OPERATIVOS DEL DASHBOARD (coordinador)
+  // ═══════════════════════════════════════════════════════════
+  let _iaCargada = false;
+
+  function irASeccion(view) {
+    const link = document.querySelector(`.sidebar-link[data-view="${view}"]`);
+    if (link) link.click();
+  }
+
+  function renderAtencion() {
+    const box = document.getElementById("dash-atencion");
+    if (!box) return;
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const en7 = new Date(); en7.setDate(en7.getDate() + 7);
+    const en7Str = en7.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const alertas = [];
+
+    cursos.filter(c => c.activo).forEach(c => {
+      const e = calcularEstadoApertura(c);
+      if (e.listo) alertas.push({
+        tipo: "ok", goto: "apertura",
+        titulo: `${c.nombre} llegó al mínimo`,
+        detalle: `${e.inscritos}/${e.minimo} inscritos · listo para abrir grupo`
+      });
+    });
+
+    const combos = new Map();
+    alumnos.forEach(a => {
+      if (a.estado === "email_enviado") return;
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar") return;
+      if (ak < hoyMX || ak > en7Str) return;
+      const k = a.cursoId + "|" + ak;
+      combos.set(k, (combos.get(k) || 0) + 1);
+    });
+    combos.forEach((count, k) => {
+      const idx = k.indexOf("|");
+      const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
+      const curso = cursos.find(c => c.id === cid);
+      if (!curso) return;
+      const links = curso.whatsappLinks || {};
+      const tiene = !!(links[fecha] && String(links[fecha]).trim());
+      if (!tiene) {
+        const d = new Date(fecha + "T00:00:00");
+        const fTxt = isNaN(d) ? fecha : d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
+        alertas.push({
+          tipo: "warn", goto: "cursos",
+          titulo: `Falta link de WhatsApp — ${curso.nombre}`,
+          detalle: `Apertura ${fTxt} · ${count} alumno${count === 1 ? "" : "s"} · sin grupo cargado`
+        });
+      }
+    });
+
+    const sinEmail = alumnos.filter(a => a.estado !== "email_enviado" && !(a.email && a.email.includes("@"))).length;
+    if (sinEmail) alertas.push({
+      tipo: "warn", goto: "alumnos",
+      titulo: `${sinEmail} alumno${sinEmail === 1 ? "" : "s"} sin email`,
+      detalle: "No se les puede enviar certificado hasta capturar su correo"
+    });
+
+    if (!alertas.length) {
+      box.innerHTML = `<div class="dash-ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div><div class="dash-ok-t">Todo en orden</div><div class="dash-ok-s">No hay pendientes urgentes ahora mismo.</div></div>
+      </div>`;
+      return;
+    }
+
+    const icoOk = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    const icoWarn = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    box.innerHTML = alertas.map(al => `
+      <div class="dash-alert ${al.tipo === "ok" ? "is-ok" : "is-warn"}" data-goto="${al.goto}">
+        <div class="dash-alert-ico">${al.tipo === "ok" ? icoOk : icoWarn}</div>
+        <div class="dash-alert-main">
+          <div class="dash-alert-title">${escapeHtml(al.titulo)}</div>
+          <div class="dash-alert-detail">${escapeHtml(al.detalle)}</div>
+        </div>
+        <svg class="dash-alert-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>`).join("");
+  }
+
+  function renderProximasAperturas() {
+    const box = document.getElementById("dash-proximas");
+    if (!box) return;
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const en14 = new Date(); en14.setDate(en14.getDate() + 14);
+    const en14Str = en14.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+
+    const combos = new Map();
+    alumnos.forEach(a => {
+      if (a.estado === "email_enviado") return;
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar") return;
+      if (ak < hoyMX || ak > en14Str) return;
+      const k = a.cursoId + "|" + ak;
+      combos.set(k, (combos.get(k) || 0) + 1);
+    });
+
+    const filas = [...combos.entries()].map(([k, count]) => {
+      const idx = k.indexOf("|");
+      const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
+      const curso = cursos.find(c => c.id === cid);
+      const links = (curso && curso.whatsappLinks) || {};
+      const tiene = !!(links[fecha] && String(links[fecha]).trim());
+      return { fecha, count, curso, tiene };
+    }).sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+    if (!filas.length) {
+      box.innerHTML = `<div class="empty"><div class="empty-text">Sin aperturas en 14 días</div><div class="empty-hint">Aparecerán cuando los vendedores asignen fechas</div></div>`;
+      return;
+    }
+
+    box.innerHTML = `<div class="dash-list">${filas.map(f => {
+      const d = new Date(f.fecha + "T00:00:00");
+      const dia = isNaN(d) ? "--" : d.toLocaleDateString("es-MX", { day: "2-digit" });
+      const mes = isNaN(d) ? "" : d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
+      const nombre = f.curso ? escapeHtml(f.curso.nombre) : "Curso desconocido";
+      const ponente = (f.curso && f.curso.ponente) ? escapeHtml(f.curso.ponente) : "Sin ponente";
+      return `<div class="dash-apt">
+        <div class="dash-apt-date"><div class="dash-apt-day">${dia}</div><div class="dash-apt-mon">${mes}</div></div>
+        <div class="dash-apt-main">
+          <div class="dash-apt-title">${nombre}</div>
+          <div class="dash-apt-sub">${ponente} · ${f.count} alumno${f.count === 1 ? "" : "s"}</div>
+        </div>
+        ${f.tiene ? '<span class="chip chip-green chip-dot">Con link</span>' : '<span class="chip chip-yellow chip-dot">Sin link</span>'}
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  function renderRumboApertura() {
+    const box = document.getElementById("dash-rumbo");
+    if (!box) return;
+    const arr = cursos.filter(c => c.activo).map(c => ({ curso: c, e: calcularEstadoApertura(c) }))
+      .sort((a, b) => (b.e.listo - a.e.listo) || (b.e.pct - a.e.pct));
+
+    if (!arr.length) {
+      box.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div><div class="empty-hint">Actívalos en la sección Cursos</div></div>`;
+      return;
+    }
+
+    box.innerHTML = `<div class="dash-bars">${arr.slice(0, 8).map(({ curso, e }) => {
+      const faltan = Math.max(0, e.minimo - e.inscritos);
+      const foot = e.listo ? '<span class="chip chip-green">Listo para abrir</span>' : `<span class="dash-faltan">faltan ${faltan}</span>`;
+      return `<div class="dash-bar-row">
+        <div class="dash-bar-head">
+          <div class="dash-bar-name">${escapeHtml(curso.nombre)}</div>
+          <div class="dash-bar-val">${e.inscritos}<span>/${e.minimo}</span></div>
+        </div>
+        <div class="dash-bar-track"><div class="dash-bar-fill ${e.listo ? "is-listo" : ""}" style="width:${e.pct}%"></div></div>
+        <div class="dash-bar-foot">${foot}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  function renderUltimosInscritos() {
+    const box = document.getElementById("dash-ultimos");
+    if (!box) return;
+    const ult = [...alumnos].sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0)).slice(0, 10);
+    if (!ult.length) {
+      box.innerHTML = `<div class="empty"><div class="empty-text">Aún no hay alumnos</div><div class="empty-hint">Se registran solos cuando un vendedor genera una venta</div></div>`;
+      return;
+    }
+    box.innerHTML = `<div class="dash-feed">${ult.map(a => {
+      const curso = cursos.find(c => c.id === a.cursoId);
+      const vend = vendedores.find(v => v.id === a.registradoPor);
+      const chip = a.estado === "email_enviado"
+        ? '<span class="chip chip-green chip-dot">Enviado</span>'
+        : '<span class="chip chip-yellow chip-dot">Pendiente</span>';
+      return `<div class="al-item">
+        <div class="al-avatar">${escapeHtml(iniciales(a.nombre))}</div>
+        <div class="al-item-main">
+          <div class="al-item-name">${escapeHtml(a.nombre)}</div>
+          <div class="al-item-sub">${curso ? escapeHtml(curso.nombre) : "Sin curso"}</div>
+        </div>
+        <div class="al-item-vend">${vend ? `<span>${escapeHtml(vend.nombre)}</span>` : '<span class="text-muted">—</span>'}</div>
+        <div class="al-item-date">${alFechaRelativa(a.creadoEn)}</div>
+        <div class="al-item-status">${chip}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  document.getElementById("dash-atencion")?.addEventListener("click", (e) => {
+    const row = e.target.closest("[data-goto]");
+    if (row) irASeccion(row.dataset.goto);
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // ANÁLISIS CON IA (solo lectura + botón Actualizar)
+  // ═══════════════════════════════════════════════════════════
+  function renderIAResultado(data) {
+    const box = document.getElementById("ia-resultado");
+    if (!box || !data) return;
+    const fecha = data.generadoEn
+      ? (data.generadoEn.toDate ? data.generadoEn.toDate() : new Date(data.generadoEn)).toLocaleString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+      : "";
+    const recs = Array.isArray(data.recomendaciones) ? data.recomendaciones : [];
+    const chipAccion = ac => {
+      const a = (ac || "").toLowerCase();
+      let cls = "chip-blue";
+      if (a.includes("subir")) cls = "chip-green";
+      else if (a.includes("bajar")) cls = "chip-yellow";
+      else if (a.includes("pausar") || a.includes("quitar") || a.includes("eliminar")) cls = "chip-red";
+      else if (a.includes("diplomado") || a.includes("combo") || a.includes("paquete")) cls = "chip-gold";
+      return `<span class="chip ${cls}">${escapeHtml(ac || "Acción")}</span>`;
+    };
+    box.innerHTML = `
+      ${data.resumen ? `<div class="ia-resumen">${escapeHtml(data.resumen)}</div>` : ""}
+      <div class="ia-2col">
+        ${data.mejor ? `<div class="ia-box ia-box-good">
+          <div class="ia-box-tag">Mejor curso</div>
+          <div class="ia-box-name">${escapeHtml(data.mejor.curso || "—")}</div>
+          <div class="ia-box-why">${escapeHtml(data.mejor.porque || "")}</div>
+        </div>` : ""}
+        ${data.peor ? `<div class="ia-box ia-box-bad">
+          <div class="ia-box-tag">Requiere atención</div>
+          <div class="ia-box-name">${escapeHtml(data.peor.curso || "—")}</div>
+          <div class="ia-box-why">${escapeHtml(data.peor.porque || "")}</div>
+        </div>` : ""}
+      </div>
+      ${recs.length ? `<div class="ia-recs-title">Recomendaciones</div>
+      <div class="ia-recs">${recs.map(r => `
+        <div class="ia-rec">
+          <div class="ia-rec-head">${chipAccion(r.accion)}<span class="ia-rec-curso">${escapeHtml(r.curso || "")}</span></div>
+          ${r.detalle ? `<div class="ia-rec-detail">${escapeHtml(r.detalle)}</div>` : ""}
+        </div>`).join("")}</div>` : ""}
+      ${fecha ? `<div class="ia-fecha">Actualizado el ${fecha}</div>` : ""}`;
+  }
+
+  async function cargarIACache() {
+    if (!usuario?.consultoraId) return;
+    try {
+      const snap = await getDoc(doc(db, "analisisIA", usuario.consultoraId));
+      if (snap.exists()) renderIAResultado(snap.data());
+    } catch (err) { /* sin cache aún */ }
+  }
+
+  document.getElementById("btn-analizar-ia")?.addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const box = document.getElementById("ia-resultado");
+    const btnHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = "Analizando...";
+    if (box) box.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">La IA está revisando tus cursos… puede tardar unos segundos.</div></div>`;
+    try {
+      const fn = httpsCallable(functions, "analizarCursosIA");
+      const res = await fn({});
+      const data = res && res.data ? res.data : null;
+      if (data) renderIAResultado(data);
+      else if (box) box.innerHTML = `<div class="empty"><div class="empty-text">No se recibió análisis</div></div>`;
+      toast("Análisis actualizado", "success");
+    } catch (err) {
+      console.error(err);
+      if (box) box.innerHTML = `<div class="ia-error">No se pudo generar el análisis.<div class="ia-error-sub">Si es la primera vez, verifica que la función <code>analizarCursosIA</code> esté desplegada en el backend. ${escapeHtml(err && err.message ? err.message : "")}</div></div>`;
+      toast("No se pudo generar el análisis", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = btnHtml;
+    }
+  });
 
   // ─── CHART VENTAS POR MES ───
   function renderChartVentas() {
