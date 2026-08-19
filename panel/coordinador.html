@@ -291,6 +291,17 @@
   .al-item-date { flex-shrink: 0; min-width: 92px; text-align: right; font-size: 11.5px; color: var(--muted); }
   .al-item-status { flex-shrink: 0; min-width: 96px; text-align: right; }
 
+  /* Subencabezado de curso dentro de un bloque por fecha */
+  .al-cursosub {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 18px 9px 22px; background: var(--surface-soft);
+    border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+  }
+  .al-cursosub:first-child { border-top: none; }
+  .al-cursosub-name { font-size: 12.5px; font-weight: 700; color: var(--primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .al-cursosub-count { font-size: 11px; font-weight: 600; color: var(--muted); flex-shrink: 0; }
+  .al-cal { width: 15px; height: 15px; vertical-align: -3px; margin-right: 7px; color: var(--primary); }
+
   @media (max-width: 900px) {
     .al-stats { grid-template-columns: repeat(2, 1fr); }
     .al-item-vend, .al-item-folio { display: none; }
@@ -538,7 +549,11 @@
               <option value="pendiente">Pendiente</option>
             </select>
             <div class="al-toggle" id="al-toggle">
-              <button data-vista="grupos" class="active" title="Agrupado por curso">
+              <button data-vista="fecha" class="active" title="Agrupado por fecha de apertura">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Por fecha
+              </button>
+              <button data-vista="grupos" title="Agrupado por curso">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="14" width="18" height="5" rx="1"/></svg>
                 Por curso
               </button>
@@ -1534,7 +1549,7 @@
     const search = (document.getElementById("search-alumno")?.value || "").toLowerCase();
     const fCurso = document.getElementById("filtro-curso-alumnos")?.value || "";
     const fEstado = document.getElementById("filtro-estado-alumnos")?.value || "";
-    const vista = document.querySelector("#al-toggle button.active")?.dataset.vista || "grupos";
+    const vista = document.querySelector("#al-toggle button.active")?.dataset.vista || "fecha";
 
     poblarFiltroCursos();
 
@@ -1572,6 +1587,96 @@
     const chipEstado = a => a.estado === "email_enviado"
       ? '<span class="chip chip-green chip-dot">Enviado</span>'
       : '<span class="chip chip-yellow chip-dot">Pendiente</span>';
+
+    const filaAlumno = a => {
+      const vend = vendedores.find(v => v.id === a.registradoPor);
+      const cert = certificados.find(ce => ce.id === a.certificadoId);
+      return `<div class="al-item">
+        <div class="al-avatar">${escapeHtml(iniciales(a.nombre))}</div>
+        <div class="al-item-main">
+          <div class="al-item-name">${escapeHtml(a.nombre)}</div>
+          <div class="al-item-sub">${escapeHtml(a.email || "Sin email")}</div>
+        </div>
+        <div class="al-item-vend">${vend ? `<span>${escapeHtml(vend.nombre)}</span>` : '<span class="text-muted">—</span>'}</div>
+        <div class="al-item-folio">${cert ? `<code>${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">Sin folio</span>'}</div>
+        <div class="al-item-date">${alFechaRelativa(a.creadoEn)}</div>
+        <div class="al-item-status">${chipEstado(a)}</div>
+      </div>`;
+    };
+
+    const calSvg = `<svg class="al-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+    const chevSvg = `<span class="al-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>`;
+
+    // ══ VISTA POR FECHA (apertura) — igual que el panel de vendedores ══
+    if (vista === "fecha") {
+      const keyDe = a => a.aperturaKey || "sin-asignar";
+      const labelDe = k => {
+        if (k === "sin-asignar") return "Sin fecha de apertura asignada";
+        const d = new Date(k + "T00:00:00");
+        if (isNaN(d)) return k;
+        const s = d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      };
+
+      const porFecha = new Map();
+      for (const a of lista) {
+        const k = keyDe(a);
+        if (!porFecha.has(k)) porFecha.set(k, []);
+        porFecha.get(k).push(a);
+      }
+      // Fechas descendentes, "sin-asignar" al final
+      const keys = [...porFecha.keys()].sort((x, y) => {
+        if (x === "sin-asignar") return 1;
+        if (y === "sin-asignar") return -1;
+        return y.localeCompare(x);
+      });
+
+      c.innerHTML = `<div class="al-groups">${keys.map(k => {
+        const items = porFecha.get(k);
+        const total = items.length;
+        const env = items.filter(a => a.estado === "email_enviado").length;
+        const pend = total - env;
+
+        // Dentro de la fecha, sub-agrupar por curso (ordenados por nombre)
+        const porCurso = new Map();
+        for (const a of items) {
+          const ck = a.cursoId || "__sin__";
+          if (!porCurso.has(ck)) porCurso.set(ck, []);
+          porCurso.get(ck).push(a);
+        }
+        const cursoOrden = [...porCurso.entries()].sort((x, y) => {
+          const nx = (cursos.find(cu => cu.id === x[0])?.nombre) || "Sin curso";
+          const ny = (cursos.find(cu => cu.id === y[0])?.nombre) || "Sin curso";
+          return nx.localeCompare(ny);
+        });
+
+        const cuerpo = cursoOrden.map(([ck, arr]) => {
+          const curso = cursos.find(cu => cu.id === ck);
+          const nombreCurso = curso ? escapeHtml(curso.nombre) : "Sin curso asignado";
+          const filas = arr
+            .slice()
+            .sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0))
+            .map(filaAlumno).join("");
+          return `<div class="al-cursosub"><div class="al-cursosub-name">${nombreCurso}</div><div class="al-cursosub-count">${arr.length} alumno${arr.length === 1 ? '' : 's'}</div></div>${filas}`;
+        }).join("");
+
+        return `<div class="al-group">
+          <div class="al-group-head">
+            ${chevSvg}
+            <div class="al-group-info">
+              <div class="al-group-title">${calSvg}${labelDe(k)}</div>
+              <div class="al-group-sub">
+                <span>${env} enviado${env === 1 ? '' : 's'}</span>
+                <span>${pend} pendiente${pend === 1 ? '' : 's'}</span>
+              </div>
+            </div>
+            <div class="al-count"><div class="al-count-num"><b>${total}</b> alumno${total === 1 ? '' : 's'}</div></div>
+          </div>
+          <div class="al-group-body">${cuerpo}</div>
+        </div>`;
+      }).join("")}</div>`;
+      return;
+    }
 
     // ══ VISTA LISTA (tabla completa) ══
     if (vista === "lista") {
