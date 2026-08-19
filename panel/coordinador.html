@@ -200,6 +200,102 @@
     letter-spacing: 0.04em;
     font-weight: 600;
   }
+
+  /* ═══ Vista mejorada de Alumnos (agrupada por curso) ═══ */
+  .al-toolbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .al-toolbar .select { min-width: 190px; }
+  .al-toggle {
+    display: inline-flex; background: var(--surface-soft);
+    border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 3px;
+  }
+  .al-toggle button {
+    border: none; background: transparent; cursor: pointer;
+    font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted);
+    padding: 6px 14px; border-radius: 6px; transition: all var(--t-fast);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .al-toggle button svg { width: 15px; height: 15px; }
+  .al-toggle button.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-xs); }
+
+  .al-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 18px 22px 4px; }
+  .al-stat {
+    background: var(--surface-soft); border: 1px solid var(--line-soft);
+    border-radius: var(--radius); padding: 12px 14px;
+  }
+  .al-stat-val { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1; }
+  .al-stat-val.is-primary { color: var(--primary); }
+  .al-stat-val.is-green { color: var(--green); }
+  .al-stat-val.is-yellow { color: var(--yellow); }
+  .al-stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-top: 6px; }
+
+  .al-groups { padding: 14px 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .al-group {
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    background: var(--surface); overflow: hidden; position: relative;
+    transition: box-shadow var(--t);
+  }
+  .al-group::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--primary); opacity: .85;
+  }
+  .al-group.is-listo::before { background: var(--green); }
+  .al-group:hover { box-shadow: var(--shadow-sm); }
+
+  .al-group-head {
+    display: flex; align-items: center; gap: 16px; cursor: pointer;
+    padding: 15px 18px 15px 22px; user-select: none;
+  }
+  .al-group-head:hover { background: var(--surface-soft); }
+  .al-chevron { color: var(--muted-light); transition: transform var(--t); flex-shrink: 0; }
+  .al-chevron svg { width: 18px; height: 18px; display: block; }
+  .al-group.is-collapsed .al-chevron { transform: rotate(-90deg); }
+  .al-group.is-collapsed .al-group-body { display: none; }
+
+  .al-group-info { flex: 1; min-width: 0; }
+  .al-group-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .al-group-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  .al-count {
+    flex-shrink: 0; text-align: right; min-width: 130px;
+  }
+  .al-count-num { font-size: 13px; font-weight: 700; color: var(--text); }
+  .al-count-num b { color: var(--primary); font-size: 15px; }
+  .al-group.is-listo .al-count-num b { color: var(--green); }
+  .al-progress { height: 5px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 7px; }
+  .al-progress-bar { height: 100%; border-radius: 4px; background: var(--primary); transition: width var(--t-slow); }
+  .al-group.is-listo .al-progress-bar { background: var(--green); }
+
+  .al-group-body { border-top: 1px solid var(--line-soft); }
+  .al-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 18px 11px 22px; border-bottom: 1px solid var(--line-soft);
+    transition: background var(--t-fast);
+  }
+  .al-item:last-child { border-bottom: none; }
+  .al-item:hover { background: var(--surface-soft); }
+  .al-avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--primary);
+    background: var(--primary-light); letter-spacing: .02em;
+  }
+  .al-item-main { flex: 1; min-width: 0; }
+  .al-item-name { font-size: 13.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .al-item-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .al-item-vend { font-size: 11.5px; color: var(--muted); flex-shrink: 0; min-width: 120px; }
+  .al-item-vend span { color: var(--text-soft); font-weight: 500; }
+  .al-item-folio { flex-shrink: 0; min-width: 130px; }
+  .al-item-folio code { color: var(--primary); font-weight: 700; font-size: 11.5px; }
+  .al-item-date { flex-shrink: 0; min-width: 92px; text-align: right; font-size: 11.5px; color: var(--muted); }
+  .al-item-status { flex-shrink: 0; min-width: 96px; text-align: right; }
+
+  @media (max-width: 900px) {
+    .al-stats { grid-template-columns: repeat(2, 1fr); }
+    .al-item-vend, .al-item-folio { display: none; }
+    .al-count { min-width: 96px; }
+  }
 </style>
 </head>
 <body>
@@ -432,11 +528,32 @@
             <div class="card-title">Listado de alumnos</div>
             <div class="card-subtitle"><span id="alumnos-total">0</span> alumnos registrados</div>
           </div>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="input" type="search" id="search-alumno" placeholder="Buscar nombre, email o folio...">
+          <div class="al-toolbar">
+            <select class="select" id="filtro-curso-alumnos" title="Filtrar por curso">
+              <option value="">Todos los cursos</option>
+            </select>
+            <select class="select" id="filtro-estado-alumnos" title="Filtrar por estado">
+              <option value="">Todos los estados</option>
+              <option value="email_enviado">Enviado</option>
+              <option value="pendiente">Pendiente</option>
+            </select>
+            <div class="al-toggle" id="al-toggle">
+              <button data-vista="grupos" class="active" title="Agrupado por curso">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="14" width="18" height="5" rx="1"/></svg>
+                Por curso
+              </button>
+              <button data-vista="lista" title="Lista completa">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Lista
+              </button>
+            </div>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input class="input" type="search" id="search-alumno" placeholder="Buscar nombre, email o folio...">
+            </div>
           </div>
         </div>
+        <div id="alumnos-stats" class="al-stats"></div>
         <div id="alumnos-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
       </div>
     </section>
@@ -1381,9 +1498,45 @@
   // ═══════════════════════════════════════════════════════════
   // ALUMNOS
   // ═══════════════════════════════════════════════════════════
+  // Etiqueta de fecha relativa (Hoy / Ayer / Hace N días / fecha)
+  function alFechaRelativa(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const dd = new Date(d); dd.setHours(0, 0, 0, 0);
+    const dias = Math.round((hoy - dd) / 86400000);
+    if (dias === 0) return "Hoy";
+    if (dias === 1) return "Ayer";
+    if (dias > 1 && dias < 7) return `Hace ${dias} días`;
+    return formatFecha(ts);
+  }
+
+  // Rellena el dropdown de cursos solo con los que tienen alumnos (preserva selección)
+  function poblarFiltroCursos() {
+    const sel = document.getElementById("filtro-curso-alumnos");
+    if (!sel) return;
+    const conAlumnos = [...new Set(alumnos.map(a => a.cursoId).filter(Boolean))]
+      .map(id => cursos.find(cu => cu.id === id))
+      .filter(Boolean)
+      .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    const firma = conAlumnos.map(c => c.id).join("|");
+    if (sel.dataset.firma === firma) return; // sin cambios, no repintar
+    const actual = sel.value;
+    sel.innerHTML = `<option value="">Todos los cursos</option>` +
+      conAlumnos.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+    sel.value = actual;
+    sel.dataset.firma = firma;
+  }
+
   function renderAlumnos() {
     const c = document.getElementById("alumnos-container");
+    const statsBox = document.getElementById("alumnos-stats");
     const search = (document.getElementById("search-alumno")?.value || "").toLowerCase();
+    const fCurso = document.getElementById("filtro-curso-alumnos")?.value || "";
+    const fEstado = document.getElementById("filtro-estado-alumnos")?.value || "";
+    const vista = document.querySelector("#al-toggle button.active")?.dataset.vista || "grupos";
+
+    poblarFiltroCursos();
 
     let lista = [...alumnos];
     if (search) {
@@ -1393,42 +1546,138 @@
         certificados.find(cert => cert.id === a.certificadoId && (cert.folio || "").toLowerCase().includes(search))
       );
     }
+    if (fCurso) lista = lista.filter(a => a.cursoId === fCurso);
+    if (fEstado === "email_enviado") lista = lista.filter(a => a.estado === "email_enviado");
+    else if (fEstado === "pendiente") lista = lista.filter(a => a.estado !== "email_enviado");
     lista.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+
+    // ── Mini-stats ──
+    const nEnviados = lista.filter(a => a.estado === "email_enviado").length;
+    const nPend = lista.length - nEnviados;
+    const nCursos = new Set(lista.map(a => a.cursoId || "sin")).size;
+    statsBox.innerHTML = `
+      <div class="al-stat"><div class="al-stat-val is-primary">${lista.length}</div><div class="al-stat-lbl">Alumnos</div></div>
+      <div class="al-stat"><div class="al-stat-val">${nCursos}</div><div class="al-stat-lbl">Cursos con alumnos</div></div>
+      <div class="al-stat"><div class="al-stat-val is-green">${nEnviados}</div><div class="al-stat-lbl">Certificado enviado</div></div>
+      <div class="al-stat"><div class="al-stat-val is-yellow">${nPend}</div><div class="al-stat-lbl">Pendientes</div></div>`;
 
     if (lista.length === 0) {
       c.innerHTML = `<div class="empty">
-        <div class="empty-text">${search ? 'Sin resultados' : 'Aún no hay alumnos'}</div>
-        <div class="empty-hint">${search ? 'Intenta con otra búsqueda' : 'Los alumnos se registran automáticamente cuando un vendedor genera una venta'}</div>
+        <div class="empty-text">${search || fCurso || fEstado ? 'Sin resultados' : 'Aún no hay alumnos'}</div>
+        <div class="empty-hint">${search || fCurso || fEstado ? 'Prueba con otros filtros o búsqueda' : 'Los alumnos se registran automáticamente cuando un vendedor genera una venta'}</div>
       </div>`;
       return;
     }
 
-    const mostrar = lista.slice(0, 200);
-    c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr>
-        <th>Alumno</th><th>Email</th><th>Curso</th><th>Vendedor</th>
-        <th>Estado</th><th>Folio</th><th>Fecha</th>
-      </tr></thead>
-      <tbody>${mostrar.map(a => {
-        const curso = cursos.find(cu => cu.id === a.cursoId);
+    const chipEstado = a => a.estado === "email_enviado"
+      ? '<span class="chip chip-green chip-dot">Enviado</span>'
+      : '<span class="chip chip-yellow chip-dot">Pendiente</span>';
+
+    // ══ VISTA LISTA (tabla completa) ══
+    if (vista === "lista") {
+      const mostrar = lista.slice(0, 200);
+      c.innerHTML = `<div class="table-wrap"><table class="table">
+        <thead><tr>
+          <th>Alumno</th><th>Email</th><th>Curso</th><th>Vendedor</th>
+          <th>Estado</th><th>Folio</th><th>Fecha</th>
+        </tr></thead>
+        <tbody>${mostrar.map(a => {
+          const curso = cursos.find(cu => cu.id === a.cursoId);
+          const vend = vendedores.find(v => v.id === a.registradoPor);
+          const cert = certificados.find(ce => ce.id === a.certificadoId);
+          return `<tr>
+            <td><strong>${escapeHtml(a.nombre)}</strong></td>
+            <td>${escapeHtml(a.email || "—")}</td>
+            <td>${curso ? escapeHtml(curso.nombre) : '<span class="text-muted">—</span>'}</td>
+            <td>${vend ? escapeHtml(vend.nombre) : '<span class="text-muted">—</span>'}</td>
+            <td>${chipEstado(a)}</td>
+            <td>${cert ? `<code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">—</span>'}</td>
+            <td class="text-sm text-muted">${formatFecha(a.creadoEn)}</td>
+          </tr>`;
+        }).join("")}</tbody></table></div>
+        ${lista.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${lista.length}. Usa los filtros para refinar.</div>` : ""}`;
+      return;
+    }
+
+    // ══ VISTA POR CURSO (agrupada) ══
+    const grupos = new Map(); // cursoId -> { curso, items[], ultima }
+    for (const a of lista) {
+      const key = a.cursoId || "__sin__";
+      if (!grupos.has(key)) {
+        grupos.set(key, { curso: cursos.find(cu => cu.id === a.cursoId) || null, items: [], ultima: 0 });
+      }
+      const g = grupos.get(key);
+      g.items.push(a);
+      g.ultima = Math.max(g.ultima, a.creadoEn?.toMillis?.() || 0);
+    }
+    // Grupos ordenados por actividad más reciente
+    const ordenados = [...grupos.values()].sort((x, y) => y.ultima - x.ultima);
+
+    c.innerHTML = `<div class="al-groups">${ordenados.map(g => {
+      const nombreCurso = g.curso ? escapeHtml(g.curso.nombre) : "Sin curso asignado";
+      const total = g.items.length;
+      const env = g.items.filter(a => a.estado === "email_enviado").length;
+      const pend = total - env;
+      const minimo = g.curso ? (g.curso.minimoAlumnos || 8) : 0;
+      const listo = minimo > 0 && total >= minimo;
+      const pct = minimo > 0 ? Math.min(100, Math.round(total / minimo * 100)) : 0;
+      const metaTxt = minimo > 0
+        ? `<span title="Referencia: mínimo para abrir grupo">${total} / ${minimo} para abrir</span>`
+        : "";
+
+      const filas = g.items.map(a => {
         const vend = vendedores.find(v => v.id === a.registradoPor);
         const cert = certificados.find(ce => ce.id === a.certificadoId);
-        return `<tr>
-          <td><strong>${escapeHtml(a.nombre)}</strong></td>
-          <td>${escapeHtml(a.email || "—")}</td>
-          <td>${curso ? escapeHtml(curso.nombre) : '<span class="text-muted">—</span>'}</td>
-          <td>${vend ? escapeHtml(vend.nombre) : '<span class="text-muted">—</span>'}</td>
-          <td>${a.estado === "email_enviado"
-            ? '<span class="chip chip-green chip-dot">Enviado</span>'
-            : '<span class="chip chip-yellow chip-dot">Pendiente</span>'}</td>
-          <td>${cert ? `<code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">—</span>'}</td>
-          <td class="text-sm text-muted">${formatFecha(a.creadoEn)}</td>
-        </tr>`;
-      }).join("")}</tbody></table></div>
-      ${lista.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${lista.length}. Usa la búsqueda para refinar.</div>` : ""}`;
+        return `<div class="al-item">
+          <div class="al-avatar">${escapeHtml(iniciales(a.nombre))}</div>
+          <div class="al-item-main">
+            <div class="al-item-name">${escapeHtml(a.nombre)}</div>
+            <div class="al-item-sub">${escapeHtml(a.email || "Sin email")}</div>
+          </div>
+          <div class="al-item-vend">${vend ? `<span>${escapeHtml(vend.nombre)}</span>` : '<span class="text-muted">—</span>'}</div>
+          <div class="al-item-folio">${cert ? `<code>${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">Sin folio</span>'}</div>
+          <div class="al-item-date">${alFechaRelativa(a.creadoEn)}</div>
+          <div class="al-item-status">${chipEstado(a)}</div>
+        </div>`;
+      }).join("");
+
+      return `<div class="al-group${listo ? ' is-listo' : ''}">
+        <div class="al-group-head">
+          <span class="al-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <div class="al-group-info">
+            <div class="al-group-title">${nombreCurso}</div>
+            <div class="al-group-sub">
+              <span>${env} enviado${env === 1 ? '' : 's'}</span>
+              <span>${pend} pendiente${pend === 1 ? '' : 's'}</span>
+              ${listo ? '<span class="chip chip-green" style="padding:2px 8px;font-size:10.5px">Listo para abrir</span>' : ''}
+            </div>
+          </div>
+          <div class="al-count">
+            <div class="al-count-num"><b>${total}</b> alumno${total === 1 ? '' : 's'}</div>
+            ${minimo > 0 ? `<div class="al-progress"><div class="al-progress-bar" style="width:${pct}%"></div></div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">${metaTxt}</div>` : ''}
+          </div>
+        </div>
+        <div class="al-group-body">${filas}</div>
+      </div>`;
+    }).join("")}</div>`;
   }
 
   document.getElementById("search-alumno").addEventListener("input", renderAlumnos);
+  document.getElementById("filtro-curso-alumnos")?.addEventListener("change", renderAlumnos);
+  document.getElementById("filtro-estado-alumnos")?.addEventListener("change", renderAlumnos);
+  document.getElementById("al-toggle")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-vista]");
+    if (!btn) return;
+    document.querySelectorAll("#al-toggle button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderAlumnos();
+  });
+  // Colapsar/expandir grupos (delegado, sobrevive al repintado del contenedor)
+  document.getElementById("alumnos-container")?.addEventListener("click", (e) => {
+    const head = e.target.closest(".al-group-head");
+    if (!head) return;
+    head.parentElement.classList.toggle("is-collapsed");
+  });
 
   // ═══════════════════════════════════════════════════════════
   // HISTÓRICOS
