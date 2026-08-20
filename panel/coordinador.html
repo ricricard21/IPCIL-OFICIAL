@@ -446,11 +446,17 @@
   .graf-more { margin: 12px auto 0; display: flex; justify-content: center; width: 100%; font-size: 12px; color: var(--primary); font-weight: 700; }
 
   /* Ergonomía: que nada se salga de las tarjetas */
-  .dash-apt-chips .chip { font-size: 10.5px; padding: 3px 9px; white-space: nowrap; }
+  .dash-apt-chips .chip, .dash-apt-proj .chip { font-size: 10.5px; padding: 3px 9px; white-space: nowrap; }
   .dash-apt-sub, .dash-apt-title { min-width: 0; }
+  .dash-apt-proj { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; cursor: help; }
+  .apt-nums { display: flex; align-items: baseline; gap: 5px; }
+  .apt-now { font-size: 17px; font-weight: 800; color: var(--text); }
+  .apt-arrow { font-size: 12px; font-weight: 700; color: var(--muted-light); }
+  .apt-est { font-size: 17px; font-weight: 800; color: var(--primary); }
+  .apt-min { font-size: 10.5px; font-weight: 700; color: var(--muted); margin-left: 3px; }
   @media (max-width: 700px) {
     .dash-apt { flex-wrap: wrap; }
-    .dash-apt-chips { flex-direction: row; flex-wrap: wrap; width: 100%; justify-content: flex-start; margin-left: 60px; }
+    .dash-apt-chips, .dash-apt-proj { flex-direction: row; flex-wrap: wrap; width: 100%; justify-content: flex-start; align-items: center; margin-left: 60px; }
   }
 </style>
 </head>
@@ -617,7 +623,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Próximas aperturas</div>
-              <div class="card-subtitle">Siguientes 14 días · la estimación usa el ritmo de ventas de cada curso</div>
+              <div class="card-subtitle">Siguientes 14 días · estimación aprendida de tus aperturas pasadas</div>
             </div>
           </div>
           <div id="dash-proximas"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
@@ -1545,6 +1551,76 @@
     return n / 14;
   }
 
+  // ── Motor de estimación con HISTÓRICO real ──
+  // Aprende de las aperturas pasadas: qué % del total ya estaba inscrito a "d" días
+  // de la fecha. Entre menos días falten, más precisa la estimación.
+  function _historicoAperturas() {
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const porCurso = new Map(); // cursoId -> [{fechaMs, final, tiempos[]}]
+    const tmp = new Map();
+    alumnos.forEach(a => {
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar" || ak >= hoyMX) return; // solo aperturas YA dadas
+      const key = a.cursoId + "|" + ak;
+      let o = tmp.get(key);
+      if (!o) { o = { cursoId: a.cursoId, fechaMs: new Date(ak + "T00:00:00").getTime(), tiempos: [] }; tmp.set(key, o); }
+      const t = a.creadoEn?.toMillis?.() || 0;
+      if (t > 0) o.tiempos.push(t);
+    });
+    tmp.forEach(o => {
+      const final = o.tiempos.length;
+      if (final < 3) return; // aperturas muy chicas meten ruido
+      const arr = porCurso.get(o.cursoId) || [];
+      arr.push({ fechaMs: o.fechaMs, final, tiempos: o.tiempos });
+      porCurso.set(o.cursoId, arr);
+    });
+    return porCurso;
+  }
+
+  // % promedio del total que ya estaba inscrito a "dias" de la apertura
+  function _fraccionA(aperturas, dias) {
+    if (!aperturas.length) return null;
+    const usar = aperturas.slice(-6); // últimas 6 aperturas
+    let suma = 0, n = 0;
+    usar.forEach(ap => {
+      const corte = ap.fechaMs - dias * 864e5;
+      const ya = ap.tiempos.filter(t => t <= corte).length;
+      suma += ya / ap.final;
+      n++;
+    });
+    return n ? suma / n : null;
+  }
+
+  function estimarAsistencia(hist, cursoId, actuales, dias, minimo) {
+    // 1) Curva histórica del propio curso
+    const propias = hist.get(cursoId) || [];
+    let p = _fraccionA(propias, dias);
+    let fuente = `curva de ${propias.length} apertura${propias.length === 1 ? "" : "s"} de este curso`;
+
+    // 2) Si el curso no tiene historia útil, usar la curva de TODA la consultora
+    if (p === null || p < 0.08) {
+      const todas = [];
+      hist.forEach(arr => todas.push(...arr));
+      const pPool = _fraccionA(todas, dias);
+      if (pPool !== null && pPool >= 0.08) { p = pPool; fuente = `curva histórica de la consultora (${todas.length} aperturas)`; }
+      else p = null;
+    }
+
+    let proy;
+    if (p !== null) {
+      proy = Math.round(actuales / p);
+      // Techo realista: no proyectar más allá de 1.3x la mejor apertura conocida
+      const finales = (propias.length ? propias : [...hist.values()].flat()).map(a => a.final);
+      if (finales.length) proy = Math.min(proy, Math.round(Math.max(...finales) * 1.3));
+    } else {
+      // 3) Último recurso: ritmo de ventas de los últimos 14 días
+      proy = Math.round(actuales + ritmoInscripcion(cursoId) * dias);
+      fuente = "ritmo de ventas de los últimos 14 días";
+    }
+    proy = Math.max(proy, actuales);
+    return { proy, fuente };
+  }
+
   function renderProximasAperturas() {
     const box = document.getElementById("dash-proximas");
     if (!box) return;
@@ -1566,13 +1642,15 @@
       const idx = k.indexOf("|");
       const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
       const curso = cursos.find(c => c.id === cid);
-      return { fecha, cid, count, curso, tipoLink: linkDeApertura(curso, fecha) };
+      return { fecha, cid, count, curso };
     }).sort((a, b) => a.fecha.localeCompare(b.fecha));
 
     if (!filas.length) {
       box.innerHTML = `<div class="empty"><div class="empty-text">Sin aperturas en 14 días</div><div class="empty-hint">Aparecerán cuando los vendedores asignen fechas</div></div>`;
       return;
     }
+
+    const hist = _historicoAperturas();
 
     box.innerHTML = `<div class="dash-list">${filas.map(f => {
       const d = new Date(f.fecha + "T00:00:00");
@@ -1581,34 +1659,31 @@
       const nombre = f.curso ? escapeHtml(f.curso.nombre) : "Curso desconocido";
       const ponente = (f.curso && f.curso.ponente) ? escapeHtml(f.curso.ponente) : "Sin ponente";
 
-      // ── Predicción de llenado (ritmo histórico de ese curso) ──
       const minimo = (f.curso && f.curso.minimoAlumnos) || 8;
       const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
-      const proy = Math.min(minimo + 10, Math.round(f.count + ritmoInscripcion(f.cid) * dias));
-      let pred = "";
-      if (f.count >= minimo) {
-        pred = '<span class="chip chip-green">Cupo alcanzado</span>';
-      } else if (proy >= minimo) {
-        pred = `<span class="chip chip-green">Sí llega · est. ${proy} de ${minimo}</span>`;
-      } else if (proy >= Math.ceil(minimo * 0.75)) {
-        pred = `<span class="chip chip-yellow">Ajustado · est. ${proy} de ${minimo}</span>`;
-      } else {
-        pred = `<span class="chip chip-red">Difícil · est. ${proy} de ${minimo}</span>`;
-      }
+      const est = estimarAsistencia(hist, f.cid, f.count, dias, minimo);
+      const proy = est.proy;
+
+      let chip;
+      if (f.count >= minimo) chip = '<span class="chip chip-green">Cupo alcanzado</span>';
+      else if (proy >= minimo) chip = '<span class="chip chip-green">Sí llega</span>';
+      else if (proy >= Math.ceil(minimo * 0.75)) chip = '<span class="chip chip-yellow">Ajustado</span>';
+      else chip = '<span class="chip chip-red">Difícil</span>';
 
       return `<div class="dash-apt">
         <div class="dash-apt-date"><div class="dash-apt-day">${dia}</div><div class="dash-apt-mon">${mes}</div></div>
         <div class="dash-apt-main">
           <div class="dash-apt-title">${nombre}</div>
-          <div class="dash-apt-sub">${ponente} · ${f.count} alumno${f.count === 1 ? "" : "s"} · en ${dias} día${dias === 1 ? "" : "s"}</div>
+          <div class="dash-apt-sub">${ponente} · en ${dias} día${dias === 1 ? "" : "s"}</div>
         </div>
-        <div class="dash-apt-chips">
-          ${pred}
-          ${f.tipoLink === "fecha"
-            ? '<span class="chip chip-green chip-dot">Con link</span>'
-            : f.tipoLink === "general"
-              ? '<span class="chip chip-blue chip-dot">Link general</span>'
-              : '<span class="chip chip-yellow chip-dot">Sin link</span>'}
+        <div class="dash-apt-proj" title="Estimación con base en: ${escapeHtml(est.fuente)}">
+          <div class="apt-nums">
+            <span class="apt-now">${f.count}</span>
+            <span class="apt-arrow">→</span>
+            <span class="apt-est">${proy}</span>
+            <span class="apt-min">mín ${minimo}</span>
+          </div>
+          ${chip}
         </div>
       </div>`;
     }).join("")}</div>`;
