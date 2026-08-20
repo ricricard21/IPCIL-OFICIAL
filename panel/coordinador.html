@@ -421,6 +421,18 @@
   .ia-t-good { color: var(--green); }
   .ia-t-bad { color: var(--red); }
   .ia-chart { margin-top: 4px; }
+
+  /* ═══ Gráficas de demanda (estilo infografía) ═══ */
+  .graf-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  @media (max-width: 900px) { .graf-2col { grid-template-columns: 1fr; } }
+  .graf-panel-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  .graf-t-top { color: var(--primary); border-color: var(--primary-light); }
+  .graf-t-low { color: var(--gold); border-color: var(--gold); }
+  .graf-row { display: grid; grid-template-columns: minmax(120px, 165px) 1fr; align-items: center; gap: 10px; padding: 6px 0; }
+  .graf-name { font-size: 11.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .graf-barwrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .graf-bar { height: 18px; border-radius: 3px; min-width: 5px; flex-shrink: 0; transition: width var(--t-slow); }
+  .graf-val { font-size: 13px; font-weight: 800; color: var(--text); flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -506,49 +518,48 @@
           <button class="filter-btn" data-period="30">30 días</button>
           <button class="filter-btn" data-period="90">90 días</button>
           <button class="filter-btn" data-period="365">Año</button>
-          <button class="filter-btn" data-period="all">Todo</button>
         </div>
       </div>
 
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Cursos listos para abrir</div>
-            <div class="kpi-value" id="kpi-listos">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-listos-sub">llegaron al mínimo</span>
-          </div>
-          <div class="kpi-icon kpi-icon-green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Próxima apertura</div>
-            <div class="kpi-value" id="kpi-prox-apertura" style="font-size:20px">—</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-prox-apertura-trend">grupo más cercano</span>
+            <div class="kpi-label">Nuevos inscritos</div>
+            <div class="kpi-value" id="kpi-p-inscritos">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-p-inscritos-sub">—</span>
           </div>
           <div class="kpi-icon kpi-icon-blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Pendientes de certificado</div>
-            <div class="kpi-value" id="kpi-pend-cert">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-pend-cert-sub">por enviar</span>
-          </div>
-          <div class="kpi-icon kpi-icon-gold">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-content">
             <div class="kpi-label">Certificados enviados</div>
-            <div class="kpi-value" id="kpi-enviados">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-enviados-sub">en el periodo</span>
+            <div class="kpi-value" id="kpi-p-enviados">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-p-enviados-sub">—</span>
+          </div>
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Grupos aperturados</div>
+            <div class="kpi-value" id="kpi-p-grupos">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-p-grupos-sub">—</span>
+          </div>
+          <div class="kpi-icon kpi-icon-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-content">
+            <div class="kpi-label">Cursos con ventas</div>
+            <div class="kpi-value" id="kpi-p-cursos">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-p-cursos-sub">—</span>
           </div>
           <div class="kpi-icon kpi-icon-yellow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           </div>
         </div>
       </div>
@@ -584,27 +595,6 @@
         </div>
       </div>
 
-      <div class="dash-2col">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Este periodo vs el anterior</div>
-              <div class="card-subtitle" id="dash-ciclo-sub">Cómo vas contra el ciclo pasado</div>
-            </div>
-          </div>
-          <div id="dash-ciclo"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Cursos: mejor → peor</div>
-              <div class="card-subtitle" id="dash-chart-sub">Inscritos en el periodo</div>
-            </div>
-          </div>
-          <div id="dash-chart"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-        </div>
-      </div>
-
       <div class="card ia-card">
         <div class="card-header">
           <div>
@@ -621,6 +611,25 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/></svg>
             <div class="ia-empty-title">Aún no has generado un análisis</div>
             <div class="ia-empty-hint">Presiona “Actualizar análisis” para que la IA revise tus cursos y te dé recomendaciones.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Demanda por curso</div>
+            <div class="card-subtitle" id="graf-sub">Inscritos en el periodo</div>
+          </div>
+        </div>
+        <div class="graf-2col">
+          <div class="graf-panel">
+            <div class="graf-panel-title graf-t-top">Con más demanda</div>
+            <div id="graf-top"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+          </div>
+          <div class="graf-panel">
+            <div class="graf-panel-title graf-t-low">Con menos demanda</div>
+            <div id="graf-low"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
           </div>
         </div>
       </div>
@@ -1304,62 +1313,44 @@
     const certsPeriodo = filtrarPorPeriodo(certificados);
     const alumnosPeriodo = filtrarPorPeriodo(alumnos);
 
-    // KPI: Próxima apertura (fecha REAL más cercana asignada por los vendedores)
-    const hoyMXDash = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
-    const proxCombos = new Map(); // "cursoId|fecha" -> count
+    // ── KPIs 100% del periodo (reaccionan al filtro 7/15/30/90/Año) ──
+    const P = typeof periodoActual === "number" ? periodoActual : 365;
+    const ahoraMs = Date.now();
+    const desdeMs = ahoraMs - P * 864e5;
+    const desdeAntMs = desdeMs - P * 864e5;
+    const enRangoTs = (ts, a, b) => { const t = ts?.toMillis?.() || 0; return t >= a && t < b; };
+
+    // 1) Nuevos inscritos
+    const kInsAct = alumnos.filter(a => enRangoTs(a.creadoEn, desdeMs, ahoraMs + 1)).length;
+    const kInsAnt = alumnos.filter(a => enRangoTs(a.creadoEn, desdeAntMs, desdeMs)).length;
+    document.getElementById("kpi-p-inscritos").textContent = kInsAct;
+    setTrend("kpi-p-inscritos-sub", kInsAct, kInsAnt);
+
+    // 2) Certificados enviados
+    const kCerAct = certificados.filter(c => enRangoTs(c.creadoEn, desdeMs, ahoraMs + 1)).length;
+    const kCerAnt = certificados.filter(c => enRangoTs(c.creadoEn, desdeAntMs, desdeMs)).length;
+    document.getElementById("kpi-p-enviados").textContent = kCerAct;
+    setTrend("kpi-p-enviados-sub", kCerAct, kCerAnt);
+
+    // 3) Grupos aperturados (combos curso|fecha cuya apertura cae en el rango)
+    const fStrKpi = ms => new Date(ms).toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const hoyStrK = fStrKpi(ahoraMs), desdeStrK = fStrKpi(desdeMs), desdeAntStrK = fStrKpi(desdeAntMs);
+    const kGAct = new Set(), kGAnt = new Set();
     alumnos.forEach(a => {
-      if (a.estado === "email_enviado") return;
       const ak = a.aperturaKey;
-      if (!ak || ak === "sin-asignar" || ak < hoyMXDash) return;
+      if (!ak || ak === "sin-asignar") return;
       const k = a.cursoId + "|" + ak;
-      proxCombos.set(k, (proxCombos.get(k) || 0) + 1);
+      if (ak >= desdeStrK && ak <= hoyStrK) kGAct.add(k);
+      else if (ak >= desdeAntStrK && ak < desdeStrK) kGAnt.add(k);
     });
-    let proxKey = null, proxCursoId = null, proxCount = 0;
-    proxCombos.forEach((count, k) => {
-      const idx = k.indexOf("|");
-      const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
-      if (!proxKey || fecha < proxKey) { proxKey = fecha; proxCursoId = cid; proxCount = count; }
-    });
-    const elProx = document.getElementById("kpi-prox-apertura");
-    const elProxTrend = document.getElementById("kpi-prox-apertura-trend");
-    if (elProx) {
-      if (proxKey) {
-        const d = new Date(proxKey + "T00:00:00");
-        const dias = Math.max(0, Math.round((d - new Date(hoyMXDash + "T00:00:00")) / 864e5));
-        const cursoProx = cursos.find(c => c.id === proxCursoId);
-        elProx.textContent = d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
-        elProxTrend.textContent = (dias === 0 ? "hoy" : `en ${dias} día${dias === 1 ? "" : "s"}`) + ` · ${proxCount} alumno${proxCount === 1 ? "" : "s"}` + (cursoProx ? ` · ${cursoProx.nombre.substring(0, 18)}` : "");
-      } else {
-        elProx.textContent = "—";
-        elProxTrend.textContent = "sin fechas asignadas";
-      }
-    }
+    document.getElementById("kpi-p-grupos").textContent = kGAct.size;
+    setTrend("kpi-p-grupos-sub", kGAct.size, kGAnt.size);
 
-    // KPI: Cursos listos para abrir (llegaron al mínimo)
-    const _cursosAct = cursos.filter(c => c.activo);
-    const _listos = _cursosAct.map(c => calcularEstadoApertura(c)).filter(e => e.listo).length;
-    document.getElementById("kpi-listos").textContent = _listos;
-    const _subListos = document.getElementById("kpi-listos-sub");
-    if (_subListos) _subListos.textContent = _listos > 0 ? "toca abrir grupo" : "ninguno por ahora";
-
-    // KPI: Pendientes de certificado (alumnos aún no enviados)
-    document.getElementById("kpi-pend-cert").textContent = alumnos.filter(a => a.estado !== "email_enviado").length;
-
-    // KPI: Certificados enviados en el periodo + tendencia vs periodo anterior
-    const elEnv = document.getElementById("kpi-enviados");
-    if (elEnv) elEnv.textContent = certsPeriodo.length;
-    if (periodoActual !== "all" && typeof periodoActual === "number") {
-      const desde = Date.now() - periodoActual * 864e5;
-      const desdeAnt = desde - periodoActual * 864e5;
-      const certsAnt = certificados.filter(c => {
-        const t = c.creadoEn?.toMillis?.() || 0;
-        return t >= desdeAnt && t < desde;
-      }).length;
-      setTrend("kpi-enviados-sub", certsPeriodo.length, certsAnt);
-    } else {
-      const subEnv = document.getElementById("kpi-enviados-sub");
-      if (subEnv) { subEnv.textContent = "histórico total"; subEnv.className = "kpi-trend kpi-trend-flat"; }
-    }
+    // 4) Cursos con ventas (cursos distintos que inscribieron a alguien en el periodo)
+    const kCVAct = new Set(alumnos.filter(a => enRangoTs(a.creadoEn, desdeMs, ahoraMs + 1)).map(a => a.cursoId)).size;
+    const kCVAnt = new Set(alumnos.filter(a => enRangoTs(a.creadoEn, desdeAntMs, desdeMs)).map(a => a.cursoId)).size;
+    document.getElementById("kpi-p-cursos").textContent = kCVAct;
+    setTrend("kpi-p-cursos-sub", kCVAct, kCVAnt);
 
     // Cursos sidebar
     document.getElementById("cursos-total").textContent = cursos.length;
@@ -1387,8 +1378,7 @@
     renderAtencion();
     renderProximasAperturas();
     renderRumboApertura();
-    renderCicloComparativa();
-    renderComparativaCursos();
+    renderGraficasCursos();
     renderApertura();
 
     if (!_iaCargada && usuario?.consultoraId) { _iaCargada = true; cargarIACache(); }
@@ -1600,102 +1590,55 @@
     }).join("")}</div>`;
   }
 
-  // ── Este periodo vs el anterior (reacciona al filtro 7/15/30/90) ──
-  function renderCicloComparativa() {
-    const box = document.getElementById("dash-ciclo");
-    const sub = document.getElementById("dash-ciclo-sub");
-    if (!box) return;
+  // ── Gráficas de demanda por curso (estilo infografía, dos paneles) ──
+  function renderGraficasCursos() {
+    const top = document.getElementById("graf-top");
+    const low = document.getElementById("graf-low");
+    const sub = document.getElementById("graf-sub");
+    if (!top || !low) return;
 
-    if (periodoActual === "all" || typeof periodoActual !== "number") {
-      if (sub) sub.textContent = "Elige 7, 15, 30 o 90 días para comparar";
-      box.innerHTML = `<div class="empty"><div class="empty-text">Sin comparativa en "Todo"</div><div class="empty-hint">Selecciona un periodo arriba (ej. 15 días, tu ciclo de lanzamiento)</div></div>`;
-      return;
-    }
+    const P = typeof periodoActual === "number" ? periodoActual : 365;
+    if (sub) sub.textContent = `Inscritos por curso · últimos ${P} días`;
 
-    const P = periodoActual;
-    if (sub) sub.textContent = `Últimos ${P} días vs los ${P} anteriores`;
-    const ahora = Date.now();
-    const desde = ahora - P * 864e5;
-    const desdeAnt = desde - P * 864e5;
+    const alumnosP = filtrarPorPeriodo(alumnos);
+    const counts = new Map();
+    alumnosP.forEach(a => counts.set(a.cursoId, (counts.get(a.cursoId) || 0) + 1));
 
-    const enRango = (ts, a, b) => { const t = ts?.toMillis?.() || 0; return t >= a && t < b; };
+    // Todos los cursos activos (los sin ventas del periodo entran con 0 al panel de menos demanda)
+    const filas = cursos.filter(c => c.activo)
+      .map(c => ({ nombre: c.nombre, n: counts.get(c.id) || 0 }))
+      .sort((a, b) => b.n - a.n);
 
-    // Nuevos inscritos
-    const insAct = alumnos.filter(a => enRango(a.creadoEn, desde, ahora + 1)).length;
-    const insAnt = alumnos.filter(a => enRango(a.creadoEn, desdeAnt, desde)).length;
-    // Certificados enviados
-    const cerAct = certificados.filter(c => enRango(c.creadoEn, desde, ahora + 1)).length;
-    const cerAnt = certificados.filter(c => enRango(c.creadoEn, desdeAnt, desde)).length;
-    // Grupos aperturados (combos curso|fecha cuya fecha de apertura cae en el rango)
-    const fStr = ms => new Date(ms).toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
-    const hoyStr = fStr(ahora), desdeStr = fStr(desde), desdeAntStr = fStr(desdeAnt);
-    const gAct = new Set(), gAnt = new Set();
-    alumnos.forEach(a => {
-      const ak = a.aperturaKey;
-      if (!ak || ak === "sin-asignar") return;
-      const k = a.cursoId + "|" + ak;
-      if (ak >= desdeStr && ak <= hoyStr) gAct.add(k);
-      else if (ak >= desdeAntStr && ak < desdeStr) gAnt.add(k);
-    });
-
-    const filaCmp = (label, act, ant) => {
-      const diff = act - ant;
-      let chip;
-      if (ant === 0 && act === 0) chip = '<span class="chip chip-gray">sin datos</span>';
-      else if (diff > 0) chip = `<span class="chip chip-green">▲ +${diff}${ant > 0 ? ` (${Math.round((diff / ant) * 100)}%)` : ""}</span>`;
-      else if (diff < 0) chip = `<span class="chip chip-red">▼ ${diff}${ant > 0 ? ` (${Math.round((diff / ant) * 100)}%)` : ""}</span>`;
-      else chip = '<span class="chip chip-gray">= igual</span>';
-      return `<div class="cmp-row">
-        <div class="cmp-label">${label}</div>
-        <div class="cmp-vals"><span class="cmp-act">${act}</span><span class="cmp-ant">vs ${ant}</span></div>
-        <div class="cmp-chip">${chip}</div>
+    const fila = (f, max, colorVar) => {
+      const pct = Math.max(3, Math.round((f.n / Math.max(max, 1)) * 100));
+      return `<div class="graf-row" title="${escapeHtml(f.nombre)}">
+        <div class="graf-name">${escapeHtml(f.nombre)}</div>
+        <div class="graf-barwrap">
+          <div class="graf-bar" style="width:${pct}%;background:${colorVar}"></div>
+          <span class="graf-val">${f.n}</span>
+        </div>
       </div>`;
     };
 
-    box.innerHTML = `<div class="cmp-list">
-      ${filaCmp("Nuevos inscritos", insAct, insAnt)}
-      ${filaCmp("Certificados enviados", cerAct, cerAnt)}
-      ${filaCmp("Grupos aperturados", gAct.size, gAnt.size)}
-    </div>`;
-  }
-
-  // ── Gráfica de barras: cursos mejor → peor (inscritos del periodo) ──
-  function renderComparativaCursos() {
-    const box = document.getElementById("dash-chart");
-    const sub = document.getElementById("dash-chart-sub");
-    if (!box) return;
-
-    const alumnosP = filtrarPorPeriodo(alumnos);
-    if (sub) sub.textContent = periodoActual === "all" ? "Inscritos históricos por curso" : `Inscritos en los últimos ${periodoActual} días`;
-
-    const porCurso = new Map();
-    alumnosP.forEach(a => porCurso.set(a.cursoId, (porCurso.get(a.cursoId) || 0) + 1));
-
-    const filas = [...porCurso.entries()].map(([cid, n]) => {
-      const curso = cursos.find(c => c.id === cid);
-      const totales = alumnos.filter(a => a.cursoId === cid);
-      const conv = totales.length ? Math.round((totales.filter(a => a.estado === "email_enviado").length / totales.length) * 100) : 0;
-      return { nombre: curso ? curso.nombre : "Curso desconocido", n, conv };
-    }).sort((a, b) => b.n - a.n).slice(0, 8);
-
     if (!filas.length) {
-      box.innerHTML = `<div class="empty"><div class="empty-text">Sin inscritos en este periodo</div><div class="empty-hint">Cambia el periodo arriba para ver más historia</div></div>`;
+      top.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div></div>`;
+      low.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div></div>`;
       return;
     }
 
-    const max = filas[0].n;
-    box.innerHTML = `<div class="dash-bars">${filas.map((f, i) => {
-      const cls = i === 0 ? "hb-best" : (i === filas.length - 1 && filas.length > 2 ? "hb-worst" : "");
-      const pct = Math.max(4, Math.round((f.n / max) * 100));
-      return `<div class="dash-bar-row ${cls}">
-        <div class="dash-bar-head">
-          <div class="dash-bar-name">${i + 1}. ${escapeHtml(f.nombre)}</div>
-          <div class="dash-bar-val">${f.n}<span> insc.</span></div>
-        </div>
-        <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${pct}%"></div></div>
-        <div class="dash-bar-foot"><span class="dash-faltan">conversión ${f.conv}%</span></div>
-      </div>`;
-    }).join("")}</div>`;
+    const arriba = filas.slice(0, 8);
+    const resto = filas.slice(8);
+    const abajo = [...resto].sort((a, b) => a.n - b.n).slice(0, 8);
+
+    const maxTop = arriba.length ? arriba[0].n : 1;
+    top.innerHTML = arriba.map(f => fila(f, maxTop, "var(--primary)")).join("");
+
+    if (!abajo.length) {
+      low.innerHTML = `<div class="empty"><div class="empty-text">Todos tus cursos activos están a la izquierda</div><div class="empty-hint">Aparecerán aquí cuando tengas más de 8 cursos</div></div>`;
+    } else {
+      const maxLow = Math.max(...abajo.map(f => f.n), 1);
+      low.innerHTML = abajo.map(f => fila(f, maxLow, "var(--gold)")).join("");
+    }
   }
 
   // ── Deep-links: llevar al problema exacto ──
@@ -1756,7 +1699,8 @@
     const chipAccion = ac => {
       const a = (ac || "").toLowerCase();
       let cls = "chip-blue";
-      if (a.includes("subir")) cls = "chip-green";
+      if (a.includes("atrasad") || a.includes("enviar certificados")) cls = "chip-yellow";
+      else if (a.includes("subir")) cls = "chip-green";
       else if (a.includes("bajar")) cls = "chip-yellow";
       else if (a.includes("pausar") || a.includes("quitar") || a.includes("eliminar")) cls = "chip-red";
       else if (a.includes("diplomado") || a.includes("combo") || a.includes("paquete")) cls = "chip-gold";
@@ -1770,37 +1714,12 @@
         <div class="ia-box-why">${escapeHtml(it.porque || "")}</div>
       </div>`;
 
-    // ── Gráfica de conversión con DATOS REALES locales (no del modelo) ──
-    const topCursos = cursos
-      .map(c => {
-        const al = alumnos.filter(a => a.cursoId === c.id);
-        const conv = al.length ? Math.round((al.filter(a => a.estado === "email_enviado").length / al.length) * 100) : 0;
-        return { nombre: c.nombre, n: al.length, conv };
-      })
-      .filter(x => x.n > 0)
-      .sort((a, b) => b.n - a.n)
-      .slice(0, 8);
-    const chartHtml = topCursos.length ? `
-      <div class="ia-recs-title">Conversión por curso (datos reales)</div>
-      <div class="dash-bars ia-chart">${topCursos.map(t => {
-        const color = t.conv >= 70 ? "var(--green)" : (t.conv >= 40 ? "var(--gold)" : "var(--red)");
-        return `<div class="dash-bar-row">
-          <div class="dash-bar-head">
-            <div class="dash-bar-name">${escapeHtml(t.nombre)}</div>
-            <div class="dash-bar-val">${t.conv}<span>%</span></div>
-          </div>
-          <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.max(3, t.conv)}%;background:${color}"></div></div>
-          <div class="dash-bar-foot"><span class="dash-faltan">${t.n} inscritos históricos</span></div>
-        </div>`;
-      }).join("")}</div>` : "";
-
     box.innerHTML = `
       ${data.resumen ? `<div class="ia-resumen">${escapeHtml(data.resumen)}</div>` : ""}
       ${funcionan.length ? `<div class="ia-recs-title ia-t-good">Sí están funcionando</div>
       <div class="ia-stack">${funcionan.map(it => itemCurso(it, "good")).join("")}</div>` : ""}
       ${noFuncionan.length ? `<div class="ia-recs-title ia-t-bad">No están funcionando</div>
       <div class="ia-stack">${noFuncionan.map(it => itemCurso(it, "bad")).join("")}</div>` : ""}
-      ${chartHtml}
       ${recs.length ? `<div class="ia-recs-title">Recomendaciones (solo con justificación fuerte)</div>
       <div class="ia-recs">${recs.map(r => `
         <div class="ia-rec">
