@@ -1488,9 +1488,8 @@
       const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
       const curso = cursos.find(c => c.id === cid);
       if (!curso) return;
-      const links = curso.whatsappLinks || {};
-      const tiene = !!(links[fecha] && String(links[fecha]).trim());
-      if (!tiene) {
+      const tipoLink = linkDeApertura(curso, fecha);
+      if (!tipoLink) {
         const d = new Date(fecha + "T00:00:00");
         const fTxt = isNaN(d) ? fecha : d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
         alertas.push({
@@ -1529,6 +1528,16 @@
       </div>`).join("");
   }
 
+  // Resuelve el link de WhatsApp de una apertura igual que el backend:
+  // primero el link por fecha, si no hay usa el respaldo general del curso.
+  function linkDeApertura(curso, fecha) {
+    if (!curso) return null;
+    const links = curso.whatsappLinks || {};
+    if (links[fecha] && String(links[fecha]).trim()) return "fecha";
+    if (curso.whatsappLink && String(curso.whatsappLink).trim()) return "general";
+    return null;
+  }
+
   // Ritmo de inscripción de un curso: alumnos nuevos por día (últimos 14 días)
   function ritmoInscripcion(cursoId) {
     const hace14 = Date.now() - 14 * 864e5;
@@ -1557,9 +1566,7 @@
       const idx = k.indexOf("|");
       const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
       const curso = cursos.find(c => c.id === cid);
-      const links = (curso && curso.whatsappLinks) || {};
-      const tiene = !!(links[fecha] && String(links[fecha]).trim());
-      return { fecha, cid, count, curso, tiene };
+      return { fecha, cid, count, curso, tipoLink: linkDeApertura(curso, fecha) };
     }).sort((a, b) => a.fecha.localeCompare(b.fecha));
 
     if (!filas.length) {
@@ -1597,7 +1604,11 @@
         </div>
         <div class="dash-apt-chips">
           ${pred}
-          ${f.tiene ? '<span class="chip chip-green chip-dot">Con link</span>' : '<span class="chip chip-yellow chip-dot">Sin link</span>'}
+          ${f.tipoLink === "fecha"
+            ? '<span class="chip chip-green chip-dot">Con link</span>'
+            : f.tipoLink === "general"
+              ? '<span class="chip chip-blue chip-dot">Link general</span>'
+              : '<span class="chip chip-yellow chip-dot">Sin link</span>'}
         </div>
       </div>`;
     }).join("")}</div>`;
