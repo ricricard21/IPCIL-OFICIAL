@@ -443,6 +443,7 @@
   .graf-bar-prev { background: var(--line-strong); }
   .graf-val-prev { color: var(--muted); font-weight: 700; }
   .graf-cmp-head .chip { flex-shrink: 0; }
+  .graf-more { margin: 12px auto 0; display: flex; justify-content: center; width: 100%; font-size: 12px; color: var(--primary); font-weight: 700; }
 
   /* Ergonomía: que nada se salga de las tarjetas */
   .dash-apt-chips .chip { font-size: 10.5px; padding: 3px 9px; white-space: nowrap; }
@@ -1432,6 +1433,8 @@
   // MÓDULOS OPERATIVOS DEL DASHBOARD (coordinador)
   // ═══════════════════════════════════════════════════════════
   let _iaCargada = false;
+  let _grafTopTodo = false;
+  let _grafCmpTodo = false;
 
   function irASeccion(view) {
     const link = document.querySelector(`.sidebar-link[data-view="${view}"]`);
@@ -1625,14 +1628,17 @@
     alumnosP.forEach(a => counts.set(a.cursoId, (counts.get(a.cursoId) || 0) + 1));
     const filas = cursos.filter(c => c.activo)
       .map(c => ({ nombre: c.nombre, n: counts.get(c.id) || 0 }))
-      .sort((a, b) => b.n - a.n)
-      .slice(0, 8);
+      .sort((a, b) => b.n - a.n);
 
     if (!filas.length) {
       top.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div></div>`;
     } else {
+      const visibles = _grafTopTodo ? filas : filas.slice(0, 8);
       const maxTop = Math.max(filas[0].n, 1);
-      top.innerHTML = filas.map(f => {
+      const btnTop = filas.length > 8
+        ? `<button class="btn btn-ghost btn-sm graf-more" data-graf="top">${_grafTopTodo ? "Ver menos ▴" : `Ver todos (${filas.length}) ▾`}</button>`
+        : "";
+      top.innerHTML = visibles.map(f => {
         const pct = Math.max(3, Math.round((f.n / maxTop) * 90));
         return `<div class="graf-row" title="${escapeHtml(f.nombre)}">
           <div class="graf-name">${escapeHtml(f.nombre)}</div>
@@ -1641,7 +1647,7 @@
             <span class="graf-val">${f.n}</span>
           </div>
         </div>`;
-      }).join("");
+      }).join("") + btnTop;
     }
 
     // ── Panel derecho: última apertura vs la anterior (solo cursos con 2+ aperturas dadas) ──
@@ -1672,7 +1678,7 @@
       });
     });
     pares.sort((a, b) => b.nu - a.nu);
-    const top6 = pares.slice(0, 6);
+    const top6 = _grafCmpTodo ? pares : pares.slice(0, 6);
 
     if (!top6.length) {
       cmp.innerHTML = `<div class="empty"><div class="empty-text">Aún no hay cursos con dos aperturas dadas</div><div class="empty-hint">Cuando un curso se imparta por segunda vez, aquí verás si creció o bajó</div></div>`;
@@ -1680,6 +1686,9 @@
     }
 
     const maxCmp = Math.max(...top6.flatMap(p => [p.nu, p.na]), 1);
+    const btnCmp = pares.length > 6
+      ? `<button class="btn btn-ghost btn-sm graf-more" data-graf="cmp">${_grafCmpTodo ? "Ver menos ▴" : `Ver todos (${pares.length}) ▾`}</button>`
+      : "";
     cmp.innerHTML = top6.map(p => {
       const diff = p.nu - p.na;
       const chip = diff > 0 ? `<span class="chip chip-green">▲ +${diff}</span>`
@@ -1695,8 +1704,20 @@
         <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fu)}</span><div class="graf-bar" style="width:${wU}%;background:var(--primary)"></div><span class="graf-val">${p.nu}</span></div>
         <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fa)}</span><div class="graf-bar graf-bar-prev" style="width:${wA}%"></div><span class="graf-val graf-val-prev">${p.na}</span></div>
       </div>`;
-    }).join("");
+    }).join("") + btnCmp;
   }
+
+  // Toggle "Ver todos / Ver menos" de las gráficas
+  document.querySelector(".graf-2col")?.addEventListener("click", (e) => {
+    const b = e.target.closest(".graf-more");
+    if (!b) return;
+    if (b.dataset.graf === "top") _grafTopTodo = !_grafTopTodo;
+    else _grafCmpTodo = !_grafCmpTodo;
+    renderGraficasCursos();
+  });
+
+  // Refresco automático cada hora (las fechas de la comparativa ruedan solas)
+  setInterval(() => { if (usuario?.consultoraId) actualizarDashboard(); }, 60 * 60 * 1000);
 
   // ── Deep-links: llevar al problema exacto ──
   function resaltarCursoEnApertura(cursoId) {
