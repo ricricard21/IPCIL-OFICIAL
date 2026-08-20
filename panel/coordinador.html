@@ -427,6 +427,7 @@
   .ia-op-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .ia-op-cuando { font-size: 11.5px; font-weight: 700; color: var(--gold); margin-top: 6px; }
   .ia-op-porque { font-size: 12.5px; color: var(--text-soft); line-height: 1.55; margin-top: 5px; }
+  .al-stat-note { grid-column: 1 / -1; font-size: 11.5px; color: var(--muted); text-align: center; padding-top: 4px; }
   .al-item-acts { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .al-act {
     width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line);
@@ -1565,7 +1566,7 @@
   // ── Certificado del alumno: SOLO lectura/descarga (nunca genera ni modifica) ──
   function certDeAlumno(a) {
     if (!a || !a.certificadoId) return null;
-    const cert = certificados.find(c => c.id === a.certificadoId);
+    const cert = _certsById.get(a.certificadoId) || certificados.find(c => c.id === a.certificadoId);
     return (cert && cert.pdfUrl) ? cert : null;
   }
 
@@ -1581,7 +1582,7 @@
   function accionesAlumnoHtml(a) {
     const cert = certDeAlumno(a);
     if (!cert) return "";
-    const curso = cursos.find(cu => cu.id === a.cursoId);
+    const curso = _cursosById.get(a.cursoId);
     let html = `<button class="al-act" type="button" data-dl="${cert.id}" title="Descargar certificado PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>`;
@@ -2398,7 +2399,15 @@
     sel.dataset.firma = firma;
   }
 
+  let _cursosById = new Map(), _vendsById = new Map(), _certsById = new Map();
+  function _rebuildAlIdx() {
+    _cursosById = new Map(cursos.map(x => [x.id, x]));
+    _vendsById = new Map(vendedores.map(x => [x.id, x]));
+    _certsById = new Map(certificados.map(x => [x.id, x]));
+  }
+
   function renderAlumnos() {
+    _rebuildAlIdx();
     const c = document.getElementById("alumnos-container");
     const statsBox = document.getElementById("alumnos-stats");
     const search = (document.getElementById("search-alumno")?.value || "").toLowerCase();
@@ -2413,7 +2422,7 @@
       lista = lista.filter(a =>
         (a.nombre || "").toLowerCase().includes(search) ||
         (a.email || "").toLowerCase().includes(search) ||
-        certificados.find(cert => cert.id === a.certificadoId && (cert.folio || "").toLowerCase().includes(search))
+        ((_certsById.get(a.certificadoId)?.folio || "").toLowerCase().includes(search))
       );
     }
     if (fCurso) lista = lista.filter(a => a.cursoId === fCurso);
@@ -2421,16 +2430,19 @@
     else if (fEstado === "pendiente") lista = lista.filter(a => a.estado !== "email_enviado");
     else if (fEstado === "sin_email") lista = lista.filter(a => a.estado !== "email_enviado" && !(a.email && a.email.includes("@")));
     lista.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+    const _totalFiltrado = lista.length;
+    if (lista.length > 500) lista = lista.slice(0, 500);
 
     // ── Mini-stats ──
     const nEnviados = lista.filter(a => a.estado === "email_enviado").length;
     const nPend = lista.length - nEnviados;
     const nCursos = new Set(lista.map(a => a.cursoId || "sin")).size;
     statsBox.innerHTML = `
-      <div class="al-stat"><div class="al-stat-val is-primary">${lista.length}</div><div class="al-stat-lbl">Alumnos</div></div>
+      <div class="al-stat"><div class="al-stat-val is-primary">${_totalFiltrado}</div><div class="al-stat-lbl">Alumnos</div></div>
       <div class="al-stat"><div class="al-stat-val">${nCursos}</div><div class="al-stat-lbl">Cursos con alumnos</div></div>
       <div class="al-stat"><div class="al-stat-val is-green">${nEnviados}</div><div class="al-stat-lbl">Certificado enviado</div></div>
-      <div class="al-stat"><div class="al-stat-val is-yellow">${nPend}</div><div class="al-stat-lbl">Pendientes</div></div>`;
+      <div class="al-stat"><div class="al-stat-val is-yellow">${nPend}</div><div class="al-stat-lbl">Pendientes</div></div>
+      ${_totalFiltrado > 500 ? `<div class="al-stat-note">Mostrando los 500 más recientes de ${_totalFiltrado} — usa la búsqueda o los filtros para refinar</div>` : ""}`;
 
     if (lista.length === 0) {
       c.innerHTML = `<div class="empty">
@@ -2445,8 +2457,8 @@
       : '<span class="chip chip-yellow chip-dot">Pendiente</span>';
 
     const filaAlumno = a => {
-      const vend = vendedores.find(v => v.id === a.registradoPor);
-      const cert = certificados.find(ce => ce.id === a.certificadoId);
+      const vend = _vendsById.get(a.registradoPor);
+      const cert = _certsById.get(a.certificadoId);
       return `<div class="al-item">
         <div class="al-avatar">${escapeHtml(iniciales(a.nombre))}</div>
         <div class="al-item-main">
@@ -2502,13 +2514,13 @@
           porCurso.get(ck).push(a);
         }
         const cursoOrden = [...porCurso.entries()].sort((x, y) => {
-          const nx = (cursos.find(cu => cu.id === x[0])?.nombre) || "Sin curso";
-          const ny = (cursos.find(cu => cu.id === y[0])?.nombre) || "Sin curso";
+          const nx = (_cursosById.get(x[0])?.nombre) || "Sin curso";
+          const ny = (_cursosById.get(y[0])?.nombre) || "Sin curso";
           return nx.localeCompare(ny);
         });
 
         const cuerpo = cursoOrden.map(([ck, arr]) => {
-          const curso = cursos.find(cu => cu.id === ck);
+          const curso = _cursosById.get(ck);
           const nombreCurso = curso ? escapeHtml(curso.nombre) : "Sin curso asignado";
           const filas = arr
             .slice()
@@ -2544,9 +2556,9 @@
           <th>Estado</th><th>Folio</th><th>Fecha</th><th>Certificado</th>
         </tr></thead>
         <tbody>${mostrar.map(a => {
-          const curso = cursos.find(cu => cu.id === a.cursoId);
-          const vend = vendedores.find(v => v.id === a.registradoPor);
-          const cert = certificados.find(ce => ce.id === a.certificadoId);
+          const curso = _cursosById.get(a.cursoId);
+          const vend = _vendsById.get(a.registradoPor);
+          const cert = _certsById.get(a.certificadoId);
           return `<tr>
             <td><strong>${escapeHtml(a.nombre)}</strong></td>
             <td>${escapeHtml(a.email || "—")}</td>
@@ -2558,7 +2570,7 @@
             <td>${accionesAlumnoHtml(a) || '<span class="text-muted">—</span>'}</td>
           </tr>`;
         }).join("")}</tbody></table></div>
-        ${lista.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${lista.length}. Usa los filtros para refinar.</div>` : ""}`;
+        ${lista.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${_totalFiltrado}. Usa los filtros para refinar.</div>` : ""}`;
       return;
     }
 
@@ -2567,7 +2579,7 @@
     for (const a of lista) {
       const key = a.cursoId || "__sin__";
       if (!grupos.has(key)) {
-        grupos.set(key, { curso: cursos.find(cu => cu.id === a.cursoId) || null, items: [], ultima: 0 });
+        grupos.set(key, { curso: _cursosById.get(a.cursoId) || null, items: [], ultima: 0 });
       }
       const g = grupos.get(key);
       g.items.push(a);
@@ -2589,8 +2601,8 @@
         : "";
 
       const filas = g.items.map(a => {
-        const vend = vendedores.find(v => v.id === a.registradoPor);
-        const cert = certificados.find(ce => ce.id === a.certificadoId);
+        const vend = _vendsById.get(a.registradoPor);
+        const cert = _certsById.get(a.certificadoId);
         return `<div class="al-item">
           <div class="al-avatar">${escapeHtml(iniciales(a.nombre))}</div>
           <div class="al-item-main">
@@ -2626,7 +2638,11 @@
     }).join("")}</div>`;
   }
 
-  document.getElementById("search-alumno").addEventListener("input", renderAlumnos);
+  let _srchTimer = null;
+  document.getElementById("search-alumno").addEventListener("input", () => {
+    clearTimeout(_srchTimer);
+    _srchTimer = setTimeout(renderAlumnos, 250);
+  });
   document.getElementById("filtro-curso-alumnos")?.addEventListener("change", renderAlumnos);
   document.getElementById("filtro-estado-alumnos")?.addEventListener("change", renderAlumnos);
   document.getElementById("al-toggle")?.addEventListener("click", (e) => {
@@ -2700,7 +2716,7 @@
           </td>
         </tr>`;
       }).join("")}</tbody></table></div>
-      ${truncado ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px;background:var(--surface-soft);border-top:1px solid var(--line)">Mostrando 200 de ${lista.length}. Usa los filtros para refinar.</div>` : ""}`;
+      ${truncado ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px;background:var(--surface-soft);border-top:1px solid var(--line)">Mostrando 200 de ${_totalFiltrado}. Usa los filtros para refinar.</div>` : ""}`;
 
     c.querySelectorAll("[data-reenviar]").forEach(btn => {
       btn.addEventListener("click", () => reenviarUno(btn.dataset.reenviar, btn));
