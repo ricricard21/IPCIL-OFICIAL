@@ -427,6 +427,19 @@
   .ia-op-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .ia-op-cuando { font-size: 11.5px; font-weight: 700; color: var(--gold); margin-top: 6px; }
   .ia-op-porque { font-size: 12.5px; color: var(--text-soft); line-height: 1.55; margin-top: 5px; }
+  .al-item-acts { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .al-act {
+    width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--primary); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all var(--t-fast); padding: 0; text-decoration: none;
+  }
+  .al-act svg { width: 14px; height: 14px; }
+  .al-act:hover { border-color: var(--primary); background: var(--primary-soft); transform: translateY(-1px); }
+  .al-act:disabled { opacity: 0.5; cursor: wait; }
+  .al-act-wa { color: #16a34a; }
+  .al-act-wa:hover { border-color: #16a34a; background: var(--green-soft); }
+
   .ia-admin { font-size: 12.5px; color: var(--text-soft); background: var(--yellow-soft); border: 1px solid var(--yellow-bg); border-radius: var(--radius); padding: 12px 14px; margin-top: 16px; line-height: 1.5; }
 
   /* ═══ Gráficas de demanda (estilo infografía) ═══ */
@@ -1549,6 +1562,67 @@
       </div>`).join("");
   }
 
+  // ── Certificado del alumno: SOLO lectura/descarga (nunca genera ni modifica) ──
+  function certDeAlumno(a) {
+    if (!a || !a.certificadoId) return null;
+    const cert = certificados.find(c => c.id === a.certificadoId);
+    return (cert && cert.pdfUrl) ? cert : null;
+  }
+
+  function telWA(t) {
+    const d = String(t || "").replace(/\D/g, "");
+    if (!d) return null;
+    if (d.length === 10) return "52" + d;
+    if (d.length === 12 && d.startsWith("52")) return d;
+    if (d.length === 13 && d.startsWith("521")) return "52" + d.slice(3);
+    return d.length >= 11 ? d : null;
+  }
+
+  function accionesAlumnoHtml(a) {
+    const cert = certDeAlumno(a);
+    if (!cert) return "";
+    const curso = cursos.find(cu => cu.id === a.cursoId);
+    let html = `<button class="al-act" type="button" data-dl="${cert.id}" title="Descargar certificado PDF">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>`;
+    const tel = telWA(a.telefono);
+    if (tel) {
+      const msg = encodeURIComponent(`Hola ${a.nombre}, te comparto tu certificado del curso "${curso ? curso.nombre : ""}" (folio ${cert.folio}). ¡Felicidades! — Coordinación`);
+      html += `<a class="al-act al-act-wa" href="https://wa.me/${tel}?text=${msg}" target="_blank" rel="noopener" title="Abrir chat de WhatsApp con el alumno">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+      </a>`;
+    }
+    return `<div class="al-item-acts">${html}</div>`;
+  }
+
+  // Descarga del PDF (delegado en toda la sección de alumnos)
+  document.getElementById("view-alumnos")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-dl]");
+    if (!btn) return;
+    e.stopPropagation();
+    const cert = certificados.find(c => c.id === btn.dataset.dl);
+    if (!cert || !cert.pdfUrl) return;
+    btn.disabled = true;
+    try {
+      const resp = await fetch(cert.pdfUrl);
+      if (!resp.ok) throw new Error("fetch");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Certificado-${cert.folio || "IPCI"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      toast("Certificado descargado", "success");
+    } catch (_) {
+      window.open(cert.pdfUrl, "_blank", "noopener");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   // Resuelve el link de WhatsApp de una apertura igual que el backend:
   // primero el link por fecha, si no hay usa el respaldo general del curso.
   function linkDeApertura(curso, fecha) {
@@ -2383,6 +2457,7 @@
         <div class="al-item-folio">${cert ? `<code>${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">Sin folio</span>'}</div>
         <div class="al-item-date">${alFechaRelativa(a.creadoEn)}</div>
         <div class="al-item-status">${chipEstado(a)}</div>
+        ${accionesAlumnoHtml(a)}
       </div>`;
     };
 
@@ -2466,7 +2541,7 @@
       c.innerHTML = `<div class="table-wrap"><table class="table">
         <thead><tr>
           <th>Alumno</th><th>Email</th><th>Curso</th><th>Vendedor</th>
-          <th>Estado</th><th>Folio</th><th>Fecha</th>
+          <th>Estado</th><th>Folio</th><th>Fecha</th><th>Certificado</th>
         </tr></thead>
         <tbody>${mostrar.map(a => {
           const curso = cursos.find(cu => cu.id === a.cursoId);
@@ -2480,6 +2555,7 @@
             <td>${chipEstado(a)}</td>
             <td>${cert ? `<code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">—</span>'}</td>
             <td class="text-sm text-muted">${formatFecha(a.creadoEn)}</td>
+            <td>${accionesAlumnoHtml(a) || '<span class="text-muted">—</span>'}</td>
           </tr>`;
         }).join("")}</tbody></table></div>
         ${lista.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${lista.length}. Usa los filtros para refinar.</div>` : ""}`;
@@ -2525,6 +2601,7 @@
           <div class="al-item-folio">${cert ? `<code>${escapeHtml(cert.folio)}</code>` : '<span class="text-muted">Sin folio</span>'}</div>
           <div class="al-item-date">${alFechaRelativa(a.creadoEn)}</div>
           <div class="al-item-status">${chipEstado(a)}</div>
+          ${accionesAlumnoHtml(a)}
         </div>`;
       }).join("");
 
