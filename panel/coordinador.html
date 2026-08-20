@@ -421,6 +421,13 @@
   .ia-t-good { color: var(--green); }
   .ia-t-bad { color: var(--red); }
   .ia-chart { margin-top: 4px; }
+  .ia-t-op { color: var(--gold); }
+  .ia-op { border: 1px solid var(--gold); border-left-width: 3px; background: var(--surface); border-radius: var(--radius); padding: 13px 15px; }
+  .ia-op-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .ia-op-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .ia-op-cuando { font-size: 11.5px; font-weight: 700; color: var(--gold); margin-top: 6px; }
+  .ia-op-porque { font-size: 12.5px; color: var(--text-soft); line-height: 1.55; margin-top: 5px; }
+  .ia-admin { font-size: 12.5px; color: var(--text-soft); background: var(--yellow-soft); border: 1px solid var(--yellow-bg); border-radius: var(--radius); padding: 12px 14px; margin-top: 16px; line-height: 1.5; }
 
   /* ═══ Gráficas de demanda (estilo infografía) ═══ */
   .graf-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
@@ -651,7 +658,7 @@
         <div class="card-header">
           <div>
             <div class="card-title"><svg class="ia-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.5"/></svg> Análisis con IA</div>
-            <div class="card-subtitle">Diagnóstico de tus cursos: cuál jala, cuál no, y qué hacer</div>
+            <div class="card-subtitle">Pronóstico del próximo relanzamiento y oportunidades del mercado</div>
           </div>
           <button class="btn btn-primary btn-sm" id="btn-analizar-ia">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
@@ -1950,44 +1957,63 @@
       ? (data.generadoEn.toDate ? data.generadoEn.toDate() : new Date(data.generadoEn)).toLocaleString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
       : "";
 
-    // Compatibilidad: análisis viejos traían mejor/peor; los nuevos traen funcionan[]/noFuncionan[]
-    let funcionan = Array.isArray(data.funcionan) ? data.funcionan : [];
-    let noFuncionan = Array.isArray(data.noFuncionan) ? data.noFuncionan : [];
-    if (!funcionan.length && data.mejor && data.mejor.curso) funcionan = [{ curso: data.mejor.curso, porque: data.mejor.porque || "" }];
-    if (!noFuncionan.length && data.peor && data.peor.curso) noFuncionan = [{ curso: data.peor.curso, porque: data.peor.porque || "" }];
-    const recs = Array.isArray(data.recomendaciones) ? data.recomendaciones : [];
+    const pronos = Array.isArray(data.pronosticos) ? data.pronosticos : [];
+    const ops = Array.isArray(data.oportunidades) ? data.oportunidades : [];
 
-    const chipAccion = ac => {
-      const a = (ac || "").toLowerCase();
-      let cls = "chip-blue";
-      if (a.includes("atrasad") || a.includes("enviar certificados")) cls = "chip-yellow";
-      else if (a.includes("subir")) cls = "chip-green";
-      else if (a.includes("bajar")) cls = "chip-yellow";
-      else if (a.includes("pausar") || a.includes("quitar") || a.includes("eliminar")) cls = "chip-red";
-      else if (a.includes("diplomado") || a.includes("combo") || a.includes("paquete")) cls = "chip-gold";
-      return `<span class="chip ${cls}">${escapeHtml(ac || "Acción")}</span>`;
+    const chipVeredicto = v => {
+      const t = (v || "").toLowerCase();
+      if (t.includes("jalar") || t.includes("va a")) return `<span class="chip chip-green">${escapeHtml(v)}</span>`;
+      if (t.includes("riesgo")) return `<span class="chip chip-yellow">${escapeHtml(v)}</span>`;
+      if (t.includes("pausar")) return `<span class="chip chip-red">${escapeHtml(v)}</span>`;
+      return `<span class="chip chip-blue">${escapeHtml(v || "—")}</span>`;
     };
+    const chipTipo = t => (t || "").toLowerCase().includes("diplomado")
+      ? '<span class="chip chip-gold">Diplomado</span>'
+      : '<span class="chip chip-blue">Curso</span>';
 
-    const itemCurso = (it, tipo) => `
-      <div class="ia-box ${tipo === "good" ? "ia-box-good" : "ia-box-bad"}">
-        <div class="ia-box-name">${escapeHtml(it.curso || "—")}</div>
-        ${it.datos ? `<div class="ia-datos">${escapeHtml(it.datos)}</div>` : ""}
-        <div class="ia-box-why">${escapeHtml(it.porque || "")}</div>
-      </div>`;
+    let html = "";
+    if (data.resumen) html += `<div class="ia-resumen">${escapeHtml(data.resumen)}</div>`;
 
-    box.innerHTML = `
-      ${data.resumen ? `<div class="ia-resumen">${escapeHtml(data.resumen)}</div>` : ""}
-      ${funcionan.length ? `<div class="ia-recs-title ia-t-good">Sí están funcionando</div>
-      <div class="ia-stack">${funcionan.map(it => itemCurso(it, "good")).join("")}</div>` : ""}
-      ${noFuncionan.length ? `<div class="ia-recs-title ia-t-bad">No están funcionando</div>
-      <div class="ia-stack">${noFuncionan.map(it => itemCurso(it, "bad")).join("")}</div>` : ""}
-      ${recs.length ? `<div class="ia-recs-title">Recomendaciones (solo con justificación fuerte)</div>
-      <div class="ia-recs">${recs.map(r => `
+    if (pronos.length) {
+      html += `<div class="ia-recs-title">Pronóstico del próximo relanzamiento (~15 días)</div>
+      <div class="ia-recs">${pronos.map(p => `
         <div class="ia-rec">
-          <div class="ia-rec-head">${chipAccion(r.accion)}<span class="ia-rec-curso">${escapeHtml(r.curso || "")}</span></div>
-          ${(r.justificacion || r.detalle) ? `<div class="ia-rec-detail">${escapeHtml(r.justificacion || r.detalle)}</div>` : ""}
-        </div>`).join("")}</div>` : ""}
-      ${fecha ? `<div class="ia-fecha">Actualizado el ${fecha}</div>` : ""}`;
+          <div class="ia-rec-head">${chipVeredicto(p.veredicto)}<span class="ia-rec-curso">${escapeHtml(p.curso || "")}</span></div>
+          ${p.porque ? `<div class="ia-rec-detail">${escapeHtml(p.porque)}</div>` : ""}
+        </div>`).join("")}</div>`;
+    }
+
+    if (ops.length) {
+      html += `<div class="ia-recs-title ia-t-op">Oportunidades para lanzar</div>
+      <div class="ia-stack">${ops.map(o => `
+        <div class="ia-op">
+          <div class="ia-op-head">${chipTipo(o.tipo)}<span class="ia-op-title">${escapeHtml(o.titulo || "")}</span></div>
+          ${o.cuando ? `<div class="ia-op-cuando">Cuándo: ${escapeHtml(o.cuando)}</div>` : ""}
+          ${o.porque ? `<div class="ia-op-porque">${escapeHtml(o.porque)}</div>` : ""}
+        </div>`).join("")}</div>`;
+    }
+
+    // ── Compatibilidad con análisis viejos en cache ──
+    if (!pronos.length && !ops.length) {
+      const legacyF = Array.isArray(data.funcionan) ? data.funcionan : (data.mejor && data.mejor.curso ? [data.mejor] : []);
+      const legacyN = Array.isArray(data.noFuncionan) ? data.noFuncionan : (data.peor && data.peor.curso ? [data.peor] : []);
+      const legacyItem = (it, tipo) => `
+        <div class="ia-box ${tipo === "good" ? "ia-box-good" : "ia-box-bad"}">
+          <div class="ia-box-name">${escapeHtml(it.curso || "—")}</div>
+          ${it.datos ? `<div class="ia-datos">${escapeHtml(it.datos)}</div>` : ""}
+          <div class="ia-box-why">${escapeHtml(it.porque || "")}</div>
+        </div>`;
+      if (legacyF.length) html += `<div class="ia-recs-title ia-t-good">Sí están funcionando</div><div class="ia-stack">${legacyF.map(it => legacyItem(it, "good")).join("")}</div>`;
+      if (legacyN.length) html += `<div class="ia-recs-title ia-t-bad">No están funcionando</div><div class="ia-stack">${legacyN.map(it => legacyItem(it, "bad")).join("")}</div>`;
+      html += `<div class="ia-error-sub" style="margin-top:12px">Este análisis es de la versión anterior. Presiona "Actualizar análisis" para el pronóstico nuevo.</div>`;
+    }
+
+    if (data.pendienteAdmin) {
+      html += `<div class="ia-admin">${escapeHtml(data.pendienteAdmin)}</div>`;
+    }
+    if (fecha) html += `<div class="ia-fecha">Actualizado el ${fecha}</div>`;
+
+    box.innerHTML = html;
   }
 
   async function cargarIACache() {
