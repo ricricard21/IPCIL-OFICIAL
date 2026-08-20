@@ -454,6 +454,14 @@
   .apt-arrow { font-size: 12px; font-weight: 700; color: var(--muted-light); }
   .apt-est { font-size: 17px; font-weight: 800; color: var(--primary); }
   .apt-min { font-size: 10.5px; font-weight: 700; color: var(--muted); margin-left: 3px; }
+  .dash-dec { padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .dash-dec:last-child { border-bottom: none; }
+  .dash-dec.is-click { cursor: pointer; border-radius: 8px; }
+  .dash-dec.is-click:hover { background: var(--surface-hover); }
+  .dash-dec-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .dash-dec-head .chip { flex-shrink: 0; }
+  .dash-dec-curso { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dash-dec-detalle { font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 5px; }
   @media (max-width: 700px) {
     .dash-apt { flex-wrap: wrap; }
     .dash-apt-chips, .dash-apt-proj { flex-direction: row; flex-wrap: wrap; width: 100%; justify-content: flex-start; align-items: center; margin-left: 60px; }
@@ -631,11 +639,11 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Cursos rumbo a apertura</div>
-              <div class="card-subtitle">Inscritos vs mínimo · a quién empujar</div>
+              <div class="card-title">Decisiones sugeridas</div>
+              <div class="card-subtitle">Actúa antes de que truene · según la proyección de cada apertura</div>
             </div>
           </div>
-          <div id="dash-rumbo"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+          <div id="dash-decisiones"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
         </div>
       </div>
 
@@ -1421,7 +1429,7 @@
     // Módulos operativos del dashboard del coordinador
     renderAtencion();
     renderProximasAperturas();
-    renderRumboApertura();
+    renderDecisiones();
     renderGraficasCursos();
     renderApertura();
 
@@ -1565,7 +1573,9 @@
       let o = tmp.get(key);
       if (!o) { o = { cursoId: a.cursoId, fechaMs: new Date(ak + "T00:00:00").getTime(), tiempos: [] }; tmp.set(key, o); }
       const t = a.creadoEn?.toMillis?.() || 0;
-      if (t > 0) o.tiempos.push(t);
+      // Solo cuentan inscripciones HASTA el día de la apertura (los registros
+      // tardíos de certificados inflaban la proyección)
+      if (t > 0 && t <= o.fechaMs + 864e5) o.tiempos.push(t);
     });
     tmp.forEach(o => {
       const final = o.tiempos.length;
@@ -1621,9 +1631,8 @@
     return { proy, fuente };
   }
 
-  function renderProximasAperturas() {
-    const box = document.getElementById("dash-proximas");
-    if (!box) return;
+  // Cálculo compartido: próximas aperturas (14 días) con su estimación
+  function _calcularProximas() {
     const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
     const en14 = new Date(); en14.setDate(en14.getDate() + 14);
     const en14Str = en14.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
@@ -1638,50 +1647,53 @@
       combos.set(k, (combos.get(k) || 0) + 1);
     });
 
-    const filas = [...combos.entries()].map(([k, count]) => {
+    const hist = _historicoAperturas();
+    return [...combos.entries()].map(([k, count]) => {
       const idx = k.indexOf("|");
       const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
       const curso = cursos.find(c => c.id === cid);
-      return { fecha, cid, count, curso };
+      const d = new Date(fecha + "T00:00:00");
+      const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
+      const minimo = (curso && curso.minimoAlumnos) || 8;
+      const est = estimarAsistencia(hist, cid, count, dias, minimo);
+      return { fecha, cid, count, curso, d, dias, minimo, proy: est.proy, fuente: est.fuente };
     }).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  }
+
+  function renderProximasAperturas() {
+    const box = document.getElementById("dash-proximas");
+    if (!box) return;
+    const filas = _calcularProximas();
 
     if (!filas.length) {
       box.innerHTML = `<div class="empty"><div class="empty-text">Sin aperturas en 14 días</div><div class="empty-hint">Aparecerán cuando los vendedores asignen fechas</div></div>`;
       return;
     }
 
-    const hist = _historicoAperturas();
-
     box.innerHTML = `<div class="dash-list">${filas.map(f => {
-      const d = new Date(f.fecha + "T00:00:00");
-      const dia = isNaN(d) ? "--" : d.toLocaleDateString("es-MX", { day: "2-digit" });
-      const mes = isNaN(d) ? "" : d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
+      const dia = isNaN(f.d) ? "--" : f.d.toLocaleDateString("es-MX", { day: "2-digit" });
+      const mes = isNaN(f.d) ? "" : f.d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
       const nombre = f.curso ? escapeHtml(f.curso.nombre) : "Curso desconocido";
       const ponente = (f.curso && f.curso.ponente) ? escapeHtml(f.curso.ponente) : "Sin ponente";
 
-      const minimo = (f.curso && f.curso.minimoAlumnos) || 8;
-      const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
-      const est = estimarAsistencia(hist, f.cid, f.count, dias, minimo);
-      const proy = est.proy;
-
       let chip;
-      if (f.count >= minimo) chip = '<span class="chip chip-green">Cupo alcanzado</span>';
-      else if (proy >= minimo) chip = '<span class="chip chip-green">Sí llega</span>';
-      else if (proy >= Math.ceil(minimo * 0.75)) chip = '<span class="chip chip-yellow">Ajustado</span>';
+      if (f.count >= f.minimo) chip = '<span class="chip chip-green">Cupo alcanzado</span>';
+      else if (f.proy >= f.minimo) chip = '<span class="chip chip-green">Sí llega</span>';
+      else if (f.proy >= Math.ceil(f.minimo * 0.75)) chip = '<span class="chip chip-yellow">Ajustado</span>';
       else chip = '<span class="chip chip-red">Difícil</span>';
 
       return `<div class="dash-apt">
         <div class="dash-apt-date"><div class="dash-apt-day">${dia}</div><div class="dash-apt-mon">${mes}</div></div>
         <div class="dash-apt-main">
           <div class="dash-apt-title">${nombre}</div>
-          <div class="dash-apt-sub">${ponente} · en ${dias} día${dias === 1 ? "" : "s"}</div>
+          <div class="dash-apt-sub">${ponente} · en ${f.dias} día${f.dias === 1 ? "" : "s"}</div>
         </div>
-        <div class="dash-apt-proj" title="Estimación con base en: ${escapeHtml(est.fuente)}">
+        <div class="dash-apt-proj" title="Estimación con base en: ${escapeHtml(f.fuente)}">
           <div class="apt-nums">
             <span class="apt-now">${f.count}</span>
             <span class="apt-arrow">→</span>
-            <span class="apt-est">${proy}</span>
-            <span class="apt-min">mín ${minimo}</span>
+            <span class="apt-est">${f.proy}</span>
+            <span class="apt-min">mín ${f.minimo}</span>
           </div>
           ${chip}
         </div>
@@ -1689,30 +1701,71 @@
     }).join("")}</div>`;
   }
 
-  function renderRumboApertura() {
-    const box = document.getElementById("dash-rumbo");
+  // ── Decisiones sugeridas: qué hacer ANTES de que truene una apertura ──
+  function renderDecisiones() {
+    const box = document.getElementById("dash-decisiones");
     if (!box) return;
-    const arr = cursos.filter(c => c.activo).map(c => ({ curso: c, e: calcularEstadoApertura(c) }))
-      .sort((a, b) => (b.e.listo - a.e.listo) || (b.e.pct - a.e.pct));
+    const filas = _calcularProximas();
+    const decs = [];
 
-    if (!arr.length) {
-      box.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div><div class="empty-hint">Actívalos en la sección Cursos</div></div>`;
+    filas.forEach(f => {
+      const nombre = f.curso ? f.curso.nombre : "Curso";
+      const base = `${f.count} inscrito${f.count === 1 ? "" : "s"} · proy. ${f.proy} de mín ${f.minimo} · abre en ${f.dias} día${f.dias === 1 ? "" : "s"}`;
+
+      // Sin ponente y ya está encima
+      if (f.curso && !(f.curso.ponente || "").trim() && f.dias <= 7) {
+        decs.push({ sev: 0, chip: "chip-red", accion: "Asignar ponente", curso: nombre, cursoId: f.cid,
+          detalle: `Abre en ${f.dias} día${f.dias === 1 ? "" : "s"} y no tiene ponente. Clic para asignarlo ahora.`, click: true });
+      }
+
+      if (f.count >= f.minimo) {
+        if (f.proy >= f.minimo * 2) {
+          decs.push({ sev: 3, chip: "chip-green", accion: "Valorar 2º grupo", curso: nombre,
+            detalle: `${base}. La demanda supera 2x el mínimo: considera abrir un segundo grupo o subir el precio de las últimas plazas.` });
+        }
+        return;
+      }
+
+      if (f.proy < Math.ceil(f.minimo * 0.75)) {
+        if (f.dias <= 3) {
+          decs.push({ sev: 0, chip: "chip-red", accion: "Decidir HOY", curso: nombre,
+            detalle: `${base}. Súbele fuerte a Ads hoy mismo o recorre/cancela la fecha — no quemes al ponente con un grupo vacío.` });
+        } else {
+          decs.push({ sev: 1, chip: "chip-red", accion: "Meter presupuesto", curso: nombre,
+            detalle: `${base}. Aumenta presupuesto de Ads / activa al trafiquer para este curso. Si en 2 días no repunta, recorre la fecha.` });
+        }
+      } else if (f.proy < f.minimo) {
+        const faltan = f.minimo - f.proy;
+        decs.push({ sev: 2, chip: "chip-yellow", accion: "Empujón final", curso: nombre,
+          detalle: `${base}. Según proyección faltarían ~${faltan}: recordatorio de vendedores por WhatsApp + Ads ligero cierran el grupo.` });
+      }
+    });
+
+    if (!decs.length) {
+      box.innerHTML = `<div class="dash-ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div><div class="dash-ok-t">Sin decisiones urgentes</div><div class="dash-ok-s">Todas las aperturas próximas van en ruta según la proyección.</div></div>
+      </div>`;
       return;
     }
 
-    box.innerHTML = `<div class="dash-bars">${arr.slice(0, 8).map(({ curso, e }) => {
-      const faltan = Math.max(0, e.minimo - e.inscritos);
-      const foot = e.listo ? '<span class="chip chip-green">Listo para abrir</span>' : `<span class="dash-faltan">faltan ${faltan}</span>`;
-      return `<div class="dash-bar-row">
-        <div class="dash-bar-head">
-          <div class="dash-bar-name">${escapeHtml(curso.nombre)}</div>
-          <div class="dash-bar-val">${e.inscritos}<span>/${e.minimo}</span></div>
+    decs.sort((a, b) => a.sev - b.sev);
+    box.innerHTML = decs.map(dc => `
+      <div class="dash-dec${dc.click ? ' is-click' : ''}"${dc.click ? ` data-curso-modal="${dc.cursoId}"` : ""}>
+        <div class="dash-dec-head">
+          <span class="chip ${dc.chip}">${escapeHtml(dc.accion)}</span>
+          <span class="dash-dec-curso">${escapeHtml(dc.curso)}</span>
         </div>
-        <div class="dash-bar-track"><div class="dash-bar-fill ${e.listo ? "is-listo" : ""}" style="width:${e.pct}%"></div></div>
-        <div class="dash-bar-foot">${foot}</div>
-      </div>`;
-    }).join("")}</div>`;
+        <div class="dash-dec-detalle">${escapeHtml(dc.detalle)}</div>
+      </div>`).join("");
   }
+
+  document.getElementById("dash-decisiones")?.addEventListener("click", (e) => {
+    const row = e.target.closest("[data-curso-modal]");
+    if (!row) return;
+    irASeccion("cursos");
+    setTimeout(() => { try { editarCurso(row.dataset.cursoModal); } catch (_) {} }, 120);
+  });
 
   // ── Gráficas de demanda por curso (estilo infografía, dos paneles) ──
   let _grafFilas = [];   // demanda del periodo (todos)
