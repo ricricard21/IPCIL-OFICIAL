@@ -441,6 +441,7 @@
   .al-act-wa { color: #16a34a; }
   .al-act-wa:hover { border-color: #16a34a; background: var(--green-soft); }
 
+  .ia-lock { font-size: 12.5px; color: var(--text-soft); background: var(--primary-soft); border: 1px solid var(--primary-light); border-radius: var(--radius); padding: 11px 14px; margin-bottom: 14px; line-height: 1.5; }
   .ia-admin { font-size: 12.5px; color: var(--text-soft); background: var(--yellow-soft); border: 1px solid var(--yellow-bg); border-radius: var(--radius); padding: 12px 14px; margin-top: 16px; line-height: 1.5; }
 
   /* ═══ Gráficas de demanda (estilo infografía) ═══ */
@@ -2083,6 +2084,9 @@
       html += `<div class="ia-error-sub" style="margin-top:12px">Este análisis es de la versión anterior. Presiona "Actualizar análisis" para el pronóstico nuevo.</div>`;
     }
 
+    if (data.bloqueadoHasta) {
+      html = `<div class="ia-lock">El análisis se genera <strong>una vez por semana</strong>. Este es el último; podrás actualizarlo el <strong>${escapeHtml(data.bloqueadoHasta)}</strong>.</div>` + html;
+    }
     if (data.pendienteAdmin) {
       html += `<div class="ia-admin">${escapeHtml(data.pendienteAdmin)}</div>`;
     }
@@ -2112,7 +2116,8 @@
       const data = res && res.data ? res.data : null;
       if (data) renderIAResultado(data);
       else if (box) box.innerHTML = `<div class="empty"><div class="empty-text">No se recibió análisis</div></div>`;
-      toast("Análisis actualizado", "success");
+      if (data && data.desdeCache) toast("Ya se generó el análisis de esta semana — mostrando el último", "success");
+      else toast("Análisis actualizado", "success");
     } catch (err) {
       console.error(err);
       if (box) box.innerHTML = `<div class="ia-error">No se pudo generar el análisis.<div class="ia-error-sub">Si es la primera vez, verifica que la función <code>analizarCursosIA</code> esté desplegada en el backend. ${escapeHtml(err && err.message ? err.message : "")}</div></div>`;
