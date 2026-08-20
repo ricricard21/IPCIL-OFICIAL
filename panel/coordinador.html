@@ -959,6 +959,24 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL GRÁFICAS (Ver todos)                           -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-graf">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-graf-title">Todos los cursos</div>
+        <div class="modal-subtitle" id="modal-graf-sub"></div>
+      </div>
+      <button class="modal-close" id="modal-graf-close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-graf-body" style="max-height:68vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
 <!-- MODAL CURSO                                          -->
 <!-- ═══════════════════════════════════════════════════ -->
 <div class="modal-backdrop hidden" id="modal-curso">
@@ -1433,8 +1451,6 @@
   // MÓDULOS OPERATIVOS DEL DASHBOARD (coordinador)
   // ═══════════════════════════════════════════════════════════
   let _iaCargada = false;
-  let _grafTopTodo = false;
-  let _grafCmpTodo = false;
 
   function irASeccion(view) {
     const link = document.querySelector(`.sidebar-link[data-view="${view}"]`);
@@ -1613,6 +1629,41 @@
   }
 
   // ── Gráficas de demanda por curso (estilo infografía, dos paneles) ──
+  let _grafFilas = [];   // demanda del periodo (todos)
+  let _grafPares = [];   // comparativas de aperturas (todos)
+
+  function _filaDemandaHtml(f, max) {
+    const pct = Math.max(3, Math.round((f.n / Math.max(max, 1)) * 90));
+    return `<div class="graf-row" title="${escapeHtml(f.nombre)}">
+      <div class="graf-name">${escapeHtml(f.nombre)}</div>
+      <div class="graf-barwrap">
+        <div class="graf-bar" style="width:${pct}%;background:var(--primary)"></div>
+        <span class="graf-val">${f.n}</span>
+      </div>
+    </div>`;
+  }
+
+  function _filaCmpHtml(p, max) {
+    const fmtF = f => {
+      const d = new Date(f + "T00:00:00");
+      return isNaN(d) ? f : d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }).replace(".", "");
+    };
+    const diff = p.nu - p.na;
+    const chip = diff > 0 ? `<span class="chip chip-green">▲ +${diff}</span>`
+      : diff < 0 ? `<span class="chip chip-red">▼ ${diff}</span>`
+      : '<span class="chip chip-gray">= igual</span>';
+    const wU = Math.max(4, Math.round((p.nu / Math.max(max, 1)) * 85));
+    const wA = Math.max(4, Math.round((p.na / Math.max(max, 1)) * 85));
+    return `<div class="graf-cmp-row" title="${escapeHtml(p.nombre)}">
+      <div class="graf-cmp-head">
+        <div class="graf-cmp-name">${escapeHtml(p.nombre)}</div>
+        ${chip}
+      </div>
+      <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fu)}</span><div class="graf-bar" style="width:${wU}%;background:var(--primary)"></div><span class="graf-val">${p.nu}</span></div>
+      <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fa)}</span><div class="graf-bar graf-bar-prev" style="width:${wA}%"></div><span class="graf-val graf-val-prev">${p.na}</span></div>
+    </div>`;
+  }
+
   function renderGraficasCursos() {
     const top = document.getElementById("graf-top");
     const cmp = document.getElementById("graf-cmp");
@@ -1626,95 +1677,88 @@
     const alumnosP = filtrarPorPeriodo(alumnos);
     const counts = new Map();
     alumnosP.forEach(a => counts.set(a.cursoId, (counts.get(a.cursoId) || 0) + 1));
-    const filas = cursos.filter(c => c.activo)
+    _grafFilas = cursos.filter(c => c.activo)
       .map(c => ({ nombre: c.nombre, n: counts.get(c.id) || 0 }))
       .sort((a, b) => b.n - a.n);
 
-    if (!filas.length) {
+    if (!_grafFilas.length) {
       top.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div></div>`;
     } else {
-      const visibles = _grafTopTodo ? filas : filas.slice(0, 8);
-      const maxTop = Math.max(filas[0].n, 1);
-      const btnTop = filas.length > 8
-        ? `<button class="btn btn-ghost btn-sm graf-more" data-graf="top">${_grafTopTodo ? "Ver menos ▴" : `Ver todos (${filas.length}) ▾`}</button>`
+      const visibles = _grafFilas.slice(0, 8);
+      const maxTop = _grafFilas[0].n;
+      const btnTop = _grafFilas.length > 8
+        ? `<button class="btn btn-ghost btn-sm graf-more" data-graf="top">Ver todos (${_grafFilas.length})</button>`
         : "";
-      top.innerHTML = visibles.map(f => {
-        const pct = Math.max(3, Math.round((f.n / maxTop) * 90));
-        return `<div class="graf-row" title="${escapeHtml(f.nombre)}">
-          <div class="graf-name">${escapeHtml(f.nombre)}</div>
-          <div class="graf-barwrap">
-            <div class="graf-bar" style="width:${pct}%;background:var(--primary)"></div>
-            <span class="graf-val">${f.n}</span>
-          </div>
-        </div>`;
-      }).join("") + btnTop;
+      top.innerHTML = visibles.map(f => _filaDemandaHtml(f, maxTop)).join("") + btnTop;
     }
 
-    // ── Panel derecho: última apertura vs la anterior (solo cursos con 2+ aperturas dadas) ──
+    // ── Panel derecho: última apertura vs la anterior (2+ aperturas dadas) ──
     const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
-    const porCursoFechas = new Map(); // cursoId -> Map(fecha -> alumnos)
+    const porCursoFechas = new Map();
     alumnos.forEach(a => {
       const ak = a.aperturaKey;
-      if (!ak || ak === "sin-asignar" || ak > hoyMX) return; // solo aperturas YA dadas
+      if (!ak || ak === "sin-asignar" || ak > hoyMX) return;
       let m = porCursoFechas.get(a.cursoId);
       if (!m) { m = new Map(); porCursoFechas.set(a.cursoId, m); }
       m.set(ak, (m.get(ak) || 0) + 1);
     });
 
-    const fmtF = f => {
-      const d = new Date(f + "T00:00:00");
-      return isNaN(d) ? f : d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }).replace(".", "");
-    };
-
-    const pares = [];
+    _grafPares = [];
     porCursoFechas.forEach((m, cid) => {
       if (m.size < 2) return;
-      const fechas = [...m.keys()].sort().reverse(); // más reciente primero
+      const fechas = [...m.keys()].sort().reverse();
       const curso = cursos.find(c => c.id === cid);
-      pares.push({
+      _grafPares.push({
         nombre: curso ? curso.nombre : "Curso",
         fu: fechas[0], nu: m.get(fechas[0]),
         fa: fechas[1], na: m.get(fechas[1]),
       });
     });
-    pares.sort((a, b) => b.nu - a.nu);
-    const top6 = _grafCmpTodo ? pares : pares.slice(0, 6);
+    _grafPares.sort((a, b) => b.nu - a.nu);
 
-    if (!top6.length) {
+    if (!_grafPares.length) {
       cmp.innerHTML = `<div class="empty"><div class="empty-text">Aún no hay cursos con dos aperturas dadas</div><div class="empty-hint">Cuando un curso se imparta por segunda vez, aquí verás si creció o bajó</div></div>`;
       return;
     }
 
-    const maxCmp = Math.max(...top6.flatMap(p => [p.nu, p.na]), 1);
-    const btnCmp = pares.length > 6
-      ? `<button class="btn btn-ghost btn-sm graf-more" data-graf="cmp">${_grafCmpTodo ? "Ver menos ▴" : `Ver todos (${pares.length}) ▾`}</button>`
+    const visiblesCmp = _grafPares.slice(0, 6);
+    const maxCmp = Math.max(..._grafPares.flatMap(p => [p.nu, p.na]), 1);
+    const btnCmp = _grafPares.length > 6
+      ? `<button class="btn btn-ghost btn-sm graf-more" data-graf="cmp">Ver todos (${_grafPares.length})</button>`
       : "";
-    cmp.innerHTML = top6.map(p => {
-      const diff = p.nu - p.na;
-      const chip = diff > 0 ? `<span class="chip chip-green">▲ +${diff}</span>`
-        : diff < 0 ? `<span class="chip chip-red">▼ ${diff}</span>`
-        : '<span class="chip chip-gray">= igual</span>';
-      const wU = Math.max(4, Math.round((p.nu / maxCmp) * 85));
-      const wA = Math.max(4, Math.round((p.na / maxCmp) * 85));
-      return `<div class="graf-cmp-row" title="${escapeHtml(p.nombre)}">
-        <div class="graf-cmp-head">
-          <div class="graf-cmp-name">${escapeHtml(p.nombre)}</div>
-          ${chip}
-        </div>
-        <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fu)}</span><div class="graf-bar" style="width:${wU}%;background:var(--primary)"></div><span class="graf-val">${p.nu}</span></div>
-        <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fa)}</span><div class="graf-bar graf-bar-prev" style="width:${wA}%"></div><span class="graf-val graf-val-prev">${p.na}</span></div>
-      </div>`;
-    }).join("") + btnCmp;
+    cmp.innerHTML = visiblesCmp.map(p => _filaCmpHtml(p, maxCmp)).join("") + btnCmp;
   }
 
-  // Toggle "Ver todos / Ver menos" de las gráficas
+  // ── Modal "Ver todos" de las gráficas ──
+  const modalGraf = document.getElementById("modal-graf");
+
+  function abrirModalGraf(tipo) {
+    if (!modalGraf) return;
+    const title = document.getElementById("modal-graf-title");
+    const sub = document.getElementById("modal-graf-sub");
+    const body = document.getElementById("modal-graf-body");
+    const P = typeof periodoActual === "number" ? periodoActual : 365;
+
+    if (tipo === "top") {
+      title.textContent = "Con más demanda — todos los cursos";
+      sub.textContent = `Inscritos por curso · últimos ${P} días`;
+      const maxTop = _grafFilas.length ? _grafFilas[0].n : 1;
+      body.innerHTML = _grafFilas.map(f => _filaDemandaHtml(f, maxTop)).join("");
+    } else {
+      title.textContent = "Última apertura vs la anterior — todos";
+      sub.textContent = "Cursos con dos o más aperturas dadas";
+      const maxCmp = Math.max(..._grafPares.flatMap(p => [p.nu, p.na]), 1);
+      body.innerHTML = _grafPares.map(p => _filaCmpHtml(p, maxCmp)).join("");
+    }
+    modalGraf.classList.remove("hidden");
+  }
+
   document.querySelector(".graf-2col")?.addEventListener("click", (e) => {
     const b = e.target.closest(".graf-more");
-    if (!b) return;
-    if (b.dataset.graf === "top") _grafTopTodo = !_grafTopTodo;
-    else _grafCmpTodo = !_grafCmpTodo;
-    renderGraficasCursos();
+    if (b) abrirModalGraf(b.dataset.graf);
   });
+  document.getElementById("modal-graf-close")?.addEventListener("click", () => modalGraf.classList.add("hidden"));
+  modalGraf?.addEventListener("click", (e) => { if (e.target === modalGraf) modalGraf.classList.add("hidden"); });
 
   // Refresco automático cada hora (las fechas de la comparativa ruedan solas)
   setInterval(() => { if (usuario?.consultoraId) actualizarDashboard(); }, 60 * 60 * 1000);
