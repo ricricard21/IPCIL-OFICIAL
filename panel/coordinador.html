@@ -433,6 +433,24 @@
   .graf-barwrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .graf-bar { height: 18px; border-radius: 3px; min-width: 5px; flex-shrink: 0; transition: width var(--t-slow); }
   .graf-val { font-size: 13px; font-weight: 800; color: var(--text); flex-shrink: 0; }
+  .graf-t-cmp { color: var(--green); border-color: var(--green-bg); }
+  .graf-cmp-row { padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+  .graf-cmp-row:last-child { border-bottom: none; }
+  .graf-cmp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .graf-cmp-name { font-size: 12px; font-weight: 700; color: var(--text); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .graf-cmp-line { display: flex; align-items: center; gap: 8px; padding: 2px 0; min-width: 0; }
+  .graf-cmp-date { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; width: 44px; flex-shrink: 0; text-align: right; }
+  .graf-bar-prev { background: var(--line-strong); }
+  .graf-val-prev { color: var(--muted); font-weight: 700; }
+  .graf-cmp-head .chip { flex-shrink: 0; }
+
+  /* Ergonomía: que nada se salga de las tarjetas */
+  .dash-apt-chips .chip { font-size: 10.5px; padding: 3px 9px; white-space: nowrap; }
+  .dash-apt-sub, .dash-apt-title { min-width: 0; }
+  @media (max-width: 700px) {
+    .dash-apt { flex-wrap: wrap; }
+    .dash-apt-chips { flex-direction: row; flex-wrap: wrap; width: 100%; justify-content: flex-start; margin-left: 60px; }
+  }
 </style>
 </head>
 <body>
@@ -567,6 +585,25 @@
       <div class="card">
         <div class="card-header">
           <div>
+            <div class="card-title">Demanda por curso</div>
+            <div class="card-subtitle" id="graf-sub">Inscritos en el periodo</div>
+          </div>
+        </div>
+        <div class="graf-2col">
+          <div class="graf-panel">
+            <div class="graf-panel-title graf-t-top">Con más demanda</div>
+            <div id="graf-top"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+          </div>
+          <div class="graf-panel">
+            <div class="graf-panel-title graf-t-cmp">Última apertura vs la anterior</div>
+            <div id="graf-cmp"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
             <div class="card-title">Requieren tu atención</div>
             <div class="card-subtitle">Lo urgente para hoy · da clic para ir a la sección</div>
           </div>
@@ -579,7 +616,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Próximas aperturas</div>
-              <div class="card-subtitle">Siguientes 14 días</div>
+              <div class="card-subtitle">Siguientes 14 días · la estimación usa el ritmo de ventas de cada curso</div>
             </div>
           </div>
           <div id="dash-proximas"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
@@ -615,24 +652,6 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Demanda por curso</div>
-            <div class="card-subtitle" id="graf-sub">Inscritos en el periodo</div>
-          </div>
-        </div>
-        <div class="graf-2col">
-          <div class="graf-panel">
-            <div class="graf-panel-title graf-t-top">Con más demanda</div>
-            <div id="graf-top"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-          </div>
-          <div class="graf-panel">
-            <div class="graf-panel-title graf-t-low">Con menos demanda</div>
-            <div id="graf-low"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
@@ -1544,11 +1563,11 @@
       if (f.count >= minimo) {
         pred = '<span class="chip chip-green">Cupo alcanzado</span>';
       } else if (proy >= minimo) {
-        pred = `<span class="chip chip-green">Proy. llega (${proy}/${minimo})</span>`;
+        pred = `<span class="chip chip-green">Sí llega · est. ${proy} de ${minimo}</span>`;
       } else if (proy >= Math.ceil(minimo * 0.75)) {
-        pred = `<span class="chip chip-yellow">Ajustado (proy. ${proy}/${minimo})</span>`;
+        pred = `<span class="chip chip-yellow">Ajustado · est. ${proy} de ${minimo}</span>`;
       } else {
-        pred = `<span class="chip chip-red">Difícil (proy. ${proy}/${minimo})</span>`;
+        pred = `<span class="chip chip-red">Difícil · est. ${proy} de ${minimo}</span>`;
       }
 
       return `<div class="dash-apt">
@@ -1593,52 +1612,90 @@
   // ── Gráficas de demanda por curso (estilo infografía, dos paneles) ──
   function renderGraficasCursos() {
     const top = document.getElementById("graf-top");
-    const low = document.getElementById("graf-low");
+    const cmp = document.getElementById("graf-cmp");
     const sub = document.getElementById("graf-sub");
-    if (!top || !low) return;
+    if (!top || !cmp) return;
 
     const P = typeof periodoActual === "number" ? periodoActual : 365;
     if (sub) sub.textContent = `Inscritos por curso · últimos ${P} días`;
 
+    // ── Panel izquierdo: con más demanda (periodo) ──
     const alumnosP = filtrarPorPeriodo(alumnos);
     const counts = new Map();
     alumnosP.forEach(a => counts.set(a.cursoId, (counts.get(a.cursoId) || 0) + 1));
-
-    // Todos los cursos activos (los sin ventas del periodo entran con 0 al panel de menos demanda)
     const filas = cursos.filter(c => c.activo)
       .map(c => ({ nombre: c.nombre, n: counts.get(c.id) || 0 }))
-      .sort((a, b) => b.n - a.n);
-
-    const fila = (f, max, colorVar) => {
-      const pct = Math.max(3, Math.round((f.n / Math.max(max, 1)) * 100));
-      return `<div class="graf-row" title="${escapeHtml(f.nombre)}">
-        <div class="graf-name">${escapeHtml(f.nombre)}</div>
-        <div class="graf-barwrap">
-          <div class="graf-bar" style="width:${pct}%;background:${colorVar}"></div>
-          <span class="graf-val">${f.n}</span>
-        </div>
-      </div>`;
-    };
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8);
 
     if (!filas.length) {
       top.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div></div>`;
-      low.innerHTML = `<div class="empty"><div class="empty-text">Sin cursos activos</div></div>`;
+    } else {
+      const maxTop = Math.max(filas[0].n, 1);
+      top.innerHTML = filas.map(f => {
+        const pct = Math.max(3, Math.round((f.n / maxTop) * 90));
+        return `<div class="graf-row" title="${escapeHtml(f.nombre)}">
+          <div class="graf-name">${escapeHtml(f.nombre)}</div>
+          <div class="graf-barwrap">
+            <div class="graf-bar" style="width:${pct}%;background:var(--primary)"></div>
+            <span class="graf-val">${f.n}</span>
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    // ── Panel derecho: última apertura vs la anterior (solo cursos con 2+ aperturas dadas) ──
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const porCursoFechas = new Map(); // cursoId -> Map(fecha -> alumnos)
+    alumnos.forEach(a => {
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar" || ak > hoyMX) return; // solo aperturas YA dadas
+      let m = porCursoFechas.get(a.cursoId);
+      if (!m) { m = new Map(); porCursoFechas.set(a.cursoId, m); }
+      m.set(ak, (m.get(ak) || 0) + 1);
+    });
+
+    const fmtF = f => {
+      const d = new Date(f + "T00:00:00");
+      return isNaN(d) ? f : d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }).replace(".", "");
+    };
+
+    const pares = [];
+    porCursoFechas.forEach((m, cid) => {
+      if (m.size < 2) return;
+      const fechas = [...m.keys()].sort().reverse(); // más reciente primero
+      const curso = cursos.find(c => c.id === cid);
+      pares.push({
+        nombre: curso ? curso.nombre : "Curso",
+        fu: fechas[0], nu: m.get(fechas[0]),
+        fa: fechas[1], na: m.get(fechas[1]),
+      });
+    });
+    pares.sort((a, b) => b.nu - a.nu);
+    const top6 = pares.slice(0, 6);
+
+    if (!top6.length) {
+      cmp.innerHTML = `<div class="empty"><div class="empty-text">Aún no hay cursos con dos aperturas dadas</div><div class="empty-hint">Cuando un curso se imparta por segunda vez, aquí verás si creció o bajó</div></div>`;
       return;
     }
 
-    const arriba = filas.slice(0, 8);
-    const resto = filas.slice(8);
-    const abajo = [...resto].sort((a, b) => a.n - b.n).slice(0, 8);
-
-    const maxTop = arriba.length ? arriba[0].n : 1;
-    top.innerHTML = arriba.map(f => fila(f, maxTop, "var(--primary)")).join("");
-
-    if (!abajo.length) {
-      low.innerHTML = `<div class="empty"><div class="empty-text">Todos tus cursos activos están a la izquierda</div><div class="empty-hint">Aparecerán aquí cuando tengas más de 8 cursos</div></div>`;
-    } else {
-      const maxLow = Math.max(...abajo.map(f => f.n), 1);
-      low.innerHTML = abajo.map(f => fila(f, maxLow, "var(--gold)")).join("");
-    }
+    const maxCmp = Math.max(...top6.flatMap(p => [p.nu, p.na]), 1);
+    cmp.innerHTML = top6.map(p => {
+      const diff = p.nu - p.na;
+      const chip = diff > 0 ? `<span class="chip chip-green">▲ +${diff}</span>`
+        : diff < 0 ? `<span class="chip chip-red">▼ ${diff}</span>`
+        : '<span class="chip chip-gray">= igual</span>';
+      const wU = Math.max(4, Math.round((p.nu / maxCmp) * 85));
+      const wA = Math.max(4, Math.round((p.na / maxCmp) * 85));
+      return `<div class="graf-cmp-row" title="${escapeHtml(p.nombre)}">
+        <div class="graf-cmp-head">
+          <div class="graf-cmp-name">${escapeHtml(p.nombre)}</div>
+          ${chip}
+        </div>
+        <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fu)}</span><div class="graf-bar" style="width:${wU}%;background:var(--primary)"></div><span class="graf-val">${p.nu}</span></div>
+        <div class="graf-cmp-line"><span class="graf-cmp-date">${fmtF(p.fa)}</span><div class="graf-bar graf-bar-prev" style="width:${wA}%"></div><span class="graf-val graf-val-prev">${p.na}</span></div>
+      </div>`;
+    }).join("");
   }
 
   // ── Deep-links: llevar al problema exacto ──
