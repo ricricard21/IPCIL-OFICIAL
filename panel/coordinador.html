@@ -397,6 +397,30 @@
   .ia-error { font-size: 13px; color: var(--red); background: var(--red-soft); border: 1px solid var(--red-bg); border-radius: var(--radius); padding: 14px 16px; font-weight: 600; }
   .ia-error-sub { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 6px; }
   .ia-error-sub code { background: var(--surface-soft); padding: 1px 6px; border-radius: 5px; color: var(--text); }
+
+  /* ═══ V2: comparativa de ciclo, gráfica, predicción y deep-links ═══ */
+  .cmp-list { display: flex; flex-direction: column; }
+  .cmp-row { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line-soft); }
+  .cmp-row:last-child { border-bottom: none; }
+  .cmp-label { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); min-width: 0; }
+  .cmp-vals { display: flex; align-items: baseline; gap: 7px; flex-shrink: 0; }
+  .cmp-act { font-size: 20px; font-weight: 800; color: var(--primary); }
+  .cmp-ant { font-size: 11.5px; color: var(--muted-light); font-weight: 600; }
+  .cmp-chip { flex-shrink: 0; }
+
+  .hb-best .dash-bar-fill { background: var(--green); }
+  .hb-worst .dash-bar-fill { background: var(--red); }
+
+  .dash-apt-chips { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+
+  @keyframes flashRow { 0%, 100% { background: transparent; } 25% { background: var(--yellow-soft); } }
+  tr.flash-row td { animation: flashRow 1.3s ease 2; }
+
+  .ia-datos { font-size: 11.5px; font-weight: 700; color: var(--muted); margin: 5px 0 6px; letter-spacing: 0.01em; }
+  .ia-stack { display: flex; flex-direction: column; gap: 10px; }
+  .ia-t-good { color: var(--green); }
+  .ia-t-bad { color: var(--red); }
+  .ia-chart { margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -478,7 +502,8 @@
         </div>
         <div class="filter-bar">
           <button class="filter-btn" data-period="7">7 días</button>
-          <button class="filter-btn active" data-period="30">30 días</button>
+          <button class="filter-btn active" data-period="15">15 días</button>
+          <button class="filter-btn" data-period="30">30 días</button>
           <button class="filter-btn" data-period="90">90 días</button>
           <button class="filter-btn" data-period="365">Año</button>
           <button class="filter-btn" data-period="all">Todo</button>
@@ -518,12 +543,12 @@
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Nuevos inscritos (7 días)</div>
-            <div class="kpi-value" id="kpi-nuevos">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-nuevos-sub">esta semana</span>
+            <div class="kpi-label">Certificados enviados</div>
+            <div class="kpi-value" id="kpi-enviados">0</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-enviados-sub">en el periodo</span>
           </div>
           <div class="kpi-icon kpi-icon-yellow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
           </div>
         </div>
       </div>
@@ -559,14 +584,25 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Últimos alumnos inscritos</div>
-            <div class="card-subtitle">Actividad más reciente de tus vendedores</div>
+      <div class="dash-2col">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Este periodo vs el anterior</div>
+              <div class="card-subtitle" id="dash-ciclo-sub">Cómo vas contra el ciclo pasado</div>
+            </div>
           </div>
+          <div id="dash-ciclo"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
         </div>
-        <div id="dash-ultimos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Cursos: mejor → peor</div>
+              <div class="card-subtitle" id="dash-chart-sub">Inscritos en el periodo</div>
+            </div>
+          </div>
+          <div id="dash-chart"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        </div>
       </div>
 
       <div class="card ia-card">
@@ -667,6 +703,7 @@
               <option value="">Todos los estados</option>
               <option value="email_enviado">Enviado</option>
               <option value="pendiente">Pendiente</option>
+              <option value="sin_email">Sin email</option>
             </select>
             <div class="al-toggle" id="al-toggle">
               <button data-vista="fecha" class="active" title="Agrupado por fecha de apertura">
@@ -1017,7 +1054,7 @@
   let unsubAll = [];
   let chartVentas = null;
   let chartCursos = null;
-  let periodoActual = 30;
+  let periodoActual = 15;
   let cronVista = "lista"; // "lista" | "calendario"
   let cronSemana = new Date(); // semana visible en calendario
 
@@ -1267,31 +1304,35 @@
     const certsPeriodo = filtrarPorPeriodo(certificados);
     const alumnosPeriodo = filtrarPorPeriodo(alumnos);
 
-    // KPI: Próxima apertura (curso más cercano a abrir grupo)
-    const cursosActivos = cursos.filter(c => c.activo);
-    let proxApertura = null;
-    let proxCurso = null;
-    cursosActivos.forEach(c => {
-      const est = calcularEstadoApertura(c);
-      if (est.proxima) {
-        if (!proxApertura || est.proxima < proxApertura) {
-          proxApertura = est.proxima;
-          proxCurso = c;
-        }
-      }
+    // KPI: Próxima apertura (fecha REAL más cercana asignada por los vendedores)
+    const hoyMXDash = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const proxCombos = new Map(); // "cursoId|fecha" -> count
+    alumnos.forEach(a => {
+      if (a.estado === "email_enviado") return;
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar" || ak < hoyMXDash) return;
+      const k = a.cursoId + "|" + ak;
+      proxCombos.set(k, (proxCombos.get(k) || 0) + 1);
+    });
+    let proxKey = null, proxCursoId = null, proxCount = 0;
+    proxCombos.forEach((count, k) => {
+      const idx = k.indexOf("|");
+      const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
+      if (!proxKey || fecha < proxKey) { proxKey = fecha; proxCursoId = cid; proxCount = count; }
     });
     const elProx = document.getElementById("kpi-prox-apertura");
     const elProxTrend = document.getElementById("kpi-prox-apertura-trend");
-    if (proxApertura && elProx) {
-      const dias = Math.ceil((proxApertura - new Date()) / (1000 * 60 * 60 * 24));
-      const fecha = proxApertura.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
-      elProx.textContent = fecha;
-      if (proxCurso) {
-        elProxTrend.textContent = dias > 0 ? `en ${dias} días · ${proxCurso.nombre.substring(0, 22)}` : `vencida · ${proxCurso.nombre.substring(0, 22)}`;
+    if (elProx) {
+      if (proxKey) {
+        const d = new Date(proxKey + "T00:00:00");
+        const dias = Math.max(0, Math.round((d - new Date(hoyMXDash + "T00:00:00")) / 864e5));
+        const cursoProx = cursos.find(c => c.id === proxCursoId);
+        elProx.textContent = d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
+        elProxTrend.textContent = (dias === 0 ? "hoy" : `en ${dias} día${dias === 1 ? "" : "s"}`) + ` · ${proxCount} alumno${proxCount === 1 ? "" : "s"}` + (cursoProx ? ` · ${cursoProx.nombre.substring(0, 18)}` : "");
+      } else {
+        elProx.textContent = "—";
+        elProxTrend.textContent = "sin fechas asignadas";
       }
-    } else if (elProx) {
-      elProx.textContent = "—";
-      elProxTrend.textContent = "sin cursos abiertos";
     }
 
     // KPI: Cursos listos para abrir (llegaron al mínimo)
@@ -1304,16 +1345,21 @@
     // KPI: Pendientes de certificado (alumnos aún no enviados)
     document.getElementById("kpi-pend-cert").textContent = alumnos.filter(a => a.estado !== "email_enviado").length;
 
-    // KPI: Nuevos inscritos (7 días) + tendencia vs 7 días previos (sin dinero)
-    const _hace7 = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const _hace14 = Date.now() - 14 * 24 * 60 * 60 * 1000;
-    const _nuevos7 = alumnos.filter(a => (a.creadoEn?.toMillis?.() || 0) >= _hace7).length;
-    const _nuevosPrev = alumnos.filter(a => {
-      const t = a.creadoEn?.toMillis?.() || 0;
-      return t >= _hace14 && t < _hace7;
-    }).length;
-    document.getElementById("kpi-nuevos").textContent = _nuevos7;
-    setTrend("kpi-nuevos-sub", _nuevos7, _nuevosPrev);
+    // KPI: Certificados enviados en el periodo + tendencia vs periodo anterior
+    const elEnv = document.getElementById("kpi-enviados");
+    if (elEnv) elEnv.textContent = certsPeriodo.length;
+    if (periodoActual !== "all" && typeof periodoActual === "number") {
+      const desde = Date.now() - periodoActual * 864e5;
+      const desdeAnt = desde - periodoActual * 864e5;
+      const certsAnt = certificados.filter(c => {
+        const t = c.creadoEn?.toMillis?.() || 0;
+        return t >= desdeAnt && t < desde;
+      }).length;
+      setTrend("kpi-enviados-sub", certsPeriodo.length, certsAnt);
+    } else {
+      const subEnv = document.getElementById("kpi-enviados-sub");
+      if (subEnv) { subEnv.textContent = "histórico total"; subEnv.className = "kpi-trend kpi-trend-flat"; }
+    }
 
     // Cursos sidebar
     document.getElementById("cursos-total").textContent = cursos.length;
@@ -1341,7 +1387,8 @@
     renderAtencion();
     renderProximasAperturas();
     renderRumboApertura();
-    renderUltimosInscritos();
+    renderCicloComparativa();
+    renderComparativaCursos();
     renderApertura();
 
     if (!_iaCargada && usuario?.consultoraId) { _iaCargada = true; cargarIACache(); }
@@ -1393,7 +1440,7 @@
     cursos.filter(c => c.activo).forEach(c => {
       const e = calcularEstadoApertura(c);
       if (e.listo) alertas.push({
-        tipo: "ok", goto: "apertura",
+        tipo: "ok", goto: "apertura", curso: c.id,
         titulo: `${c.nombre} llegó al mínimo`,
         detalle: `${e.inscritos}/${e.minimo} inscritos · listo para abrir grupo`
       });
@@ -1419,18 +1466,18 @@
         const d = new Date(fecha + "T00:00:00");
         const fTxt = isNaN(d) ? fecha : d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
         alertas.push({
-          tipo: "warn", goto: "cursos",
+          tipo: "warn", goto: "link", curso: cid,
           titulo: `Falta link de WhatsApp — ${curso.nombre}`,
-          detalle: `Apertura ${fTxt} · ${count} alumno${count === 1 ? "" : "s"} · sin grupo cargado`
+          detalle: `Apertura ${fTxt} · ${count} alumno${count === 1 ? "" : "s"} · clic para cargar el link`
         });
       }
     });
 
     const sinEmail = alumnos.filter(a => a.estado !== "email_enviado" && !(a.email && a.email.includes("@"))).length;
     if (sinEmail) alertas.push({
-      tipo: "warn", goto: "alumnos",
+      tipo: "warn", goto: "sinemail",
       titulo: `${sinEmail} alumno${sinEmail === 1 ? "" : "s"} sin email`,
-      detalle: "No se les puede enviar certificado hasta capturar su correo"
+      detalle: "Clic para ver la lista y capturar sus correos"
     });
 
     if (!alertas.length) {
@@ -1444,7 +1491,7 @@
     const icoOk = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
     const icoWarn = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
     box.innerHTML = alertas.map(al => `
-      <div class="dash-alert ${al.tipo === "ok" ? "is-ok" : "is-warn"}" data-goto="${al.goto}">
+      <div class="dash-alert ${al.tipo === "ok" ? "is-ok" : "is-warn"}" data-goto="${al.goto}"${al.curso ? ` data-curso="${al.curso}"` : ""}>
         <div class="dash-alert-ico">${al.tipo === "ok" ? icoOk : icoWarn}</div>
         <div class="dash-alert-main">
           <div class="dash-alert-title">${escapeHtml(al.titulo)}</div>
@@ -1452,6 +1499,13 @@
         </div>
         <svg class="dash-alert-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>`).join("");
+  }
+
+  // Ritmo de inscripción de un curso: alumnos nuevos por día (últimos 14 días)
+  function ritmoInscripcion(cursoId) {
+    const hace14 = Date.now() - 14 * 864e5;
+    const n = alumnos.filter(a => a.cursoId === cursoId && (a.creadoEn?.toMillis?.() || 0) >= hace14).length;
+    return n / 14;
   }
 
   function renderProximasAperturas() {
@@ -1477,7 +1531,7 @@
       const curso = cursos.find(c => c.id === cid);
       const links = (curso && curso.whatsappLinks) || {};
       const tiene = !!(links[fecha] && String(links[fecha]).trim());
-      return { fecha, count, curso, tiene };
+      return { fecha, cid, count, curso, tiene };
     }).sort((a, b) => a.fecha.localeCompare(b.fecha));
 
     if (!filas.length) {
@@ -1491,13 +1545,32 @@
       const mes = isNaN(d) ? "" : d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
       const nombre = f.curso ? escapeHtml(f.curso.nombre) : "Curso desconocido";
       const ponente = (f.curso && f.curso.ponente) ? escapeHtml(f.curso.ponente) : "Sin ponente";
+
+      // ── Predicción de llenado (ritmo histórico de ese curso) ──
+      const minimo = (f.curso && f.curso.minimoAlumnos) || 8;
+      const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
+      const proy = Math.min(minimo + 10, Math.round(f.count + ritmoInscripcion(f.cid) * dias));
+      let pred = "";
+      if (f.count >= minimo) {
+        pred = '<span class="chip chip-green">Cupo alcanzado</span>';
+      } else if (proy >= minimo) {
+        pred = `<span class="chip chip-green">Proy. llega (${proy}/${minimo})</span>`;
+      } else if (proy >= Math.ceil(minimo * 0.75)) {
+        pred = `<span class="chip chip-yellow">Ajustado (proy. ${proy}/${minimo})</span>`;
+      } else {
+        pred = `<span class="chip chip-red">Difícil (proy. ${proy}/${minimo})</span>`;
+      }
+
       return `<div class="dash-apt">
         <div class="dash-apt-date"><div class="dash-apt-day">${dia}</div><div class="dash-apt-mon">${mes}</div></div>
         <div class="dash-apt-main">
           <div class="dash-apt-title">${nombre}</div>
-          <div class="dash-apt-sub">${ponente} · ${f.count} alumno${f.count === 1 ? "" : "s"}</div>
+          <div class="dash-apt-sub">${ponente} · ${f.count} alumno${f.count === 1 ? "" : "s"} · en ${dias} día${dias === 1 ? "" : "s"}</div>
         </div>
-        ${f.tiene ? '<span class="chip chip-green chip-dot">Con link</span>' : '<span class="chip chip-yellow chip-dot">Sin link</span>'}
+        <div class="dash-apt-chips">
+          ${pred}
+          ${f.tiene ? '<span class="chip chip-green chip-dot">Con link</span>' : '<span class="chip chip-yellow chip-dot">Sin link</span>'}
+        </div>
       </div>`;
     }).join("")}</div>`;
   }
@@ -1527,36 +1600,140 @@
     }).join("")}</div>`;
   }
 
-  function renderUltimosInscritos() {
-    const box = document.getElementById("dash-ultimos");
+  // ── Este periodo vs el anterior (reacciona al filtro 7/15/30/90) ──
+  function renderCicloComparativa() {
+    const box = document.getElementById("dash-ciclo");
+    const sub = document.getElementById("dash-ciclo-sub");
     if (!box) return;
-    const ult = [...alumnos].sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0)).slice(0, 10);
-    if (!ult.length) {
-      box.innerHTML = `<div class="empty"><div class="empty-text">Aún no hay alumnos</div><div class="empty-hint">Se registran solos cuando un vendedor genera una venta</div></div>`;
+
+    if (periodoActual === "all" || typeof periodoActual !== "number") {
+      if (sub) sub.textContent = "Elige 7, 15, 30 o 90 días para comparar";
+      box.innerHTML = `<div class="empty"><div class="empty-text">Sin comparativa en "Todo"</div><div class="empty-hint">Selecciona un periodo arriba (ej. 15 días, tu ciclo de lanzamiento)</div></div>`;
       return;
     }
-    box.innerHTML = `<div class="dash-feed">${ult.map(a => {
-      const curso = cursos.find(c => c.id === a.cursoId);
-      const vend = vendedores.find(v => v.id === a.registradoPor);
-      const chip = a.estado === "email_enviado"
-        ? '<span class="chip chip-green chip-dot">Enviado</span>'
-        : '<span class="chip chip-yellow chip-dot">Pendiente</span>';
-      return `<div class="al-item">
-        <div class="al-avatar">${escapeHtml(iniciales(a.nombre))}</div>
-        <div class="al-item-main">
-          <div class="al-item-name">${escapeHtml(a.nombre)}</div>
-          <div class="al-item-sub">${curso ? escapeHtml(curso.nombre) : "Sin curso"}</div>
+
+    const P = periodoActual;
+    if (sub) sub.textContent = `Últimos ${P} días vs los ${P} anteriores`;
+    const ahora = Date.now();
+    const desde = ahora - P * 864e5;
+    const desdeAnt = desde - P * 864e5;
+
+    const enRango = (ts, a, b) => { const t = ts?.toMillis?.() || 0; return t >= a && t < b; };
+
+    // Nuevos inscritos
+    const insAct = alumnos.filter(a => enRango(a.creadoEn, desde, ahora + 1)).length;
+    const insAnt = alumnos.filter(a => enRango(a.creadoEn, desdeAnt, desde)).length;
+    // Certificados enviados
+    const cerAct = certificados.filter(c => enRango(c.creadoEn, desde, ahora + 1)).length;
+    const cerAnt = certificados.filter(c => enRango(c.creadoEn, desdeAnt, desde)).length;
+    // Grupos aperturados (combos curso|fecha cuya fecha de apertura cae en el rango)
+    const fStr = ms => new Date(ms).toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const hoyStr = fStr(ahora), desdeStr = fStr(desde), desdeAntStr = fStr(desdeAnt);
+    const gAct = new Set(), gAnt = new Set();
+    alumnos.forEach(a => {
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar") return;
+      const k = a.cursoId + "|" + ak;
+      if (ak >= desdeStr && ak <= hoyStr) gAct.add(k);
+      else if (ak >= desdeAntStr && ak < desdeStr) gAnt.add(k);
+    });
+
+    const filaCmp = (label, act, ant) => {
+      const diff = act - ant;
+      let chip;
+      if (ant === 0 && act === 0) chip = '<span class="chip chip-gray">sin datos</span>';
+      else if (diff > 0) chip = `<span class="chip chip-green">▲ +${diff}${ant > 0 ? ` (${Math.round((diff / ant) * 100)}%)` : ""}</span>`;
+      else if (diff < 0) chip = `<span class="chip chip-red">▼ ${diff}${ant > 0 ? ` (${Math.round((diff / ant) * 100)}%)` : ""}</span>`;
+      else chip = '<span class="chip chip-gray">= igual</span>';
+      return `<div class="cmp-row">
+        <div class="cmp-label">${label}</div>
+        <div class="cmp-vals"><span class="cmp-act">${act}</span><span class="cmp-ant">vs ${ant}</span></div>
+        <div class="cmp-chip">${chip}</div>
+      </div>`;
+    };
+
+    box.innerHTML = `<div class="cmp-list">
+      ${filaCmp("Nuevos inscritos", insAct, insAnt)}
+      ${filaCmp("Certificados enviados", cerAct, cerAnt)}
+      ${filaCmp("Grupos aperturados", gAct.size, gAnt.size)}
+    </div>`;
+  }
+
+  // ── Gráfica de barras: cursos mejor → peor (inscritos del periodo) ──
+  function renderComparativaCursos() {
+    const box = document.getElementById("dash-chart");
+    const sub = document.getElementById("dash-chart-sub");
+    if (!box) return;
+
+    const alumnosP = filtrarPorPeriodo(alumnos);
+    if (sub) sub.textContent = periodoActual === "all" ? "Inscritos históricos por curso" : `Inscritos en los últimos ${periodoActual} días`;
+
+    const porCurso = new Map();
+    alumnosP.forEach(a => porCurso.set(a.cursoId, (porCurso.get(a.cursoId) || 0) + 1));
+
+    const filas = [...porCurso.entries()].map(([cid, n]) => {
+      const curso = cursos.find(c => c.id === cid);
+      const totales = alumnos.filter(a => a.cursoId === cid);
+      const conv = totales.length ? Math.round((totales.filter(a => a.estado === "email_enviado").length / totales.length) * 100) : 0;
+      return { nombre: curso ? curso.nombre : "Curso desconocido", n, conv };
+    }).sort((a, b) => b.n - a.n).slice(0, 8);
+
+    if (!filas.length) {
+      box.innerHTML = `<div class="empty"><div class="empty-text">Sin inscritos en este periodo</div><div class="empty-hint">Cambia el periodo arriba para ver más historia</div></div>`;
+      return;
+    }
+
+    const max = filas[0].n;
+    box.innerHTML = `<div class="dash-bars">${filas.map((f, i) => {
+      const cls = i === 0 ? "hb-best" : (i === filas.length - 1 && filas.length > 2 ? "hb-worst" : "");
+      const pct = Math.max(4, Math.round((f.n / max) * 100));
+      return `<div class="dash-bar-row ${cls}">
+        <div class="dash-bar-head">
+          <div class="dash-bar-name">${i + 1}. ${escapeHtml(f.nombre)}</div>
+          <div class="dash-bar-val">${f.n}<span> insc.</span></div>
         </div>
-        <div class="al-item-vend">${vend ? `<span>${escapeHtml(vend.nombre)}</span>` : '<span class="text-muted">—</span>'}</div>
-        <div class="al-item-date">${alFechaRelativa(a.creadoEn)}</div>
-        <div class="al-item-status">${chip}</div>
+        <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${pct}%"></div></div>
+        <div class="dash-bar-foot"><span class="dash-faltan">conversión ${f.conv}%</span></div>
       </div>`;
     }).join("")}</div>`;
   }
 
+  // ── Deep-links: llevar al problema exacto ──
+  function resaltarCursoEnApertura(cursoId) {
+    setTimeout(() => {
+      const fila = document.querySelector(`#apertura-container tr[data-curso-id="${cursoId}"]`);
+      if (fila) {
+        fila.scrollIntoView({ behavior: "smooth", block: "center" });
+        fila.classList.add("flash-row");
+        setTimeout(() => fila.classList.remove("flash-row"), 2600);
+      }
+    }, 180);
+  }
+
   document.getElementById("dash-atencion")?.addEventListener("click", (e) => {
     const row = e.target.closest("[data-goto]");
-    if (row) irASeccion(row.dataset.goto);
+    if (!row) return;
+    const goto = row.dataset.goto;
+    const cursoId = row.dataset.curso || null;
+
+    if (goto === "apertura") {
+      irASeccion("apertura");
+      if (cursoId) resaltarCursoEnApertura(cursoId);
+    } else if (goto === "link" && cursoId) {
+      // Directo al modal del curso, donde se carga el link de WhatsApp
+      irASeccion("cursos");
+      setTimeout(() => { try { editarCurso(cursoId); } catch (_) {} }, 120);
+    } else if (goto === "sinemail") {
+      irASeccion("alumnos");
+      setTimeout(() => {
+        const vistaLista = document.querySelector('#al-toggle button[data-vista="lista"]');
+        if (vistaLista && !vistaLista.classList.contains("active")) vistaLista.click();
+        const sel = document.getElementById("filtro-estado-alumnos");
+        if (sel) { sel.value = "sin_email"; sel.dispatchEvent(new Event("change")); }
+      }, 120);
+    } else {
+      irASeccion(goto);
+    }
   });
 
   // ═══════════════════════════════════════════════════════════
@@ -1568,7 +1745,14 @@
     const fecha = data.generadoEn
       ? (data.generadoEn.toDate ? data.generadoEn.toDate() : new Date(data.generadoEn)).toLocaleString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
       : "";
+
+    // Compatibilidad: análisis viejos traían mejor/peor; los nuevos traen funcionan[]/noFuncionan[]
+    let funcionan = Array.isArray(data.funcionan) ? data.funcionan : [];
+    let noFuncionan = Array.isArray(data.noFuncionan) ? data.noFuncionan : [];
+    if (!funcionan.length && data.mejor && data.mejor.curso) funcionan = [{ curso: data.mejor.curso, porque: data.mejor.porque || "" }];
+    if (!noFuncionan.length && data.peor && data.peor.curso) noFuncionan = [{ curso: data.peor.curso, porque: data.peor.porque || "" }];
     const recs = Array.isArray(data.recomendaciones) ? data.recomendaciones : [];
+
     const chipAccion = ac => {
       const a = (ac || "").toLowerCase();
       let cls = "chip-blue";
@@ -1578,25 +1762,50 @@
       else if (a.includes("diplomado") || a.includes("combo") || a.includes("paquete")) cls = "chip-gold";
       return `<span class="chip ${cls}">${escapeHtml(ac || "Acción")}</span>`;
     };
+
+    const itemCurso = (it, tipo) => `
+      <div class="ia-box ${tipo === "good" ? "ia-box-good" : "ia-box-bad"}">
+        <div class="ia-box-name">${escapeHtml(it.curso || "—")}</div>
+        ${it.datos ? `<div class="ia-datos">${escapeHtml(it.datos)}</div>` : ""}
+        <div class="ia-box-why">${escapeHtml(it.porque || "")}</div>
+      </div>`;
+
+    // ── Gráfica de conversión con DATOS REALES locales (no del modelo) ──
+    const topCursos = cursos
+      .map(c => {
+        const al = alumnos.filter(a => a.cursoId === c.id);
+        const conv = al.length ? Math.round((al.filter(a => a.estado === "email_enviado").length / al.length) * 100) : 0;
+        return { nombre: c.nombre, n: al.length, conv };
+      })
+      .filter(x => x.n > 0)
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8);
+    const chartHtml = topCursos.length ? `
+      <div class="ia-recs-title">Conversión por curso (datos reales)</div>
+      <div class="dash-bars ia-chart">${topCursos.map(t => {
+        const color = t.conv >= 70 ? "var(--green)" : (t.conv >= 40 ? "var(--gold)" : "var(--red)");
+        return `<div class="dash-bar-row">
+          <div class="dash-bar-head">
+            <div class="dash-bar-name">${escapeHtml(t.nombre)}</div>
+            <div class="dash-bar-val">${t.conv}<span>%</span></div>
+          </div>
+          <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.max(3, t.conv)}%;background:${color}"></div></div>
+          <div class="dash-bar-foot"><span class="dash-faltan">${t.n} inscritos históricos</span></div>
+        </div>`;
+      }).join("")}</div>` : "";
+
     box.innerHTML = `
       ${data.resumen ? `<div class="ia-resumen">${escapeHtml(data.resumen)}</div>` : ""}
-      <div class="ia-2col">
-        ${data.mejor ? `<div class="ia-box ia-box-good">
-          <div class="ia-box-tag">Mejor curso</div>
-          <div class="ia-box-name">${escapeHtml(data.mejor.curso || "—")}</div>
-          <div class="ia-box-why">${escapeHtml(data.mejor.porque || "")}</div>
-        </div>` : ""}
-        ${data.peor ? `<div class="ia-box ia-box-bad">
-          <div class="ia-box-tag">Requiere atención</div>
-          <div class="ia-box-name">${escapeHtml(data.peor.curso || "—")}</div>
-          <div class="ia-box-why">${escapeHtml(data.peor.porque || "")}</div>
-        </div>` : ""}
-      </div>
-      ${recs.length ? `<div class="ia-recs-title">Recomendaciones</div>
+      ${funcionan.length ? `<div class="ia-recs-title ia-t-good">Sí están funcionando</div>
+      <div class="ia-stack">${funcionan.map(it => itemCurso(it, "good")).join("")}</div>` : ""}
+      ${noFuncionan.length ? `<div class="ia-recs-title ia-t-bad">No están funcionando</div>
+      <div class="ia-stack">${noFuncionan.map(it => itemCurso(it, "bad")).join("")}</div>` : ""}
+      ${chartHtml}
+      ${recs.length ? `<div class="ia-recs-title">Recomendaciones (solo con justificación fuerte)</div>
       <div class="ia-recs">${recs.map(r => `
         <div class="ia-rec">
           <div class="ia-rec-head">${chipAccion(r.accion)}<span class="ia-rec-curso">${escapeHtml(r.curso || "")}</span></div>
-          ${r.detalle ? `<div class="ia-rec-detail">${escapeHtml(r.detalle)}</div>` : ""}
+          ${(r.justificacion || r.detalle) ? `<div class="ia-rec-detail">${escapeHtml(r.justificacion || r.detalle)}</div>` : ""}
         </div>`).join("")}</div>` : ""}
       ${fecha ? `<div class="ia-fecha">Actualizado el ${fecha}</div>` : ""}`;
   }
@@ -1930,6 +2139,7 @@
     if (fCurso) lista = lista.filter(a => a.cursoId === fCurso);
     if (fEstado === "email_enviado") lista = lista.filter(a => a.estado === "email_enviado");
     else if (fEstado === "pendiente") lista = lista.filter(a => a.estado !== "email_enviado");
+    else if (fEstado === "sin_email") lista = lista.filter(a => a.estado !== "email_enviado" && !(a.email && a.email.includes("@")));
     lista.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
 
     // ── Mini-stats ──
@@ -2481,7 +2691,7 @@
           ? estado.proxima.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
           : '<span class="text-muted">—</span>';
         const colorBar = estado.listo ? 'var(--green)' : (estado.pct > 50 ? 'var(--gold)' : 'var(--primary)');
-        return `<tr>
+        return `<tr data-curso-id="${curso.id}">
           <td>
             <strong>${escapeHtml(curso.nombre)}</strong>
             <div class="text-sm text-muted">${escapeHtml(curso.ponente || "Sin ponente")}</div>
