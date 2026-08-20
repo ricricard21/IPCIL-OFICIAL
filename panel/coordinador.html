@@ -2105,9 +2105,9 @@
     const btnHtml = btn.innerHTML;
     btn.disabled = true;
     btn.textContent = "Analizando...";
-    if (box) box.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">La IA está revisando tus cursos… puede tardar unos segundos.</div></div>`;
+    if (box) box.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">La IA está investigando el mercado en internet… tarda de 1 a 3 minutos. No cierres la pestaña.</div></div>`;
     try {
-      const fn = httpsCallable(functions, "analizarCursosIA");
+      const fn = httpsCallable(functions, "analizarCursosIA", { timeout: 300000 });
       const res = await fn({});
       const data = res && res.data ? res.data : null;
       if (data) renderIAResultado(data);
