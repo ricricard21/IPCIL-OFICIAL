@@ -311,7 +311,8 @@
   }
 
   /* ═══ Dashboard operativo del coordinador ═══ */
-  .dash-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .dash-2col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+  .dash-2col > .card { min-width: 0; }
   @media (max-width: 900px) { .dash-2col { grid-template-columns: 1fr; } }
 
   /* Requieren atención */
@@ -484,7 +485,7 @@
   .dash-dec.is-click:hover { background: var(--surface-hover); }
   .dash-dec-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
   .dash-dec-head .chip { flex-shrink: 0; }
-  .dash-dec-curso { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dash-dec-curso { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
   .dash-dec-detalle { font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 5px; }
   @media (max-width: 700px) {
     .dash-apt { flex-wrap: wrap; }
