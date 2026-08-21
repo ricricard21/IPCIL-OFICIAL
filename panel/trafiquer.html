@@ -29,13 +29,35 @@
     .tf-refresh { display: flex; align-items: center; gap: 10px; }
     .tf-updated { font-size: 11px; color: var(--muted-light); }
 
-    .tf-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 22px; }
+    .tf-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 16px; }
     .tf-sum { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: center; }
     .tf-sum-val { font-size: 24px; font-weight: 800; }
     .tf-sum-lbl { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 3px; }
     .tf-sum.is-red .tf-sum-val { color: var(--red); }
     .tf-sum.is-yellow .tf-sum-val { color: var(--yellow); }
     .tf-sum.is-blue .tf-sum-val { color: var(--primary); }
+
+    /* ── Barra de filtros ── */
+    .tf-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .tf-fchips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tf-fchip {
+      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+      font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 7px 13px;
+      border-radius: 999px; cursor: pointer; transition: all var(--t-fast);
+    }
+    .tf-fchip:hover { border-color: var(--primary); color: var(--primary); }
+    .tf-fchip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .tf-sel {
+      font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text);
+      border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+      padding: 7px 10px; max-width: 210px; cursor: pointer;
+    }
+    .tf-orden { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-left: auto; }
+    .tf-orden button {
+      border: none; background: var(--surface); color: var(--muted); font-family: inherit;
+      font-size: 11.5px; font-weight: 700; padding: 8px 12px; cursor: pointer; transition: all var(--t-fast);
+    }
+    .tf-orden button.active { background: var(--primary); color: #fff; }
 
     .tf-consultora { margin-bottom: 22px; }
     .tf-consultora-h {
@@ -48,11 +70,17 @@
     .tf-card {
       background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line);
       border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow-xs);
+      transition: opacity var(--t-fast);
     }
     .tf-card.sev-0, .tf-card.sev-1 { border-left-color: var(--red); }
     .tf-card.sev-2 { border-left-color: var(--yellow); }
+    .tf-card.atendida { opacity: 0.55; border-left-color: var(--green); }
     .tf-card-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .tf-card-curso { font-size: 14px; font-weight: 700; color: var(--text); min-width: 0; }
+    .tf-cons-mini {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--primary); background: var(--primary-soft); border-radius: 6px; padding: 3px 8px; flex-shrink: 0;
+    }
     .tf-card-dias { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--muted); white-space: nowrap; }
     .tf-nums { display: flex; align-items: baseline; gap: 6px; margin: 8px 0 6px; }
     .tf-now { font-size: 19px; font-weight: 800; color: var(--text); }
@@ -61,16 +89,46 @@
     .tf-min { font-size: 11px; font-weight: 700; color: var(--muted); margin-left: 4px; }
     .tf-detail { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
 
+    .tf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .tf-att-btn {
+      border: 1px solid var(--line); background: var(--surface); color: var(--primary);
+      font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 6px 13px;
+      border-radius: 999px; cursor: pointer; transition: all var(--t-fast);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .tf-att-btn:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .tf-att-btn:disabled { opacity: 0.5; cursor: wait; }
+    .tf-att-info { font-size: 11.5px; font-weight: 700; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+    .tf-att-undo {
+      border: none; background: none; color: var(--muted); font-family: inherit;
+      font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;
+    }
+    .tf-att-undo:hover { color: var(--red); }
+
+    /* ── Baja señal ── */
+    .tf-bs-toggle {
+      width: 100%; border: 1px dashed var(--line-strong); background: none; border-radius: var(--radius);
+      color: var(--muted); font-family: inherit; font-size: 12.5px; font-weight: 700;
+      padding: 13px; cursor: pointer; margin-top: 8px; transition: all var(--t-fast);
+    }
+    .tf-bs-toggle:hover { border-color: var(--primary); color: var(--primary); }
+    .tf-bs { margin-top: 14px; }
+    .tf-bs .tf-card { border-left-color: var(--line-strong); opacity: 0.75; padding: 11px 14px; }
+    .tf-bs .tf-card .tf-nums { margin: 5px 0 3px; }
+    .tf-bs-note { font-size: 11.5px; color: var(--muted-light); margin: 8px 2px 12px; line-height: 1.5; }
+
     .tf-ok { text-align: center; padding: 60px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
     .tf-ok svg { width: 46px; height: 46px; color: var(--green); }
     .tf-ok-t { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 12px; }
     .tf-ok-s { font-size: 13px; color: var(--muted); margin-top: 5px; }
 
     @media (max-width: 560px) {
-      .tf-summary { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .tf-summary { gap: 8px; }
       .tf-sum { padding: 11px 8px; }
       .tf-sum-val { font-size: 20px; }
       .tf-card-dias { margin-left: 0; width: 100%; }
+      .tf-orden { margin-left: 0; }
+      .tf-sel { max-width: 100%; }
     }
   </style>
 </head>
@@ -111,7 +169,23 @@
     <div class="tf-summary">
       <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
       <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
-      <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-consultoras">0</div><div class="tf-sum-lbl">Consultoras</div></div>
+      <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-consultoras">0</div><div class="tf-sum-lbl">Con pendientes</div></div>
+    </div>
+
+    <div class="tf-tools">
+      <div class="tf-fchips" id="tf-fchips">
+        <button class="tf-fchip active" data-tipo="todos">Todos</button>
+        <button class="tf-fchip" data-tipo="0">Urgente HOY</button>
+        <button class="tf-fchip" data-tipo="1">Meter presupuesto</button>
+        <button class="tf-fchip" data-tipo="2">Empujón final</button>
+      </div>
+      <select class="tf-sel" id="tf-sel-cons">
+        <option value="todas">Todas las consultoras</option>
+      </select>
+      <div class="tf-orden" id="tf-orden">
+        <button class="active" data-orden="consultora">Por consultora</button>
+        <button data-orden="prioridad">Por prioridad</button>
+      </div>
     </div>
 
     <div id="tf-contenido">
@@ -122,11 +196,20 @@
 <script type="module">
   import {
     db,
-    requireRole, cerrarSesion, escapeHtml,
-    doc, getDoc, getDocs, collection, query, where
+    requireRole, cerrarSesion, escapeHtml, toast,
+    doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where,
+    onSnapshot, serverTimestamp
   } from "./firebase-config.js";
 
   let usuario = null;
+  let _problemas = [];        // cache de problemas calculados (todas las consultoras)
+  let _bajaSenal = [];        // cursos con poca señal (colapsados)
+  let _acciones = new Map();  // accionId -> data (marcadas como atendidas, en tiempo real)
+  let _fTipo = "todos";
+  let _fCons = "todas";
+  let _orden = "consultora";
+  let _verBS = false;
+  let _unsubAcciones = null;
 
   // ═══════════════ Motor de proyección (mismo del panel coordinador) ═══════════════
   function historicoAperturas(alumnos) {
@@ -189,7 +272,7 @@
     return Math.max(proy, actuales);
   }
 
-  // Decisiones de UNA consultora: SOLO problemas de presupuesto/campaña
+  // Problemas de UNA consultora (solo presupuesto/campaña)
   function problemasDe(cursos, alumnos) {
     const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
     const en14 = new Date(); en14.setDate(en14.getDate() + 14);
@@ -206,7 +289,7 @@
     });
 
     const hist = historicoAperturas(alumnos);
-    const problemas = [];
+    const out = [];
 
     combos.forEach((count, k) => {
       const idx = k.indexOf("|");
@@ -214,31 +297,76 @@
       const curso = cursos.find(c => c.id === cid);
       if (!curso) return;
       const minimo = curso.minimoAlumnos || 8;
-      if (count >= minimo) return; // cupo alcanzado, no es problema
+      if (count >= minimo) return;
 
       const d = new Date(fecha + "T00:00:00");
       const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
       const proy = estimar(hist, alumnos, cid, count, dias);
-      if (proy >= minimo) return; // proyección dice que llega solo
+      if (proy >= minimo) return;
 
-      const base = { curso: curso.nombre, count, proy, minimo, dias, fecha };
+      // Baja señal: casi sin inscritos y proyección plana → no hay campaña real que salvar
+      const bajaSenal = count < 3 && proy < Math.ceil(minimo * 0.5);
+
+      const base = { cursoId: cid, curso: curso.nombre, count, proy, minimo, dias, fecha, bajaSenal };
       if (proy < Math.ceil(minimo * 0.75)) {
         if (dias <= 3) {
-          problemas.push({ ...base, sev: 0, accion: "Urgente HOY", chip: "chip-red",
+          out.push({ ...base, sev: 0, accion: "Urgente HOY", chip: "chip-red",
             detalle: "Súbele fuerte a Ads hoy mismo o avisa a coordinación para recorrer/cancelar la fecha." });
         } else {
-          problemas.push({ ...base, sev: 1, accion: "Meter presupuesto", chip: "chip-red",
+          out.push({ ...base, sev: 1, accion: "Meter presupuesto", chip: "chip-red",
             detalle: "Aumenta presupuesto de Ads para este curso. Si en 2 días no repunta, avisa a coordinación." });
         }
       } else {
         const faltan = minimo - proy;
-        problemas.push({ ...base, sev: 2, accion: "Empujón final", chip: "chip-yellow",
+        out.push({ ...base, sev: 2, accion: "Empujón final", chip: "chip-yellow",
           detalle: `Según proyección faltarían ~${faltan}: un empujón ligero de Ads + remarketing cierra el grupo.` });
       }
     });
 
-    problemas.sort((a, b) => a.sev - b.sev || a.dias - b.dias);
-    return problemas;
+    return out;
+  }
+
+  // ═══════════════ Atendidas (compartidas entre trafiquers, tiempo real) ═══════════════
+  const accionId = p => `${p.consultoraId}_${p.cursoId}_${p.fecha}`;
+
+  function suscribirAcciones() {
+    if (_unsubAcciones) _unsubAcciones();
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const q = query(collection(db, "accionesTrafico"), where("fecha", ">=", hoyMX));
+    _unsubAcciones = onSnapshot(q, snap => {
+      _acciones = new Map();
+      snap.docs.forEach(d => _acciones.set(d.id, d.data()));
+      render();
+    }, err => console.warn("acciones:", err));
+  }
+
+  async function marcarAtendida(p) {
+    try {
+      await setDoc(doc(db, "accionesTrafico", accionId(p)), {
+        consultoraId: p.consultoraId,
+        cursoId: p.cursoId,
+        fecha: p.fecha,
+        curso: p.curso,
+        accion: p.accion,
+        atendidoPor: usuario.uid,
+        atendidoPorNombre: usuario.nombre || usuario.email || "Trafiquer",
+        atendidoEn: serverTimestamp(),
+      });
+      toast("Marcada como atendida", "success");
+    } catch (e) {
+      console.error(e);
+      toast("No se pudo marcar", "error");
+    }
+  }
+
+  async function desmarcar(id) {
+    try {
+      await deleteDoc(doc(db, "accionesTrafico", id));
+      toast("Desmarcada", "success");
+    } catch (e) {
+      console.error(e);
+      toast("No se pudo desmarcar", "error");
+    }
   }
 
   // ═══════════════ Carga de datos ═══════════════
@@ -256,7 +384,7 @@
       try {
         const snap = await getDoc(doc(db, "consultoras", id));
         if (snap.exists()) out.push({ id: snap.id, ...snap.data() });
-      } catch (_) { /* sin acceso a esa consultora */ }
+      } catch (_) { /* sin acceso */ }
     }
     return out;
   }
@@ -267,10 +395,7 @@
 
     try {
       const consultoras = await consultorasAsignadas();
-      document.getElementById("sum-consultoras").textContent = consultoras.length;
-
-      const bloques = [];
-      let urgentes = 0, empujones = 0;
+      const problemas = [], bs = [];
 
       for (const cons of consultoras) {
         try {
@@ -280,68 +405,196 @@
           ]);
           const cursos = cursosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
           const alumnos = alumnosSnap.docs.map(d => d.data());
-          const problemas = problemasDe(cursos, alumnos);
-          if (!problemas.length) continue;
-
-          urgentes += problemas.filter(p => p.sev <= 1).length;
-          empujones += problemas.filter(p => p.sev === 2).length;
-
-          bloques.push(`
-            <section class="tf-consultora">
-              <div class="tf-consultora-h">${escapeHtml(cons.nombre || cons.id)} <span class="n">· ${problemas.length} campaña${problemas.length === 1 ? "" : "s"}</span></div>
-              ${problemas.map(p => {
-                const f = new Date(p.fecha + "T00:00:00");
-                const fTxt = isNaN(f) ? p.fecha : f.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
-                return `<div class="tf-card sev-${p.sev}">
-                  <div class="tf-card-head">
-                    <span class="chip ${p.chip}">${escapeHtml(p.accion)}</span>
-                    <span class="tf-card-curso">${escapeHtml(p.curso)}</span>
-                    <span class="tf-card-dias">Abre ${escapeHtml(fTxt)} · en ${p.dias} día${p.dias === 1 ? "" : "s"}</span>
-                  </div>
-                  <div class="tf-nums">
-                    <span class="tf-now">${p.count}</span>
-                    <span class="tf-arrow">→</span>
-                    <span class="tf-est">${p.proy}</span>
-                    <span class="tf-min">proyectados · mín ${p.minimo}</span>
-                  </div>
-                  <div class="tf-detail">${escapeHtml(p.detalle)}</div>
-                </div>`;
-              }).join("")}
-            </section>`);
+          problemasDe(cursos, alumnos).forEach(p => {
+            const item = { ...p, consultoraId: cons.id, consultoraNombre: cons.nombre || cons.id };
+            (p.bajaSenal ? bs : problemas).push(item);
+          });
         } catch (err) {
           console.warn("Consultora sin acceso o con error:", cons.id, err);
         }
       }
 
-      document.getElementById("sum-urgente").textContent = urgentes;
-      document.getElementById("sum-empujon").textContent = empujones;
+      _problemas = problemas;
+      _bajaSenal = bs;
+      poblarSelectConsultoras();
       document.getElementById("tf-updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-
-      if (!bloques.length) {
-        cont.innerHTML = `<div class="tf-ok">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <div class="tf-ok-t">Todo en verde</div>
-          <div class="tf-ok-s">Ninguna apertura de los próximos 14 días necesita presupuesto extra según la proyección.</div>
-        </div>`;
-        return;
-      }
-      cont.innerHTML = bloques.join("");
+      render();
     } catch (err) {
       console.error(err);
       cont.innerHTML = `<div class="empty"><div class="empty-text">No se pudieron cargar los datos</div><div class="empty-hint">Revisa tu conexión o avisa al administrador.</div></div>`;
     }
   }
 
+  function poblarSelectConsultoras() {
+    const sel = document.getElementById("tf-sel-cons");
+    const actual = sel.value;
+    const nombres = new Map();
+    [..._problemas, ..._bajaSenal].forEach(p => nombres.set(p.consultoraId, p.consultoraNombre));
+    sel.innerHTML = `<option value="todas">Todas las consultoras</option>` +
+      [...nombres.entries()]
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .map(([id, n]) => `<option value="${id}">${escapeHtml(n)}</option>`).join("");
+    if ([...nombres.keys()].includes(actual) || actual === "todas") sel.value = actual;
+    else { sel.value = "todas"; _fCons = "todas"; }
+  }
+
+  // ═══════════════ Render ═══════════════
+  function pasaFiltros(p) {
+    if (_fCons !== "todas" && p.consultoraId !== _fCons) return false;
+    if (_fTipo !== "todos" && String(p.sev) !== _fTipo) return false;
+    return true;
+  }
+
+  function cardHtml(p, conConsultora) {
+    const att = _acciones.get(accionId(p));
+    const f = new Date(p.fecha + "T00:00:00");
+    const fTxt = isNaN(f) ? p.fecha : f.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
+    const attTxt = att
+      ? (() => {
+          const t = att.atendidoEn?.toDate ? att.atendidoEn.toDate() : null;
+          const hora = t ? t.toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+          return `<span class="tf-att-info">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Atendida por ${escapeHtml(att.atendidoPorNombre || "Trafiquer")}${hora ? " · " + hora : ""}
+            </span>` +
+            (att.atendidoPor === usuario.uid
+              ? `<button class="tf-att-undo" data-desatender="${accionId(p)}">Desmarcar</button>` : "");
+        })()
+      : `<button class="tf-att-btn" data-atender="${accionId(p)}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Marcar atendida
+        </button>`;
+
+    return `<div class="tf-card sev-${p.sev}${att ? " atendida" : ""}">
+      <div class="tf-card-head">
+        <span class="chip ${p.chip}">${escapeHtml(p.accion)}</span>
+        ${conConsultora ? `<span class="tf-cons-mini">${escapeHtml(p.consultoraNombre)}</span>` : ""}
+        <span class="tf-card-curso">${escapeHtml(p.curso)}</span>
+        <span class="tf-card-dias">Abre ${escapeHtml(fTxt)} · en ${p.dias} día${p.dias === 1 ? "" : "s"}</span>
+      </div>
+      <div class="tf-nums">
+        <span class="tf-now">${p.count}</span>
+        <span class="tf-arrow">→</span>
+        <span class="tf-est">${p.proy}</span>
+        <span class="tf-min">proyectados · mín ${p.minimo}</span>
+      </div>
+      <div class="tf-detail">${escapeHtml(p.detalle)}</div>
+      <div class="tf-card-foot">${attTxt}</div>
+    </div>`;
+  }
+
+  function render() {
+    const cont = document.getElementById("tf-contenido");
+    if (!cont) return;
+
+    const activos = _problemas.filter(p => !_acciones.get(accionId(p)));
+    document.getElementById("sum-urgente").textContent = activos.filter(p => p.sev <= 1).length;
+    document.getElementById("sum-empujon").textContent = activos.filter(p => p.sev === 2).length;
+    document.getElementById("sum-consultoras").textContent = new Set(activos.map(p => p.consultoraId)).size;
+
+    const visibles = _problemas.filter(pasaFiltros);
+    const bsVisibles = _bajaSenal.filter(pasaFiltros);
+
+    let html = "";
+
+    if (!visibles.length && !bsVisibles.length) {
+      html = `<div class="tf-ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div class="tf-ok-t">Todo en verde</div>
+        <div class="tf-ok-s">Nada pendiente con los filtros actuales.</div>
+      </div>`;
+      cont.innerHTML = html;
+      return;
+    }
+
+    const esAtt = p => !!_acciones.get(accionId(p));
+
+    if (_orden === "prioridad") {
+      // Lista plana: primero lo más urgente (menos días, más brecha), atendidas al final
+      const orden = [...visibles].sort((a, b) =>
+        (esAtt(a) - esAtt(b)) || (a.sev - b.sev) || (a.dias - b.dias) || ((b.minimo - b.proy) - (a.minimo - a.proy))
+      );
+      html += orden.map(p => cardHtml(p, true)).join("");
+    } else {
+      // Agrupado por consultora, atendidas al final de cada grupo
+      const grupos = new Map();
+      visibles.forEach(p => {
+        const g = grupos.get(p.consultoraId) || { nombre: p.consultoraNombre, items: [] };
+        g.items.push(p);
+        grupos.set(p.consultoraId, g);
+      });
+      const ordenados = [...grupos.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
+      html += ordenados.map(g => {
+        g.items.sort((a, b) => (esAtt(a) - esAtt(b)) || (a.sev - b.sev) || (a.dias - b.dias));
+        return `<section class="tf-consultora">
+          <div class="tf-consultora-h">${escapeHtml(g.nombre)} <span class="n">· ${g.items.length} campaña${g.items.length === 1 ? "" : "s"}</span></div>
+          ${g.items.map(p => cardHtml(p, false)).join("")}
+        </section>`;
+      }).join("");
+    }
+
+    // ── Baja señal (colapsada) ──
+    if (bsVisibles.length) {
+      html += `<button class="tf-bs-toggle" id="tf-bs-toggle">${_verBS ? "Ocultar" : "Ver"} baja señal (${bsVisibles.length}) — cursos casi sin inscritos ni campaña real ${_verBS ? "▴" : "▾"}</button>`;
+      if (_verBS) {
+        html += `<div class="tf-bs">
+          <div class="tf-bs-note">Cursos con menos de 3 inscritos y proyección plana: aquí meter presupuesto rara vez salva la fecha. Prioriza los de arriba; estos son más bien tema de coordinación (recorrer, cancelar o relanzar con otra oferta).</div>
+          ${bsVisibles.sort((a, b) => a.dias - b.dias).map(p => cardHtml(p, _orden === "prioridad" || _fCons === "todas")).join("")}
+        </div>`;
+      }
+    }
+
+    cont.innerHTML = html;
+  }
+
+  // ═══════════════ Eventos ═══════════════
+  document.getElementById("tf-contenido").addEventListener("click", (e) => {
+    const bsT = e.target.closest("#tf-bs-toggle");
+    if (bsT) { _verBS = !_verBS; render(); return; }
+
+    const at = e.target.closest("[data-atender]");
+    if (at) {
+      const id = at.dataset.atender;
+      const p = [..._problemas, ..._bajaSenal].find(x => accionId(x) === id);
+      if (p) { at.disabled = true; marcarAtendida(p); }
+      return;
+    }
+    const des = e.target.closest("[data-desatender]");
+    if (des) desmarcar(des.dataset.desatender);
+  });
+
+  document.getElementById("tf-fchips").addEventListener("click", (e) => {
+    const b = e.target.closest(".tf-fchip");
+    if (!b) return;
+    _fTipo = b.dataset.tipo;
+    document.querySelectorAll(".tf-fchip").forEach(x => x.classList.toggle("active", x === b));
+    render();
+  });
+
+  document.getElementById("tf-sel-cons").addEventListener("change", (e) => {
+    _fCons = e.target.value;
+    render();
+  });
+
+  document.getElementById("tf-orden").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    _orden = b.dataset.orden;
+    document.querySelectorAll("#tf-orden button").forEach(x => x.classList.toggle("active", x === b));
+    render();
+  });
+
+  document.getElementById("btn-refrescar").addEventListener("click", cargar);
+  document.getElementById("btn-salir").addEventListener("click", cerrarSesion);
+
   // ═══════════════ Init ═══════════════
   (async () => {
     usuario = await requireRole("trafiquer");
     document.getElementById("tf-nombre").textContent = usuario.nombre || usuario.email || "Trafiquer";
+    suscribirAcciones();
     await cargar();
-    setInterval(cargar, 30 * 60 * 1000); // refresco cada 30 min
+    setInterval(cargar, 30 * 60 * 1000);
   })();
-
-  document.getElementById("btn-refrescar").addEventListener("click", cargar);
-  document.getElementById("btn-salir").addEventListener("click", cerrarSesion);
 </script>
 </body>
 </html>
