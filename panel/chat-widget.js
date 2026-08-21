@@ -180,8 +180,30 @@ function inyectarCSS() {
   .icw-send:disabled { opacity: 0.5; cursor: wait; }
   .icw-send svg { width: 17px; height: 17px; }
 
+  /* Botón integrado en el sidebar (vendedor / coordinador / admin) */
+  .icw-strig {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    margin-bottom: 10px; padding: 11px 13px; position: relative;
+    border: 1px solid var(--line, #e2e8f0); border-radius: 12px;
+    background: var(--surface, #fff); color: var(--primary, #0b4ea2);
+    font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .icw-strig:hover { background: var(--primary-soft, #eaf1fa); border-color: var(--primary, #0b4ea2); transform: translateY(-1px); }
+  .icw-strig svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .icw-strig-badge {
+    margin-left: auto; min-width: 19px; height: 19px; background: #dc2626; color: #fff;
+    border-radius: 999px; font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; padding: 0 5px;
+  }
+  body.icw-sbmode .icw-burbuja { display: none; }
+
+  @media (max-width: 900px) {
+    body.icw-sbmode .icw-burbuja { display: flex; }
+    body.icw-sbmode .icw-strig { display: none; }
+  }
   @media (max-width: 520px) {
-    .icw-panel { right: 8px; left: 8px; bottom: 84px; width: auto; height: 76vh; }
+    .icw-panel { right: 8px !important; left: 8px !important; bottom: 84px !important; width: auto; height: 76vh; }
     .icw-burbuja { right: 16px; bottom: 16px; }
   }`;
   const st = document.createElement("style");
@@ -220,6 +242,33 @@ function construirDOM() {
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 90) + "px";
   });
+}
+
+function montarTriggerSidebar() {
+  const foot = document.querySelector(".sidebar .sidebar-footer") || document.querySelector(".sidebar-footer");
+  if (!foot) return; // sin sidebar (ej. trafiquer): se queda la burbuja flotante
+
+  const btn = document.createElement("button");
+  btn.className = "icw-strig";
+  btn.id = "icw-strig";
+  btn.type = "button";
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+    <span>Chat interno</span>
+    <span class="icw-strig-badge" id="icw-strig-badge" style="display:none">0</span>`;
+  foot.insertBefore(btn, foot.firstChild);
+  btn.addEventListener("click", togglePanel);
+  document.body.classList.add("icw-sbmode");
+
+  // Anclar el panel junto al sidebar, abajo a la izquierda
+  const sb = document.querySelector(".sidebar");
+  const w = sb ? Math.round(sb.getBoundingClientRect().width) : 0;
+  if (w >= 120 && w <= 340 && window.innerWidth > 900) {
+    const p = document.getElementById("icw-panel");
+    p.style.left = (w + 14) + "px";
+    p.style.right = "auto";
+    p.style.bottom = "18px";
+  }
 }
 
 function togglePanel() {
@@ -411,6 +460,11 @@ function actualizarBadge() {
     b.style.display = n ? "flex" : "none";
     b.textContent = n;
   }
+  const sb = document.getElementById("icw-strig-badge");
+  if (sb) {
+    sb.style.display = n ? "flex" : "none";
+    sb.textContent = n;
+  }
   document.title = n ? `(•) ${tituloOriginal}` : tituloOriginal;
 }
 
@@ -472,6 +526,7 @@ onAuthStateChanged(auth, async (user) => {
 
     inyectarCSS();
     construirDOM();
+    montarTriggerSidebar();
     await construirCanales();
     escucharMetas();
   } catch (e) {
