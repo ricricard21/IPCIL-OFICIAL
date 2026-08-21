@@ -72,6 +72,8 @@
         <a href="#nosotros">Nosotros</a>
         <a href="#metodologia">Metodología</a>
         <a href="#areas">Áreas</a>
+        <a href="padron.html">Padrón</a>
+        <a href="empleadores.html">Empleadores</a>
         <a href="#contacto">Contacto</a>
         <a href="panel/" class="nav-btn">Acceder al Panel</a>
       </nav>
@@ -107,13 +109,13 @@
 
         <div class="hero-stats">
           <div class="stat reveal">
-            <span class="stat-number counter" data-target="50">0</span>
-            <span class="stat-text">Empresas aliadas</span>
+            <span class="stat-number" id="stat-certificados">6,500+</span>
+            <span class="stat-text">Certificados emitidos</span>
           </div>
 
           <div class="stat reveal">
-            <span class="stat-number counter" data-target="7">0</span>
-            <span class="stat-text">Áreas estratégicas</span>
+            <span class="stat-number" id="stat-consultoras">20+</span>
+            <span class="stat-text">Consultoras aliadas</span>
           </div>
 
           <div class="stat reveal">
@@ -123,7 +125,7 @@
 
           <div class="stat reveal">
             <span class="stat-number">24/7</span>
-            <span class="stat-text">Validación institucional</span>
+            <span class="stat-text">Verificación pública</span>
           </div>
         </div>
       </div>
@@ -230,13 +232,15 @@
               type="text"
               id="folio"
               name="folio"
-              placeholder="Ej. IPCI-2026-00015"
+              placeholder="Ej. IPCI-ODNT-2026-0001"
             />
             <button type="submit" class="btn-primary btn-full">Validar certificado</button>
           </form>
 
           <p class="validate-note">
-            Sistema preparado para consulta digital, autenticidad documental y validación institucional.
+            Cada certificado IPCI cuenta con folio único, código QR y registro en el
+            <a href="padron.html" style="color:inherit;font-weight:700">Padrón Público de Profesionales</a>.
+            Consulta el <a href="reglamento.html" style="color:inherit;font-weight:700">Reglamento de Certificación</a>.
           </p>
         </div>
       </div>
@@ -500,6 +504,9 @@
           <a href="#nosotros">Nosotros</a>
           <a href="#metodologia">Metodología</a>
           <a href="#areas">Áreas</a>
+          <a href="padron.html">Padrón Público</a>
+          <a href="empleadores.html">Para Empleadores</a>
+          <a href="reglamento.html">Reglamento de Certificación</a>
           <a href="#contacto">Contacto</a>
         </div>
       </div>
@@ -521,5 +528,27 @@
   </footer>
 
   <script src="script.js"></script>
+<script type="module">
+  // Contadores institucionales en vivo (si Firestore no responde, quedan los valores base)
+  try {
+    const { db, collection, getDocs, getCountFromServer } = await import("./panel/firebase-config.js");
+    getCountFromServer(collection(db, "certificados")).then(s => {
+      const n = s.data().count;
+      if (n > 0) document.getElementById("stat-certificados").textContent = n.toLocaleString("es-MX");
+    }).catch(() => {});
+    getDocs(collection(db, "consultoras")).then(s => {
+      const n = s.docs.filter(d => d.data().activo !== false).length;
+      if (n > 0) document.getElementById("stat-consultoras").textContent = n;
+    }).catch(() => {});
+  } catch (_) {}
+
+  // El validador del inicio manda al sistema real
+  const vf = document.getElementById("validateForm");
+  if (vf) vf.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = (document.getElementById("folio").value || "").trim().toUpperCase();
+    if (f) location.href = "panel/validar.html?folio=" + encodeURIComponent(f);
+  });
+</script>
 </body>
 </html>

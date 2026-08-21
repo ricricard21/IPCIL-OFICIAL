@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Para Empleadores — Verifica una certificación IPCI</title>
+  <meta name="description" content="Guía para empleadores y reclutadores: cómo verificar en segundos la autenticidad y vigencia de una certificación IPCI mediante código QR, folio institucional o el Padrón Público de Profesionales.">
+  <link rel="canonical" href="https://ipcil.org/empleadores.html">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Para Empleadores — Verifica una certificación IPCI">
+  <meta property="og:description" content="Verifica en segundos la autenticidad y vigencia de una certificación IPCI: código QR, folio institucional o Padrón Público.">
+  <meta property="og:url" content="https://ipcil.org/empleadores.html">
+  <meta property="og:image" content="https://ipcil.org/assets/logo.jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0b4ea2; --primary-dark: #093f85; --primary-soft: #eaf1fa;
+      --gold: #b08d2e; --gold-soft: #faf6ea;
+      --text: #16324f; --muted: #64748b; --line: #e2e8f0; --line-soft: #eef2f7;
+      --bg: #f4f7fb; --surface: #ffffff; --green: #15803d; --green-soft: #dcfce7;
+      --radius: 14px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); }
+    a { color: var(--primary); }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .brand img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+    .brand-t { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.15; }
+    .brand-s { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .top-link { font-size: 12.5px; font-weight: 700; color: #fff; background: var(--primary); padding: 10px 18px; border-radius: 999px; text-decoration: none; }
+    .top-link:hover { background: var(--primary-dark); }
+
+    .hero { text-align: center; padding: 50px 18px 12px; max-width: 780px; margin: 0 auto; }
+    .kicker { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
+    .hero h1 { font-size: 30px; font-weight: 800; margin-top: 10px; }
+    .hero p { font-size: 14.5px; color: var(--muted); margin-top: 12px; line-height: 1.7; }
+
+    .wrap { max-width: 960px; margin: 0 auto; padding: 30px 18px 60px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 22px; }
+    .card-num { width: 34px; height: 34px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; margin-bottom: 14px; }
+    .card h3 { font-size: 15px; font-weight: 800; }
+    .card p { font-size: 13px; color: var(--muted); line-height: 1.65; margin-top: 8px; }
+    .card a.cta { display: inline-block; margin-top: 12px; font-size: 12.5px; font-weight: 700; text-decoration: none; }
+
+    .banda { margin-top: 40px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border-radius: var(--radius); padding: 30px 28px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+    .banda h2 { font-size: 19px; font-weight: 800; }
+    .banda p { font-size: 13.5px; opacity: 0.92; margin-top: 6px; line-height: 1.65; max-width: 560px; }
+    .banda .btn { margin-left: auto; background: #fff; color: var(--primary); font-weight: 800; font-size: 13.5px; padding: 13px 24px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+
+    .que { margin-top: 46px; }
+    .que h2 { font-size: 21px; font-weight: 800; text-align: center; }
+    .que-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 22px; }
+    .que-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; gap: 14px; }
+    .que-item svg { width: 22px; height: 22px; color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+    .que-item b { font-size: 13.5px; display: block; }
+    .que-item span { font-size: 12.5px; color: var(--muted); line-height: 1.6; display: block; margin-top: 4px; }
+
+    .contacto { margin-top: 46px; background: var(--gold-soft); border: 1px solid #e8dcb8; border-radius: var(--radius); padding: 24px 26px; text-align: center; }
+    .contacto h3 { font-size: 16px; font-weight: 800; color: #7a6120; }
+    .contacto p { font-size: 13px; color: #8a6d23; margin-top: 8px; line-height: 1.65; }
+    .contacto a { color: #7a6120; font-weight: 800; }
+
+    footer { text-align: center; padding: 34px 18px 40px; font-size: 12px; color: var(--muted); }
+    footer strong { color: var(--primary); }
+    footer a { color: var(--muted); }
+
+    @media (max-width: 760px) {
+      .grid3, .que-grid { grid-template-columns: 1fr; }
+      .banda .btn { margin-left: 0; }
+      .hero h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.jpeg" alt="IPCI">
+      <div>
+        <div class="brand-t">IPCI · Para Empleadores</div>
+        <div class="brand-s">Instituto Profesional de Certificación Industrial Latinoamericano</div>
+      </div>
+    </a>
+    <a class="top-link" href="padron.html">Consultar el Padrón</a>
+  </header>
+
+  <section class="hero">
+    <div class="kicker">Verificación para reclutadores y empresas</div>
+    <h1>¿Te presentaron una certificación IPCI?<br>Verifícala en menos de un minuto.</h1>
+    <p>Toda credencial emitida bajo el aval del Instituto IPCI es rastreable y a prueba de falsificaciones: cuenta con folio único institucional, código QR de verificación, vigencia definida y registro en un padrón público consultable en tiempo real.</p>
+  </section>
+
+  <div class="wrap">
+    <div class="grid3">
+      <div class="card">
+        <div class="card-num">1</div>
+        <h3>Escanea el código QR</h3>
+        <p>Cada certificado impreso o digital incluye un código QR. Escanéalo con cualquier teléfono: te llevará directo al registro institucional del documento, con nombre, curso, folio y vigencia.</p>
+      </div>
+      <div class="card">
+        <div class="card-num">2</div>
+        <h3>Valida el folio</h3>
+        <p>¿Tienes el documento sin QR a la mano? Ingresa el folio (formato IPCI-XXXX-AAAA-0000) en el validador institucional y confirma su autenticidad al instante.</p>
+        <a class="cta" href="panel/validar.html">Ir al validador →</a>
+      </div>
+      <div class="card">
+        <div class="card-num">3</div>
+        <h3>Consulta el Padrón</h3>
+        <p>Con un solo folio del candidato obtienes su expediente completo: todas sus certificaciones IPCI, fechas de emisión y estado de vigencia de cada una.</p>
+        <a class="cta" href="padron.html">Ir al Padrón Público →</a>
+      </div>
+    </div>
+
+    <div class="banda">
+      <div>
+        <h2>Padrón Público de Profesionales Certificados</h2>
+        <p>El registro abierto del Instituto: solicita al candidato el folio de cualquiera de sus certificados y consulta su trayectoria completa de certificación, verificada en tiempo real contra el registro institucional.</p>
+      </div>
+      <a class="btn" href="padron.html">Consultar ahora</a>
+    </div>
+
+    <div class="que">
+      <h2>Qué respalda una certificación IPCI</h2>
+      <div class="que-grid">
+        <div class="que-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          <div><b>Folio único institucional</b><span>Numeración controlada por consultora y año. Un folio, un profesional, un registro — sin duplicados posibles.</span></div>
+        </div>
+        <div class="que-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14h1v1h-1zM14 20h1v1h-1zM20 20h1v1h-1z"/></svg>
+          <div><b>Verificación digital permanente</b><span>QR y validador en línea disponibles 24/7. El documento físico puede alterarse; el registro institucional, no.</span></div>
+        </div>
+        <div class="que-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div><b>Vigencia definida</b><span>Cada certificación tiene una vigencia de un año a partir de su emisión, lo que garantiza que las competencias acreditadas son recientes y actualizables.</span></div>
+        </div>
+        <div class="que-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          <div><b>Método formativo estructurado</b><span>Programas impartidos bajo el Método IPCI de siete etapas por la red de consultoras aliadas del Instituto, con ponentes especialistas de cada sector.</span></div>
+        </div>
+      </div>
+      <p style="text-align:center;margin-top:18px;font-size:12.5px;color:var(--muted)">
+        Conoce las reglas completas de emisión, vigencia y verificación en el
+        <a href="reglamento.html" style="font-weight:700">Reglamento de Certificación IPCI</a>.
+      </p>
+    </div>
+
+    <div class="contacto">
+      <h3>Verificación masiva o convenios institucionales</h3>
+      <p>¿Tu empresa necesita verificar credenciales de forma recurrente, o te interesa capacitar y certificar a tu personal con el aval IPCI?<br>Escríbenos: <a href="mailto:ipcilinstituto@gmail.com">ipcilinstituto@gmail.com</a> · <a href="tel:+522382388913">238 238 8913</a></p>
+    </div>
+  </div>
+
+  <footer>
+    <strong>IPCI</strong> · Instituto Profesional de Certificación Industrial Latinoamericano<br>
+    <a href="index.html">Inicio</a> · <a href="padron.html">Padrón Público</a> · <a href="reglamento.html">Reglamento</a> · <a href="panel/validar.html">Validador</a>
+  </footer>
+
+</body>
+</html>
