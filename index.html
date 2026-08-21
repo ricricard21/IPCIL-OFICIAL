@@ -97,13 +97,15 @@
           </p>
 
           <p class="hero-description">
-            El IPCI integra metodología propia, validación institucional y presencia
-            multisectorial para fortalecer competencias profesionales con enfoque práctico.
+            Certificación privada profesional con folio único, verificación pública 24/7,
+            vigencia definida y padrón consultable: credenciales que cualquier empleador
+            puede comprobar en segundos.
           </p>
 
           <div class="hero-buttons">
-            <a href="#aliadas" class="btn-primary">Ver empresas aliadas</a>
-            <a href="#certificados" class="btn-secondary">Validar certificado</a>
+            <a href="#certificados" class="btn-primary">Validar un certificado</a>
+            <a href="padron.html" class="btn-secondary">Padrón de Profesionales</a>
+            <a href="#aliadas" class="btn-secondary">Empresas aliadas</a>
           </div>
         </div>
 
@@ -207,10 +209,10 @@
           </p>
 
           <ul class="feature-list">
-            <li>Folio único institucional</li>
-            <li>Código QR de verificación</li>
-            <li>Registro interno</li>
-            <li>Validación digital</li>
+            <li>Folio único institucional y código QR de verificación</li>
+            <li>Vigencia de 1 año con estado público consultable</li>
+            <li>Inscripción automática en el Padrón Público de Profesionales</li>
+            <li>Compatible con LinkedIn: agrégalo a tu perfil en un clic</li>
           </ul>
         </div>
 
@@ -238,10 +240,49 @@
           </form>
 
           <p class="validate-note">
-            Cada certificado IPCI cuenta con folio único, código QR y registro en el
-            <a href="padron.html" style="color:inherit;font-weight:700">Padrón Público de Profesionales</a>.
-            Consulta el <a href="reglamento.html" style="color:inherit;font-weight:700">Reglamento de Certificación</a>.
+            Cada certificado IPCI cuenta con folio único, código QR y registro institucional permanente.
           </p>
+        </div>
+      </div>
+
+      <div class="container">
+        <style>
+          .auth-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 42px; }
+          .auth-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 26px 24px; text-decoration: none; color: inherit; display: block;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+          }
+          .auth-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(11, 78, 162, 0.12); }
+          .auth-ico {
+            width: 44px; height: 44px; border-radius: 12px; background: #eaf1fa; color: #0b4ea2;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+          }
+          .auth-ico svg { width: 21px; height: 21px; }
+          .auth-card h3 { font-size: 16px; font-weight: 800; color: #16324f; }
+          .auth-card p { font-size: 13px; color: #64748b; line-height: 1.65; margin-top: 7px; }
+          .auth-card span { display: inline-block; margin-top: 12px; font-size: 12.5px; font-weight: 700; color: #0b4ea2; }
+          @media (max-width: 820px) { .auth-grid { grid-template-columns: 1fr; } }
+        </style>
+        <div class="auth-grid reveal">
+          <a class="auth-card" href="padron.html">
+            <div class="auth-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <h3>Padrón Público de Profesionales</h3>
+            <p>El registro abierto del Instituto: consulta con un folio el expediente completo de certificaciones de cualquier profesional, con vigencias verificadas en tiempo real.</p>
+            <span>Consultar el Padrón →</span>
+          </a>
+          <a class="auth-card" href="empleadores.html">
+            <div class="auth-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg></div>
+            <h3>Para Empleadores</h3>
+            <p>¿Te presentaron una certificación IPCI? Verifícala en menos de un minuto por QR, folio o padrón. Convenios de verificación y capacitación empresarial disponibles.</p>
+            <span>Guía para empleadores →</span>
+          </a>
+          <a class="auth-card" href="reglamento.html">
+            <div class="auth-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <h3>Reglamento de Certificación</h3>
+            <p>Las reglas institucionales que respaldan cada credencial: emisión, folio único, evaluación, vigencia anual, recertificación, verificación pública y uso del sello.</p>
+            <span>Leer el Reglamento →</span>
+          </a>
         </div>
       </div>
     </section>
