@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Trafiquer — IPCI</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css">
+  <style>
+    body { background: var(--bg); }
+    .tf-topbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    .tf-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .tf-brand img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; }
+    .tf-brand-t { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .tf-brand-s { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .tf-user { display: flex; align-items: center; gap: 12px; }
+    .tf-user-name { font-size: 12.5px; font-weight: 700; color: var(--text); text-align: right; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tf-user-rol { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+    .tf-wrap { max-width: 880px; margin: 0 auto; padding: 26px 18px 60px; }
+    .tf-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+    .tf-title { font-size: 24px; font-weight: 800; color: var(--text); }
+    .tf-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .tf-refresh { display: flex; align-items: center; gap: 10px; }
+    .tf-updated { font-size: 11px; color: var(--muted-light); }
+
+    .tf-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 22px; }
+    .tf-sum { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: center; }
+    .tf-sum-val { font-size: 24px; font-weight: 800; }
+    .tf-sum-lbl { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 3px; }
+    .tf-sum.is-red .tf-sum-val { color: var(--red); }
+    .tf-sum.is-yellow .tf-sum-val { color: var(--yellow); }
+    .tf-sum.is-blue .tf-sum-val { color: var(--primary); }
+
+    .tf-consultora { margin-bottom: 22px; }
+    .tf-consultora-h {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--primary); padding-bottom: 8px; border-bottom: 2px solid var(--primary-light); margin-bottom: 12px;
+    }
+    .tf-consultora-h .n { color: var(--muted); font-weight: 700; text-transform: none; letter-spacing: 0; }
+
+    .tf-card {
+      background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line);
+      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow-xs);
+    }
+    .tf-card.sev-0, .tf-card.sev-1 { border-left-color: var(--red); }
+    .tf-card.sev-2 { border-left-color: var(--yellow); }
+    .tf-card-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .tf-card-curso { font-size: 14px; font-weight: 700; color: var(--text); min-width: 0; }
+    .tf-card-dias { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+    .tf-nums { display: flex; align-items: baseline; gap: 6px; margin: 8px 0 6px; }
+    .tf-now { font-size: 19px; font-weight: 800; color: var(--text); }
+    .tf-arrow { font-size: 12px; color: var(--muted-light); font-weight: 700; }
+    .tf-est { font-size: 19px; font-weight: 800; color: var(--primary); }
+    .tf-min { font-size: 11px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+    .tf-detail { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+    .tf-ok { text-align: center; padding: 60px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .tf-ok svg { width: 46px; height: 46px; color: var(--green); }
+    .tf-ok-t { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 12px; }
+    .tf-ok-s { font-size: 13px; color: var(--muted); margin-top: 5px; }
+
+    @media (max-width: 560px) {
+      .tf-summary { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .tf-sum { padding: 11px 8px; }
+      .tf-sum-val { font-size: 20px; }
+      .tf-card-dias { margin-left: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="tf-topbar">
+    <div class="tf-brand">
+      <img src="assets/logo.png" alt="IPCI">
+      <div>
+        <div class="tf-brand-t">IPCI</div>
+        <div class="tf-brand-s">Tráfico &amp; Ads</div>
+      </div>
+    </div>
+    <div class="tf-user">
+      <div>
+        <div class="tf-user-name" id="tf-nombre">Cargando...</div>
+        <div class="tf-user-rol">Trafiquer</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-salir">Salir</button>
+    </div>
+  </header>
+
+  <main class="tf-wrap">
+    <div class="tf-head">
+      <div>
+        <div class="tf-title">Campañas que necesitan acción</div>
+        <div class="tf-sub">Aperturas de los próximos 14 días con riesgo de no llenarse · proyección aprendida del histórico</div>
+      </div>
+      <div class="tf-refresh">
+        <span class="tf-updated" id="tf-updated"></span>
+        <button class="btn btn-primary btn-sm" id="btn-refrescar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+          Actualizar
+        </button>
+      </div>
+    </div>
+
+    <div class="tf-summary">
+      <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
+      <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
+      <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-consultoras">0</div><div class="tf-sum-lbl">Consultoras</div></div>
+    </div>
+
+    <div id="tf-contenido">
+      <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>
+    </div>
+  </main>
+
+<script type="module">
+  import {
+    db,
+    requireRole, cerrarSesion, escapeHtml,
+    doc, getDoc, getDocs, collection, query, where
+  } from "./firebase-config.js";
+
+  let usuario = null;
+
+  // ═══════════════ Motor de proyección (mismo del panel coordinador) ═══════════════
+  function historicoAperturas(alumnos) {
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const porCurso = new Map();
+    const tmp = new Map();
+    alumnos.forEach(a => {
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar" || ak >= hoyMX) return;
+      const key = a.cursoId + "|" + ak;
+      let o = tmp.get(key);
+      if (!o) { o = { cursoId: a.cursoId, fechaMs: new Date(ak + "T00:00:00").getTime(), tiempos: [] }; tmp.set(key, o); }
+      const t = a.creadoEn?.toMillis?.() || 0;
+      if (t > 0 && t <= o.fechaMs + 864e5) o.tiempos.push(t);
+    });
+    tmp.forEach(o => {
+      const final = o.tiempos.length;
+      if (final < 3) return;
+      const arr = porCurso.get(o.cursoId) || [];
+      arr.push({ fechaMs: o.fechaMs, final, tiempos: o.tiempos });
+      porCurso.set(o.cursoId, arr);
+    });
+    return porCurso;
+  }
+
+  function fraccionA(aperturas, dias) {
+    if (!aperturas.length) return null;
+    const usar = aperturas.slice(-6);
+    let suma = 0, n = 0;
+    usar.forEach(ap => {
+      const corte = ap.fechaMs - dias * 864e5;
+      suma += ap.tiempos.filter(t => t <= corte).length / ap.final;
+      n++;
+    });
+    return n ? suma / n : null;
+  }
+
+  function ritmo14(alumnos, cursoId) {
+    const hace14 = Date.now() - 14 * 864e5;
+    return alumnos.filter(a => a.cursoId === cursoId && (a.creadoEn?.toMillis?.() || 0) >= hace14).length / 14;
+  }
+
+  function estimar(hist, alumnos, cursoId, actuales, dias) {
+    const propias = hist.get(cursoId) || [];
+    let p = fraccionA(propias, dias);
+    if (p === null || p < 0.08) {
+      const todas = [];
+      hist.forEach(arr => todas.push(...arr));
+      const pPool = fraccionA(todas, dias);
+      p = (pPool !== null && pPool >= 0.08) ? pPool : null;
+    }
+    let proy;
+    if (p !== null) {
+      proy = Math.round(actuales / p);
+      const finales = (propias.length ? propias : [...hist.values()].flat()).map(a => a.final);
+      if (finales.length) proy = Math.min(proy, Math.round(Math.max(...finales) * 1.3));
+    } else {
+      proy = Math.round(actuales + ritmo14(alumnos, cursoId) * dias);
+    }
+    return Math.max(proy, actuales);
+  }
+
+  // Decisiones de UNA consultora: SOLO problemas de presupuesto/campaña
+  function problemasDe(cursos, alumnos) {
+    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    const en14 = new Date(); en14.setDate(en14.getDate() + 14);
+    const en14Str = en14.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+
+    const combos = new Map();
+    alumnos.forEach(a => {
+      if (a.estado === "email_enviado") return;
+      const ak = a.aperturaKey;
+      if (!ak || ak === "sin-asignar") return;
+      if (ak < hoyMX || ak > en14Str) return;
+      const k = a.cursoId + "|" + ak;
+      combos.set(k, (combos.get(k) || 0) + 1);
+    });
+
+    const hist = historicoAperturas(alumnos);
+    const problemas = [];
+
+    combos.forEach((count, k) => {
+      const idx = k.indexOf("|");
+      const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
+      const curso = cursos.find(c => c.id === cid);
+      if (!curso) return;
+      const minimo = curso.minimoAlumnos || 8;
+      if (count >= minimo) return; // cupo alcanzado, no es problema
+
+      const d = new Date(fecha + "T00:00:00");
+      const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
+      const proy = estimar(hist, alumnos, cid, count, dias);
+      if (proy >= minimo) return; // proyección dice que llega solo
+
+      const base = { curso: curso.nombre, count, proy, minimo, dias, fecha };
+      if (proy < Math.ceil(minimo * 0.75)) {
+        if (dias <= 3) {
+          problemas.push({ ...base, sev: 0, accion: "Urgente HOY", chip: "chip-red",
+            detalle: "Súbele fuerte a Ads hoy mismo o avisa a coordinación para recorrer/cancelar la fecha." });
+        } else {
+          problemas.push({ ...base, sev: 1, accion: "Meter presupuesto", chip: "chip-red",
+            detalle: "Aumenta presupuesto de Ads para este curso. Si en 2 días no repunta, avisa a coordinación." });
+        }
+      } else {
+        const faltan = minimo - proy;
+        problemas.push({ ...base, sev: 2, accion: "Empujón final", chip: "chip-yellow",
+          detalle: `Según proyección faltarían ~${faltan}: un empujón ligero de Ads + remarketing cierra el grupo.` });
+      }
+    });
+
+    problemas.sort((a, b) => a.sev - b.sev || a.dias - b.dias);
+    return problemas;
+  }
+
+  // ═══════════════ Carga de datos ═══════════════
+  async function consultorasAsignadas() {
+    const ids = usuario.consultoraIds;
+    const todas = !Array.isArray(ids) || ids.length === 0 || ids.includes("*");
+    if (todas) {
+      const snap = await getDocs(collection(db, "consultoras"));
+      return snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(c => c.activo !== false);
+    }
+    const out = [];
+    for (const id of ids) {
+      try {
+        const snap = await getDoc(doc(db, "consultoras", id));
+        if (snap.exists()) out.push({ id: snap.id, ...snap.data() });
+      } catch (_) { /* sin acceso a esa consultora */ }
+    }
+    return out;
+  }
+
+  async function cargar() {
+    const cont = document.getElementById("tf-contenido");
+    cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Analizando tus consultoras...</div></div>`;
+
+    try {
+      const consultoras = await consultorasAsignadas();
+      document.getElementById("sum-consultoras").textContent = consultoras.length;
+
+      const bloques = [];
+      let urgentes = 0, empujones = 0;
+
+      for (const cons of consultoras) {
+        try {
+          const [cursosSnap, alumnosSnap] = await Promise.all([
+            getDocs(query(collection(db, "cursos"), where("consultoraId", "==", cons.id))),
+            getDocs(query(collection(db, "alumnos"), where("consultoraId", "==", cons.id))),
+          ]);
+          const cursos = cursosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const alumnos = alumnosSnap.docs.map(d => d.data());
+          const problemas = problemasDe(cursos, alumnos);
+          if (!problemas.length) continue;
+
+          urgentes += problemas.filter(p => p.sev <= 1).length;
+          empujones += problemas.filter(p => p.sev === 2).length;
+
+          bloques.push(`
+            <section class="tf-consultora">
+              <div class="tf-consultora-h">${escapeHtml(cons.nombre || cons.id)} <span class="n">· ${problemas.length} campaña${problemas.length === 1 ? "" : "s"}</span></div>
+              ${problemas.map(p => {
+                const f = new Date(p.fecha + "T00:00:00");
+                const fTxt = isNaN(f) ? p.fecha : f.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
+                return `<div class="tf-card sev-${p.sev}">
+                  <div class="tf-card-head">
+                    <span class="chip ${p.chip}">${escapeHtml(p.accion)}</span>
+                    <span class="tf-card-curso">${escapeHtml(p.curso)}</span>
+                    <span class="tf-card-dias">Abre ${escapeHtml(fTxt)} · en ${p.dias} día${p.dias === 1 ? "" : "s"}</span>
+                  </div>
+                  <div class="tf-nums">
+                    <span class="tf-now">${p.count}</span>
+                    <span class="tf-arrow">→</span>
+                    <span class="tf-est">${p.proy}</span>
+                    <span class="tf-min">proyectados · mín ${p.minimo}</span>
+                  </div>
+                  <div class="tf-detail">${escapeHtml(p.detalle)}</div>
+                </div>`;
+              }).join("")}
+            </section>`);
+        } catch (err) {
+          console.warn("Consultora sin acceso o con error:", cons.id, err);
+        }
+      }
+
+      document.getElementById("sum-urgente").textContent = urgentes;
+      document.getElementById("sum-empujon").textContent = empujones;
+      document.getElementById("tf-updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+
+      if (!bloques.length) {
+        cont.innerHTML = `<div class="tf-ok">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div class="tf-ok-t">Todo en verde</div>
+          <div class="tf-ok-s">Ninguna apertura de los próximos 14 días necesita presupuesto extra según la proyección.</div>
+        </div>`;
+        return;
+      }
+      cont.innerHTML = bloques.join("");
+    } catch (err) {
+      console.error(err);
+      cont.innerHTML = `<div class="empty"><div class="empty-text">No se pudieron cargar los datos</div><div class="empty-hint">Revisa tu conexión o avisa al administrador.</div></div>`;
+    }
+  }
+
+  // ═══════════════ Init ═══════════════
+  (async () => {
+    usuario = await requireRole("trafiquer");
+    document.getElementById("tf-nombre").textContent = usuario.nombre || usuario.email || "Trafiquer";
+    await cargar();
+    setInterval(cargar, 30 * 60 * 1000); // refresco cada 30 min
+  })();
+
+  document.getElementById("btn-refrescar").addEventListener("click", cargar);
+  document.getElementById("btn-salir").addEventListener("click", cerrarSesion);
+</script>
+</body>
+</html>
