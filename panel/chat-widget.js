@@ -24,6 +24,10 @@ let canalAbierto = null;     // canal actualmente en pantalla
 let vista = "lista";         // "lista" | "chat"
 let abierto = false;
 let unsubMsgs = null;
+let unsubLect = null;
+let lecturasOtros = 0;     // ms de la lectura más reciente de OTRO miembro
+let _msgsActuales = [];
+let _lastReadWrite = 0;
 let metaUnsubs = [];
 let noLeidos = new Map();    // canalId -> bool
 let enviando = false;
@@ -35,6 +39,16 @@ const ROL_LABEL = { superadmin: "Dirección", coordinador: "Coordinación", vend
 const ROL_COLOR = { superadmin: "#b7791f", coordinador: "#0b4ea2", vendedor: "#64748b", trafiquer: "#15803d" };
 
 // ── Utilidades ──
+function escribirLectura(chatId) {
+  const now = Date.now();
+  if (now - _lastReadWrite < 15000) return;
+  _lastReadWrite = now;
+  setDoc(doc(db, "chats", chatId, "lecturas", usuario.uid), {
+    leidoEn: serverTimestamp(),
+    nombre: usuario.nombre,
+  }, { merge: true }).catch(() => {});
+}
+
 const lastReadKey = id => `ipciChatRead_${usuario.uid}_${id}`;
 const getLastRead = id => Number(localStorage.getItem(lastReadKey(id)) || 0);
 const setLastRead = id => { try { localStorage.setItem(lastReadKey(id), String(Date.now())); } catch (_) {} };
@@ -160,6 +174,10 @@ function inyectarCSS() {
   }
   .icw-msg-hora { font-size: 9.5px; color: var(--muted-light, #94a3b8); margin: 3px 5px 0; }
   .icw-msg.mio .icw-msg-hora { text-align: right; }
+  .icw-checks { display: inline-block; margin-right: 4px; vertical-align: -1px; }
+  .icw-checks svg { width: 15px; height: 11px; }
+  .icw-checks.gris { color: #94a3b8; }
+  .icw-checks.azul { color: #1d9bf0; }
   .icw-vacio { text-align: center; color: var(--muted, #64748b); font-size: 12px; padding: 40px 20px; line-height: 1.6; }
 
   /* Input */
@@ -356,18 +374,39 @@ function abrirCanal(canal) {
   document.getElementById("icw-body").innerHTML = `<div class="icw-vacio">Cargando mensajes...</div>`;
 
   detenerMsgs();
+  _lastReadWrite = 0;
+  escribirLectura(canal.id);
+
+  unsubLect = onSnapshot(collection(db, "chats", canal.id, "lecturas"), snap => {
+    let max = 0;
+    snap.docs.forEach(d => {
+      if (d.id === usuario.uid) return;
+      const t = d.data().leidoEn?.toMillis?.() || 0;
+      if (t > max) max = t;
+    });
+    lecturasOtros = max;
+    if (_msgsActuales.length) renderMsgs(_msgsActuales);
+  }, () => {});
+
   const q = query(collection(db, "chats", canal.id, "mensajes"), orderBy("creadoEn", "desc"), limit(50));
   unsubMsgs = onSnapshot(q, snap => {
     const msgs = snap.docs.map(d => d.data()).reverse();
     renderMsgs(msgs);
-    if (abierto && vista === "chat" && canalAbierto?.id === canal.id) setLastRead(canal.id);
+    if (abierto && vista === "chat" && canalAbierto?.id === canal.id) {
+      setLastRead(canal.id);
+      escribirLectura(canal.id);
+    }
   }, err => {
     console.warn("chat:", err);
     document.getElementById("icw-body").innerHTML = `<div class="icw-vacio">No se pudieron cargar los mensajes.<br>Verifica tu conexión o avisa al administrador.</div>`;
   });
 }
 
+const CHECK_1 = '<svg viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 7 10.5 15 2"/></svg>';
+const CHECK_2 = '<svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6.5 5.5 10.5 12 3.5"/><path d="M8.5 8.8 10.2 10.5 18.5 2"/></svg>';
+
 function renderMsgs(msgs) {
+  _msgsActuales = msgs;
   const body = document.getElementById("icw-body");
   if (!msgs.length) {
     body.innerHTML = `<div class="icw-vacio">Aún no hay mensajes en este canal.<br>Escribe el primero.</div>`;
@@ -382,7 +421,11 @@ function renderMsgs(msgs) {
         <span class="icw-msg-rol" style="color:${color}">${ROL_LABEL[m.autorRol] || ""}</span>
       </div>`}
       <div class="icw-msg-burb">${escapeHtml(m.texto || "")}</div>
-      <div class="icw-msg-hora">${horaMsg(m.creadoEn)}</div>
+      <div class="icw-msg-hora">${mio ? (() => {
+        const t = m.creadoEn?.toMillis?.() || 0;
+        const visto = t > 0 && t <= lecturasOtros;
+        return `<span class="icw-checks ${visto ? "azul" : "gris"}" title="${visto ? "Visto" : "Enviado"}">${visto ? CHECK_2 : CHECK_1}</span>`;
+      })() : ""}${horaMsg(m.creadoEn)}</div>
     </div>`;
   }).join("")}</div>`;
   body.scrollTop = body.scrollHeight;
@@ -390,6 +433,9 @@ function renderMsgs(msgs) {
 
 function detenerMsgs() {
   if (unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
+  if (unsubLect) { unsubLect(); unsubLect = null; }
+  lecturasOtros = 0;
+  _msgsActuales = [];
 }
 
 // ═══════════════ Enviar ═══════════════
