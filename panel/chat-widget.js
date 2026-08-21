@@ -27,6 +27,9 @@ let unsubMsgs = null;
 let metaUnsubs = [];
 let noLeidos = new Map();    // canalId -> bool
 let enviando = false;
+let tituloOriginal = document.title;
+let ultimaNotif = new Map(); // canalId -> ts del último aviso (para no repetir)
+let audioCtx = null;
 
 const ROL_LABEL = { superadmin: "Dirección", coordinador: "Coordinación", vendedor: "Ventas", trafiquer: "Tráfico" };
 const ROL_COLOR = { superadmin: "#b7791f", coordinador: "#0b4ea2", vendedor: "#64748b", trafiquer: "#15803d" };
@@ -35,6 +38,30 @@ const ROL_COLOR = { superadmin: "#b7791f", coordinador: "#0b4ea2", vendedor: "#6
 const lastReadKey = id => `ipciChatRead_${usuario.uid}_${id}`;
 const getLastRead = id => Number(localStorage.getItem(lastReadKey(id)) || 0);
 const setLastRead = id => { try { localStorage.setItem(lastReadKey(id), String(Date.now())); } catch (_) {} };
+
+function unlockAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  } catch (_) {}
+}
+
+function ding() {
+  if (!audioCtx || audioCtx.state !== "running") return;
+  try {
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(880, t);
+    o.frequency.setValueAtTime(1174.66, t + 0.09);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t); o.stop(t + 0.35);
+  } catch (_) {}
+}
 
 function horaMsg(ts) {
   const d = ts?.toDate ? ts.toDate() : null;
@@ -182,6 +209,7 @@ function construirDOM() {
     </div>`;
   document.body.appendChild(wrap);
 
+  document.addEventListener("pointerdown", unlockAudio, { once: true });
   document.getElementById("icw-burbuja").addEventListener("click", togglePanel);
   document.getElementById("icw-send").addEventListener("click", enviarMsg);
   const input = document.getElementById("icw-input");
@@ -195,6 +223,7 @@ function construirDOM() {
 }
 
 function togglePanel() {
+  unlockAudio();
   abierto = !abierto;
   document.getElementById("icw-panel").classList.toggle("open", abierto);
   if (abierto) {
@@ -363,6 +392,10 @@ function escucharMetas() {
       const esNuevo = ts > getLastRead(c.id) && d.ultimoMsgPor !== usuario.uid;
       const abiertoAqui = abierto && vista === "chat" && canalAbierto?.id === c.id;
       noLeidos.set(c.id, esNuevo && !abiertoAqui);
+      if (esNuevo && !abiertoAqui && ultimaNotif.get(c.id) !== ts) {
+        ultimaNotif.set(c.id, ts);
+        ding();
+      }
       if (abiertoAqui) setLastRead(c.id);
       actualizarBadge();
       if (abierto && vista === "lista") renderLista();
@@ -374,9 +407,11 @@ function escucharMetas() {
 function actualizarBadge() {
   const n = [...noLeidos.values()].filter(Boolean).length;
   const b = document.getElementById("icw-badge");
-  if (!b) return;
-  b.style.display = n ? "flex" : "none";
-  b.textContent = n;
+  if (b) {
+    b.style.display = n ? "flex" : "none";
+    b.textContent = n;
+  }
+  document.title = n ? `(•) ${tituloOriginal}` : tituloOriginal;
 }
 
 // ═══════════════ Canales según el rol ═══════════════
