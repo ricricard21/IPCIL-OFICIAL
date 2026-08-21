@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Trafiquer — IPCI</title>
-  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="panel.css">
   <style>
@@ -104,6 +104,14 @@
       font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;
     }
     .tf-att-undo:hover { color: var(--red); }
+    .tf-nota-form { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; flex-wrap: wrap; }
+    .tf-nota-input {
+      flex: 1; min-width: 200px; border: 1px solid var(--line); border-radius: 9px;
+      padding: 8px 12px; font-family: inherit; font-size: 12px; color: var(--text);
+      background: var(--bg); outline: none; transition: border-color var(--t-fast);
+    }
+    .tf-nota-input:focus { border-color: var(--primary); background: var(--surface); }
+    .tf-att-nota { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 7px; line-height: 1.5; }
 
     /* ── Baja señal ── */
     .tf-bs-toggle {
@@ -136,7 +144,7 @@
 
   <header class="tf-topbar">
     <div class="tf-brand">
-      <img src="assets/logo.png" alt="IPCI">
+      <img src="../assets/logo.jpeg" alt="IPCI">
       <div>
         <div class="tf-brand-t">IPCI</div>
         <div class="tf-brand-s">Tráfico &amp; Ads</div>
@@ -210,6 +218,8 @@
   let _orden = "consultora";
   let _verBS = false;
   let _unsubAcciones = null;
+  let _notaOpen = null;   // accionId con el formulario de nota abierto
+  let _notaTxt = "";
 
   // ═══════════════ Motor de proyección (mismo del panel coordinador) ═══════════════
   function historicoAperturas(alumnos) {
@@ -340,7 +350,7 @@
     }, err => console.warn("acciones:", err));
   }
 
-  async function marcarAtendida(p) {
+  async function marcarAtendida(p, nota) {
     try {
       await setDoc(doc(db, "accionesTrafico", accionId(p)), {
         consultoraId: p.consultoraId,
@@ -348,6 +358,7 @@
         fecha: p.fecha,
         curso: p.curso,
         accion: p.accion,
+        nota: (nota || "").trim().slice(0, 140),
         atendidoPor: usuario.uid,
         atendidoPorNombre: usuario.nombre || usuario.email || "Trafiquer",
         atendidoEn: serverTimestamp(),
@@ -449,21 +460,30 @@
     const att = _acciones.get(accionId(p));
     const f = new Date(p.fecha + "T00:00:00");
     const fTxt = isNaN(f) ? p.fecha : f.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
-    const attTxt = att
-      ? (() => {
-          const t = att.atendidoEn?.toDate ? att.atendidoEn.toDate() : null;
-          const hora = t ? t.toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
-          return `<span class="tf-att-info">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Atendida por ${escapeHtml(att.atendidoPorNombre || "Trafiquer")}${hora ? " · " + hora : ""}
-            </span>` +
-            (att.atendidoPor === usuario.uid
-              ? `<button class="tf-att-undo" data-desatender="${accionId(p)}">Desmarcar</button>` : "");
-        })()
-      : `<button class="tf-att-btn" data-atender="${accionId(p)}">
+    const id = accionId(p);
+    let attTxt, notaHtml = "";
+    if (att) {
+      const t = att.atendidoEn?.toDate ? att.atendidoEn.toDate() : null;
+      const hora = t ? t.toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+      attTxt = `<span class="tf-att-info">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Atendida por ${escapeHtml(att.atendidoPorNombre || "Trafiquer")}${hora ? " · " + hora : ""}
+        </span>` +
+        (att.atendidoPor === usuario.uid
+          ? `<button class="tf-att-undo" data-desatender="${id}">Desmarcar</button>` : "");
+      if (att.nota) notaHtml = `<div class="tf-att-nota">"${escapeHtml(att.nota)}"</div>`;
+    } else if (_notaOpen === id) {
+      attTxt = `<div class="tf-nota-form">
+          <input class="tf-nota-input" data-nota-input="${id}" maxlength="140" placeholder="¿Qué hiciste? Ej: Subí $500/día en Meta (opcional)" value="${escapeHtml(_notaTxt)}">
+          <button class="tf-att-btn" data-guardar="${id}">Guardar</button>
+          <button class="tf-att-undo" data-cancelar="${id}">Cancelar</button>
+        </div>`;
+    } else {
+      attTxt = `<button class="tf-att-btn" data-atender="${id}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Marcar atendida
         </button>`;
+    }
 
     return `<div class="tf-card sev-${p.sev}${att ? " atendida" : ""}">
       <div class="tf-card-head">
@@ -479,7 +499,7 @@
         <span class="tf-min">proyectados · mín ${p.minimo}</span>
       </div>
       <div class="tf-detail">${escapeHtml(p.detalle)}</div>
-      <div class="tf-card-foot">${attTxt}</div>
+      <div class="tf-card-foot">${attTxt}</div>${notaHtml}
     </div>`;
   }
 
@@ -545,6 +565,10 @@
     }
 
     cont.innerHTML = html;
+    if (_notaOpen) {
+      const inp = cont.querySelector(`[data-nota-input="${_notaOpen}"]`);
+      if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+    }
   }
 
   // ═══════════════ Eventos ═══════════════
@@ -553,14 +577,33 @@
     if (bsT) { _verBS = !_verBS; render(); return; }
 
     const at = e.target.closest("[data-atender]");
-    if (at) {
-      const id = at.dataset.atender;
+    if (at) { _notaOpen = at.dataset.atender; _notaTxt = ""; render(); return; }
+
+    const guardar = e.target.closest("[data-guardar]");
+    if (guardar) {
+      const id = guardar.dataset.guardar;
       const p = [..._problemas, ..._bajaSenal].find(x => accionId(x) === id);
-      if (p) { at.disabled = true; marcarAtendida(p); }
+      if (p) { guardar.disabled = true; _notaOpen = null; marcarAtendida(p, _notaTxt); _notaTxt = ""; }
       return;
     }
+    const cancelar = e.target.closest("[data-cancelar]");
+    if (cancelar) { _notaOpen = null; _notaTxt = ""; render(); return; }
+
     const des = e.target.closest("[data-desatender]");
     if (des) desmarcar(des.dataset.desatender);
+  });
+
+  document.getElementById("tf-contenido").addEventListener("input", (e) => {
+    if (e.target.matches("[data-nota-input]")) _notaTxt = e.target.value;
+  });
+
+  document.getElementById("tf-contenido").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.matches("[data-nota-input]")) {
+      e.preventDefault();
+      const id = e.target.dataset.notaInput;
+      const p = [..._problemas, ..._bajaSenal].find(x => accionId(x) === id);
+      if (p) { _notaOpen = null; marcarAtendida(p, _notaTxt); _notaTxt = ""; }
+    }
   });
 
   document.getElementById("tf-fchips").addEventListener("click", (e) => {
