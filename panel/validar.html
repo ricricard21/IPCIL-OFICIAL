@@ -5,13 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Validar Certificado | IPCI</title>
   <meta name="description" content="Validación oficial de certificados emitidos por el Instituto Profesional de Certificación Industrial Latinoamericano." />
-  <link rel="icon" href="assets/logo.jpeg" />
+  <link rel="icon" href="../assets/logo.jpeg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    /* ═══ Respaldo autosuficiente del header (por si la hoja externa no carga) ═══ */
+    :root { --primary: #0b4ea2; --container: 1160px; }
+    body { font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif; margin: 0; background: #f4f7fb; color: #16324f; }
+    .container { width: min(var(--container), calc(100% - 32px)); margin: 0 auto; }
+    .site-header { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,.92); border-bottom: 1px solid rgba(217,227,239,.7); }
+    .nav-wrap { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; text-decoration: none; color: inherit; }
+    .brand-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 12px; background: #fff; }
+    .brand-copy { display: flex; flex-direction: column; min-width: 0; }
+    .brand-copy strong { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .brand-copy span { font-size: 11px; font-weight: 600; color: #64748b; }
+    .nav-btn { padding: 11px 16px; border-radius: 999px; background: var(--primary); color: #fff !important; text-decoration: none; font-weight: 700; font-size: 13px; white-space: nowrap; }
+    a { color: var(--primary); }
+    img { max-width: 100%; }
+  </style>
 
   <style>
     /* ═══════════════════════════════════════════
@@ -615,7 +631,7 @@
   <header class="site-header" id="siteHeader">
     <div class="container nav-wrap">
       <a href="index.html" class="brand">
-        <img src="assets/logo.jpeg" alt="Logo IPCI" class="brand-logo" />
+        <img src="../assets/logo.jpeg" alt="Logo IPCI" class="brand-logo" />
         <div class="brand-copy">
           <strong>IPCI</strong>
           <span>Validación institucional</span>
