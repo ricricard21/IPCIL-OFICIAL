@@ -244,9 +244,15 @@ function construirDOM() {
   });
 }
 
-function montarTriggerSidebar() {
+function montarTriggerSidebar(intento = 0) {
+  if (document.getElementById("icw-strig")) return; // ya montado
   const foot = document.querySelector(".sidebar .sidebar-footer") || document.querySelector(".sidebar-footer");
-  if (!foot) return; // sin sidebar (ej. trafiquer): se queda la burbuja flotante
+  if (!foot) {
+    // Sin sidebar aún: reintenta unos segundos (paneles que pintan tarde);
+    // si de plano no hay (ej. trafiquer), se queda la burbuja flotante.
+    if (intento < 20) setTimeout(() => montarTriggerSidebar(intento + 1), 250);
+    return;
+  }
 
   const btn = document.createElement("button");
   btn.className = "icw-strig";
