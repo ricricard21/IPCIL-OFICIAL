@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padrón Público IPCI — Profesionales Certificados</title>
+  <meta name="description" content="Padrón público del Instituto Profesional de Certificación Industrial Latinoamericano. Consulta el expediente de certificaciones de un profesional con su folio IPCI.">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0b4ea2; --primary-dark: #093f85; --primary-soft: #eaf1fa;
+      --gold: #b08d2e; --gold-soft: #faf6ea;
+      --text: #16324f; --muted: #64748b; --muted-light: #94a3b8;
+      --line: #e2e8f0; --line-soft: #eef2f7; --bg: #f4f7fb; --surface: #ffffff;
+      --green: #15803d; --green-soft: #dcfce7; --red: #b91c1c; --red-soft: #fee2e2;
+      --radius: 14px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+    .brand-t { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.15; }
+    .brand-s { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .top-link {
+      font-size: 12.5px; font-weight: 700; color: #fff; background: var(--primary);
+      padding: 10px 18px; border-radius: 999px; text-decoration: none; transition: background 0.15s;
+    }
+    .top-link:hover { background: var(--primary-dark); }
+
+    .hero { text-align: center; padding: 46px 18px 8px; max-width: 760px; margin: 0 auto; }
+    .hero-kicker { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
+    .hero h1 { font-size: 30px; font-weight: 800; margin-top: 10px; }
+    .hero p { font-size: 14px; color: var(--muted); margin-top: 10px; line-height: 1.65; }
+
+    .search-wrap { max-width: 640px; margin: 26px auto 0; padding: 0 18px; }
+    .search-box {
+      display: flex; gap: 10px; background: var(--surface); border: 1px solid var(--line);
+      border-radius: 999px; padding: 8px 8px 8px 20px; box-shadow: 0 10px 30px rgba(11,78,162,0.08);
+    }
+    .search-box svg { width: 18px; height: 18px; color: var(--muted-light); align-self: center; flex-shrink: 0; }
+    .search-box input {
+      flex: 1; border: none; outline: none; font-family: inherit; font-size: 14px;
+      color: var(--text); background: none; text-transform: uppercase; min-width: 0;
+    }
+    .search-box input::placeholder { text-transform: none; color: var(--muted-light); }
+    .search-box button {
+      border: none; background: var(--primary); color: #fff; font-family: inherit;
+      font-size: 13px; font-weight: 700; padding: 12px 24px; border-radius: 999px;
+      cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+    }
+    .search-box button:hover { background: var(--primary-dark); }
+    .search-box button:disabled { opacity: 0.6; cursor: wait; }
+    .search-hint { text-align: center; font-size: 11.5px; color: var(--muted-light); margin-top: 10px; }
+
+    .estado { max-width: 860px; margin: 34px auto 60px; padding: 0 18px; }
+    .msg { text-align: center; padding: 40px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .msg-t { font-size: 15.5px; font-weight: 800; }
+    .msg-s { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+    .msg.err .msg-t { color: var(--red); }
+    .spinner {
+      width: 30px; height: 30px; border: 3px solid var(--line); border-top-color: var(--primary);
+      border-radius: 50%; margin: 0 auto 12px; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none; }
+
+    /* ── Expediente ── */
+    .exp-head {
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff; border-radius: var(--radius) var(--radius) 0 0; padding: 24px 26px;
+    }
+    .exp-avatar {
+      width: 62px; height: 62px; border-radius: 50%; background: rgba(255,255,255,0.16);
+      border: 2px solid rgba(255,255,255,0.55); display: flex; align-items: center;
+      justify-content: center; font-size: 21px; font-weight: 800; flex-shrink: 0;
+    }
+    .exp-nombre { font-size: 20px; font-weight: 800; }
+    .exp-sub { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; margin-top: 4px; }
+    .exp-stats { margin-left: auto; display: flex; gap: 24px; text-align: center; }
+    .exp-stat-v { font-size: 21px; font-weight: 800; }
+    .exp-stat-l { font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; }
+
+    .exp-body { background: var(--surface); border: 1px solid var(--line); border-top: none; border-radius: 0 0 var(--radius) var(--radius); padding: 8px 26px 22px; }
+    .cert-row { display: flex; align-items: center; gap: 16px; padding: 17px 0; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
+    .cert-row:last-child { border-bottom: none; }
+    .cert-ico {
+      width: 42px; height: 42px; border-radius: 11px; background: var(--gold-soft);
+      color: var(--gold); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .cert-ico svg { width: 20px; height: 20px; }
+    .cert-main { flex: 1; min-width: 240px; }
+    .cert-curso { font-size: 14px; font-weight: 700; }
+    .cert-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .cert-meta code { background: var(--primary-soft); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .cert-side { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .chip { display: inline-block; padding: 5px 13px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+    .chip-ok { background: var(--green-soft); color: var(--green); }
+    .chip-exp { background: var(--red-soft); color: var(--red); }
+    .cert-ver {
+      font-size: 12px; font-weight: 700; color: var(--primary); text-decoration: none;
+      border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; transition: all 0.15s;
+    }
+    .cert-ver:hover { border-color: var(--primary); background: var(--primary-soft); }
+
+    .exp-nota {
+      max-width: 860px; margin: 14px auto 0; font-size: 11.5px; color: var(--muted-light);
+      text-align: center; line-height: 1.6;
+    }
+
+    .empleador {
+      max-width: 860px; margin: 40px auto 0; background: var(--gold-soft);
+      border: 1px solid #e8dcb8; border-radius: var(--radius); padding: 20px 24px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .empleador svg { width: 22px; height: 22px; color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+    .empleador-t { font-size: 13.5px; font-weight: 800; color: #7a6120; }
+    .empleador-s { font-size: 12.5px; color: #8a6d23; margin-top: 5px; line-height: 1.65; }
+
+    footer { text-align: center; padding: 34px 18px 40px; font-size: 12px; color: var(--muted); }
+    footer strong { color: var(--primary); }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 23px; }
+      .exp-stats { margin-left: 0; width: 100%; justify-content: flex-start; }
+      .search-box button { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.jpeg" alt="IPCI">
+      <div>
+        <div class="brand-t">IPCI · Padrón Público</div>
+        <div class="brand-s">Instituto Profesional de Certificación Industrial Latinoamericano</div>
+      </div>
+    </div>
+    <a class="top-link" href="panel/validar.html">Validar un certificado</a>
+  </header>
+
+  <section class="hero">
+    <div class="hero-kicker">Registro institucional verificable</div>
+    <h1>Padrón Público de Profesionales Certificados</h1>
+    <p>Consulta el expediente oficial de certificaciones de un profesional emitidas bajo el aval del Instituto IPCI. Ingresa cualquier folio del profesional y obtén su historial completo, con vigencias verificadas en tiempo real.</p>
+  </section>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="inp-folio" placeholder="Folio IPCI · ej. IPCI-ODNT-2026-0001" autocomplete="off">
+      <button id="btn-buscar" type="button">Consultar</button>
+    </div>
+    <div class="search-hint">El folio aparece en el certificado del profesional y en su código QR.</div>
+  </div>
+
+  <div class="estado" id="estado"></div>
+
+  <div class="empleador" style="display:flex">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+    <div>
+      <div class="empleador-t">¿Eres empleador o reclutador?</div>
+      <div class="empleador-s">Solicita al candidato el folio de cualquiera de sus certificados IPCI y consúltalo aquí: obtendrás su expediente completo de certificaciones con vigencia verificada. Toda credencial IPCI es rastreable, pública y a prueba de falsificaciones mediante su folio y código QR.</div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>IPCI</strong> · Instituto Profesional de Certificación Industrial Latinoamericano<br>
+    Certificación privada profesional · Padrón público verificable · ipcil.org
+  </footer>
+
+<script type="module">
+  import { db, collection, query, where, getDocs, limit } from "./panel/firebase-config.js";
+
+  const estado = document.getElementById("estado");
+  const inp = document.getElementById("inp-folio");
+  const btn = document.getElementById("btn-buscar");
+
+  function esc(s) {
+    if (s == null) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function fFecha(ts) {
+    const d = ts?.toDate ? ts.toDate() : null;
+    return d ? d.toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" }) : "—";
+  }
+
+  async function consultar() {
+    const folio = (inp.value || "").trim().toUpperCase();
+    if (!folio) { inp.focus(); return; }
+
+    btn.disabled = true;
+    estado.innerHTML = `<div class="msg"><div class="spinner"></div><div class="msg-s">Consultando el padrón...</div></div>`;
+
+    try {
+      // 1) Certificado por folio
+      const snap = await getDocs(query(collection(db, "certificados"), where("folio", "==", folio), limit(1)));
+      if (snap.empty) {
+        estado.innerHTML = `<div class="msg err">
+          <div class="msg-t">Folio no encontrado en el padrón</div>
+          <div class="msg-s">Verifica que el folio esté escrito exactamente como aparece en el certificado (ej. IPCI-ODNT-2026-0001).<br>Si el problema persiste, el certificado podría no ser auténtico.</div>
+        </div>`;
+        return;
+      }
+      const base = snap.docs[0].data();
+      const nombre = base.nombreAlumno || "Profesional";
+
+      // 2) Expediente completo: todas sus certificaciones (mismo nombre registrado)
+      let certs = [];
+      try {
+        const todos = await getDocs(query(collection(db, "certificados"), where("nombreAlumno", "==", nombre)));
+        certs = todos.docs.map(d => d.data());
+      } catch (_) { certs = [base]; }
+      if (!certs.length) certs = [base];
+      certs.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+
+      const ahora = Date.now();
+      const conVig = certs.map(c => {
+        const em = c.creadoEn?.toMillis?.() || 0;
+        const venc = em ? em + 365 * 864e5 : 0;
+        return { ...c, _venc: venc, _vigente: venc ? ahora <= venc : false };
+      });
+      const vigentes = conVig.filter(c => c._vigente).length;
+      const ini = nombre.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+      estado.innerHTML = `
+        <div class="exp-head">
+          <div class="exp-avatar">${esc(ini)}</div>
+          <div>
+            <div class="exp-nombre">${esc(nombre)}</div>
+            <div class="exp-sub">Profesional certificado · Padrón IPCI</div>
+          </div>
+          <div class="exp-stats">
+            <div><div class="exp-stat-v">${conVig.length}</div><div class="exp-stat-l">Certificaciones</div></div>
+            <div><div class="exp-stat-v">${vigentes}</div><div class="exp-stat-l">Vigentes</div></div>
+          </div>
+        </div>
+        <div class="exp-body">
+          ${conVig.map(c => `
+            <div class="cert-row">
+              <div class="cert-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/></svg>
+              </div>
+              <div class="cert-main">
+                <div class="cert-curso">${esc(c.nombreCurso || "Curso")}</div>
+                <div class="cert-meta">${esc(c.nombreConsultora || "")} · Emitido el ${fFecha(c.creadoEn)} · <code>${esc(c.folio || "")}</code></div>
+              </div>
+              <div class="cert-side">
+                ${c._vigente
+                  ? `<span class="chip chip-ok">Vigente hasta ${new Date(c._venc).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}</span>`
+                  : `<span class="chip chip-exp">Vencido</span>`}
+                <a class="cert-ver" href="panel/validar.html?folio=${encodeURIComponent(c.folio || "")}" target="_blank" rel="noopener">Verificar</a>
+              </div>
+            </div>`).join("")}
+        </div>
+        <div class="exp-nota">Expediente generado en tiempo real desde el registro institucional IPCI. La vigencia de cada certificación es de un año a partir de su emisión.</div>`;
+    } catch (err) {
+      console.error(err);
+      estado.innerHTML = `<div class="msg err"><div class="msg-t">No se pudo consultar el padrón</div><div class="msg-s">Revisa tu conexión e intenta de nuevo.</div></div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener("click", consultar);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") consultar(); });
+
+  // Deep-link: padron.html?folio=IPCI-XXX-2026-0001
+  const pf = new URLSearchParams(location.search).get("folio");
+  if (pf) { inp.value = pf; consultar(); }
+</script>
+</body>
+</html>
