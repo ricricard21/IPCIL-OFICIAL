@@ -1,0 +1,11 @@
+# IPCI — Instituto Profesional de Certificación Industrial Latinoamericano
+User-agent: *
+Allow: /panel/validar.html
+Disallow: /panel/
+Disallow: /admin.html
+Disallow: /vendedor.html
+Disallow: /validar.html
+Disallow: /gracias.html
+Disallow: /suscripcion.html
+
+Sitemap: https://ipcil.org/sitemap.xml
