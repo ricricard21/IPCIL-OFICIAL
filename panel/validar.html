@@ -623,6 +623,16 @@
       transition: all 0.18s ease;
     }
     .btn-linkedin:hover { background: #084d92; transform: translateY(-1px); }
+    .btn-compartir {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #b08d2e; color: #fff; border: none; border-radius: 999px;
+      padding: 15px 26px; font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: inherit; box-shadow: 0 8px 20px rgba(176, 141, 46, 0.3);
+      transition: all 0.18s ease;
+    }
+    .btn-compartir:hover { background: #96771f; transform: translateY(-1px); }
+    .btn-compartir:disabled { opacity: 0.6; cursor: wait; }
+
   </style>
 </head>
 <body>
@@ -754,6 +764,10 @@
             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.25 2.37 4.25 5.44v6.3zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
             Añadir a mi perfil de LinkedIn
           </a>
+          <button class="btn-compartir hidden" id="btn-compartir" type="button">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
+            Compartir mi logro
+          </button>
         </div>
 
         <div style="text-align:center;margin-top:14px">
@@ -942,6 +956,9 @@
       li.href = 'https://www.linkedin.com/profile/add?' + liParams.toString();
       document.getElementById('link-padron').href = '../padron.html?folio=' + encodeURIComponent(cert.folio || '');
 
+      // Compartir mi logro (imagen del certificado, si existe)
+      document.getElementById('btn-compartir').classList.toggle('hidden', !cert.imgUrl);
+
       showState('found');
     }
 
@@ -967,6 +984,36 @@
         window.open(cert.pdfUrl, '_blank', 'noopener');
       } finally {
         btn.disabled = false;
+      }
+    });
+
+    document.getElementById('btn-compartir').addEventListener('click', async () => {
+      const cert = _certActual;
+      if (!cert || !cert.imgUrl) return;
+      const b = document.getElementById('btn-compartir');
+      b.disabled = true;
+      try {
+        const resp = await fetch(cert.imgUrl);
+        if (!resp.ok) throw new Error('img');
+        const blob = await resp.blob();
+        const file = new File([blob], `Certificado-${cert.folio || 'IPCI'}.jpg`, { type: 'image/jpeg' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Mi certificación IPCI',
+            text: `Concluí "${cert.nombreCurso || ''}" — certificación verificable IPCI. Folio ${cert.folio || ''}`,
+          });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = file.name;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 4000);
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') window.open(cert.imgUrl, '_blank', 'noopener');
+      } finally {
+        b.disabled = false;
       }
     });
 
