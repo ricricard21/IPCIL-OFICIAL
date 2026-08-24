@@ -522,9 +522,10 @@ function actualizarBadge() {
 
 // ═══════════════ Canales según el rol ═══════════════
 async function construirCanales() {
-  const lista = [{ id: "general", nombre: "General IPCI", tipo: "general" }];
+  // Los aliados externos solo ven el canal de SU empresa
+  const lista = usuario.esAliado ? [] : [{ id: "general", nombre: "General IPCI", tipo: "general" }];
 
-  if (usuario.rol === "superadmin" || usuario.rol === "trafiquer") {
+  if ((usuario.rol === "superadmin" || usuario.rol === "trafiquer") && !usuario.esAliado) {
     lista.push({ id: "global_trafico", nombre: "Tráfico y Dirección", tipo: "trafico" });
 
     // Consultoras visibles
@@ -574,6 +575,7 @@ onAuthStateChanged(auth, async (user) => {
       rol: data.rol,
       consultoraId: data.consultoraId || null,
       consultoraIds: data.consultoraIds || null,
+      esAliado: data.tipoCuenta === "aliado",
     };
 
     inyectarCSS();
