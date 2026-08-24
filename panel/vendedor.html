@@ -1251,6 +1251,16 @@
     background: white;
     color: #b91c1c;
   }
+
+  /* ═══ Chip de créditos (solo consultoras aliadas) ═══ */
+  .chip-creditos {
+    display: none; align-items: center; gap: 8px; margin-top: 9px;
+    padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 800;
+    background: #dcfce7; color: #15803d; border: 1px solid #b5e5c6; width: fit-content;
+  }
+  .chip-creditos .cred-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .chip-creditos.warn { background: #fef3c7; color: #92400e; border-color: #f0d998; }
+  .chip-creditos.zero { background: #fee2e2; color: #b91c1c; border-color: #f5b8b8; }
 </style>
 </head>
 <body>
@@ -1314,6 +1324,7 @@
         <div>
           <h1 class="main-title">Registro de ventas</h1>
           <p class="main-subtitle">Registra alumnos y genera certificados rápidamente, como en Excel</p>
+          <div class="chip-creditos" id="chip-creditos"><span class="cred-dot"></span>Créditos disponibles: <b id="chip-creditos-num" style="margin-left:2px">—</b></div>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-secondary" id="btn-importar">
@@ -1830,12 +1841,29 @@
   setupSidebar();
 
   // Cargar consultora para tener comisionDefault (en vivo, escucha cambios)
+
+  // ── Chip de créditos: visible SOLO para consultoras aliadas ──
+  function pintarChipCreditos(c) {
+    const el = document.getElementById("chip-creditos");
+    if (!el) return;
+    if (!c || c.tipo !== "aliado") { el.style.display = "none"; return; }
+    const n = c.creditos || 0;
+    document.getElementById("chip-creditos-num").textContent = n.toLocaleString("es-MX");
+    el.classList.toggle("warn", n > 0 && n <= 20);
+    el.classList.toggle("zero", n <= 0);
+    el.title = n <= 0
+      ? "Sin créditos: la emisión está pausada. Recarga desde tu enlace de pago IPCI."
+      : "Cada certificado emitido consume 1 crédito. Se recargan con tu mensualidad o paquetes.";
+    el.style.display = "inline-flex";
+  }
+
   let unsubConsultora = null;
   unsubConsultora = onSnapshot(
     doc(db, "consultoras", usuario.consultoraId),
     (snap) => {
       if (snap.exists()) {
         consultora = { id: snap.id, ...snap.data() };
+        pintarChipCreditos(consultora);
         // Re-renderizar para reflejar nuevo % de comisión
         if (typeof renderSheet === "function") renderSheet();
         if (typeof actualizarStats === "function") actualizarStats();
