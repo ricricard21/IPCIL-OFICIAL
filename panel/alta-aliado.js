@@ -82,6 +82,8 @@ async function main() {
     tipo: "aliado",                 // ← distingue aliados externos de la red propia
     plan: "fundador",
     activo: true,
+    estadoSuscripcion: "pendiente_pago",  // el webhook de Stripe lo pondrá en "activa" al pagar
+    creditos: 0,                          // se abonan solos al pagar (100/mes o 1,200/año + paquetes)
     contadorFolio: 0,
     firmaTexto: nombre,             // firma del PDF genérico mientras no tenga plantilla propia
     creadoEn: admin.firestore.FieldValue.serverTimestamp(),
@@ -125,7 +127,24 @@ async function main() {
   Panel:        https://ipcil.org/panel/
   Coordinador:  ${coordEmail}  /  ${coordPass}
 ${vendedores.map(v => `  Vendedor:     ${v.email}  /  ${v.pass}`).join("\n")}
+  ID interno:   ${consRef.id}
   Folio:        IPCI-${codigo}-AAAA-NNNN
+
+  💳 MODELO DE COBRO:
+     · Mensual $3,000 → 100 certificados ($30 c/u)
+     · Anual $30,000 → 1,200 certificados ($25 c/u)
+     · Créditos extra: 50=$1,500 ($30) · 100=$2,900 ($29)
+       · 500=$13,500 ($27) — no caducan, se acumulan
+     Cada certificado emitido descuenta 1 crédito; en 0 la
+     emisión se pausa hasta recargar.
+
+     LINK DE PAGO (Stripe): toma tu Payment Link del plan
+     o paquete y agrégale al final:
+     ?client_reference_id=${consRef.id}
+     Ejemplo:
+     https://buy.stripe.com/XXXX?client_reference_id=${consRef.id}
+     Al pagar, el webhook lo pone en "activa" solo. Si deja de
+     pagar, pasa a "suspendida" y la emisión se bloquea sola.
   Certificados: diseño institucional IPCI automático
                 (plantilla personalizada disponible después)
 
