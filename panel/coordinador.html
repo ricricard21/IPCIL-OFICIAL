@@ -1548,7 +1548,7 @@
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "No se pudo abrir el portal.");
-      window.open(data.url, "_blank", "noopener");
+      window.location.href = data.url; // misma pestaña: evita el bloqueo de popups; el portal regresa al panel
     } catch (err) {
       toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
     } finally {
