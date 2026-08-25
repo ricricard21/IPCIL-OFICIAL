@@ -1161,7 +1161,8 @@
       </div>
       <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:16px">💡 ¿Solo quieres cancelar un <b>vendedor extra</b> o cambiar tu tarjeta? Eso no afecta tu licencia — adelante sin pendiente.</div>
       <button class="btn btn-primary" id="btn-retencion-conservar" type="button" style="width:100%">Conservar mi plan</button>
-      <button class="btn btn-secondary" id="btn-retencion-continuar" type="button" style="width:100%;margin-top:10px">Continuar al portal de pagos →</button>
+      <button class="btn btn-secondary" id="btn-retencion-continuar" type="button" style="width:100%;margin-top:10px">Gestionar pagos y vendedores extra →</button>
+      <button type="button" id="btn-retencion-cancelar-plan" style="width:100%;margin-top:12px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:underline">Quiero cancelar mi plan</button>
     </div>
   </div>
 </div>
@@ -1629,6 +1630,7 @@
       estadoTxt.textContent = "✅ Activo";
     }
     if (est === "cancelada" || est === "suspendida") {
+      document.getElementById("btn-retencion-cancelar-plan").style.display = "none";
       btnConservar.textContent = "Reactivar mi plan ahora";
       btnConservar.onclick = async () => {
         const links = await cargarLinksPago();
@@ -1636,6 +1638,7 @@
         cerrarRetencion();
       };
     } else {
+      document.getElementById("btn-retencion-cancelar-plan").style.display = "";
       btnConservar.textContent = "Conservar mi plan";
       btnConservar.onclick = cerrarRetencion;
     }
@@ -1660,7 +1663,29 @@
     } catch (err) {
       toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
       b.disabled = false;
-      b.textContent = "Continuar al portal de pagos →";
+      b.textContent = "Gestionar pagos y vendedores extra →";
+    }
+  });
+
+  // Cancelar el PLAN: portal directo en el flujo de cancelación; al terminar regresa SOLO al panel
+  document.getElementById("btn-retencion-cancelar-plan").addEventListener("click", async (e) => {
+    const b = e.currentTarget;
+    b.disabled = true;
+    b.textContent = "Abriendo…";
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const resp = await fetch(ENDPOINT_PORTAL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({ flujo: "cancelar-plan" }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo abrir la cancelación.");
+      window.location.href = data.url;
+    } catch (err) {
+      toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
+      b.disabled = false;
+      b.textContent = "Quiero cancelar mi plan";
     }
   });
 
