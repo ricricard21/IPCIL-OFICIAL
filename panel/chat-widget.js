@@ -331,7 +331,7 @@ function renderLista() {
       <div class="icw-canal-ico ${c.tipo === "general" ? "g" : c.tipo === "trafico" ? "t" : ""}">${c.tipo === "general" ? "G" : c.tipo === "trafico" ? "T" : escapeHtml(ini(c.nombre))}</div>
       <div class="icw-canal-main">
         <div class="icw-canal-n">${escapeHtml(c.nombre)}</div>
-        <div class="icw-canal-sub">${c.tipo === "general" ? "Todo el equipo IPCI" : c.tipo === "trafico" ? "Trafiquers y dirección" : "Coordinación · Ventas · Tráfico"}</div>
+        <div class="icw-canal-sub">${c.tipo === "general" ? "Todo el equipo IPCI" : c.tipo === "trafico" ? "Trafiquers y dirección" : usuario.esAliado ? "Tu equipo · Coordinación y Ventas" : "Coordinación · Ventas · Tráfico"}</div>
       </div>
       ${noLeidos.get(c.id) ? '<span class="icw-dot"></span>' : ""}
     </button>`;
@@ -363,7 +363,7 @@ function abrirCanal(canal) {
     </button>
     <div class="icw-head-main">
       <div class="icw-head-t">${escapeHtml(canal.nombre)}</div>
-      <div class="icw-head-s">${canal.tipo === "general" ? "Todo el equipo" : canal.tipo === "trafico" ? "Trafiquers y dirección" : "Canal de la consultora"}</div>
+      <div class="icw-head-s">${canal.tipo === "general" ? "Todo el equipo" : canal.tipo === "trafico" ? "Trafiquers y dirección" : usuario.esAliado ? "Tu equipo · Coordinación y Ventas" : "Canal de la consultora"}</div>
     </div>
     <button class="icw-iconbtn" id="icw-cerrar" title="Cerrar" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -536,6 +536,9 @@ async function construirCanales() {
       snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .filter(c => c.activo !== false)
+        // Consultoras ALIADAS: su chat es privado (coordinador ↔ vendedores).
+        // Los trafiquers no entran; solo dirección (superadmin) conserva acceso.
+        .filter(c => usuario.rol === "superadmin" || c.tipo !== "aliado")
         .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""))
         .forEach(c => lista.push({ id: "consultora_" + c.id, nombre: c.nombre || c.id, tipo: "consultora", consultoraId: c.id }));
     } else {
