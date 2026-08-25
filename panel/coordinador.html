@@ -1175,6 +1175,12 @@
         </div>
 
         <div class="field">
+          <label class="field-label">Director General del instituto</label>
+          <input class="input" type="text" id="curso-director-instituto" placeholder="Ej. Dra. Laura Méndez Torres">
+          <div class="field-hint">Nombre de quien firma el certificado por el instituto del ponente (bloque derecho)</div>
+        </div>
+
+        <div class="field">
           <label class="field-label">Firma del ponente</label>
           <input class="input" type="file" id="curso-firma-ponente" accept="image/png,image/jpeg">
           <div class="field-hint">Imagen de la firma (PNG con fondo transparente se ve mejor). Aparecerá sobre la línea de firma del certificado.</div>
@@ -3121,6 +3127,7 @@
       document.getElementById("curso-email-ponente").value = cursoData.emailPonente || "";
       document.getElementById("curso-tel-ponente").value = cursoData.telefonoPonente || "";
       document.getElementById("curso-instituto-ponente").value = cursoData.institutoPonente || "";
+      document.getElementById("curso-director-instituto").value = cursoData.directorInstituto || "";
       document.getElementById("curso-hora-inicio").value = cursoData.horaInicioCurso || "";
       document.getElementById("curso-modalidad").value = cursoData.modalidad || "";
       document.getElementById("curso-duracion").value = cursoData.duracion || "";
@@ -3218,6 +3225,7 @@
         emailPonente: document.getElementById("curso-email-ponente").value.trim().toLowerCase(),
         telefonoPonente: document.getElementById("curso-tel-ponente").value.trim(),
         institutoPonente: document.getElementById("curso-instituto-ponente").value.trim(),
+        directorInstituto: document.getElementById("curso-director-instituto").value.trim(),
         horaInicioCurso: document.getElementById("curso-hora-inicio").value || "",
         modalidad: document.getElementById("curso-modalidad").value,
         duracion: document.getElementById("curso-duracion").value.trim(),
