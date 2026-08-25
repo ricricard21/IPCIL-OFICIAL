@@ -1465,9 +1465,65 @@
   modalVendedor.addEventListener("click", (e) => { if (e.target === modalVendedor) cerrarModalVendedor(); });
 
   document.getElementById("btn-pagar-vendedor-extra").addEventListener("click", async () => {
+    // Guardar el vendedor capturado para crearlo automáticamente al volver del pago
+    try {
+      sessionStorage.setItem("vendedorPendiente", JSON.stringify({
+        nombre: document.getElementById("vend-nombre").value.trim(),
+        email: document.getElementById("vend-email").value.trim(),
+        pass: document.getElementById("vend-pass").value,
+      }));
+    } catch (_) {}
     const links = await cargarLinksPago();
     abrirPago(links.linkVendedorExtra);
   });
+
+  // Al volver del pago del vendedor extra: crear automáticamente al vendedor pendiente.
+  // El webhook tarda unos segundos en subir el límite, así que reintenta hasta ~36s.
+  async function crearVendedorPendiente() {
+    let pendiente = null;
+    try { pendiente = JSON.parse(sessionStorage.getItem("vendedorPendiente") || "null"); } catch (_) {}
+    if (!pendiente || !pendiente.email || !pendiente.pass) return;
+
+    toast("Pago recibido · creando a tu vendedor automáticamente…", "success");
+    const idToken = await auth.currentUser.getIdToken();
+    for (let intento = 1; intento <= 12; intento++) {
+      try {
+        const resp = await fetch(ENDPOINT_CREAR_VENDEDOR, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+          body: JSON.stringify({ nombre: pendiente.nombre, email: pendiente.email, password: pendiente.pass }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          sessionStorage.removeItem("vendedorPendiente");
+          toast(`✅ Vendedor ${pendiente.nombre} creado (${data.activos} de ${data.limite})`, "success");
+          return;
+        }
+        if (!data.limiteAlcanzado) {
+          // Error distinto al límite (ej. correo ocupado): abrir el modal prellenado para corregir
+          sessionStorage.removeItem("vendedorPendiente");
+          document.getElementById("vend-nombre").value = pendiente.nombre || "";
+          document.getElementById("vend-email").value = pendiente.email || "";
+          vendError.textContent = data.error || "No se pudo crear el vendedor.";
+          vendError.style.display = "block";
+          modalVendedor.classList.remove("hidden");
+          return;
+        }
+        // Límite aún no sube: el webhook sigue procesando; esperar y reintentar
+      } catch (_) {}
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    // No subió en ~36s: dejar el modal listo para un clic manual
+    document.getElementById("vend-nombre").value = pendiente.nombre || "";
+    document.getElementById("vend-email").value = pendiente.email || "";
+    vendError.textContent = "Tu pago se está procesando. En unos segundos dale a Crear vendedor (contraseña de nuevo por seguridad).";
+    vendError.style.display = "block";
+    modalVendedor.classList.remove("hidden");
+    sessionStorage.removeItem("vendedorPendiente");
+  }
+  if (new URLSearchParams(location.search).get("pago") === "ok") {
+    crearVendedorPendiente();
+  }
 
   document.getElementById("form-vendedor").addEventListener("submit", async (e) => {
     e.preventDefault();
