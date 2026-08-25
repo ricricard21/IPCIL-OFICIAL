@@ -1408,16 +1408,24 @@
     if (estado === "activa") {
       txt.textContent = "Licencia activa · 100 créditos se abonan con cada mensualidad";
       btnPlan.style.display = "none";
+    } else if (estado === "cancelada") {
+      est.classList.add("pend");
+      const hasta = c.accesoHasta?.toDate ? c.accesoHasta.toDate().toLocaleDateString("es-MX", { day: "numeric", month: "long" }) : "3 días";
+      txt.textContent = `⚠️ Plan cancelado · conservas tu acceso hasta el ${hasta} · reactívalo para no interrumpir tu operación`;
+      btnPlan.textContent = "Reactivar mi plan";
+      btnPlan.style.display = "";
     } else if (estado === "suspendida") {
       est.classList.add("mal");
-      txt.textContent = "Licencia suspendida por falta de pago — la emisión está pausada";
+      txt.textContent = "Licencia suspendida — la emisión está pausada. Tus datos están a salvo: reactiva y retoma donde te quedaste";
+      btnPlan.textContent = "Reactivar mi plan";
       btnPlan.style.display = "";
     } else {
       est.classList.add("pend");
       txt.textContent = "Pago de licencia pendiente — actívala para emitir";
+      btnPlan.textContent = "Pagar mi licencia";
       btnPlan.style.display = "";
     }
-    btnPlan.onclick = () => abrirPago(links.linkMensual);
+    btnPlan.onclick = () => abrirPago(c.plan === "anual" ? (links.linkAnual || links.linkMensual) : links.linkMensual);
     card.style.display = "block";
   }
 
@@ -1456,6 +1464,7 @@
   });
 
   if (usuario?.consultoraId) {
+    let _avisoCancelacionMostrado = false;
     onSnapshot(doc(db, "consultoras", usuario.consultoraId), (s) => {
       if (s.exists()) {
         const c = { id: s.id, ...s.data() };
@@ -1463,6 +1472,12 @@
         pintarChipCreditos(c);
         pintarCentroPagos(c);
         pintarSeccionVendedores(c);
+        // Aviso de gracia: una vez por sesión, en cuanto entra al panel
+        if (c.estadoSuscripcion === "cancelada" && !_avisoCancelacionMostrado) {
+          _avisoCancelacionMostrado = true;
+          const hasta = c.accesoHasta?.toDate ? c.accesoHasta.toDate().toLocaleDateString("es-MX", { day: "numeric", month: "long" }) : "3 días";
+          toast(`⚠️ Tu plan está cancelado. Conservas el acceso hasta el ${hasta}. Reactívalo desde el Dashboard.`, "warning");
+        }
       }
     }, () => {});
   }
@@ -1594,10 +1609,23 @@
   const modalRetencion = document.getElementById("modal-retencion");
   const cerrarRetencion = () => modalRetencion.classList.add("hidden");
   document.getElementById("menu-portal-suscripciones").addEventListener("click", () => {
+    // Si el plan está cancelado o suspendido, el modal se vuelve de REACTIVACIÓN
+    const est = _consultoraLive?.estadoSuscripcion;
+    const btnConservar = document.getElementById("btn-retencion-conservar");
+    if (est === "cancelada" || est === "suspendida") {
+      btnConservar.textContent = "Reactivar mi plan ahora";
+      btnConservar.onclick = async () => {
+        const links = await cargarLinksPago();
+        abrirPago(_consultoraLive?.plan === "anual" ? (links.linkAnual || links.linkMensual) : links.linkMensual);
+        cerrarRetencion();
+      };
+    } else {
+      btnConservar.textContent = "Conservar mi plan";
+      btnConservar.onclick = cerrarRetencion;
+    }
     modalRetencion.classList.remove("hidden");
   });
   document.getElementById("modal-retencion-close").addEventListener("click", cerrarRetencion);
-  document.getElementById("btn-retencion-conservar").addEventListener("click", cerrarRetencion);
   modalRetencion.addEventListener("click", (e) => { if (e.target === modalRetencion) cerrarRetencion(); });
 
   document.getElementById("btn-retencion-continuar").addEventListener("click", async (e) => {
