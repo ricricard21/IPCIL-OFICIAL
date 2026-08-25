@@ -1436,6 +1436,7 @@
   // ── Crear vendedores (solo consultoras aliadas): 2 incluidos, extra $500/mes ──
   let _consultoraLive = null;
   const ENDPOINT_CREAR_VENDEDOR = "https://crearvendedoraliado-imsrzczhta-uc.a.run.app";
+  const ENDPOINT_GESTIONAR_VENDEDOR = "https://gestionarvendedoraliado-imsrzczhta-uc.a.run.app";
 
   function pintarSeccionVendedores(c) {
     const btn = document.getElementById("btn-crear-vendedor");
@@ -2891,10 +2892,11 @@
       return;
     }
 
+    const esAliadoTabla = _consultoraLive && _consultoraLive.tipo === "aliado";
     c.innerHTML = `<div class="table-wrap"><table class="table">
       <thead><tr>
         <th>Vendedor</th><th>Email</th><th>Estado</th>
-        <th>Alumnos</th><th>Certificados</th>
+        <th>Alumnos</th><th>Certificados</th>${esAliadoTabla ? '<th class="col-actions">Acción</th>' : ''}
       </tr></thead>
       <tbody>${vendedores.map(v => {
         const sus = alumnos.filter(a => a.registradoPor === v.id).length;
@@ -2907,11 +2909,40 @@
             </div>
           </td>
           <td>${escapeHtml(v.email)}</td>
-          <td>${v.activo ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
+          <td>${v.activo !== false ? '<span class="chip chip-green chip-dot">Activo</span>' : '<span class="chip chip-gray">Inactivo</span>'}</td>
           <td><strong>${sus}</strong></td>
           <td><strong style="color:var(--primary)">${certs.length}</strong></td>
+          ${esAliadoTabla ? `<td class="col-actions"><button class="btn btn-secondary btn-sm" data-toggle-vend="${v.id}" data-activo="${v.activo !== false}">${v.activo !== false ? "Desactivar" : "Activar"}</button></td>` : ''}
         </tr>`;
       }).join("")}</tbody></table></div>`;
+
+    c.querySelectorAll("[data-toggle-vend]").forEach((b) => b.addEventListener("click", async () => {
+      const vendedorId = b.dataset.toggleVend;
+      const estaActivo = b.dataset.activo === "true";
+      const v = vendedores.find(x => x.id === vendedorId);
+      const ok = await confirmar(
+        estaActivo
+          ? `¿Desactivar a ${v?.nombre || "este vendedor"}? Perderá el acceso al panel de inmediato. (Esto no cancela ningún cobro: los vendedores extra se cancelan en "Gestionar suscripciones" del Dashboard.)`
+          : `¿Reactivar a ${v?.nombre || "este vendedor"}? Volverá a tener acceso al panel.`
+      );
+      if (!ok) return;
+      b.disabled = true;
+      try {
+        const idToken = await auth.currentUser.getIdToken();
+        const resp = await fetch(ENDPOINT_GESTIONAR_VENDEDOR, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+          body: JSON.stringify({ vendedorId, activo: !estaActivo }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "No se pudo actualizar el vendedor.");
+        toast(estaActivo ? "Vendedor desactivado" : "Vendedor reactivado", "success");
+        // La tabla se refresca sola por el onSnapshot de vendedores
+      } catch (err) {
+        toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
+        b.disabled = false;
+      }
+    }));
   }
 
   // ═══════════════════════════════════════════════════════════
