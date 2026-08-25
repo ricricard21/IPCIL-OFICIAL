@@ -5,40 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
 <title>Registro · Programa Aliado Certificador — IPCI</title>
+<link rel="icon" href="../assets/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="panel.css">
 <style>
-  body { background: var(--bg, #f1f5f9); font-family: inherit; }
-  .reg-wrap { max-width: 520px; margin: 40px auto; padding: 0 16px; }
-  .reg-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 28px 26px; box-shadow: 0 10px 30px rgba(15,43,76,.08); }
-  .reg-logo { text-align: center; margin-bottom: 6px; font-family: Georgia, serif; font-weight: 800; font-size: 26px; color: #0f2b4c; }
-  .reg-sub { text-align: center; font-size: 12.5px; color: #64748b; margin-bottom: 22px; line-height: 1.5; }
-  .reg-field { margin-bottom: 14px; }
-  .reg-label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 5px; }
-  .reg-input { width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 11px 12px; font-size: 14px; font-family: inherit; }
-  .reg-input:focus { outline: none; border-color: #0b4ea2; }
-  .reg-hint { font-size: 11px; color: #94a3b8; margin-top: 4px; }
-  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 2px; }
-  .plan-card { position: relative; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all .15s; background: #fff; }
-  .plan-card:hover { border-color: #0b4ea2; }
-  .plan-card.selected { border-color: #0b4ea2; background: #eef4ff; box-shadow: 0 0 0 3px rgba(11,78,162,.12); }
-  .plan-card .p-nombre { font-size: 13px; font-weight: 800; color: #0f2b4c; }
-  .plan-card .p-precio { font-size: 17px; font-weight: 800; color: #0b4ea2; margin-top: 5px; }
-  .plan-card .p-det { font-size: 10.5px; color: #64748b; margin-top: 3px; line-height: 1.4; }
-  .plan-card .p-badge { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: #15803d; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
-  .reg-btn { width: 100%; margin-top: 18px; background: #0b4ea2; border: none; color: #fff; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
-  .reg-btn:disabled { opacity: .45; cursor: not-allowed; }
-  .reg-btn:not(:disabled):hover { background: #073b80; }
-  .reg-error { display: none; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; margin-top: 12px; }
-  .reg-ok { display: none; background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 10px; padding: 12px; font-size: 13px; margin-top: 12px; line-height: 1.5; }
-  .reg-nota { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 14px; line-height: 1.5; }
+  body { background: var(--bg); font-family: 'Montserrat', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 28px 14px; }
+  .reg-shell { display: grid; grid-template-columns: 1.05fr 1fr; max-width: 1020px; width: 100%; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-lg); background: var(--surface); }
+
+  /* ── Columna izquierda: marca ── */
+  .reg-hero { background: linear-gradient(150deg, #0b4ea2 0%, #073b80 60%, #062f66 100%); color: #fff; padding: 44px 38px; display: flex; flex-direction: column; }
+  .reg-hero .marca { font-size: 30px; font-weight: 800; letter-spacing: 0.02em; }
+  .reg-hero .marca-sub { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin-top: 6px; }
+  .reg-hero h1 { font-size: 24px; font-weight: 800; line-height: 1.3; margin: 34px 0 10px; }
+  .reg-hero .hero-txt { font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.65; }
+  .reg-benef { margin-top: 26px; display: flex; flex-direction: column; gap: 13px; }
+  .reg-benef .b-item { display: flex; gap: 11px; align-items: flex-start; font-size: 12.5px; font-weight: 600; line-height: 1.5; }
+  .reg-benef .b-check { flex-shrink: 0; width: 20px; height: 20px; border-radius: 999px; background: rgba(200,152,46,0.22); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .reg-benef .b-check svg { width: 11px; height: 11px; stroke: var(--gold); stroke-width: 3; fill: none; }
+  .reg-hero .hero-pie { margin-top: auto; padding-top: 30px; font-size: 10.5px; color: rgba(255,255,255,0.55); line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.14); }
+
+  /* ── Columna derecha: formulario ── */
+  .reg-form-col { padding: 38px 36px; }
+  .reg-form-col h2 { font-size: 17px; font-weight: 800; color: var(--text); }
+  .reg-form-col .form-sub { font-size: 12px; color: var(--muted); margin: 5px 0 22px; line-height: 1.5; }
+  .rf { margin-bottom: 15px; }
+  .rf-label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 6px; }
+  .rf-input { width: 100%; box-sizing: border-box; border: 1.5px solid var(--line-strong); border-radius: 10px; padding: 12px 13px; font-size: 13.5px; font-family: inherit; font-weight: 500; color: var(--text); background: var(--surface); transition: border-color .15s, box-shadow .15s; }
+  .rf-input::placeholder { color: var(--muted-light); font-weight: 400; }
+  .rf-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+  .rf-hint { font-size: 10.5px; color: var(--muted-light); margin-top: 5px; line-height: 1.45; }
+
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 2px; }
+  .plan-card { position: relative; border: 1.5px solid var(--line-strong); border-radius: var(--radius); padding: 15px 10px 13px; text-align: center; cursor: pointer; transition: all .15s; background: var(--surface); }
+  .plan-card:hover { border-color: var(--primary); }
+  .plan-card.selected { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 3px var(--primary-glow); }
+  .plan-card .p-nombre { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); }
+  .plan-card .p-precio { font-size: 19px; font-weight: 800; color: var(--primary); margin-top: 6px; }
+  .plan-card .p-det { font-size: 10.5px; font-weight: 500; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+  .plan-card .p-badge { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; font-size: 9px; font-weight: 800; letter-spacing: 0.04em; padding: 2.5px 10px; border-radius: 999px; white-space: nowrap; text-transform: uppercase; }
+
+  .reg-btn { width: 100%; margin-top: 20px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border: none; color: #fff; border-radius: var(--radius); padding: 15px; font-family: inherit; font-size: 14px; font-weight: 800; letter-spacing: 0.01em; cursor: pointer; box-shadow: 0 6px 16px var(--primary-glow); transition: transform .12s, box-shadow .12s; }
+  .reg-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+  .reg-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(11,78,162,0.28); }
+
+  .reg-error { display: none; background: var(--red-soft); border: 1px solid #fecaca; color: var(--red); border-radius: 10px; padding: 11px 13px; font-size: 12px; font-weight: 600; margin-top: 14px; line-height: 1.5; }
+  .reg-ok { display: none; background: var(--green-soft); border: 1px solid #bbf7d0; color: var(--green); border-radius: var(--radius); padding: 16px; font-size: 13px; font-weight: 600; margin-bottom: 18px; line-height: 1.65; }
+  .reg-ok a { color: var(--primary); font-weight: 800; }
+  .reg-nota { font-size: 10.5px; color: var(--muted-light); text-align: center; margin-top: 16px; line-height: 1.6; }
+  .reg-nota a { color: var(--primary); font-weight: 700; text-decoration: none; }
+
+  @media (max-width: 820px) {
+    .reg-shell { grid-template-columns: 1fr; }
+    .reg-hero { padding: 30px 26px; }
+    .reg-hero h1 { margin-top: 20px; font-size: 20px; }
+    .reg-hero .hero-pie { display: none; }
+    .reg-form-col { padding: 28px 22px; }
+  }
 </style>
 </head>
 <body>
-<div class="reg-wrap">
-  <div class="reg-card">
-    <div class="reg-logo">IPCI</div>
-    <div class="reg-sub">Programa Aliado Certificador<br>Registra tu academia, elige tu plan y empieza a certificar hoy mismo.</div>
+<div class="reg-shell">
 
+  <div class="reg-hero">
+    <div>
+      <div class="marca">IPCI</div>
+      <div class="marca-sub">Programa Aliado Certificador</div>
+    </div>
+    <h1>Certifica tus cursos con respaldo institucional</h1>
+    <div class="hero-txt">Emite certificados con folio único y código QR verificable públicamente, desde tu propio panel — sin desarrollar nada.</div>
+    <div class="reg-benef">
+      <div class="b-item"><span class="b-check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>Panel de coordinación y ventas para tu equipo</div>
+      <div class="b-item"><span class="b-check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>2 cuentas de vendedor incluidas</div>
+      <div class="b-item"><span class="b-check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>Certificados con QR verificable en ipcil.org</div>
+      <div class="b-item"><span class="b-check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>Créditos que no caducan y se acumulan</div>
+      <div class="b-item"><span class="b-check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>Activación automática al confirmar tu pago</div>
+    </div>
+    <div class="hero-pie">Instituto Profesional de Certificación Industrial Latinoamericano · Padrón público de certificaciones en ipcil.org</div>
+  </div>
+
+  <div class="reg-form-col">
     <div class="reg-ok" id="msg-pago-ok">
       ✅ <b>¡Pago recibido!</b> Tu cuenta se está activando (1-2 minutos).
       Revisa tu correo para confirmar tu dirección y luego
@@ -46,30 +91,33 @@
     </div>
 
     <form id="form-registro" autocomplete="on">
-      <div class="reg-field">
-        <label class="reg-label">Nombre de tu academia / instituto *</label>
-        <input class="reg-input" type="text" id="reg-academia" required maxlength="80" placeholder="Ej. Academia Dental del Norte">
+      <h2>Registra tu academia</h2>
+      <div class="form-sub">Llena tus datos, elige tu plan y paga en línea. Tu panel queda listo en minutos.</div>
+
+      <div class="rf">
+        <label class="rf-label">Nombre de tu academia / instituto *</label>
+        <input class="rf-input" type="text" id="reg-academia" required maxlength="80" placeholder="Ej. Academia Dental del Norte">
       </div>
-      <div class="reg-field">
-        <label class="reg-label">Tu nombre completo (coordinador) *</label>
-        <input class="reg-input" type="text" id="reg-coordinador" required maxlength="80" placeholder="Ej. Dra. Sofía Ruiz">
+      <div class="rf">
+        <label class="rf-label">Tu nombre completo (coordinador) *</label>
+        <input class="rf-input" type="text" id="reg-coordinador" required maxlength="80" placeholder="Ej. Dra. Sofía Ruiz">
       </div>
-      <div class="reg-field">
-        <label class="reg-label">Correo electrónico *</label>
-        <input class="reg-input" type="email" id="reg-email" required placeholder="tucorreo@academia.mx" autocomplete="email">
-        <div class="reg-hint">Con este correo entrarás al panel. Te enviaremos un enlace para confirmarlo.</div>
+      <div class="rf">
+        <label class="rf-label">Correo electrónico *</label>
+        <input class="rf-input" type="email" id="reg-email" required placeholder="tucorreo@academia.mx" autocomplete="email">
+        <div class="rf-hint">Con este correo entrarás al panel. Te enviaremos un enlace para confirmarlo.</div>
       </div>
-      <div class="reg-field">
-        <label class="reg-label">Contraseña *</label>
-        <input class="reg-input" type="password" id="reg-password" required minlength="8" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      <div class="rf">
+        <label class="rf-label">Contraseña *</label>
+        <input class="rf-input" type="password" id="reg-password" required minlength="8" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
       </div>
-      <div class="reg-field">
-        <label class="reg-label">WhatsApp de contacto</label>
-        <input class="reg-input" type="tel" id="reg-telefono" placeholder="Ej. 2211234567 (10 dígitos)">
+      <div class="rf">
+        <label class="rf-label">WhatsApp de contacto</label>
+        <input class="rf-input" type="tel" id="reg-telefono" placeholder="Ej. 2211234567 (10 dígitos)">
       </div>
 
-      <div class="reg-field">
-        <label class="reg-label">Elige tu plan *</label>
+      <div class="rf">
+        <label class="rf-label">Elige tu plan *</label>
         <div class="plan-grid">
           <div class="plan-card" data-plan="mensual">
             <div class="p-nombre">Mensual</div>
@@ -83,7 +131,6 @@
             <div class="p-det">1,200 certificados al año<br>$25 c/u</div>
           </div>
         </div>
-        <div class="reg-hint">Incluye panel de coordinación y ventas, 2 vendedores, certificados con QR verificable en ipcil.org y créditos que no caducan.</div>
       </div>
 
       <button class="reg-btn" id="btn-registrar" type="submit" disabled>Continuar a pago seguro →</button>
@@ -91,10 +138,11 @@
     </form>
 
     <div class="reg-nota">
-      Pago procesado por Stripe. Tu cuenta se activa automáticamente al confirmarse el pago.<br>
+      Pago procesado por Stripe · Tu cuenta se activa automáticamente al confirmarse el pago<br>
       ¿Ya tienes cuenta? <a href="https://ipcil.org/panel/">Inicia sesión</a>
     </div>
   </div>
+
 </div>
 
 <script>
