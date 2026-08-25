@@ -258,7 +258,6 @@
     doc,
     getDoc
   } from "./firebase-config.js";
-  import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const form = document.getElementById("login-form");
   const errorEl = document.getElementById("login-error");
@@ -266,7 +265,8 @@
   const loaderEl = document.getElementById("login-loader");
   const btnLogin = document.getElementById("btn-login");
 
-  // ── Recuperar contraseña por correo ──
+  // ── Recuperar contraseña (correo propio IPCI vía backend) ──
+  const ENDPOINT_RECUPERAR = "https://recuperarpassword-imsrzczhta-uc.a.run.app";
   document.getElementById("link-olvide").addEventListener("click", async (e) => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -276,16 +276,21 @@
       document.getElementById("email").focus();
       return;
     }
+    const link = e.currentTarget;
+    link.style.opacity = "0.5";
     try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (_) {
-      // Mismo mensaje exista o no la cuenta: no revelamos qué correos están registrados
-    }
+      await fetch(ENDPOINT_RECUPERAR, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch (_) {}
+    link.style.opacity = "";
     errorEl.classList.remove("visible");
     errorTxt.textContent = "";
     const ok = document.getElementById("olvide-ok");
     ok.style.display = "block";
-    ok.textContent = `📬 Si ${email} tiene cuenta, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja y el spam.`;
+    ok.textContent = `📬 Si ${email} tiene cuenta, te enviamos un correo desde certificados@ipcil.org para restablecer tu contraseña. Revisa tu bandeja.`;
   });
 
   // Si ya hay sesión activa, redirigir según el rol
