@@ -3149,6 +3149,13 @@
       _firmaPonenteB64 = "";
       mostrarPreviewFirma("");
 
+      // Consultora con firma compartida: pre-llenar firma y director desde los cursos existentes
+      if (firmaCompartidaActiva()) {
+        const d = defaultsFirmaCompartida();
+        if (d.firma) { _firmaPonenteB64 = d.firma; mostrarPreviewFirma(d.firma); }
+        if (d.director) document.getElementById("curso-director-instituto").value = d.director;
+      }
+
     }
     modalCurso.classList.remove("hidden");
   }
@@ -3160,6 +3167,29 @@
 
   // ── Firma del ponente: comprimir en el navegador y guardar como base64 en el curso ──
   let _firmaPonenteB64 = "";
+
+  // Consultoras donde la firma y el Director General se COMPARTEN entre todos los cursos:
+  // al crear un curso nuevo se pre-llenan, y al cambiarlos en un curso se propagan a los demás.
+  const CONSULTORAS_FIRMA_COMPARTIDA = ["Kbo505Nxz9Q8mgs8fn8W"]; // Academia Prueba IPCI
+  const firmaCompartidaActiva = () => CONSULTORAS_FIRMA_COMPARTIDA.includes(usuario.consultoraId);
+
+  function defaultsFirmaCompartida() {
+    // Toma la firma/director del primer curso que los tenga capturados
+    const conDatos = cursos.find(c => (c.firmaPonente || "").length > 0 || (c.directorInstituto || "").trim());
+    return {
+      firma: conDatos?.firmaPonente || "",
+      director: conDatos?.directorInstituto || "",
+    };
+  }
+
+  async function propagarFirmaCompartida(cursoGuardadoId, firma, director) {
+    // Copia firma y director a TODOS los demás cursos de la consultora
+    const otros = cursos.filter(c => c.id !== cursoGuardadoId);
+    for (const c of otros) {
+      await updateDoc(doc(db, "cursos", c.id), { firmaPonente: firma, directorInstituto: director });
+    }
+    return otros.length;
+  }
 
   function mostrarPreviewFirma(b64) {
     const box = document.getElementById("firma-ponente-preview");
@@ -3237,13 +3267,25 @@
         whatsappHora2: "17:00",
         creadoPor: usuario.uid
       };
+      let cursoIdGuardado = id;
       if (id) {
         await updateDoc(doc(db, "cursos", id), data);
         toast("Curso actualizado", "success");
       } else {
         data.creadoEn = serverTimestamp();
-        await addDoc(collection(db, "cursos"), data);
+        const nuevoRef = await addDoc(collection(db, "cursos"), data);
+        cursoIdGuardado = nuevoRef.id;
         toast("Curso creado", "success");
+      }
+      // Consultora con firma compartida: sincronizar firma y director en los demás cursos
+      if (firmaCompartidaActiva()) {
+        try {
+          const n = await propagarFirmaCompartida(cursoIdGuardado, data.firmaPonente, data.directorInstituto);
+          if (n > 0) toast(`Firma y director sincronizados en ${n} curso${n === 1 ? "" : "s"} más`, "success");
+        } catch (e) {
+          console.error(e);
+          toast("El curso se guardó, pero la sincronización de firma falló: " + e.message, "warning");
+        }
       }
       modalCurso.classList.add("hidden");
     } catch (err) {
