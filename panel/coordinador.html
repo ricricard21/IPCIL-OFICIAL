@@ -518,6 +518,24 @@
   .btn-recarga:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
   .btn-pagar-plan { background: #b08d2e; border: none; color: #fff; border-radius: 12px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(176,141,46,0.35); }
   .btn-pagar-plan:hover { background: #96771f; }
+  .btn-comprar-creditos { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.32); color: #fff; border-radius: 12px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.15s; }
+  .btn-comprar-creditos:hover { background: rgba(255,255,255,0.26); transform: translateY(-1px); }
+
+  /* ═══ Modal Comprar Créditos (estilo WATI) ═══ */
+  .pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 4px 0 4px; }
+  .pack-card { position: relative; border: 1.5px solid var(--line-strong); border-radius: 12px; padding: 16px 8px 14px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--surface); }
+  .pack-card:hover { border-color: var(--primary); }
+  .pack-card.selected { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 3px var(--primary-glow); }
+  .pack-card .pack-creditos { font-size: 19px; font-weight: 800; color: var(--text); line-height: 1.2; }
+  .pack-card .pack-creditos small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 2px; }
+  .pack-card .pack-precio { font-size: 14px; font-weight: 800; color: var(--primary); margin-top: 8px; }
+  .pack-card .pack-unit { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+  .pack-card .pack-badge { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; font-size: 9.5px; font-weight: 800; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .pack-nota { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+  .btn-continuar-pago { width: 100%; margin-top: 16px; background: var(--primary); border: none; color: #fff; border-radius: 12px; padding: 13px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; transition: opacity 0.15s, background 0.15s; }
+  .btn-continuar-pago:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-continuar-pago:not(:disabled):hover { background: var(--primary-dark); }
+  @media (max-width: 520px) { .pack-grid { grid-template-columns: 1fr; } }
   .pagos-nota { font-size: 10.5px; opacity: 0.65; margin-top: 10px; }
 </style>
 </head>
@@ -617,9 +635,7 @@
           </div>
           <div class="pagos-botones" id="pagos-botones">
             <button class="btn-pagar-plan" id="btn-pagar-plan" style="display:none">Pagar mi mensualidad · $3,000</button>
-            <button class="btn-recarga" data-pack="pack50">+50 créditos<small>$1,500</small></button>
-            <button class="btn-recarga" data-pack="pack100">+100 créditos<small>$2,900 · $29 c/u</small></button>
-            <button class="btn-recarga" data-pack="pack500">+500 créditos<small>$13,500 · $27 c/u</small></button>
+            <button class="btn-comprar-creditos" id="btn-abrir-modal-creditos">+ Comprar créditos</button>
           </div>
         </div>
         <div class="pagos-nota">Los pagos se procesan en Stripe con total seguridad. Tu saldo se actualiza aquí automáticamente al confirmarse el pago (1-2 min). Cada certificado emitido consume 1 crédito.</div>
@@ -1073,6 +1089,45 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL COMPRAR CRÉDITOS (estilo WATI)                 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-creditos">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Comprar créditos</div>
+        <div class="modal-subtitle">Elige el paquete que necesitas para tu consultora</div>
+      </div>
+      <button class="modal-close" id="modal-creditos-close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="pack-grid" id="pack-grid">
+        <div class="pack-card" data-pack="pack50" data-link-key="linkPack50">
+          <div class="pack-creditos">50<small>créditos</small></div>
+          <div class="pack-precio">$1,500</div>
+          <div class="pack-unit">$30 c/u</div>
+        </div>
+        <div class="pack-card" data-pack="pack100" data-link-key="linkPack100">
+          <div class="pack-creditos">100<small>créditos</small></div>
+          <div class="pack-precio">$2,900</div>
+          <div class="pack-unit">$29 c/u</div>
+        </div>
+        <div class="pack-card" data-pack="pack500" data-link-key="linkPack500">
+          <span class="pack-badge">Mejor precio</span>
+          <div class="pack-creditos">500<small>créditos</small></div>
+          <div class="pack-precio">$13,500</div>
+          <div class="pack-unit">$27 c/u</div>
+        </div>
+      </div>
+      <button class="btn-continuar-pago" id="btn-continuar-pago-creditos" disabled>Continuar a pago seguro →</button>
+      <div class="pack-nota">Los créditos no caducan y se suman a tu saldo actual. El pago se procesa en Stripe; tu saldo se actualiza aquí automáticamente al confirmarse (1-2 min).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
 <!-- MODAL CURSO                                          -->
 <!-- ═══════════════════════════════════════════════════ -->
 <div class="modal-backdrop hidden" id="modal-curso">
@@ -1261,14 +1316,42 @@
       btnPlan.style.display = "";
     }
     btnPlan.onclick = () => abrirPago(links.linkMensual);
-    card.querySelectorAll(".btn-recarga").forEach((b) => {
-      b.onclick = () => abrirPago(
-        b.dataset.pack === "pack50" ? links.linkPack50 :
-        b.dataset.pack === "pack100" ? links.linkPack100 : links.linkPack500
-      );
-    });
     card.style.display = "block";
   }
+
+  // ── Modal Comprar créditos (estilo WATI) ──
+  const modalCreditos = document.getElementById("modal-creditos");
+  const btnContinuarPago = document.getElementById("btn-continuar-pago-creditos");
+  let _packSeleccionado = null;
+
+  function cerrarModalCreditos() {
+    modalCreditos.classList.add("hidden");
+    _packSeleccionado = null;
+    document.querySelectorAll(".pack-card.selected").forEach((el) => el.classList.remove("selected"));
+    btnContinuarPago.disabled = true;
+  }
+
+  document.getElementById("btn-abrir-modal-creditos")?.addEventListener("click", () => {
+    modalCreditos.classList.remove("hidden");
+  });
+  document.getElementById("modal-creditos-close")?.addEventListener("click", cerrarModalCreditos);
+  modalCreditos?.addEventListener("click", (e) => { if (e.target === modalCreditos) cerrarModalCreditos(); });
+
+  document.querySelectorAll(".pack-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".pack-card.selected").forEach((el) => el.classList.remove("selected"));
+      card.classList.add("selected");
+      _packSeleccionado = card.dataset.linkKey;
+      btnContinuarPago.disabled = false;
+    });
+  });
+
+  btnContinuarPago?.addEventListener("click", async () => {
+    if (!_packSeleccionado) return;
+    const links = await cargarLinksPago();
+    abrirPago(links[_packSeleccionado]);
+    cerrarModalCreditos();
+  });
 
   if (usuario?.consultoraId) {
     onSnapshot(doc(db, "consultoras", usuario.consultoraId), (s) => {
