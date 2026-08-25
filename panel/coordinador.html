@@ -812,8 +812,9 @@
         <div class="card-header">
           <div>
             <div class="card-title">Equipo de ventas</div>
-            <div class="card-subtitle"><span id="vendedores-total">0</span> vendedores</div>
+            <div class="card-subtitle"><span id="vendedores-total">0</span> vendedores<span id="vend-limite-txt" style="display:none"> · <span id="vend-usados">0</span> de <span id="vend-limite">2</span> incluidos</span></div>
           </div>
+          <button class="btn btn-primary" id="btn-crear-vendedor" style="display:none">＋ Crear vendedor</button>
         </div>
         <div id="vendedores-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
       </div>
@@ -1128,6 +1129,50 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL CREAR VENDEDOR (solo consultoras aliadas)      -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-vendedor">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Crear vendedor</div>
+        <div class="modal-subtitle">Su cuenta queda lista al instante para entrar al panel de ventas</div>
+      </div>
+      <button class="modal-close" id="modal-vendedor-close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="form-vendedor">
+        <div class="field">
+          <label class="field-label">Nombre completo *</label>
+          <input class="input" type="text" id="vend-nombre" required maxlength="80" placeholder="Ej. Juan Pérez">
+        </div>
+        <div class="field">
+          <label class="field-label">Correo electrónico *</label>
+          <input class="input" type="email" id="vend-email" required placeholder="ventas@tuacademia.mx">
+        </div>
+        <div class="field">
+          <label class="field-label">Contraseña *</label>
+          <input class="input" type="password" id="vend-pass" required minlength="8" placeholder="Mín. 8, 1 mayúscula y 1 número" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label class="field-label">Confirma la contraseña *</label>
+          <input class="input" type="password" id="vend-pass2" required minlength="8" placeholder="Escríbela de nuevo" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary" id="btn-guardar-vendedor" type="submit" style="width:100%;margin-top:6px">Crear vendedor</button>
+        <div id="vend-error" style="display:none;background:var(--red-soft);border:1px solid #fecaca;color:var(--red);border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;margin-top:12px;line-height:1.5"></div>
+        <div id="vend-limite-cta" style="display:none;background:var(--yellow-soft);border:1px solid #f0d998;border-radius:12px;padding:14px;margin-top:12px;text-align:center">
+          <div style="font-size:12.5px;font-weight:700;color:var(--yellow);line-height:1.5;margin-bottom:10px" id="vend-limite-msg"></div>
+          <button type="button" class="btn btn-primary" id="btn-pagar-vendedor-extra" style="width:100%">Agregar vendedor extra · $500/mes →</button>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.5">Al confirmarse el pago, tu límite sube automáticamente y podrás crear al vendedor aquí mismo.</div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
 <!-- MODAL CURSO                                          -->
 <!-- ═══════════════════════════════════════════════════ -->
 <div class="modal-backdrop hidden" id="modal-curso">
@@ -1379,11 +1424,105 @@
     onSnapshot(doc(db, "consultoras", usuario.consultoraId), (s) => {
       if (s.exists()) {
         const c = { id: s.id, ...s.data() };
+        _consultoraLive = c;
         pintarChipCreditos(c);
         pintarCentroPagos(c);
+        pintarSeccionVendedores(c);
       }
     }, () => {});
   }
+
+  // ── Crear vendedores (solo consultoras aliadas): 2 incluidos, extra $500/mes ──
+  let _consultoraLive = null;
+  const ENDPOINT_CREAR_VENDEDOR = "https://crearvendedoraliado-imsrzczhta-uc.a.run.app";
+
+  function pintarSeccionVendedores(c) {
+    const btn = document.getElementById("btn-crear-vendedor");
+    const limTxt = document.getElementById("vend-limite-txt");
+    if (!c || c.tipo !== "aliado") { btn.style.display = "none"; limTxt.style.display = "none"; return; }
+    btn.style.display = "inline-flex";
+    limTxt.style.display = "inline";
+    document.getElementById("vend-limite").textContent = Number(c.limiteVendedores) || 2;
+    document.getElementById("vend-usados").textContent = vendedores.filter(v => v.activo !== false).length;
+  }
+
+  const modalVendedor = document.getElementById("modal-vendedor");
+  const vendError = document.getElementById("vend-error");
+  const vendLimiteCta = document.getElementById("vend-limite-cta");
+
+  function cerrarModalVendedor() {
+    modalVendedor.classList.add("hidden");
+    document.getElementById("form-vendedor").reset();
+    vendError.style.display = "none";
+    vendLimiteCta.style.display = "none";
+  }
+  document.getElementById("btn-crear-vendedor").addEventListener("click", () => {
+    vendError.style.display = "none";
+    vendLimiteCta.style.display = "none";
+    modalVendedor.classList.remove("hidden");
+  });
+  document.getElementById("modal-vendedor-close").addEventListener("click", cerrarModalVendedor);
+  modalVendedor.addEventListener("click", (e) => { if (e.target === modalVendedor) cerrarModalVendedor(); });
+
+  document.getElementById("btn-pagar-vendedor-extra").addEventListener("click", async () => {
+    const links = await cargarLinksPago();
+    abrirPago(links.linkVendedorExtra);
+  });
+
+  document.getElementById("form-vendedor").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    vendError.style.display = "none";
+    vendLimiteCta.style.display = "none";
+    const pass = document.getElementById("vend-pass").value;
+    const pass2 = document.getElementById("vend-pass2").value;
+    if (!/^(?=.*[A-ZÁÉÍÓÚÑ])(?=.*\d).{8,}$/.test(pass)) {
+      vendError.textContent = "La contraseña debe tener mínimo 8 caracteres, al menos 1 mayúscula y 1 número.";
+      vendError.style.display = "block";
+      return;
+    }
+    if (pass !== pass2) {
+      vendError.textContent = "Las contraseñas no coinciden.";
+      vendError.style.display = "block";
+      return;
+    }
+    const btnG = document.getElementById("btn-guardar-vendedor");
+    btnG.disabled = true;
+    btnG.textContent = "Creando…";
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const resp = await fetch(ENDPOINT_CREAR_VENDEDOR, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify({
+          nombre: document.getElementById("vend-nombre").value.trim(),
+          email: document.getElementById("vend-email").value.trim(),
+          password: pass,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        if (data.limiteAlcanzado) {
+          document.getElementById("vend-limite-msg").textContent = data.error;
+          vendLimiteCta.style.display = "block";
+        } else {
+          vendError.textContent = data.error || "No se pudo crear el vendedor.";
+          vendError.style.display = "block";
+        }
+        return;
+      }
+      toast(`Vendedor creado (${data.activos} de ${data.limite})`, "success");
+      cerrarModalVendedor();
+      // La lista se refresca sola por el onSnapshot de vendedores
+    } catch (err) {
+      vendError.textContent = err.message === "Failed to fetch"
+        ? "No pude conectar con el servidor. Intenta en un minuto."
+        : err.message;
+      vendError.style.display = "block";
+    } finally {
+      btnG.disabled = false;
+      btnG.textContent = "Crear vendedor";
+    }
+  });
 
   document.getElementById("user-name").textContent = usuario.nombre || "Coordinador";
   document.getElementById("user-consultora").textContent = usuario.consultoraNombre || "—";
@@ -2635,11 +2774,13 @@
   // ═══════════════════════════════════════════════════════════
   function renderVendedores() {
     const c = document.getElementById("vendedores-container");
+    if (_consultoraLive) pintarSeccionVendedores(_consultoraLive);
     if (vendedores.length === 0) {
+      const esAliado = _consultoraLive && _consultoraLive.tipo === "aliado";
       c.innerHTML = `<div class="empty">
         <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
         <div class="empty-text">Aún no hay vendedores</div>
-        <div class="empty-hint">Pide al super admin que cree vendedores para tu consultora</div>
+        <div class="empty-hint">${esAliado ? "Crea tu primer vendedor con el botón de arriba — tu plan incluye 2" : "Pide al super admin que cree vendedores para tu consultora"}</div>
       </div>`;
       return;
     }
