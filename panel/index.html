@@ -196,6 +196,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <span id="login-error-text"></span>
       </div>
+      <div id="olvide-ok" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:10px;padding:11px 13px;font-size:12.5px;font-weight:600;line-height:1.55;margin-top:10px"></div>
 
       <button type="submit" class="btn btn-primary" id="btn-login">
         <span>Iniciar sesión</span>
@@ -209,6 +210,7 @@
     </div>
 
     <div class="login-footer">
+      <a href="#" id="link-olvide" style="display:block;margin-bottom:8px">¿Olvidaste tu contraseña?</a>
       <a href="../index.html">← Volver a ipcil.org</a>
     </div>
   </div>
@@ -256,12 +258,35 @@
     doc,
     getDoc
   } from "./firebase-config.js";
+  import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const form = document.getElementById("login-form");
   const errorEl = document.getElementById("login-error");
   const errorTxt = document.getElementById("login-error-text");
   const loaderEl = document.getElementById("login-loader");
   const btnLogin = document.getElementById("btn-login");
+
+  // ── Recuperar contraseña por correo ──
+  document.getElementById("link-olvide").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    if (!email) {
+      errorTxt.textContent = "Escribe tu correo arriba y vuelve a dar clic en \"¿Olvidaste tu contraseña?\"";
+      errorEl.classList.add("visible");
+      document.getElementById("email").focus();
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (_) {
+      // Mismo mensaje exista o no la cuenta: no revelamos qué correos están registrados
+    }
+    errorEl.classList.remove("visible");
+    errorTxt.textContent = "";
+    const ok = document.getElementById("olvide-ok");
+    ok.style.display = "block";
+    ok.textContent = `📬 Si ${email} tiene cuenta, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja y el spam.`;
+  });
 
   // Si ya hay sesión activa, redirigir según el rol
   onAuthStateChanged(auth, async (user) => {
