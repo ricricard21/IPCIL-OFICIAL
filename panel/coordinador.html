@@ -1169,6 +1169,12 @@
         </div>
 
         <div class="field">
+          <label class="field-label">Instituto / escuela del ponente</label>
+          <input class="input" type="text" id="curso-instituto-ponente" placeholder="Ej. Instituto Gastronómico de Puebla">
+          <div class="field-hint">Aparecerá en el certificado debajo del cargo del ponente</div>
+        </div>
+
+        <div class="field">
           <label class="field-label">Firma del ponente</label>
           <input class="input" type="file" id="curso-firma-ponente" accept="image/png,image/jpeg">
           <div class="field-hint">Imagen de la firma (PNG con fondo transparente se ve mejor). Aparecerá sobre la línea de firma del certificado.</div>
@@ -3114,6 +3120,7 @@
       document.getElementById("curso-ponente").value = cursoData.ponente || "";
       document.getElementById("curso-email-ponente").value = cursoData.emailPonente || "";
       document.getElementById("curso-tel-ponente").value = cursoData.telefonoPonente || "";
+      document.getElementById("curso-instituto-ponente").value = cursoData.institutoPonente || "";
       document.getElementById("curso-hora-inicio").value = cursoData.horaInicioCurso || "";
       document.getElementById("curso-modalidad").value = cursoData.modalidad || "";
       document.getElementById("curso-duracion").value = cursoData.duracion || "";
@@ -3210,6 +3217,7 @@
         ponente: document.getElementById("curso-ponente").value.trim(),
         emailPonente: document.getElementById("curso-email-ponente").value.trim().toLowerCase(),
         telefonoPonente: document.getElementById("curso-tel-ponente").value.trim(),
+        institutoPonente: document.getElementById("curso-instituto-ponente").value.trim(),
         horaInicioCurso: document.getElementById("curso-hora-inicio").value || "",
         modalidad: document.getElementById("curso-modalidad").value,
         duracion: document.getElementById("curso-duracion").value.trim(),
