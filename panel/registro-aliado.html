@@ -100,8 +100,30 @@
         <input class="rf-input" type="text" id="reg-academia" required maxlength="80" placeholder="Ej. Academia Dental del Norte">
       </div>
       <div class="rf">
-        <label class="rf-label">Tu nombre completo (coordinador) *</label>
-        <input class="rf-input" type="text" id="reg-coordinador" required maxlength="80" placeholder="Ej. Dra. Sofía Ruiz">
+        <label class="rf-label">Tu nombre completo con apellidos *</label>
+        <input class="rf-input" type="text" id="reg-coordinador" required maxlength="80" placeholder="Ej. Sofía Ruiz Hernández">
+        <div class="rf-hint">Nombre y tus dos apellidos, como en tu identificación.</div>
+      </div>
+      <div class="rf">
+        <label class="rf-label">Municipio o ciudad *</label>
+        <input class="rf-input" type="text" id="reg-ciudad" required maxlength="60" placeholder="Ej. Tehuacán">
+      </div>
+      <div class="rf">
+        <label class="rf-label">Estado *</label>
+        <select class="rf-input" id="reg-estado" required>
+          <option value="" disabled selected>Elige tu estado</option>
+          <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
+          <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
+          <option>Ciudad de México</option><option>Coahuila</option><option>Colima</option>
+          <option>Durango</option><option>Estado de México</option><option>Guanajuato</option>
+          <option>Guerrero</option><option>Hidalgo</option><option>Jalisco</option>
+          <option>Michoacán</option><option>Morelos</option><option>Nayarit</option>
+          <option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option>
+          <option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option>
+          <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
+          <option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option>
+          <option>Yucatán</option><option>Zacatecas</option><option>Otro país</option>
+        </select>
       </div>
       <div class="rf">
         <label class="rf-label">Correo electrónico *</label>
@@ -233,6 +255,15 @@
     const password = document.getElementById("reg-password").value;
     const password2 = document.getElementById("reg-password2").value;
 
+    // Nombre completo: nombre + dos apellidos (mínimo 3 palabras reales)
+    const coordinador = document.getElementById("reg-coordinador").value.trim();
+    const palabras = coordinador.split(/\s+/).filter(p => p.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, "").length >= 2);
+    if (palabras.length < 3) {
+      errBox.textContent = "Escribe tu nombre completo con tus dos apellidos (ej. Sofía Ruiz Hernández).";
+      errBox.style.display = "block";
+      return;
+    }
+
     // Contraseña fuerte: 8+, al menos 1 mayúscula y 1 número
     if (!/^(?=.*[A-ZÁÉÍÓÚÑ])(?=.*\d).{8,}$/.test(password)) {
       errBox.textContent = "La contraseña debe tener mínimo 8 caracteres, al menos 1 mayúscula y 1 número.";
@@ -254,10 +285,12 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           academia: document.getElementById("reg-academia").value.trim(),
-          coordinador: document.getElementById("reg-coordinador").value.trim(),
+          coordinador,
           email,
           password,
           telefono: document.getElementById("reg-telefono").value.trim(),
+          ciudad: document.getElementById("reg-ciudad").value.trim(),
+          estado: document.getElementById("reg-estado").value,
           plan: planSeleccionado,
           sitio_web: document.getElementById("reg-sitio-web").value,
         }),
