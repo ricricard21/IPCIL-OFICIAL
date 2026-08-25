@@ -1465,12 +1465,14 @@
   modalVendedor.addEventListener("click", (e) => { if (e.target === modalVendedor) cerrarModalVendedor(); });
 
   document.getElementById("btn-pagar-vendedor-extra").addEventListener("click", async () => {
-    // Guardar el vendedor capturado para crearlo automáticamente al volver del pago
+    // Guardar el vendedor capturado para crearlo automáticamente al volver del pago.
+    // localStorage (no sessionStorage): el pago abre en pestaña nueva y debe poder leerlo.
     try {
-      sessionStorage.setItem("vendedorPendiente", JSON.stringify({
+      localStorage.setItem("vendedorPendiente", JSON.stringify({
         nombre: document.getElementById("vend-nombre").value.trim(),
         email: document.getElementById("vend-email").value.trim(),
         pass: document.getElementById("vend-pass").value,
+        ts: Date.now(),
       }));
     } catch (_) {}
     const links = await cargarLinksPago();
@@ -1481,8 +1483,13 @@
   // El webhook tarda unos segundos en subir el límite, así que reintenta hasta ~36s.
   async function crearVendedorPendiente() {
     let pendiente = null;
-    try { pendiente = JSON.parse(sessionStorage.getItem("vendedorPendiente") || "null"); } catch (_) {}
+    try { pendiente = JSON.parse(localStorage.getItem("vendedorPendiente") || "null"); } catch (_) {}
     if (!pendiente || !pendiente.email || !pendiente.pass) return;
+    // Caducidad de seguridad: si pasaron más de 30 min, descartar
+    if (!pendiente.ts || Date.now() - pendiente.ts > 30 * 60 * 1000) {
+      localStorage.removeItem("vendedorPendiente");
+      return;
+    }
 
     toast("Pago recibido · creando a tu vendedor automáticamente…", "success");
     const idToken = await auth.currentUser.getIdToken();
@@ -1495,13 +1502,13 @@
         });
         const data = await resp.json();
         if (resp.ok) {
-          sessionStorage.removeItem("vendedorPendiente");
+          localStorage.removeItem("vendedorPendiente");
           toast(`✅ Vendedor ${pendiente.nombre} creado (${data.activos} de ${data.limite})`, "success");
           return;
         }
         if (!data.limiteAlcanzado) {
           // Error distinto al límite (ej. correo ocupado): abrir el modal prellenado para corregir
-          sessionStorage.removeItem("vendedorPendiente");
+          localStorage.removeItem("vendedorPendiente");
           document.getElementById("vend-nombre").value = pendiente.nombre || "";
           document.getElementById("vend-email").value = pendiente.email || "";
           vendError.textContent = data.error || "No se pudo crear el vendedor.";
@@ -1519,7 +1526,7 @@
     vendError.textContent = "Tu pago se está procesando. En unos segundos dale a Crear vendedor (contraseña de nuevo por seguridad).";
     vendError.style.display = "block";
     modalVendedor.classList.remove("hidden");
-    sessionStorage.removeItem("vendedorPendiente");
+    localStorage.removeItem("vendedorPendiente");
   }
   if (new URLSearchParams(location.search).get("pago") === "ok") {
     crearVendedorPendiente();
