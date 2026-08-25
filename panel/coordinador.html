@@ -1133,6 +1133,37 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
+<!-- MODAL RETENCIÓN · GESTIONAR SUSCRIPCIONES            -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop hidden" id="modal-retencion">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Antes de continuar…</div>
+        <div class="modal-subtitle">Tu suscripción es lo que mantiene viva tu certificación</div>
+      </div>
+      <button class="modal-close" id="modal-retencion-close" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--yellow-soft);border:1px solid #f0d998;border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:8px">⚠️ Si cancelas tu plan, tu academia pierde:</div>
+        <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--text-soft);line-height:1.9">
+          <li>La emisión de certificados con <b>folio IPCI y QR verificable</b> — el respaldo de la institución privada de certificación <b>#1 de México</b></li>
+          <li>La presencia de tus alumnos en el <b>padrón público</b> que los empleadores consultan</li>
+          <li>El acceso de todo tu equipo al panel de coordinación y ventas</li>
+        </ul>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6">Tus créditos no caducan: si solo necesitas una pausa, puedes conservar tu cuenta y usarlos cuando quieras.</div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:16px">💡 ¿Solo quieres cancelar un <b>vendedor extra</b> o cambiar tu tarjeta? Eso no afecta tu licencia — adelante sin pendiente.</div>
+      <button class="btn btn-primary" id="btn-retencion-conservar" type="button" style="width:100%">Conservar mi plan</button>
+      <button class="btn btn-secondary" id="btn-retencion-continuar" type="button" style="width:100%;margin-top:10px">Continuar al portal de pagos →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
 <!-- MODAL CREAR VENDEDOR (solo consultoras aliadas)      -->
 <!-- ═══════════════════════════════════════════════════ -->
 <div class="modal-backdrop hidden" id="modal-vendedor">
@@ -1558,12 +1589,21 @@
   }
 
   // ── Portal de suscripciones de Stripe (cancelar extras, cambiar tarjeta, facturas) ──
-  // Ítem del menú lateral, visible solo para aliados (lo enciende pintarSeccionVendedores)
+  // Ítem del menú lateral (solo aliados). Antes de ir a Stripe: modal de retención.
   const ENDPOINT_PORTAL = "https://crearportalsesion-imsrzczhta-uc.a.run.app";
-  document.getElementById("menu-portal-suscripciones").addEventListener("click", async (e) => {
+  const modalRetencion = document.getElementById("modal-retencion");
+  const cerrarRetencion = () => modalRetencion.classList.add("hidden");
+  document.getElementById("menu-portal-suscripciones").addEventListener("click", () => {
+    modalRetencion.classList.remove("hidden");
+  });
+  document.getElementById("modal-retencion-close").addEventListener("click", cerrarRetencion);
+  document.getElementById("btn-retencion-conservar").addEventListener("click", cerrarRetencion);
+  modalRetencion.addEventListener("click", (e) => { if (e.target === modalRetencion) cerrarRetencion(); });
+
+  document.getElementById("btn-retencion-continuar").addEventListener("click", async (e) => {
     const b = e.currentTarget;
     b.disabled = true;
-    b.style.opacity = "0.6";
+    b.textContent = "Abriendo portal…";
     try {
       const idToken = await auth.currentUser.getIdToken();
       const resp = await fetch(ENDPOINT_PORTAL, {
@@ -1575,9 +1615,8 @@
       window.location.href = data.url; // misma pestaña: evita el bloqueo de popups; el portal regresa al panel
     } catch (err) {
       toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
-    } finally {
       b.disabled = false;
-      b.style.opacity = "";
+      b.textContent = "Continuar al portal de pagos →";
     }
   });
 
