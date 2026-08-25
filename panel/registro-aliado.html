@@ -110,7 +110,15 @@
       </div>
       <div class="rf">
         <label class="rf-label">Contraseña *</label>
-        <input class="rf-input" type="password" id="reg-password" required minlength="8" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        <input class="rf-input" type="password" id="reg-password" required minlength="8" placeholder="Mín. 8 caracteres, 1 mayúscula y 1 número" autocomplete="new-password">
+      </div>
+      <div class="rf">
+        <label class="rf-label">Confirma tu contraseña *</label>
+        <input class="rf-input" type="password" id="reg-password2" required minlength="8" placeholder="Escríbela de nuevo" autocomplete="new-password">
+      </div>
+      <!-- Honeypot anti-bots: los humanos no lo ven, los bots lo llenan -->
+      <div style="position:absolute;left:-5000px" aria-hidden="true">
+        <input type="text" id="reg-sitio-web" name="sitio_web" tabindex="-1" autocomplete="off">
       </div>
       <div class="rf">
         <label class="rf-label">WhatsApp de contacto</label>
@@ -146,7 +154,9 @@
 
 </div>
 
-<script>
+<script type="module">
+  import { auth, signInWithEmailAndPassword, signOut } from "./firebase-config.js";
+
   const ENDPOINT_REGISTRO = "https://registraraliado-imsrzczhta-uc.a.run.app";
 
   let planSeleccionado = null;
@@ -186,6 +196,26 @@
   document.getElementById("form-registro").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!planSeleccionado) { errBox.textContent = "Elige un plan."; errBox.style.display = "block"; return; }
+
+    // Honeypot: si un bot lo llenó, abortamos en silencio
+    if (document.getElementById("reg-sitio-web").value) return;
+
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value;
+    const password2 = document.getElementById("reg-password2").value;
+
+    // Contraseña fuerte: 8+, al menos 1 mayúscula y 1 número
+    if (!/^(?=.*[A-ZÁÉÍÓÚÑ])(?=.*\d).{8,}$/.test(password)) {
+      errBox.textContent = "La contraseña debe tener mínimo 8 caracteres, al menos 1 mayúscula y 1 número.";
+      errBox.style.display = "block";
+      return;
+    }
+    if (password !== password2) {
+      errBox.textContent = "Las contraseñas no coinciden.";
+      errBox.style.display = "block";
+      return;
+    }
+
     errBox.style.display = "none";
     btn.disabled = true;
     btn.textContent = "Procesando…";
@@ -196,14 +226,26 @@
         body: JSON.stringify({
           academia: document.getElementById("reg-academia").value.trim(),
           coordinador: document.getElementById("reg-coordinador").value.trim(),
-          email: document.getElementById("reg-email").value.trim(),
-          password: document.getElementById("reg-password").value,
+          email,
+          password,
           telefono: document.getElementById("reg-telefono").value.trim(),
           plan: planSeleccionado,
+          sitio_web: document.getElementById("reg-sitio-web").value,
         }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Error en el registro");
+
+      // Iniciar sesión con la cuenta NUEVA antes de ir a Stripe:
+      // así, al volver del pago, la sesión activa es la del recién registrado
+      // (y se reemplaza cualquier sesión anterior que hubiera en este navegador).
+      try {
+        await signOut(auth);
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (e2) {
+        console.warn("Auto-login falló (el pago sigue):", e2.message);
+      }
+
       window.location.href = data.url; // → Stripe Checkout
     } catch (err) {
       errBox.textContent = err.message === "Failed to fetch"
