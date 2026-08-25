@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Registro · Programa Aliado Certificador — IPCI</title>
+<link rel="stylesheet" href="panel.css">
+<style>
+  body { background: var(--bg, #f1f5f9); font-family: inherit; }
+  .reg-wrap { max-width: 520px; margin: 40px auto; padding: 0 16px; }
+  .reg-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 28px 26px; box-shadow: 0 10px 30px rgba(15,43,76,.08); }
+  .reg-logo { text-align: center; margin-bottom: 6px; font-family: Georgia, serif; font-weight: 800; font-size: 26px; color: #0f2b4c; }
+  .reg-sub { text-align: center; font-size: 12.5px; color: #64748b; margin-bottom: 22px; line-height: 1.5; }
+  .reg-field { margin-bottom: 14px; }
+  .reg-label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 5px; }
+  .reg-input { width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 11px 12px; font-size: 14px; font-family: inherit; }
+  .reg-input:focus { outline: none; border-color: #0b4ea2; }
+  .reg-hint { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 2px; }
+  .plan-card { position: relative; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all .15s; background: #fff; }
+  .plan-card:hover { border-color: #0b4ea2; }
+  .plan-card.selected { border-color: #0b4ea2; background: #eef4ff; box-shadow: 0 0 0 3px rgba(11,78,162,.12); }
+  .plan-card .p-nombre { font-size: 13px; font-weight: 800; color: #0f2b4c; }
+  .plan-card .p-precio { font-size: 17px; font-weight: 800; color: #0b4ea2; margin-top: 5px; }
+  .plan-card .p-det { font-size: 10.5px; color: #64748b; margin-top: 3px; line-height: 1.4; }
+  .plan-card .p-badge { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: #15803d; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .reg-btn { width: 100%; margin-top: 18px; background: #0b4ea2; border: none; color: #fff; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
+  .reg-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .reg-btn:not(:disabled):hover { background: #073b80; }
+  .reg-error { display: none; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; margin-top: 12px; }
+  .reg-ok { display: none; background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 10px; padding: 12px; font-size: 13px; margin-top: 12px; line-height: 1.5; }
+  .reg-nota { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 14px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="reg-wrap">
+  <div class="reg-card">
+    <div class="reg-logo">IPCI</div>
+    <div class="reg-sub">Programa Aliado Certificador<br>Registra tu academia, elige tu plan y empieza a certificar hoy mismo.</div>
+
+    <div class="reg-ok" id="msg-pago-ok">
+      ✅ <b>¡Pago recibido!</b> Tu cuenta se está activando (1-2 minutos).
+      Revisa tu correo para confirmar tu dirección y luego
+      <a href="https://ipcil.org/panel/">inicia sesión en el panel</a> con el correo y contraseña que registraste.
+    </div>
+
+    <form id="form-registro" autocomplete="on">
+      <div class="reg-field">
+        <label class="reg-label">Nombre de tu academia / instituto *</label>
+        <input class="reg-input" type="text" id="reg-academia" required maxlength="80" placeholder="Ej. Academia Dental del Norte">
+      </div>
+      <div class="reg-field">
+        <label class="reg-label">Tu nombre completo (coordinador) *</label>
+        <input class="reg-input" type="text" id="reg-coordinador" required maxlength="80" placeholder="Ej. Dra. Sofía Ruiz">
+      </div>
+      <div class="reg-field">
+        <label class="reg-label">Correo electrónico *</label>
+        <input class="reg-input" type="email" id="reg-email" required placeholder="tucorreo@academia.mx" autocomplete="email">
+        <div class="reg-hint">Con este correo entrarás al panel. Te enviaremos un enlace para confirmarlo.</div>
+      </div>
+      <div class="reg-field">
+        <label class="reg-label">Contraseña *</label>
+        <input class="reg-input" type="password" id="reg-password" required minlength="8" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      </div>
+      <div class="reg-field">
+        <label class="reg-label">WhatsApp de contacto</label>
+        <input class="reg-input" type="tel" id="reg-telefono" placeholder="Ej. 2211234567 (10 dígitos)">
+      </div>
+
+      <div class="reg-field">
+        <label class="reg-label">Elige tu plan *</label>
+        <div class="plan-grid">
+          <div class="plan-card" data-plan="mensual">
+            <div class="p-nombre">Mensual</div>
+            <div class="p-precio">$3,000</div>
+            <div class="p-det">100 certificados al mes<br>$30 c/u</div>
+          </div>
+          <div class="plan-card" data-plan="anual">
+            <span class="p-badge">Mejor precio</span>
+            <div class="p-nombre">Anual</div>
+            <div class="p-precio">$30,000</div>
+            <div class="p-det">1,200 certificados al año<br>$25 c/u</div>
+          </div>
+        </div>
+        <div class="reg-hint">Incluye panel de coordinación y ventas, 2 vendedores, certificados con QR verificable en ipcil.org y créditos que no caducan.</div>
+      </div>
+
+      <button class="reg-btn" id="btn-registrar" type="submit" disabled>Continuar a pago seguro →</button>
+      <div class="reg-error" id="reg-error"></div>
+    </form>
+
+    <div class="reg-nota">
+      Pago procesado por Stripe. Tu cuenta se activa automáticamente al confirmarse el pago.<br>
+      ¿Ya tienes cuenta? <a href="https://ipcil.org/panel/">Inicia sesión</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ENDPOINT_REGISTRO = "https://registraraliado-imsrzczhta-uc.a.run.app";
+
+  let planSeleccionado = null;
+  const btn = document.getElementById("btn-registrar");
+  const errBox = document.getElementById("reg-error");
+
+  document.querySelectorAll(".plan-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".plan-card.selected").forEach((el) => el.classList.remove("selected"));
+      card.classList.add("selected");
+      planSeleccionado = card.dataset.plan;
+      btn.disabled = false;
+    });
+  });
+
+  // Retorno de Stripe
+  const params = new URLSearchParams(location.search);
+  if (params.get("pago") === "ok") {
+    document.getElementById("msg-pago-ok").style.display = "block";
+    document.getElementById("form-registro").style.display = "none";
+  } else if (params.get("pago") === "cancelado") {
+    errBox.textContent = "El pago no se completó. Puedes intentarlo de nuevo cuando quieras.";
+    errBox.style.display = "block";
+  }
+
+  document.getElementById("form-registro").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!planSeleccionado) { errBox.textContent = "Elige un plan."; errBox.style.display = "block"; return; }
+    errBox.style.display = "none";
+    btn.disabled = true;
+    btn.textContent = "Procesando…";
+    try {
+      const resp = await fetch(ENDPOINT_REGISTRO, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          academia: document.getElementById("reg-academia").value.trim(),
+          coordinador: document.getElementById("reg-coordinador").value.trim(),
+          email: document.getElementById("reg-email").value.trim(),
+          password: document.getElementById("reg-password").value,
+          telefono: document.getElementById("reg-telefono").value.trim(),
+          plan: planSeleccionado,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Error en el registro");
+      window.location.href = data.url; // → Stripe Checkout
+    } catch (err) {
+      errBox.textContent = err.message;
+      errBox.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "Continuar a pago seguro →";
+    }
+  });
+</script>
+</body>
+</html>
