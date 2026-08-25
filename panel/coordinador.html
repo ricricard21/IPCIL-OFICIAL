@@ -636,6 +636,7 @@
           <div class="pagos-botones" id="pagos-botones">
             <button class="btn-pagar-plan" id="btn-pagar-plan" style="display:none">Pagar mi mensualidad · $3,000</button>
             <button class="btn-comprar-creditos" id="btn-abrir-modal-creditos">+ Comprar créditos</button>
+            <button class="btn-comprar-creditos" id="btn-portal-suscripciones">Gestionar suscripciones</button>
           </div>
         </div>
         <div class="pagos-nota">Los pagos se procesan en Stripe con total seguridad. Tu saldo se actualiza aquí automáticamente al confirmarse el pago (1-2 min). Cada certificado emitido consume 1 crédito.</div>
@@ -1531,6 +1532,30 @@
   if (new URLSearchParams(location.search).get("pago") === "ok") {
     crearVendedorPendiente();
   }
+
+  // ── Portal de suscripciones de Stripe (cancelar extras, cambiar tarjeta, facturas) ──
+  const ENDPOINT_PORTAL = "https://crearportalsesion-imsrzczhta-uc.a.run.app";
+  document.getElementById("btn-portal-suscripciones").addEventListener("click", async (e) => {
+    const b = e.currentTarget;
+    b.disabled = true;
+    const txt = b.textContent;
+    b.textContent = "Abriendo…";
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const resp = await fetch(ENDPOINT_PORTAL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo abrir el portal.");
+      window.open(data.url, "_blank", "noopener");
+    } catch (err) {
+      toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
+    } finally {
+      b.disabled = false;
+      b.textContent = txt;
+    }
+  });
 
   document.getElementById("form-vendedor").addEventListener("submit", async (e) => {
     e.preventDefault();
