@@ -1465,9 +1465,10 @@
   document.getElementById("modal-vendedor-close").addEventListener("click", cerrarModalVendedor);
   modalVendedor.addEventListener("click", (e) => { if (e.target === modalVendedor) cerrarModalVendedor(); });
 
-  document.getElementById("btn-pagar-vendedor-extra").addEventListener("click", async () => {
+  const ENDPOINT_VENDEDOR_EXTRA = "https://crearcheckoutvendedorextra-imsrzczhta-uc.a.run.app";
+  document.getElementById("btn-pagar-vendedor-extra").addEventListener("click", async (e) => {
     // Guardar el vendedor capturado para crearlo automáticamente al volver del pago.
-    // localStorage (no sessionStorage): el pago abre en pestaña nueva y debe poder leerlo.
+    // localStorage (no sessionStorage): debe sobrevivir la navegación al pago.
     try {
       localStorage.setItem("vendedorPendiente", JSON.stringify({
         nombre: document.getElementById("vend-nombre").value.trim(),
@@ -1476,8 +1477,25 @@
         ts: Date.now(),
       }));
     } catch (_) {}
-    const links = await cargarLinksPago();
-    abrirPago(links.linkVendedorExtra);
+    const b = e.currentTarget;
+    b.disabled = true;
+    const txt = b.textContent;
+    b.textContent = "Abriendo pago…";
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const resp = await fetch(ENDPOINT_VENDEDOR_EXTRA, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "No se pudo iniciar el pago.");
+      // Misma pestaña: mismo cliente de Stripe, sin bloqueo de popups; regresa con ?pago=ok
+      window.location.href = data.url;
+    } catch (err) {
+      toast(err.message === "Failed to fetch" ? "No pude conectar. Intenta en un minuto." : err.message, "error");
+      b.disabled = false;
+      b.textContent = txt;
+    }
   });
 
   // Al volver del pago del vendedor extra: crear automáticamente al vendedor pendiente.
