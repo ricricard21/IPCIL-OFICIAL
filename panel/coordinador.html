@@ -1169,6 +1169,16 @@
         </div>
 
         <div class="field">
+          <label class="field-label">Firma del ponente</label>
+          <input class="input" type="file" id="curso-firma-ponente" accept="image/png,image/jpeg">
+          <div class="field-hint">Imagen de la firma (PNG con fondo transparente se ve mejor). Aparecerá sobre la línea de firma del certificado.</div>
+          <div id="firma-ponente-preview" style="display:none;margin-top:8px;padding:8px;border:1px solid var(--line-soft);border-radius:10px;background:#fff;text-align:center">
+            <img id="firma-ponente-img" alt="Vista previa de la firma" style="max-height:60px;max-width:220px">
+            <button type="button" id="firma-ponente-quitar" class="btn btn-ghost" style="display:block;margin:6px auto 0;font-size:11px">Quitar firma</button>
+          </div>
+        </div>
+
+        <div class="field">
           <label class="field-label">Hora de inicio del curso</label>
           <input class="input" type="time" id="curso-hora-inicio">
           <div class="field-hint">Se incluirá en el aviso al ponente cuando su grupo se complete (ej. "martes 11 de agosto a las 7:00 PM")</div>
@@ -3112,6 +3122,9 @@
       document.getElementById("curso-whatsapp-link").value = cursoData.whatsappLink || "";
       // Mostrar links por apertura capturados desde el panel de ventas (solo lectura)
       renderLinksApertura(cursoData.whatsappLinks || {});
+      // Firma del ponente guardada
+      _firmaPonenteB64 = cursoData.firmaPonente || "";
+      mostrarPreviewFirma(_firmaPonenteB64);
 
     } else {
       document.getElementById("modal-curso-title").textContent = "Nuevo curso";
@@ -3119,6 +3132,8 @@
       document.getElementById("curso-id").value = "";
       document.getElementById("curso-activo").value = "true";
       document.getElementById("curso-whatsapp-link").value = "";
+      _firmaPonenteB64 = "";
+      mostrarPreviewFirma("");
 
     }
     modalCurso.classList.remove("hidden");
@@ -3128,6 +3143,60 @@
     const c = cursos.find(x => x.id === id);
     if (c) abrirModalCurso(c);
   }
+
+  // ── Firma del ponente: comprimir en el navegador y guardar como base64 en el curso ──
+  let _firmaPonenteB64 = "";
+
+  function mostrarPreviewFirma(b64) {
+    const box = document.getElementById("firma-ponente-preview");
+    const img = document.getElementById("firma-ponente-img");
+    if (b64) { img.src = b64; box.style.display = "block"; }
+    else { img.src = ""; box.style.display = "none"; document.getElementById("curso-firma-ponente").value = ""; }
+  }
+
+  function comprimirFirma(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          const MAX_W = 300;
+          const scale = Math.min(1, MAX_W / image.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(image.width * scale);
+          canvas.height = Math.round(image.height * scale);
+          canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+          // PNG conserva transparencia (mejor para firmas)
+          resolve(canvas.toDataURL("image/png"));
+        };
+        image.onerror = () => reject(new Error("No pude leer la imagen"));
+        image.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error("No pude leer el archivo"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById("curso-firma-ponente").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const b64 = await comprimirFirma(file);
+      if (b64.length > 200000) { // tope duro ~200KB; Firestore aguanta 1MB por doc
+        toast("La firma quedó muy pesada, usa una imagen más simple", "warning");
+        return;
+      }
+      _firmaPonenteB64 = b64;
+      mostrarPreviewFirma(b64);
+    } catch (err) {
+      toast("Error con la imagen: " + err.message, "error");
+    }
+  });
+
+  document.getElementById("firma-ponente-quitar").addEventListener("click", () => {
+    _firmaPonenteB64 = "";
+    mostrarPreviewFirma("");
+  });
 
   document.getElementById("form-curso").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -3147,6 +3216,7 @@
         precio: parseFloat(document.getElementById("curso-precio").value) || 0,
         activo: document.getElementById("curso-activo").value === "true",
         whatsappLink: document.getElementById("curso-whatsapp-link").value.trim(),
+        firmaPonente: _firmaPonenteB64 || "",
         whatsappHora1: "08:00",
         whatsappHora2: "17:00",
         creadoPor: usuario.uid
