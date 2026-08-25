@@ -1147,6 +1147,9 @@
       </button>
     </div>
     <div class="modal-body">
+      <div id="retencion-estado-plan" style="display:flex;align-items:center;gap:8px;background:var(--green-soft);border:1px solid #bbf7d0;border-radius:10px;padding:10px 13px;font-size:12.5px;font-weight:700;color:var(--green);margin-bottom:14px">
+        Estado de tu plan: <span id="retencion-estado-txt">—</span>
+      </div>
       <div style="background:var(--yellow-soft);border:1px solid #f0d998;border-radius:12px;padding:16px;margin-bottom:16px">
         <div style="font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:8px">⚠️ Si cancelas tu plan, tu academia pierde:</div>
         <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--text-soft);line-height:1.9">
@@ -1612,6 +1615,19 @@
     // Si el plan está cancelado o suspendido, el modal se vuelve de REACTIVACIÓN
     const est = _consultoraLive?.estadoSuscripcion;
     const btnConservar = document.getElementById("btn-retencion-conservar");
+    const estadoCaja = document.getElementById("retencion-estado-plan");
+    const estadoTxt = document.getElementById("retencion-estado-txt");
+    if (est === "cancelada") {
+      const hasta = _consultoraLive?.accesoHasta?.toDate ? _consultoraLive.accesoHasta.toDate().toLocaleDateString("es-MX", { day: "numeric", month: "long" }) : "3 días";
+      estadoCaja.style.background = "var(--yellow-soft)"; estadoCaja.style.borderColor = "#f0d998"; estadoCaja.style.color = "var(--yellow)";
+      estadoTxt.textContent = `⚠️ Cancelado · acceso hasta el ${hasta}`;
+    } else if (est === "suspendida") {
+      estadoCaja.style.background = "var(--red-soft)"; estadoCaja.style.borderColor = "#fecaca"; estadoCaja.style.color = "var(--red)";
+      estadoTxt.textContent = "⛔ Suspendido · reactívalo para emitir";
+    } else {
+      estadoCaja.style.background = "var(--green-soft)"; estadoCaja.style.borderColor = "#bbf7d0"; estadoCaja.style.color = "var(--green)";
+      estadoTxt.textContent = "✅ Activo";
+    }
     if (est === "cancelada" || est === "suspendida") {
       btnConservar.textContent = "Reactivar mi plan ahora";
       btnConservar.onclick = async () => {
