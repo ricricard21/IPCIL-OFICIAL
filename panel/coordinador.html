@@ -501,6 +501,24 @@
   .chip-creditos .cred-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
   .chip-creditos.warn { background: #fef3c7; color: #92400e; border-color: #f0d998; }
   .chip-creditos.zero { background: #fee2e2; color: #b91c1c; border-color: #f5b8b8; }
+
+  /* ═══ Centro de Plan y Créditos (solo aliados) ═══ */
+  .pagos-card { display: none; background: linear-gradient(135deg, #0F2B4C, #163a63); color: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 22px; }
+  .pagos-fila { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .pagos-info { flex: 1; min-width: 240px; }
+  .pagos-titulo { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+  .pagos-saldo { font-size: 26px; font-weight: 800; margin-top: 4px; }
+  .pagos-saldo small { font-size: 12.5px; font-weight: 600; opacity: 0.8; }
+  .pagos-estado { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(34,197,94,0.18); color: #86efac; border: 1px solid rgba(134,239,172,0.35); }
+  .pagos-estado.mal { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(252,165,165,0.35); }
+  .pagos-estado.pend { background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(252,211,77,0.35); }
+  .pagos-botones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn-recarga { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.28); color: #fff; border-radius: 12px; padding: 10px 14px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.35; }
+  .btn-recarga small { display: block; font-weight: 600; opacity: 0.75; font-size: 10.5px; }
+  .btn-recarga:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+  .btn-pagar-plan { background: #b08d2e; border: none; color: #fff; border-radius: 12px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(176,141,46,0.35); }
+  .btn-pagar-plan:hover { background: #96771f; }
+  .pagos-nota { font-size: 10.5px; opacity: 0.65; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -588,6 +606,23 @@
           <button class="filter-btn" data-period="90">90 días</button>
           <button class="filter-btn" data-period="365">Año</button>
         </div>
+      </div>
+
+      <div class="pagos-card" id="pagos-card">
+        <div class="pagos-fila">
+          <div class="pagos-info">
+            <div class="pagos-titulo">Tu plan Aliado IPCI</div>
+            <div class="pagos-saldo"><span id="pagos-saldo-num">—</span> <small>créditos disponibles</small></div>
+            <div class="pagos-estado" id="pagos-estado"><span class="cred-dot"></span><span id="pagos-estado-txt">—</span></div>
+          </div>
+          <div class="pagos-botones" id="pagos-botones">
+            <button class="btn-pagar-plan" id="btn-pagar-plan" style="display:none">Pagar mi mensualidad · $3,000</button>
+            <button class="btn-recarga" data-pack="pack50">+50 créditos<small>$1,500</small></button>
+            <button class="btn-recarga" data-pack="pack100">+100 créditos<small>$2,900 · $29 c/u</small></button>
+            <button class="btn-recarga" data-pack="pack500">+500 créditos<small>$13,500 · $27 c/u</small></button>
+          </div>
+        </div>
+        <div class="pagos-nota">Los pagos se procesan en Stripe con total seguridad. Tu saldo se actualiza aquí automáticamente al confirmarse el pago (1-2 min). Cada certificado emitido consume 1 crédito.</div>
       </div>
 
       <div class="kpi-grid">
@@ -1184,9 +1219,64 @@
     el.style.display = "inline-flex";
   }
 
+  // ── Centro de Plan y Créditos (solo aliados): links desde configuracion/stripe ──
+  let _linksPago = null;
+  async function cargarLinksPago() {
+    if (_linksPago !== null) return _linksPago;
+    try {
+      const s = await getDoc(doc(db, "configuracion", "stripe"));
+      _linksPago = s.exists() ? s.data() : {};
+    } catch (_) { _linksPago = {}; }
+    return _linksPago;
+  }
+  function abrirPago(url) {
+    if (!url) { toast("Enlace de pago no configurado. Contacta a IPCI.", "error"); return; }
+    const sep = url.includes("?") ? "&" : "?";
+    const full = url + sep + "client_reference_id=" + encodeURIComponent(usuario.consultoraId)
+      + "&prefilled_email=" + encodeURIComponent(usuario.email || "");
+    window.open(full, "_blank", "noopener");
+  }
+  async function pintarCentroPagos(c) {
+    const card = document.getElementById("pagos-card");
+    if (!card) return;
+    if (!c || c.tipo !== "aliado") { card.style.display = "none"; return; }
+    const links = await cargarLinksPago();
+    const n = c.creditos || 0;
+    document.getElementById("pagos-saldo-num").textContent = n.toLocaleString("es-MX");
+    const est = document.getElementById("pagos-estado");
+    const txt = document.getElementById("pagos-estado-txt");
+    const btnPlan = document.getElementById("btn-pagar-plan");
+    const estado = c.estadoSuscripcion || "pendiente_pago";
+    est.classList.remove("mal", "pend");
+    if (estado === "activa") {
+      txt.textContent = "Licencia activa · 100 créditos se abonan con cada mensualidad";
+      btnPlan.style.display = "none";
+    } else if (estado === "suspendida") {
+      est.classList.add("mal");
+      txt.textContent = "Licencia suspendida por falta de pago — la emisión está pausada";
+      btnPlan.style.display = "";
+    } else {
+      est.classList.add("pend");
+      txt.textContent = "Pago de licencia pendiente — actívala para emitir";
+      btnPlan.style.display = "";
+    }
+    btnPlan.onclick = () => abrirPago(links.linkMensual);
+    card.querySelectorAll(".btn-recarga").forEach((b) => {
+      b.onclick = () => abrirPago(
+        b.dataset.pack === "pack50" ? links.linkPack50 :
+        b.dataset.pack === "pack100" ? links.linkPack100 : links.linkPack500
+      );
+    });
+    card.style.display = "block";
+  }
+
   if (usuario?.consultoraId) {
     onSnapshot(doc(db, "consultoras", usuario.consultoraId), (s) => {
-      if (s.exists()) pintarChipCreditos({ id: s.id, ...s.data() });
+      if (s.exists()) {
+        const c = { id: s.id, ...s.data() };
+        pintarChipCreditos(c);
+        pintarCentroPagos(c);
+      }
     }, () => {});
   }
 
