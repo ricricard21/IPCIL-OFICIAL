@@ -85,9 +85,10 @@
 
   <div class="reg-form-col">
     <div class="reg-ok" id="msg-pago-ok">
-      ✅ <b>¡Pago recibido!</b> Tu cuenta se está activando (1-2 minutos).
-      Revisa tu correo para confirmar tu dirección y luego
-      <a href="https://ipcil.org/panel/">inicia sesión en el panel</a> con el correo y contraseña que registraste.
+      ✅ <b>¡Pago recibido!</b> Tu cuenta se está activando.
+      Revisa tu correo para confirmar tu dirección.<br><br>
+      Te llevamos al panel en <b><span id="cuenta-regresiva">10</span> segundos</b>…
+      <a href="https://ipcil.org/panel/" style="display:block;margin-top:12px;background:var(--primary);color:#fff;text-align:center;padding:12px;border-radius:10px;font-weight:800;text-decoration:none">Entrar al panel ahora →</a>
     </div>
 
     <form id="form-registro" autocomplete="on">
@@ -166,6 +167,17 @@
   if (params.get("pago") === "ok") {
     document.getElementById("msg-pago-ok").style.display = "block";
     document.getElementById("form-registro").style.display = "none";
+    // Cuenta regresiva → login del panel (da tiempo al webhook de crear la cuenta)
+    let seg = 10;
+    const cuentaEl = document.getElementById("cuenta-regresiva");
+    const timer = setInterval(() => {
+      seg--;
+      cuentaEl.textContent = seg;
+      if (seg <= 0) {
+        clearInterval(timer);
+        window.location.href = "https://ipcil.org/panel/";
+      }
+    }, 1000);
   } else if (params.get("pago") === "cancelado") {
     errBox.textContent = "El pago no se completó. Puedes intentarlo de nuevo cuando quieras.";
     errBox.style.display = "block";
