@@ -1443,8 +1443,14 @@ textarea:focus{
   }
 }
 
-/* Empalme certificados → nosotros: evita el doble padding en móvil */
+/* Empalme entre secciones seguidas en móvil: evita el doble padding.
+   Regla general — cuando una .section sigue a otra, el espacio se comparte. */
 @media (max-width: 820px){
+  .section + .section{ padding-top:40px; }
+  .section:has(+ .section){ padding-bottom:40px; }
+  /* Ajustes finos de los empalmes más visibles */
   #certificados{ padding-bottom:32px; }
   #nosotros{ padding-top:36px; }
+  #metodologia{ padding-bottom:32px; }
+  #areas{ padding-top:36px; }
 }
