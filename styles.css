@@ -983,7 +983,7 @@ textarea:focus{
   }
 
   .section{
-    padding:82px 0;
+    padding:54px 0;
   }
 
   .section-heading{
@@ -1441,4 +1441,10 @@ textarea:focus{
   .section-heading h2{
     font-size:1.42rem;
   }
+}
+
+/* Empalme certificados → nosotros: evita el doble padding en móvil */
+@media (max-width: 820px){
+  #certificados{ padding-bottom:32px; }
+  #nosotros{ padding-top:36px; }
 }
