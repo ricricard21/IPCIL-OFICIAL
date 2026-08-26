@@ -78,6 +78,8 @@ a{
   align-items:center;
   gap:12px;
   min-width:0;
+  flex-shrink:0;
+  margin-right:24px;
 }
 
 .brand-logo{
@@ -113,17 +115,19 @@ a{
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  max-width:520px;
+  max-width:340px;
 }
 
 .main-nav{
   display:flex;
   align-items:center;
-  gap:20px;
+  gap:14px;
 }
 
 .main-nav a{
   font-weight:600;
+  font-size:.94rem;
+  white-space:nowrap;
   color:#304457;
   position:relative;
   transition:color .22s ease, transform .22s ease;
@@ -853,29 +857,6 @@ textarea:focus{
 }
 
 @media (max-width:760px){
-  .menu-toggle{
-    display:block;
-  }
-
-  .main-nav{
-    position:absolute;
-    top:82px;
-    right:16px;
-    left:16px;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:18px;
-    box-shadow:var(--shadow);
-    padding:14px;
-    display:none;
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .main-nav.open{
-    display:flex;
-  }
-
   .brand-bottom{
     max-width:220px;
   }
@@ -1067,7 +1048,7 @@ textarea:focus{
   }
 }
 
-@media (max-width: 760px){
+@media (max-width: 1300px){
   .site-header{
     backdrop-filter:blur(10px);
   }
