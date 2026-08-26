@@ -99,7 +99,9 @@ a{
 .brand-text{
   display:flex;
   flex-direction:column;
+  justify-content:center;
   min-width:0;
+  line-height:1.25;
 }
 
 .brand-top{
@@ -121,14 +123,15 @@ a{
 .main-nav{
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:18px;
 }
 
 .main-nav a{
   font-weight:600;
-  font-size:.94rem;
+  font-size:.92rem;
   white-space:nowrap;
   color:#304457;
+  line-height:1;
   position:relative;
   transition:color .22s ease, transform .22s ease;
 }
@@ -295,12 +298,16 @@ a{
 
 /* SECCIONES */
 .section{
-  padding:108px 0;
+  padding:74px 0;
 }
 
 .section-alt{
   background:linear-gradient(180deg,#f7f9fc,#eef3f9);
 }
+
+/* Empalme entre secciones seguidas: comparten el espacio en vez de sumarlo */
+.section + .section{ padding-top:52px; }
+.section:has(+ .section){ padding-bottom:52px; }
 
 .section-heading{
   max-width:760px;
