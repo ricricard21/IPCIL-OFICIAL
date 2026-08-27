@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certifica con IPCI · Programa Aliado Certificador</title>
+  <meta name="description" content="Postúlate como Aliado Certificador IPCI: emite certificados con folio único, QR verificable y el respaldo de la institución privada de certificación con los estándares más altos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ══ Estilos propios de la landing Certifica con IPCI ══ */
+    .cert-hero{
+      background:
+        radial-gradient(900px 420px at 85% -10%, rgba(11,78,162,.55), transparent 60%),
+        radial-gradient(700px 380px at -10% 110%, rgba(200,152,46,.25), transparent 55%),
+        linear-gradient(160deg, #081A33 0%, #0B2A52 100%);
+      color:#fff;
+      padding:150px 0 90px;
+      position:relative;
+      overflow:hidden;
+    }
+    .cert-hero .kicker{
+      display:inline-block;
+      font-size:.78rem;
+      font-weight:800;
+      letter-spacing:.28em;
+      color:#E3C06A;
+      text-transform:uppercase;
+      margin-bottom:18px;
+    }
+    .cert-hero h1{
+      font-size:clamp(2rem, 4.6vw, 3.4rem);
+      line-height:1.12;
+      margin:0 0 20px;
+      font-weight:900;
+      max-width:820px;
+    }
+    .cert-hero h1 .oro{ color:#E3C06A; }
+    .cert-hero .sub{
+      font-size:1.08rem;
+      color:#C7D3E2;
+      max-width:640px;
+      margin:0 0 34px;
+    }
+    .cert-cta{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background:#C8982E;
+      color:#081A33 !important;
+      font-weight:800;
+      font-size:1rem;
+      padding:16px 30px;
+      border-radius:999px;
+      box-shadow:0 18px 40px rgba(200,152,46,.35);
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .cert-cta:hover{ transform:translateY(-2px); box-shadow:0 22px 48px rgba(200,152,46,.45); }
+    .cert-cta.claro{
+      background:#fff;
+      color:var(--primary) !important;
+      box-shadow:var(--shadow-soft);
+    }
+    .cert-hero .nota{
+      display:block;
+      margin-top:16px;
+      font-size:.85rem;
+      color:#8FA0B3;
+    }
+
+    /* Sello flotante decorativo */
+    .sello-badge{
+      position:absolute;
+      right:6%;
+      top:50%;
+      transform:translateY(-50%);
+      width:250px;
+      height:250px;
+      border-radius:50%;
+      border:2px solid rgba(227,192,106,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.08), rgba(255,255,255,0) 60%);
+    }
+    .sello-badge .interior{
+      width:190px;
+      height:190px;
+      border-radius:50%;
+      border:1px solid rgba(227,192,106,.4);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap:6px;
+    }
+    .sello-badge .interior strong{ font-size:1.9rem; letter-spacing:.12em; color:#E3C06A; }
+    .sello-badge .interior span{ font-size:.62rem; letter-spacing:.22em; color:#C7D3E2; text-transform:uppercase; line-height:1.5; }
+    @media (max-width:1100px){ .sello-badge{ display:none; } }
+
+    /* Quiénes conforman */
+    .conforman-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:18px;
+      margin-top:38px;
+    }
+    .conforman-card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:28px 26px;
+      box-shadow:var(--shadow-soft);
+    }
+    .conforman-card .num{
+      font-size:2rem;
+      font-weight:900;
+      color:var(--primary);
+      line-height:1;
+      margin-bottom:10px;
+    }
+    .conforman-card h3{ margin:0 0 8px; font-size:1.05rem; }
+    .conforman-card p{ margin:0; color:var(--muted); font-size:.92rem; }
+
+    /* Estándar / selectividad */
+    .estandar{
+      background:linear-gradient(160deg, #081A33 0%, #0B2A52 100%);
+      color:#fff;
+      border-radius:28px;
+      padding:54px 48px;
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:44px;
+      align-items:center;
+    }
+    .estandar h2{ font-size:clamp(1.5rem, 3vw, 2.1rem); margin:0 0 16px; line-height:1.2; }
+    .estandar h2 .oro{ color:#E3C06A; }
+    .estandar p{ color:#C7D3E2; margin:0 0 14px; font-size:.98rem; }
+    .estandar ul{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .estandar li{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(227,192,106,.25);
+      border-radius:14px;
+      padding:14px 16px;
+      font-size:.93rem;
+      color:#E7EDF5;
+    }
+    .estandar li::before{
+      content:"✓";
+      flex-shrink:0;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:#C8982E;
+      color:#081A33;
+      font-weight:900;
+      font-size:.8rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:1px;
+    }
+    @media (max-width:900px){ .estandar{ grid-template-columns:1fr; padding:38px 26px; } }
+
+    /* ══ Trayectoria IPCI (recompensas) ══ */
+    .trayectoria{
+      background:linear-gradient(180deg, #0A2036 0%, #081A33 60%, #0B2A52 100%);
+      color:#fff;
+      padding:90px 0 100px;
+    }
+    .trayectoria .section-kicker{ color:#E3C06A; }
+    .trayectoria h2{ color:#fff; }
+    .trayectoria .section-heading p{ color:#C7D3E2; }
+    .niveles{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:22px;
+      margin-top:46px;
+      position:relative;
+    }
+    .niveles::before{
+      content:"";
+      position:absolute;
+      top:118px;
+      left:8%;
+      right:8%;
+      height:2px;
+      background:linear-gradient(90deg, #2C4A73, #C8982E, #E8E8EC);
+      opacity:.5;
+    }
+    .nivel{
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:24px;
+      padding:34px 26px 30px;
+      text-align:center;
+      position:relative;
+      transition:transform .25s ease, border-color .25s ease;
+    }
+    .nivel:hover{ transform:translateY(-6px); border-color:rgba(227,192,106,.5); }
+
+    /* Placa dibujada */
+    .placa{
+      width:120px;
+      height:150px;
+      margin:0 auto 22px;
+      border-radius:12px;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      box-shadow:0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.35);
+    }
+    .placa .marco{
+      position:absolute;
+      inset:8px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.35);
+      pointer-events:none;
+    }
+    .placa .sello-mini{
+      width:34px; height:34px;
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:.7rem; letter-spacing:.06em;
+    }
+    .placa .placa-txt{ font-size:.6rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; line-height:1.5; }
+    .placa.azul{
+      background:linear-gradient(150deg, #1A5CB8 0%, #0B4EA2 45%, #082A5C 100%);
+      color:#DCE9FA;
+    }
+    .placa.azul .sello-mini{ background:#DCE9FA; color:#0B4EA2; }
+    .placa.dorada{
+      background:linear-gradient(150deg, #E8C56B 0%, #C8982E 48%, #8F6A1C 100%);
+      color:#3A2B08;
+    }
+    .placa.dorada .sello-mini{ background:#3A2B08; color:#E8C56B; }
+
+    /* Trofeo dibujado */
+    .trofeo{
+      width:120px;
+      height:150px;
+      margin:0 auto 22px;
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+    }
+    .trofeo svg{ filter:drop-shadow(0 16px 30px rgba(232,232,236,.25)); }
+
+    .nivel .meta{
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:#8FA0B3;
+      margin-bottom:6px;
+    }
+    .nivel h3{ margin:0 0 4px; font-size:1.22rem; }
+    .nivel h3.azul{ color:#7FB2F0; }
+    .nivel h3.oro{ color:#E3C06A; }
+    .nivel h3.platino{ color:#E8E8EC; }
+    .nivel .hito{
+      font-size:1.55rem;
+      font-weight:900;
+      margin:2px 0 12px;
+    }
+    .nivel p{ color:#AEBED2; font-size:.88rem; margin:0; }
+    @media (max-width:900px){
+      .niveles{ grid-template-columns:1fr; max-width:420px; margin-left:auto; margin-right:auto; }
+      .niveles::before{ display:none; }
+      .conforman-grid{ grid-template-columns:1fr; }
+    }
+
+    /* CTA final */
+    .cta-final{
+      text-align:center;
+      padding:84px 0 96px;
+    }
+    .cta-final h2{ font-size:clamp(1.6rem, 3.4vw, 2.3rem); margin:0 0 14px; }
+    .cta-final p{ color:var(--muted); max-width:560px; margin:0 auto 30px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER (mismo del sitio) -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand">
+        <img src="assets/logo.jpeg" alt="Logo IPCI" class="brand-logo" />
+        <div class="brand-text">
+          <span class="brand-top">IPCI</span>
+          <span class="brand-bottom">Instituto Profesional de Certificación Industrial Latinoamericano</span>
+        </div>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html">Inicio</a>
+        <a href="index.html#aliadas">Empresas aliadas</a>
+        <a href="index.html#certificados">Certificados</a>
+        <a href="index.html#nosotros">Nosotros</a>
+        <a href="padron.html">Padrón</a>
+        <a href="empleadores.html">Empleadores</a>
+        <a href="index.html#contacto">Contacto</a>
+        <a href="panel/" class="nav-btn">Acceder al Panel</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="cert-hero">
+    <div class="container" style="position:relative">
+      <span class="kicker">Programa Aliado Certificador</span>
+      <h1>Un sello que no se otorga:<br><span class="oro">se gana y se respalda.</span></h1>
+      <p class="sub">IPCI es una institución privada de certificación con los estándares más altos de emisión, verificación y registro. No cualquier academia certifica con nuestro sello — y por eso vale.</p>
+      <a class="cert-cta" href="panel/registro-aliado.html">Postúlate como Aliado Certificador →</a>
+      <span class="nota">Tu postulación se evalúa contra el Reglamento de Certificación IPCI.</span>
+
+      <div class="sello-badge" aria-hidden="true">
+        <div class="interior">
+          <strong>IPCI</strong>
+          <span>Institución privada<br>de certificación<br>· Estándar verificable ·</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIÉNES CONFORMAN IPCI -->
+  <section class="section">
+    <div class="container">
+      <div class="section-heading centered">
+        <span class="section-kicker">Quiénes conformamos IPCI</span>
+        <h2>Una institución, una red y un padrón público</h2>
+        <p>IPCI no es una plataforma: es un ecosistema de certificación conformado por especialistas y consultoras que sostienen el estándar todos los días.</p>
+      </div>
+      <div class="conforman-grid">
+        <div class="conforman-card">
+          <div class="num">35+</div>
+          <h3>Consultoras aliadas</h3>
+          <p>Firmas especializadas en salud, agroindustria, veterinaria, ingeniería y sectores técnicos que forman y certifican bajo la metodología IPCI.</p>
+        </div>
+        <div class="conforman-card">
+          <div class="num">28,000+</div>
+          <h3>Certificados con folio único</h3>
+          <p>Cada certificado emitido queda registrado en el padrón público con folio, clave y código QR verificable por cualquier empleador, 24/7.</p>
+        </div>
+        <div class="conforman-card">
+          <div class="num">7</div>
+          <h3>Etapas del método IPCI</h3>
+          <p>Comité técnico y coordinación académica que auditan que cada curso certificado cumpla las 7 etapas del método: de la teoría a la aplicación industrial.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTÁNDAR / SELECTIVIDAD -->
+  <section class="section">
+    <div class="container">
+      <div class="estandar">
+        <div>
+          <h2>Aquí no entra quien sea.<br><span class="oro">Entra quien cumple.</span></h2>
+          <p>El valor de un certificado IPCI está en lo que hay detrás: reglamento, verificación pública y la facultad de retirar el sello a quien no sostenga el estándar. Eso protege a tus alumnos, a los empleadores — y a ti.</p>
+          <p style="margin:0">Si tu academia forma con seriedad, este sello multiplica tu credibilidad. Si no, este programa no es para ti.</p>
+        </div>
+        <ul>
+          <li>Postulación evaluada contra el Reglamento de Certificación IPCI</li>
+          <li>Folio único, clave institucional y QR verificable en cada certificado</li>
+          <li>Tus alumnos aparecen en el padrón público que consultan los empleadores</li>
+          <li>IPCI se reserva el derecho de suspender el sello ante incumplimientos</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRAYECTORIA IPCI (RECOMPENSAS) -->
+  <section class="trayectoria">
+    <div class="container">
+      <div class="section-heading centered">
+        <span class="section-kicker">Trayectoria IPCI</span>
+        <h2>Tu emisión también se reconoce</h2>
+        <p>Cada certificado que emites construye tu trayectoria como Aliado Certificador. Al alcanzar cada hito, IPCI te lo reconoce con una distinción física para tu academia.</p>
+      </div>
+
+      <div class="niveles">
+        <!-- Nivel 1: Placa Azul -->
+        <div class="nivel">
+          <div class="placa azul">
+            <span class="marco"></span>
+            <span class="sello-mini">IPCI</span>
+            <span class="placa-txt">Placa<br>Azul</span>
+          </div>
+          <div class="meta">Primer hito</div>
+          <h3 class="azul">Placa Azul</h3>
+          <div class="hito">1,000 certificados</div>
+          <p>Reconocimiento de arranque consolidado: tu academia emite con constancia y el estándar se nota. Placa institucional para exhibir en tus instalaciones.</p>
+        </div>
+
+        <!-- Nivel 2: Placa Dorada -->
+        <div class="nivel">
+          <div class="placa dorada">
+            <span class="marco"></span>
+            <span class="sello-mini">IPCI</span>
+            <span class="placa-txt">Placa<br>Dorada</span>
+          </div>
+          <div class="meta">Segundo hito</div>
+          <h3 class="oro">Placa Dorada</h3>
+          <div class="hito">10,000 certificados</div>
+          <p>Tu academia es un referente de formación certificada en su sector. Placa dorada institucional y presencia destacada dentro de la red IPCI.</p>
+        </div>
+
+        <!-- Nivel 3: Trofeo Platino -->
+        <div class="nivel">
+          <div class="trofeo" aria-hidden="true">
+            <svg width="110" height="140" viewBox="0 0 110 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="plat" x1="0" y1="0" x2="110" y2="140">
+                  <stop offset="0" stop-color="#F4F4F7"/>
+                  <stop offset=".5" stop-color="#C9CBD4"/>
+                  <stop offset="1" stop-color="#9DA2B0"/>
+                </linearGradient>
+              </defs>
+              <path d="M25 18h60v14c0 24-12 40-30 44-18-4-30-20-30-44V18z" fill="url(#plat)"/>
+              <path d="M25 22H12c0 20 8 30 18 32-3-6-5-13-5-22v-10zM85 22h13c0 20-8 30-18 32 3-6 5-13 5-22v-10z" fill="url(#plat)" opacity=".8"/>
+              <rect x="49" y="76" width="12" height="16" fill="url(#plat)"/>
+              <rect x="36" y="92" width="38" height="9" rx="2" fill="url(#plat)"/>
+              <rect x="28" y="101" width="54" height="12" rx="3" fill="url(#plat)"/>
+              <circle cx="55" cy="42" r="13" fill="#081A33" opacity=".85"/>
+              <text x="55" y="46" text-anchor="middle" font-family="Montserrat, sans-serif" font-size="9" font-weight="800" fill="#E8E8EC">IPCI</text>
+            </svg>
+          </div>
+          <div class="meta">Máximo estándar</div>
+          <h3 class="platino">Trofeo Platino</h3>
+          <div class="hito">50,000 certificados</div>
+          <p>La distinción mayor de la red: trofeo platino IPCI, reconocimiento público en ipcil.org y lugar de honor entre los Aliados Certificadores.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-final">
+    <div class="container">
+      <h2>Forma parte de la red que pone el estándar</h2>
+      <p>Postúlate hoy: si tu academia cumple, en minutos tendrás tu panel de emisión, tu equipo de ventas y tus certificados con folio IPCI.</p>
+      <a class="cert-cta" href="panel/registro-aliado.html">Postúlate como Aliado Certificador →</a>
+    </div>
+  </section>
+
+  <!-- FOOTER (mismo del sitio) -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="assets/logo.jpeg" alt="Logo IPCI" class="footer-logo" />
+        <div>
+          <strong>INSTITUTO PROFESIONAL DE CERTIFICACIÓN INDUSTRIAL LATINOAMERICANO</strong>
+          <p>Certificación profesional para la industria moderna.</p>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navegación</h4>
+        <div class="footer-links">
+          <a href="index.html">Inicio</a>
+          <a href="padron.html">Padrón Público</a>
+          <a href="empleadores.html">Para Empleadores</a>
+          <a href="reglamento.html">Reglamento de Certificación</a>
+          <a href="panel/registro-aliado.html">Postúlate como Aliado</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contacto institucional</h4>
+        <div class="footer-contact">
+          <a href="mailto:ipcilinstituto@gmail.com">ipcilinstituto@gmail.com</a>
+          <a href="tel:+522382388913">2382388913</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container">
+        <p>© IPCI — Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Menú móvil (mismo comportamiento del sitio)
+    const menuToggle = document.getElementById("menuToggle");
+    const mainNav = document.getElementById("mainNav");
+    menuToggle.addEventListener("click", () => mainNav.classList.toggle("open"));
+    // Sombra del header al scrollear
+    const header = document.getElementById("siteHeader");
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 10);
+    });
+  </script>
+</body>
+</html>
