@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Postulación · Programa Aliado Certificador IPCI</title>
+  <meta name="description" content="Postula a tu academia al Programa Aliado Certificador IPCI. Un asesor institucional se pondrá en contacto contigo en menos de 24 horas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body{ background:
+      radial-gradient(900px 420px at 90% -10%, rgba(11,78,162,.5), transparent 60%),
+      radial-gradient(700px 380px at -10% 110%, rgba(200,152,46,.22), transparent 55%),
+      linear-gradient(160deg, #081A33 0%, #0B2A52 100%);
+      min-height:100vh;
+    }
+    .post-wrap{
+      max-width:1060px;
+      margin:0 auto;
+      padding:44px 18px 70px;
+      display:grid;
+      grid-template-columns:.92fr 1.08fr;
+      border-radius:26px;
+      overflow:hidden;
+      box-shadow:0 30px 80px rgba(0,0,0,.45);
+    }
+    /* Lado institucional */
+    .post-lado{
+      background:linear-gradient(165deg, #0A2444 0%, #081A33 100%);
+      color:#fff;
+      padding:46px 40px;
+      display:flex;
+      flex-direction:column;
+    }
+    .post-lado .marca{ font-size:1.7rem; font-weight:900; letter-spacing:.06em; }
+    .post-lado .marca-sub{ font-size:.66rem; font-weight:800; letter-spacing:.26em; color:#E3C06A; text-transform:uppercase; margin:6px 0 30px; }
+    .post-lado h1{ font-size:1.5rem; line-height:1.3; margin:0 0 14px; font-weight:800; }
+    .post-lado p.lead{ color:#C7D3E2; font-size:.94rem; margin:0 0 26px; }
+    .post-check{ list-style:none; margin:0 0 auto; padding:0; display:flex; flex-direction:column; gap:13px; }
+    .post-check li{ display:flex; gap:11px; align-items:flex-start; font-size:.9rem; color:#E7EDF5; }
+    .post-check li::before{
+      content:"✓"; flex-shrink:0; width:20px; height:20px; border-radius:50%;
+      background:#C8982E; color:#081A33; font-weight:900; font-size:.72rem;
+      display:flex; align-items:center; justify-content:center; margin-top:2px;
+    }
+    .post-lado .pie{ font-size:.72rem; color:#8FA0B3; border-top:1px solid rgba(255,255,255,.12); padding-top:16px; margin-top:30px; }
+
+    /* Lado formulario */
+    .post-form{ background:#fff; padding:46px 42px; }
+    .post-form h2{ margin:0 0 4px; font-size:1.35rem; }
+    .post-form .sub{ color:var(--muted); font-size:.88rem; margin:0 0 26px; }
+    .pf{ margin-bottom:16px; }
+    .pf-label{ display:block; font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#33465C; margin-bottom:7px; }
+    .pf-input{
+      width:100%; padding:13px 15px; border:1.5px solid var(--line); border-radius:12px;
+      font-family:inherit; font-size:.94rem; color:var(--text); background:#fbfcfe;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    .pf-input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(11,78,162,.12); background:#fff; }
+    textarea.pf-input{ resize:vertical; min-height:88px; }
+    .pf-hint{ font-size:.72rem; color:var(--muted); margin-top:5px; }
+    .pf-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .pf-error{
+      display:none; background:#FDF0F0; border:1px solid #F3C8C8; color:#A83A3A;
+      border-radius:12px; padding:12px 14px; font-size:.85rem; font-weight:600; margin-bottom:16px;
+    }
+    .pf-btn{
+      width:100%; border:none; cursor:pointer; font-family:inherit;
+      background:#C8982E; color:#081A33; font-weight:800; font-size:1rem;
+      padding:16px; border-radius:999px; box-shadow:0 14px 34px rgba(200,152,46,.35);
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .pf-btn:hover{ transform:translateY(-2px); }
+    .pf-btn:disabled{ opacity:.6; cursor:default; transform:none; }
+    .pf-legal{ text-align:center; font-size:.72rem; color:var(--muted); margin-top:14px; }
+    .hp{ position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden; }
+
+    /* Pantalla de éxito */
+    .exito{
+      display:none;
+      text-align:center;
+      padding:60px 30px;
+    }
+    .exito .circulo{
+      width:86px; height:86px; margin:0 auto 24px; border-radius:50%;
+      background:#EDF9F1; border:2px solid #BBE9CB;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2.2rem; color:#1F9D55;
+    }
+    .exito h2{ font-size:1.5rem; margin:0 0 12px; }
+    .exito p{ color:var(--muted); font-size:.95rem; max-width:420px; margin:0 auto 8px; }
+    .exito .fuerte{ color:var(--text); font-weight:700; }
+    .exito a{ display:inline-block; margin-top:24px; color:var(--primary); font-weight:700; font-size:.9rem; }
+
+    @media (max-width:860px){
+      .post-wrap{ grid-template-columns:1fr; margin:20px auto 40px; }
+      .post-lado{ padding:36px 26px; }
+      .post-form{ padding:36px 24px; }
+      .pf-grid{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="post-wrap">
+    <!-- LADO INSTITUCIONAL -->
+    <aside class="post-lado">
+      <div class="marca">IPCI</div>
+      <div class="marca-sub">Programa Aliado Certificador</div>
+      <h1>Postula a tu academia al estándar IPCI</h1>
+      <p class="lead">Completa la solicitud institucional. Un asesor evaluará tu postulación y te acompañará en el proceso de incorporación.</p>
+      <ul class="post-check">
+        <li>Panel de coordinación y ventas para tu equipo</li>
+        <li>Certificados con folio único y QR verificable en ipcil.org</li>
+        <li>Tus alumnos en el padrón público que consultan los empleadores</li>
+        <li>Trayectoria IPCI: placas y trofeo por hitos de emisión</li>
+        <li>Acompañamiento de un asesor institucional</li>
+      </ul>
+      <div class="pie">Instituto Profesional de Certificación Industrial Latinoamericano · Padrón público de certificaciones en ipcil.org</div>
+    </aside>
+
+    <!-- FORMULARIO -->
+    <main class="post-form">
+      <form id="form-post" novalidate>
+        <h2>Solicitud de postulación</h2>
+        <p class="sub">Llena tus datos. En menos de 24 horas uno de nuestros asesores se pondrá en contacto contigo.</p>
+
+        <div class="pf-error" id="pf-error"></div>
+
+        <div class="pf">
+          <label class="pf-label" for="post-academia">Nombre de tu academia / instituto *</label>
+          <input class="pf-input" type="text" id="post-academia" required maxlength="80" placeholder="Ej. Academia Dental del Norte">
+        </div>
+
+        <div class="pf">
+          <label class="pf-label" for="post-nombre">Tu nombre completo con apellidos *</label>
+          <input class="pf-input" type="text" id="post-nombre" required maxlength="80" placeholder="Ej. Sofía Ruiz Hernández">
+          <div class="pf-hint">Nombre y tus dos apellidos, como en tu identificación.</div>
+        </div>
+
+        <div class="pf-grid">
+          <div class="pf">
+            <label class="pf-label" for="post-ciudad">Municipio o ciudad *</label>
+            <input class="pf-input" type="text" id="post-ciudad" required maxlength="60" placeholder="Ej. Tehuacán">
+          </div>
+          <div class="pf">
+            <label class="pf-label" for="post-estado">Estado *</label>
+            <select class="pf-input" id="post-estado" required>
+              <option value="" disabled selected>Elige tu estado</option>
+              <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
+              <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
+              <option>Ciudad de México</option><option>Coahuila</option><option>Colima</option>
+              <option>Durango</option><option>Estado de México</option><option>Guanajuato</option>
+              <option>Guerrero</option><option>Hidalgo</option><option>Jalisco</option>
+              <option>Michoacán</option><option>Morelos</option><option>Nayarit</option>
+              <option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option>
+              <option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option>
+              <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
+              <option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option>
+              <option>Yucatán</option><option>Zacatecas</option><option>Otro país</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pf-grid">
+          <div class="pf">
+            <label class="pf-label" for="post-email">Correo electrónico *</label>
+            <input class="pf-input" type="email" id="post-email" required maxlength="90" placeholder="tucorreo@academia.mx">
+          </div>
+          <div class="pf">
+            <label class="pf-label" for="post-whats">WhatsApp de contacto *</label>
+            <input class="pf-input" type="tel" id="post-whats" required maxlength="15" placeholder="Ej. 2211234567 (10 dígitos)">
+          </div>
+        </div>
+
+        <div class="pf">
+          <label class="pf-label" for="post-mensaje">Cuéntanos brevemente sobre tu academia</label>
+          <textarea class="pf-input" id="post-mensaje" maxlength="500" placeholder="Sector, cursos que impartes, años de operación… (opcional)"></textarea>
+        </div>
+
+        <div class="hp" aria-hidden="true">
+          <label>Sitio web <input type="text" id="post-sitio" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <button class="pf-btn" id="pf-btn" type="submit">Enviar mi postulación →</button>
+        <p class="pf-legal">Tus datos se tratan de forma confidencial y solo para evaluar tu postulación.</p>
+      </form>
+
+      <!-- ÉXITO -->
+      <div class="exito" id="exito">
+        <div class="circulo">✓</div>
+        <h2>¡Listo! Hemos recibido tu solicitud</h2>
+        <p>En menos de <span class="fuerte">24 horas</span> uno de nuestros asesores se pondrá en contacto contigo por WhatsApp o correo para continuar tu proceso de incorporación.</p>
+        <p>Gracias por tu interés en certificar con el estándar IPCI.</p>
+        <a href="index.html">← Volver a ipcil.org</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const ENDPOINT_POSTULAR = "https://postularaliado-imsrzczhta-uc.a.run.app";
+    const form = document.getElementById("form-post");
+    const errBox = document.getElementById("pf-error");
+    const btn = document.getElementById("pf-btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errBox.style.display = "none";
+
+      const academia = document.getElementById("post-academia").value.trim();
+      const nombre = document.getElementById("post-nombre").value.trim();
+      const ciudad = document.getElementById("post-ciudad").value.trim();
+      const estado = document.getElementById("post-estado").value;
+      const email = document.getElementById("post-email").value.trim();
+      const whatsapp = document.getElementById("post-whats").value.trim();
+      const mensaje = document.getElementById("post-mensaje").value.trim();
+
+      // Validaciones
+      const palabras = nombre.split(/\s+/).filter(p => p.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, "").length >= 2);
+      let error = "";
+      if (!academia || !nombre || !ciudad || !estado || !email || !whatsapp) error = "Completa todos los campos obligatorios.";
+      else if (palabras.length < 3) error = "Escribe tu nombre completo con tus dos apellidos (ej. Sofía Ruiz Hernández).";
+      else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) error = "Escribe un correo válido.";
+      else if (whatsapp.replace(/\D/g, "").length < 10) error = "Escribe un WhatsApp de 10 dígitos.";
+      if (error) {
+        errBox.textContent = error;
+        errBox.style.display = "block";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Enviando…";
+      try {
+        const resp = await fetch(ENDPOINT_POSTULAR, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            academia, nombre, ciudad, estado, email, whatsapp, mensaje,
+            sitio_web: document.getElementById("post-sitio").value,
+          }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || "No se pudo enviar tu postulación. Inténtalo de nuevo.");
+        form.style.display = "none";
+        document.getElementById("exito").style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err) {
+        errBox.textContent = err.message === "Failed to fetch" ? "No pudimos conectar. Revisa tu internet e inténtalo de nuevo." : err.message;
+        errBox.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Enviar mi postulación →";
+      }
+    });
+  </script>
+</body>
+</html>

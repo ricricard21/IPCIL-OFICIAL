@@ -212,7 +212,17 @@
     }
     .nivel:hover{ transform:translateY(-6px); border-color:rgba(227,192,106,.5); }
 
-    /* Placa dibujada */
+    .nivel-img{
+      width:150px;
+      height:auto;
+      margin:0 auto 22px;
+      display:block;
+      border-radius:10px;
+      filter:drop-shadow(0 18px 34px rgba(0,0,0,.5));
+      transition:transform .25s ease;
+    }
+    .nivel:hover .nivel-img{ transform:scale(1.04); }
+    /* Placa dibujada (legacy, sin uso) */
     .placa{
       width:120px;
       height:150px;
@@ -328,9 +338,9 @@
   <section class="cert-hero">
     <div class="container" style="position:relative">
       <span class="kicker">Programa Aliado Certificador</span>
-      <h1>Un sello que no se otorga:<br><span class="oro">se gana y se respalda.</span></h1>
-      <p class="sub">IPCI es una institución privada de certificación con los estándares más altos de emisión, verificación y registro. No cualquier academia certifica con nuestro sello — y por eso vale.</p>
-      <a class="cert-cta" href="panel/registro-aliado.html">Postúlate como Aliado Certificador →</a>
+      <h1>Certificación institucional con los<br><span class="oro">más altos estándares de Latinoamérica.</span></h1>
+      <p class="sub">IPCI es una institución privada de certificación profesional. Cada Aliado Certificador es evaluado bajo nuestro reglamento, para que el sello conserve el valor que los empleadores reconocen.</p>
+      <a class="cert-cta" href="postulacion.html">Postúlate como Aliado Certificador →</a>
       <span class="nota">Tu postulación se evalúa contra el Reglamento de Certificación IPCI.</span>
 
       <div class="sello-badge" aria-hidden="true">
@@ -401,11 +411,7 @@
       <div class="niveles">
         <!-- Nivel 1: Placa Azul -->
         <div class="nivel">
-          <div class="placa azul">
-            <span class="marco"></span>
-            <span class="sello-mini">IPCI</span>
-            <span class="placa-txt">Placa<br>Azul</span>
-          </div>
+          <img class="nivel-img" src="assets/trayectoria/placa-azul.webp" alt="Placa Azul IPCI — 1,000 certificados" loading="lazy" />
           <div class="meta">Primer hito</div>
           <h3 class="azul">Placa Azul</h3>
           <div class="hito">1,000 certificados</div>
@@ -414,11 +420,7 @@
 
         <!-- Nivel 2: Placa Dorada -->
         <div class="nivel">
-          <div class="placa dorada">
-            <span class="marco"></span>
-            <span class="sello-mini">IPCI</span>
-            <span class="placa-txt">Placa<br>Dorada</span>
-          </div>
+          <img class="nivel-img" src="assets/trayectoria/placa-dorada.webp" alt="Placa Dorada IPCI — 10,000 certificados" loading="lazy" />
           <div class="meta">Segundo hito</div>
           <h3 class="oro">Placa Dorada</h3>
           <div class="hito">10,000 certificados</div>
@@ -427,24 +429,7 @@
 
         <!-- Nivel 3: Trofeo Platino -->
         <div class="nivel">
-          <div class="trofeo" aria-hidden="true">
-            <svg width="110" height="140" viewBox="0 0 110 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="plat" x1="0" y1="0" x2="110" y2="140">
-                  <stop offset="0" stop-color="#F4F4F7"/>
-                  <stop offset=".5" stop-color="#C9CBD4"/>
-                  <stop offset="1" stop-color="#9DA2B0"/>
-                </linearGradient>
-              </defs>
-              <path d="M25 18h60v14c0 24-12 40-30 44-18-4-30-20-30-44V18z" fill="url(#plat)"/>
-              <path d="M25 22H12c0 20 8 30 18 32-3-6-5-13-5-22v-10zM85 22h13c0 20-8 30-18 32 3-6 5-13 5-22v-10z" fill="url(#plat)" opacity=".8"/>
-              <rect x="49" y="76" width="12" height="16" fill="url(#plat)"/>
-              <rect x="36" y="92" width="38" height="9" rx="2" fill="url(#plat)"/>
-              <rect x="28" y="101" width="54" height="12" rx="3" fill="url(#plat)"/>
-              <circle cx="55" cy="42" r="13" fill="#081A33" opacity=".85"/>
-              <text x="55" y="46" text-anchor="middle" font-family="Montserrat, sans-serif" font-size="9" font-weight="800" fill="#E8E8EC">IPCI</text>
-            </svg>
-          </div>
+          <img class="nivel-img" src="assets/trayectoria/trofeo-platino.webp" alt="Trofeo Platino IPCI — 50,000 certificados" loading="lazy" />
           <div class="meta">Máximo estándar</div>
           <h3 class="platino">Trofeo Platino</h3>
           <div class="hito">50,000 certificados</div>
@@ -459,7 +444,7 @@
     <div class="container">
       <h2>Forma parte de la red que pone el estándar</h2>
       <p>Postúlate hoy: si tu academia cumple, en minutos tendrás tu panel de emisión, tu equipo de ventas y tus certificados con folio IPCI.</p>
-      <a class="cert-cta" href="panel/registro-aliado.html">Postúlate como Aliado Certificador →</a>
+      <a class="cert-cta" href="postulacion.html">Postúlate como Aliado Certificador →</a>
     </div>
   </section>
 
@@ -481,7 +466,7 @@
           <a href="padron.html">Padrón Público</a>
           <a href="empleadores.html">Para Empleadores</a>
           <a href="reglamento.html">Reglamento de Certificación</a>
-          <a href="panel/registro-aliado.html">Postúlate como Aliado</a>
+          <a href="postulacion.html">Postúlate como Aliado</a>
         </div>
       </div>
 
