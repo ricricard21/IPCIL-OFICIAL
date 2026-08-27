@@ -99,7 +99,9 @@ export async function requireRole(rolEsperado) {
           const redirects = {
             superadmin: "admin.html",
             coordinador: "coordinador.html",
-            vendedor: "vendedor.html"
+            vendedor: "vendedor.html",
+            trafiquer: "trafiquer.html",
+            rh: "rh.html"
           };
           window.location.href = redirects[userData.rol] || "index.html";
           return;

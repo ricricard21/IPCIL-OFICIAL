@@ -185,10 +185,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Dashboard
       </button>
-      <button class="sidebar-link" data-view="postulaciones" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#4c1d95">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-        Postulaciones
-      </button>
       <button class="sidebar-link" data-view="consultoras">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
         Consultoras
@@ -408,32 +404,6 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CONSULTORAS                                          -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!-- POSTULACIONES DE ALIADOS                             -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-postulaciones" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">Postulaciones de Aliados</h1>
-          <p class="main-subtitle">Solicitudes del Programa Aliado Certificador — compromiso: contactar en menos de 24 horas</p>
-        </div>
-        <button class="btn btn-secondary" id="btn-recargar-postulaciones">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-          Recargar
-        </button>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Solicitudes recibidas</div>
-            <div class="card-subtitle"><span id="post-count">0</span> postulaciones · <span id="post-nuevas">0</span> por contactar</div>
-          </div>
-        </div>
-        <div id="postulaciones-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
-
     <section id="view-consultoras" class="section">
       <div class="main-header">
         <div>
@@ -488,6 +458,7 @@
               <option value="coordinador">Coordinadores</option>
               <option value="vendedor">Vendedores</option>
               <option value="superadmin">Super admins</option>
+              <option value="rh">RH</option>
             </select>
             <div class="search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -1133,6 +1104,7 @@
               <option value="vendedor">Vendedor</option>
               <option value="coordinador">Coordinador</option>
               <option value="superadmin">Super admin</option>
+              <option value="rh">RH · Postulaciones</option>
             </select>
           </div>
           <div class="field">
@@ -1189,82 +1161,6 @@
     fn();
   }
 
-  // ─── POSTULACIONES DE ALIADOS (solo superadmin, vía backend) ───
-  const ENDPOINT_POSTULACIONES = "https://gestionpostulaciones-imsrzczhta-uc.a.run.app";
-
-  async function llamarPostulaciones(body) {
-    const idToken = await auth.currentUser.getIdToken();
-    const resp = await fetch(ENDPOINT_POSTULACIONES, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
-      body: JSON.stringify(body),
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (!resp.ok) throw new Error(data.error || "Error al consultar postulaciones.");
-    return data;
-  }
-
-  async function cargarPostulaciones() {
-    const cont = document.getElementById("postulaciones-container");
-    cont.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>';
-    try {
-      const { postulaciones } = await llamarPostulaciones({ accion: "listar" });
-      document.getElementById("post-count").textContent = postulaciones.length;
-      document.getElementById("post-nuevas").textContent = postulaciones.filter(p => p.estatus === "nueva").length;
-
-      if (!postulaciones.length) {
-        cont.innerHTML = '<div style="padding:34px;text-align:center;color:var(--muted)">Aún no hay postulaciones. Cuando alguien llene el formulario de "Certifica con IPCI", aparecerá aquí.</div>';
-        return;
-      }
-
-      cont.innerHTML = `
-        <div style="overflow-x:auto">
-        <table class="table">
-          <thead><tr>
-            <th>Academia</th><th>Contacto</th><th>Ubicación</th><th>Correo</th><th>WhatsApp</th><th>Mensaje</th><th>Recibida</th><th>Estatus</th><th></th>
-          </tr></thead>
-          <tbody>
-            ${postulaciones.map(p => `
-              <tr>
-                <td><strong>${escapeHtml(p.academia)}</strong></td>
-                <td>${escapeHtml(p.nombre)}</td>
-                <td>${escapeHtml(p.ciudad)}, ${escapeHtml(p.entidad)}</td>
-                <td><a href="mailto:${escapeHtml(p.email)}" style="color:var(--primary);font-weight:600">${escapeHtml(p.email)}</a></td>
-                <td><a href="https://wa.me/52${escapeHtml(p.whatsapp)}" target="_blank" rel="noopener" style="color:#16a34a;font-weight:700">${escapeHtml(p.whatsapp)}</a></td>
-                <td style="max-width:220px;font-size:12px;color:var(--muted)">${escapeHtml(p.mensaje || "—")}</td>
-                <td style="white-space:nowrap;font-size:12px">${p.creadoEn ? formatFecha(new Date(p.creadoEn)) : "—"}</td>
-                <td>${p.estatus === "nueva"
-                  ? '<span style="background:#fef3c7;color:#92400e;font-weight:800;font-size:11px;padding:4px 10px;border-radius:999px">⏳ Por contactar</span>'
-                  : '<span style="background:#dcfce7;color:#166534;font-weight:800;font-size:11px;padding:4px 10px;border-radius:999px">✓ Contactada</span>'}</td>
-                <td>${p.estatus === "nueva"
-                  ? `<button class="btn btn-secondary btn-sm btn-marcar-contactada" data-id="${p.id}" style="white-space:nowrap">Marcar contactada</button>`
-                  : ""}</td>
-              </tr>`).join("")}
-          </tbody>
-        </table>
-        </div>`;
-
-      cont.querySelectorAll(".btn-marcar-contactada").forEach(b => {
-        b.addEventListener("click", async () => {
-          b.disabled = true;
-          b.textContent = "Guardando…";
-          try {
-            await llamarPostulaciones({ accion: "contactada", id: b.dataset.id });
-            toast("Postulación marcada como contactada", "success");
-            cargarPostulaciones();
-          } catch (err) {
-            toast(err.message, "error");
-            b.disabled = false;
-            b.textContent = "Marcar contactada";
-          }
-        });
-      });
-    } catch (err) {
-      cont.innerHTML = `<div style="padding:30px;text-align:center;color:#b91c1c;font-weight:600">${escapeHtml(err.message)}</div>`;
-    }
-  }
-  document.getElementById("btn-recargar-postulaciones").addEventListener("click", cargarPostulaciones);
-
   // ─── INIT ───
   usuario = await requireRole("superadmin");
   document.getElementById("user-name").textContent = usuario.nombre || "Admin";
@@ -1283,7 +1179,6 @@
       if (btn.dataset.view === "ranking") renderRanking();
       if (btn.dataset.view === "comisiones") renderComisiones();
       if (btn.dataset.view === "pagos") renderPagos();
-      if (btn.dataset.view === "postulaciones") cargarPostulaciones();
       if (btn.dataset.view === "historial-diario") renderHistorialDiarioAdmin();
       if (btn.dataset.view === "aperturas") renderAperturasGlobales();
       if (btn.dataset.view === "generar-cert") {
@@ -2609,11 +2504,20 @@
     document.getElementById("modal-usuario").classList.remove("hidden");
   });
 
+  document.getElementById("usuario-rol").addEventListener("change", (e) => {
+    const sel = document.getElementById("usuario-consultora");
+    const esRH = e.target.value === "rh";
+    sel.required = !esRH;
+    sel.disabled = esRH;
+    if (esRH) sel.value = "";
+  });
+
   document.getElementById("form-usuario").addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
       const uid = document.getElementById("usuario-uid").value.trim();
-      const consultoraId = document.getElementById("usuario-consultora").value;
+      const esRH = document.getElementById("usuario-rol").value === "rh";
+      const consultoraId = esRH ? "" : document.getElementById("usuario-consultora").value;
       const consultora = consultoras.find(c => c.id === consultoraId);
 
       const data = {
@@ -2621,7 +2525,7 @@
         nombre: document.getElementById("usuario-nombre").value.trim(),
         rol: document.getElementById("usuario-rol").value,
         consultoraId,
-        consultoraNombre: consultora?.nombre || "",
+        consultoraNombre: esRH ? "IPCI · RH" : (consultora?.nombre || ""),
         activo: true
       };
 

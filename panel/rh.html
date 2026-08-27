@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel RH — Postulaciones IPCI</title>
+  <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css">
+  <style>
+    body { background: var(--bg); }
+    .rh-topbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    .rh-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .rh-brand img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; }
+    .rh-brand-t { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .rh-brand-s { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .rh-user { display: flex; align-items: center; gap: 12px; }
+    .rh-user-name { font-size: 12.5px; font-weight: 700; color: var(--text); text-align: right; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rh-user-rol { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .rh-salir {
+      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+      font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 8px 14px;
+      border-radius: 10px; cursor: pointer; transition: all var(--t-fast, .2s);
+    }
+    .rh-salir:hover { border-color: var(--red); color: var(--red); }
+
+    .rh-wrap { max-width: 1180px; margin: 0 auto; padding: 26px 18px 60px; }
+    .rh-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    .rh-title { font-size: 24px; font-weight: 800; color: var(--text); }
+    .rh-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    .rh-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 18px; }
+    .rh-sum { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: center; }
+    .rh-sum-val { font-size: 24px; font-weight: 800; color: var(--text); }
+    .rh-sum.is-yellow .rh-sum-val { color: var(--yellow); }
+    .rh-sum.is-green .rh-sum-val { color: var(--green); }
+    .rh-sum-lbl { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 3px; }
+
+    .rh-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    .rh-card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .rh-card-t { font-size: 14px; font-weight: 800; color: var(--text); }
+    .rh-tabla-wrap { overflow-x: auto; }
+    table.rh-tabla { width: 100%; border-collapse: collapse; min-width: 980px; }
+    .rh-tabla th {
+      text-align: left; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--muted); padding: 11px 14px; border-bottom: 1px solid var(--line); background: var(--surface-soft, #f6f8fb);
+      white-space: nowrap;
+    }
+    .rh-tabla td { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--text); vertical-align: top; }
+    .rh-tabla tr:last-child td { border-bottom: none; }
+    .rh-pill { display: inline-block; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .rh-pill.nueva { background: #fef3c7; color: #92400e; }
+    .rh-pill.ok { background: #dcfce7; color: #166534; }
+    .rh-btn-mini {
+      border: none; background: var(--primary); color: #fff; font-family: inherit;
+      font-size: 11.5px; font-weight: 700; padding: 8px 13px; border-radius: 9px; cursor: pointer; white-space: nowrap;
+    }
+    .rh-btn-mini:disabled { opacity: .6; cursor: default; }
+    .rh-vacio { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+    .rh-error { padding: 30px; text-align: center; color: #b91c1c; font-weight: 700; font-size: 13px; }
+    .rh-loading { padding: 44px; text-align: center; color: var(--muted); font-size: 13px; }
+    @media (max-width: 700px){ .rh-summary { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <header class="rh-topbar">
+    <div class="rh-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div>
+        <div class="rh-brand-t">Panel RH · IPCI</div>
+        <div class="rh-brand-s">Evaluación de postulaciones</div>
+      </div>
+    </div>
+    <div class="rh-user">
+      <div>
+        <div class="rh-user-name" id="rh-nombre">—</div>
+        <div class="rh-user-rol" id="rh-rol">RH</div>
+      </div>
+      <button class="rh-salir" id="btn-salir">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="rh-wrap">
+    <div class="rh-head">
+      <div>
+        <div class="rh-title">Postulaciones de Aliados</div>
+        <div class="rh-sub">Programa Aliado Certificador · compromiso: contactar en menos de 24 horas</div>
+      </div>
+      <button class="rh-btn-mini" id="btn-recargar" style="background:var(--surface);color:var(--primary);border:1px solid var(--line)">⟳ Recargar</button>
+    </div>
+
+    <div class="rh-summary">
+      <div class="rh-sum"><div class="rh-sum-val" id="sum-total">0</div><div class="rh-sum-lbl">Recibidas</div></div>
+      <div class="rh-sum is-yellow"><div class="rh-sum-val" id="sum-nuevas">0</div><div class="rh-sum-lbl">Por contactar</div></div>
+      <div class="rh-sum is-green"><div class="rh-sum-val" id="sum-contactadas">0</div><div class="rh-sum-lbl">Contactadas</div></div>
+    </div>
+
+    <div class="rh-card">
+      <div class="rh-card-h">
+        <div class="rh-card-t">Solicitudes recibidas</div>
+      </div>
+      <div id="contenedor"><div class="rh-loading">Cargando postulaciones…</div></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { auth, db, cerrarSesion, formatFecha, toast, escapeHtml, doc, getDoc } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const ENDPOINT = "https://gestionpostulaciones-imsrzczhta-uc.a.run.app";
+    let usuario = null;
+
+    // Acceso: rol "rh" (evaluadores) o "superadmin" (dirección, por URL directa)
+    await new Promise((resolve) => {
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        try {
+          const uDoc = await getDoc(doc(db, "usuarios", user.uid));
+          if (!uDoc.exists() || uDoc.data().activo === false) {
+            await signOut(auth);
+            window.location.href = "index.html";
+            return;
+          }
+          const data = uDoc.data();
+          if (data.rol !== "rh" && data.rol !== "superadmin") {
+            // No es su panel: al login, que lo mande a donde le toca
+            window.location.href = "index.html";
+            return;
+          }
+          usuario = { uid: user.uid, ...data };
+          resolve();
+        } catch (e) {
+          window.location.href = "index.html";
+        }
+      });
+    });
+
+    document.getElementById("rh-nombre").textContent = usuario.nombre || usuario.email || "—";
+    document.getElementById("rh-rol").textContent = usuario.rol === "superadmin" ? "Dirección" : "RH";
+    document.getElementById("btn-salir").addEventListener("click", cerrarSesion);
+
+    async function llamar(body) {
+      const idToken = await auth.currentUser.getIdToken();
+      const resp = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) throw new Error(data.error || "Error al consultar postulaciones.");
+      return data;
+    }
+
+    async function cargar() {
+      const cont = document.getElementById("contenedor");
+      cont.innerHTML = '<div class="rh-loading">Cargando postulaciones…</div>';
+      try {
+        const { postulaciones } = await llamar({ accion: "listar" });
+        const nuevas = postulaciones.filter(p => p.estatus === "nueva").length;
+        document.getElementById("sum-total").textContent = postulaciones.length;
+        document.getElementById("sum-nuevas").textContent = nuevas;
+        document.getElementById("sum-contactadas").textContent = postulaciones.length - nuevas;
+
+        if (!postulaciones.length) {
+          cont.innerHTML = '<div class="rh-vacio">Aún no hay postulaciones. Cuando alguien llene el formulario de "Certifica con IPCI", aparecerá aquí.</div>';
+          return;
+        }
+
+        cont.innerHTML = `
+          <div class="rh-tabla-wrap">
+          <table class="rh-tabla">
+            <thead><tr>
+              <th>Academia</th><th>Contacto</th><th>Ubicación</th><th>Correo</th><th>WhatsApp</th><th>Mensaje</th><th>Recibida</th><th>Estatus</th><th></th>
+            </tr></thead>
+            <tbody>
+              ${postulaciones.map(p => `
+                <tr>
+                  <td><strong>${escapeHtml(p.academia)}</strong></td>
+                  <td>${escapeHtml(p.nombre)}</td>
+                  <td>${escapeHtml(p.ciudad)}, ${escapeHtml(p.entidad)}</td>
+                  <td><a href="mailto:${escapeHtml(p.email)}" style="color:var(--primary);font-weight:700">${escapeHtml(p.email)}</a></td>
+                  <td><a href="https://wa.me/52${escapeHtml(p.whatsapp)}" target="_blank" rel="noopener" style="color:#16a34a;font-weight:800">${escapeHtml(p.whatsapp)}</a></td>
+                  <td style="max-width:230px;color:var(--muted);font-size:12px">${escapeHtml(p.mensaje || "—")}</td>
+                  <td style="white-space:nowrap;font-size:12px">${p.creadoEn ? formatFecha(new Date(p.creadoEn)) : "—"}</td>
+                  <td>${p.estatus === "nueva"
+                    ? '<span class="rh-pill nueva">⏳ Por contactar</span>'
+                    : '<span class="rh-pill ok">✓ Contactada</span>'}</td>
+                  <td>${p.estatus === "nueva"
+                    ? `<button class="rh-btn-mini btn-contactada" data-id="${p.id}">Marcar contactada</button>`
+                    : ""}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+          </div>`;
+
+        cont.querySelectorAll(".btn-contactada").forEach(b => {
+          b.addEventListener("click", async () => {
+            b.disabled = true;
+            b.textContent = "Guardando…";
+            try {
+              await llamar({ accion: "contactada", id: b.dataset.id });
+              toast("Postulación marcada como contactada", "success");
+              cargar();
+            } catch (err) {
+              toast(err.message, "error");
+              b.disabled = false;
+              b.textContent = "Marcar contactada";
+            }
+          });
+        });
+      } catch (err) {
+        cont.innerHTML = `<div class="rh-error">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    document.getElementById("btn-recargar").addEventListener("click", cargar);
+    cargar();
+  </script>
+</body>
+</html>
