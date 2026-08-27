@@ -109,6 +109,17 @@
     </div>
   </main>
 
+  <!-- Ficha completa -->
+  <div id="modal-ficha" style="display:none;position:fixed;inset:0;background:rgba(8,26,51,.55);z-index:100;align-items:center;justify-content:center;padding:18px">
+    <div style="background:var(--surface);border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.4)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)">
+        <div style="font-size:15px;font-weight:800;color:var(--text)" id="ficha-titulo">Ficha de postulación</div>
+        <button id="ficha-cerrar" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--muted)">✕</button>
+      </div>
+      <div id="ficha-cuerpo" style="padding:18px 20px"></div>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, db, cerrarSesion, formatFecha, toast, escapeHtml, doc, getDoc } from "./firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -176,28 +187,36 @@
           <div class="rh-tabla-wrap">
           <table class="rh-tabla">
             <thead><tr>
-              <th>Academia</th><th>Contacto</th><th>Ubicación</th><th>Correo</th><th>WhatsApp</th><th>Mensaje</th><th>Recibida</th><th>Estatus</th><th></th>
+              <th>Academia</th><th>Contacto</th><th>Sector</th><th>Alumnos/mes</th><th>Ubicación</th><th>WhatsApp</th><th>Recibida</th><th>Estatus</th><th></th>
             </tr></thead>
             <tbody>
-              ${postulaciones.map(p => `
+              ${postulaciones.map((p, i) => `
                 <tr>
                   <td><strong>${escapeHtml(p.academia)}</strong></td>
                   <td>${escapeHtml(p.nombre)}</td>
+                  <td>${escapeHtml(p.sector || "—")}</td>
+                  <td>${escapeHtml(p.alumnosMes || "—")}</td>
                   <td>${escapeHtml(p.ciudad)}, ${escapeHtml(p.entidad)}</td>
-                  <td><a href="mailto:${escapeHtml(p.email)}" style="color:var(--primary);font-weight:700">${escapeHtml(p.email)}</a></td>
                   <td><a href="https://wa.me/52${escapeHtml(p.whatsapp)}" target="_blank" rel="noopener" style="color:#16a34a;font-weight:800">${escapeHtml(p.whatsapp)}</a></td>
-                  <td style="max-width:230px;color:var(--muted);font-size:12px">${escapeHtml(p.mensaje || "—")}</td>
                   <td style="white-space:nowrap;font-size:12px">${p.creadoEn ? formatFecha(new Date(p.creadoEn)) : "—"}</td>
                   <td>${p.estatus === "nueva"
                     ? '<span class="rh-pill nueva">⏳ Por contactar</span>'
                     : '<span class="rh-pill ok">✓ Contactada</span>'}</td>
-                  <td>${p.estatus === "nueva"
-                    ? `<button class="rh-btn-mini btn-contactada" data-id="${p.id}">Marcar contactada</button>`
-                    : ""}</td>
+                  <td style="white-space:nowrap">
+                    <button class="rh-btn-mini btn-ficha" data-i="${i}" style="background:var(--surface);color:var(--primary);border:1px solid var(--line)">Ver ficha</button>
+                    ${p.estatus === "nueva"
+                      ? `<button class="rh-btn-mini btn-contactada" data-id="${p.id}" style="margin-left:6px">Marcar contactada</button>`
+                      : ""}
+                  </td>
                 </tr>`).join("")}
             </tbody>
           </table>
           </div>`;
+
+        // Ficha completa
+        cont.querySelectorAll(".btn-ficha").forEach(b => {
+          b.addEventListener("click", () => abrirFicha(postulaciones[Number(b.dataset.i)]));
+        });
 
         cont.querySelectorAll(".btn-contactada").forEach(b => {
           b.addEventListener("click", async () => {
@@ -218,6 +237,36 @@
         cont.innerHTML = `<div class="rh-error">${escapeHtml(err.message)}</div>`;
       }
     }
+
+    function abrirFicha(p) {
+      const fila = (label, valor) => `
+        <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px">
+          <div style="flex:0 0 150px;font-weight:800;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px">${label}</div>
+          <div style="color:var(--text)">${valor}</div>
+        </div>`;
+      const esUrl = (t) => /^https?:\/\//i.test(t) ? t : "https://" + t;
+      document.getElementById("ficha-titulo").textContent = p.academia;
+      document.getElementById("ficha-cuerpo").innerHTML =
+        fila("Contacto", escapeHtml(p.nombre)) +
+        fila("Ubicación", `${escapeHtml(p.ciudad)}, ${escapeHtml(p.entidad)}`) +
+        fila("Correo", `<a href="mailto:${escapeHtml(p.email)}" style="color:var(--primary);font-weight:700">${escapeHtml(p.email)}</a>`) +
+        fila("WhatsApp", `<a href="https://wa.me/52${escapeHtml(p.whatsapp)}" target="_blank" rel="noopener" style="color:#16a34a;font-weight:800">${escapeHtml(p.whatsapp)}</a>`) +
+        fila("Sector", escapeHtml(p.sector || "—")) +
+        fila("Años operando", escapeHtml(p.anios || "—")) +
+        fila("Alumnos al mes", escapeHtml(p.alumnosMes || "—")) +
+        fila("¿Emite certificados?", escapeHtml(p.emiteCertificados || "—")) +
+        fila("Web / redes", p.redes ? `<a href="${esUrl(escapeHtml(p.redes))}" target="_blank" rel="noopener" style="color:var(--primary);font-weight:700;word-break:break-all">${escapeHtml(p.redes)}</a>` : "—") +
+        fila("Cómo conoció IPCI", escapeHtml(p.comoConociste || "—")) +
+        fila("Recibida", p.creadoEn ? formatFecha(new Date(p.creadoEn)) : "—") +
+        fila("Mensaje", escapeHtml(p.mensaje || "—"));
+      document.getElementById("modal-ficha").style.display = "flex";
+    }
+    document.getElementById("ficha-cerrar").addEventListener("click", () => {
+      document.getElementById("modal-ficha").style.display = "none";
+    });
+    document.getElementById("modal-ficha").addEventListener("click", (e) => {
+      if (e.target.id === "modal-ficha") e.target.style.display = "none";
+    });
 
     document.getElementById("btn-recargar").addEventListener("click", cargar);
     cargar();
