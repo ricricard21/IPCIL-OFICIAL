@@ -181,7 +181,7 @@ a{
 
 /* HERO */
 .hero{
-  padding:140px 0 120px;
+  padding:140px 0 48px;
   text-align:center;
   background:
     radial-gradient(circle at top left, rgba(19,92,190,.14), transparent 35%),
@@ -873,7 +873,7 @@ textarea:focus{
   }
 
   .hero{
-    padding:110px 0 80px;
+    padding:110px 0 36px;
   }
 
   .hero-title{
@@ -921,7 +921,7 @@ textarea:focus{
   }
 
   .hero{
-    padding:110px 0 80px;
+    padding:110px 0 36px;
   }
 
   .hero-title{
