@@ -91,6 +91,9 @@
       <a href="https://ipcil.org/panel/" style="display:block;margin-top:12px;background:var(--primary);color:#fff;text-align:center;padding:12px;border-radius:10px;font-weight:800;text-decoration:none">Entrar al panel ahora →</a>
     </div>
 
+    <div id="banner-invitado" style="display:none;background:#EDF9F1;border:1px solid #BBE9CB;color:#166534;border-radius:12px;padding:13px 16px;font-size:13px;font-weight:700;line-height:1.5;margin-bottom:18px">
+      🎉 <span id="banner-invitado-txt">Tu postulación fue aceptada.</span> Completa tu registro para activar tu panel — tus datos ya vienen pre-cargados.
+    </div>
     <form id="form-registro" autocomplete="on">
       <h2>Registra tu academia</h2>
       <div class="form-sub">Llena tus datos, elige tu plan y paga en línea. Tu panel queda listo en minutos.</div>
@@ -318,6 +321,28 @@
       btn.textContent = "Continuar a pago seguro →";
     }
   });
+
+  // ── Invitación aprobada: pre-llenar datos desde el enlace de RH ──
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("apr") === "1") {
+      const setV = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+      setV("reg-academia", q.get("academia"));
+      setV("reg-coordinador", q.get("nombre"));
+      setV("reg-email", q.get("email"));
+      setV("reg-telefono", q.get("tel"));
+      setV("reg-ciudad", q.get("ciudad"));
+      const est = q.get("estado");
+      if (est) {
+        const sel = document.getElementById("reg-estado");
+        if ([...sel.options].some(o => o.value === est || o.text === est)) sel.value = est;
+      }
+      const banner = document.getElementById("banner-invitado");
+      const ac = q.get("academia");
+      if (ac) document.getElementById("banner-invitado-txt").textContent = `La postulación de ${ac} fue aceptada.`;
+      banner.style.display = "block";
+    }
+  } catch (_) {}
 </script>
 </body>
 </html>

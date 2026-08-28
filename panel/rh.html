@@ -34,7 +34,7 @@
     .rh-title { font-size: 24px; font-weight: 800; color: var(--text); }
     .rh-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-    .rh-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 18px; }
+    .rh-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 18px; }
     .rh-sum { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: center; }
     .rh-sum-val { font-size: 24px; font-weight: 800; color: var(--text); }
     .rh-sum.is-yellow .rh-sum-val { color: var(--yellow); }
@@ -56,6 +56,7 @@
     .rh-pill { display: inline-block; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
     .rh-pill.nueva { background: #fef3c7; color: #92400e; }
     .rh-pill.ok { background: #dcfce7; color: #166534; }
+    .rh-pill.apr { background: #dbeafe; color: #1e40af; }
     .rh-btn-mini {
       border: none; background: var(--primary); color: #fff; font-family: inherit;
       font-size: 11.5px; font-weight: 700; padding: 8px 13px; border-radius: 9px; cursor: pointer; white-space: nowrap;
@@ -99,6 +100,7 @@
       <div class="rh-sum"><div class="rh-sum-val" id="sum-total">0</div><div class="rh-sum-lbl">Recibidas</div></div>
       <div class="rh-sum is-yellow"><div class="rh-sum-val" id="sum-nuevas">0</div><div class="rh-sum-lbl">Por contactar</div></div>
       <div class="rh-sum is-green"><div class="rh-sum-val" id="sum-contactadas">0</div><div class="rh-sum-lbl">Contactadas</div></div>
+      <div class="rh-sum is-blue"><div class="rh-sum-val" id="sum-aprobadas" style="color:var(--primary)">0</div><div class="rh-sum-lbl">Aprobadas</div></div>
     </div>
 
     <div class="rh-card">
@@ -174,9 +176,11 @@
       try {
         const { postulaciones } = await llamar({ accion: "listar" });
         const nuevas = postulaciones.filter(p => p.estatus === "nueva").length;
+        const aprobadas = postulaciones.filter(p => p.estatus === "aprobada").length;
         document.getElementById("sum-total").textContent = postulaciones.length;
         document.getElementById("sum-nuevas").textContent = nuevas;
-        document.getElementById("sum-contactadas").textContent = postulaciones.length - nuevas;
+        document.getElementById("sum-contactadas").textContent = postulaciones.filter(p => p.estatus === "contactada").length;
+        document.getElementById("sum-aprobadas").textContent = aprobadas;
 
         if (!postulaciones.length) {
           cont.innerHTML = '<div class="rh-vacio">Aún no hay postulaciones. Cuando alguien llene el formulario de "Certifica con IPCI", aparecerá aquí.</div>';
@@ -201,12 +205,17 @@
                   <td style="white-space:nowrap;font-size:12px">${p.creadoEn ? formatFecha(new Date(p.creadoEn)) : "—"}</td>
                   <td>${p.estatus === "nueva"
                     ? '<span class="rh-pill nueva">⏳ Por contactar</span>'
-                    : '<span class="rh-pill ok">✓ Contactada</span>'}</td>
+                    : p.estatus === "aprobada"
+                      ? '<span class="rh-pill apr">✉ Invitación enviada</span>'
+                      : '<span class="rh-pill ok">✓ Contactada</span>'}</td>
                   <td style="white-space:nowrap">
                     <button class="rh-btn-mini btn-ficha" data-i="${i}" style="background:var(--surface);color:var(--primary);border:1px solid var(--line)">Ver ficha</button>
                     ${p.estatus === "nueva"
-                      ? `<button class="rh-btn-mini btn-contactada" data-id="${p.id}" style="margin-left:6px">Marcar contactada</button>`
+                      ? `<button class="rh-btn-mini btn-contactada" data-id="${p.id}" style="margin-left:6px;background:var(--surface);color:#166534;border:1px solid var(--line)">Contactada</button>`
                       : ""}
+                    ${p.estatus !== "aprobada"
+                      ? `<button class="rh-btn-mini btn-aprobar" data-id="${p.id}" data-email="${escapeHtml(p.email)}" style="margin-left:6px;background:#C8982E;color:#081A33">Aprobar y enviar link</button>`
+                      : `<button class="rh-btn-mini btn-aprobar" data-id="${p.id}" data-email="${escapeHtml(p.email)}" style="margin-left:6px;background:var(--surface);color:var(--muted);border:1px solid var(--line)">Reenviar invitación</button>`}
                   </td>
                 </tr>`).join("")}
             </tbody>
@@ -216,6 +225,24 @@
         // Ficha completa
         cont.querySelectorAll(".btn-ficha").forEach(b => {
           b.addEventListener("click", () => abrirFicha(postulaciones[Number(b.dataset.i)]));
+        });
+
+        cont.querySelectorAll(".btn-aprobar").forEach(b => {
+          b.addEventListener("click", async () => {
+            if (!confirm(`Se enviará la invitación con el enlace de registro y pago a:\n\n${b.dataset.email}\n\n¿Continuar?`)) return;
+            b.disabled = true;
+            const txt = b.textContent;
+            b.textContent = "Enviando…";
+            try {
+              await llamar({ accion: "aprobar", id: b.dataset.id });
+              toast("Invitación enviada al postulante", "success");
+              cargar();
+            } catch (err) {
+              toast(err.message, "error");
+              b.disabled = false;
+              b.textContent = txt;
+            }
+          });
         });
 
         cont.querySelectorAll(".btn-contactada").forEach(b => {
