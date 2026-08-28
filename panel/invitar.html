@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitar aliado — Dirección IPCI</title>
+  <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css">
+  <style>
+    body { background: var(--bg); }
+    .iv-topbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    .iv-brand { display: flex; align-items: center; gap: 12px; }
+    .iv-brand img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; }
+    .iv-brand-t { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .iv-brand-s { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .iv-salir {
+      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+      font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 8px 14px;
+      border-radius: 10px; cursor: pointer;
+    }
+    .iv-salir:hover { border-color: var(--red); color: var(--red); }
+
+    .iv-wrap { max-width: 720px; margin: 0 auto; padding: 28px 18px 60px; }
+    .iv-title { font-size: 24px; font-weight: 800; color: var(--text); }
+    .iv-sub { font-size: 13px; color: var(--muted); margin: 4px 0 20px; }
+
+    .iv-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 18px; }
+    .iv-f { margin-bottom: 14px; }
+    .iv-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .iv-input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 11px;
+      font-family: inherit; font-size: 13.5px; color: var(--text); background: #fbfcfe;
+    }
+    .iv-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(11,78,162,.1); }
+    .iv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px){ .iv-grid { grid-template-columns: 1fr; } }
+
+    .iv-link-box {
+      background: #f4f7fb; border: 1.5px dashed var(--line); border-radius: 12px;
+      padding: 13px 15px; font-size: 12px; color: var(--text); word-break: break-all;
+      font-family: "Consolas", monospace; margin-bottom: 12px; min-height: 46px;
+    }
+    .iv-acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+    .iv-btn {
+      border: none; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 13px;
+      padding: 12px 20px; border-radius: 999px; transition: transform .15s ease;
+    }
+    .iv-btn:hover { transform: translateY(-1px); }
+    .iv-btn.copiar { background: var(--primary); color: #fff; }
+    .iv-btn.whats { background: #25D366; color: #073b1c; }
+    .iv-btn.whats:disabled { opacity: .45; cursor: default; transform: none; }
+    .iv-nota { font-size: 11.5px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
+
+    .iv-fijo { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .iv-fijo-t { font-size: 13px; font-weight: 800; color: var(--text); }
+    .iv-fijo-s { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+  <header class="iv-topbar">
+    <div class="iv-brand">
+      <img src="../assets/logo.jpeg" alt="IPCI">
+      <div>
+        <div class="iv-brand-t">Invitar aliado · Dirección</div>
+        <div class="iv-brand-s">Invitación directa al registro</div>
+      </div>
+    </div>
+    <button class="iv-salir" id="btn-salir">Cerrar sesión</button>
+  </header>
+
+  <main class="iv-wrap">
+    <div class="iv-title">Invitación directa</div>
+    <div class="iv-sub">Para academias que ya conoces o apruebas a simple vista: genera su link personalizado de registro y mándalo por WhatsApp — sin pasar por postulación.</div>
+
+    <!-- Link genérico -->
+    <div class="iv-card iv-fijo">
+      <div>
+        <div class="iv-fijo-t">Tu link genérico de invitación</div>
+        <div class="iv-fijo-s">Para compartir donde sea (sin datos pre-cargados)</div>
+      </div>
+      <button class="iv-btn copiar" id="btn-copiar-generico">Copiar link genérico</button>
+    </div>
+
+    <!-- Generador personalizado -->
+    <div class="iv-card">
+      <div class="iv-f">
+        <label class="iv-label" for="iv-academia">Academia</label>
+        <input class="iv-input" type="text" id="iv-academia" maxlength="80" placeholder="Ej. Academia Dental del Norte">
+      </div>
+      <div class="iv-grid">
+        <div class="iv-f">
+          <label class="iv-label" for="iv-nombre">Nombre del contacto</label>
+          <input class="iv-input" type="text" id="iv-nombre" maxlength="80" placeholder="Ej. Sofía Ruiz Hernández">
+        </div>
+        <div class="iv-f">
+          <label class="iv-label" for="iv-email">Correo</label>
+          <input class="iv-input" type="email" id="iv-email" maxlength="90" placeholder="correo@academia.mx">
+        </div>
+      </div>
+      <div class="iv-grid">
+        <div class="iv-f">
+          <label class="iv-label" for="iv-tel">WhatsApp (10 dígitos)</label>
+          <input class="iv-input" type="tel" id="iv-tel" maxlength="15" placeholder="2211234567">
+        </div>
+        <div class="iv-f">
+          <label class="iv-label" for="iv-ciudad">Municipio o ciudad</label>
+          <input class="iv-input" type="text" id="iv-ciudad" maxlength="60" placeholder="Ej. Tehuacán">
+        </div>
+      </div>
+      <div class="iv-f">
+        <label class="iv-label" for="iv-estado">Estado</label>
+        <select class="iv-input" id="iv-estado">
+          <option value="">— Sin especificar —</option>
+          <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
+          <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
+          <option>Ciudad de México</option><option>Coahuila</option><option>Colima</option>
+          <option>Durango</option><option>Estado de México</option><option>Guanajuato</option>
+          <option>Guerrero</option><option>Hidalgo</option><option>Jalisco</option>
+          <option>Michoacán</option><option>Morelos</option><option>Nayarit</option>
+          <option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option>
+          <option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option>
+          <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
+          <option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option>
+          <option>Yucatán</option><option>Zacatecas</option><option>Otro país</option>
+        </select>
+      </div>
+
+      <label class="iv-label">Link personalizado (se arma solo)</label>
+      <div class="iv-link-box" id="iv-link">—</div>
+      <div class="iv-acciones">
+        <button class="iv-btn copiar" id="btn-copiar">Copiar link</button>
+        <button class="iv-btn whats" id="btn-whats" disabled>Enviar por WhatsApp →</button>
+      </div>
+      <div class="iv-nota">El link abre el registro con los datos ya cargados y el aviso "invitado directamente por el equipo IPCI". La persona solo pone su contraseña, elige plan y paga. El botón de WhatsApp se activa al escribir su número.</div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { auth, db, cerrarSesion, toast, doc, getDoc } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // Solo dirección (superadmin)
+    await new Promise((resolve) => {
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        try {
+          const uDoc = await getDoc(doc(db, "usuarios", user.uid));
+          if (!uDoc.exists() || uDoc.data().activo === false || uDoc.data().rol !== "superadmin") {
+            window.location.href = "index.html";
+            return;
+          }
+          resolve();
+        } catch (e) { window.location.href = "index.html"; }
+      });
+    });
+
+    document.getElementById("btn-salir").addEventListener("click", cerrarSesion);
+
+    const BASE = "https://ipcil.org/panel/registro-aliado.html";
+    const LINK_GENERICO = BASE + "?inv=1";
+
+    function armarLink() {
+      const p = new URLSearchParams({ inv: "1" });
+      const academia = document.getElementById("iv-academia").value.trim();
+      const nombre = document.getElementById("iv-nombre").value.trim();
+      const email = document.getElementById("iv-email").value.trim();
+      const tel = document.getElementById("iv-tel").value.replace(/\D/g, "");
+      const ciudad = document.getElementById("iv-ciudad").value.trim();
+      const estado = document.getElementById("iv-estado").value;
+      if (academia) p.set("academia", academia);
+      if (nombre) p.set("nombre", nombre);
+      if (email) p.set("email", email);
+      if (tel) p.set("tel", tel);
+      if (ciudad) p.set("ciudad", ciudad);
+      if (estado) p.set("estado", estado);
+      const link = `${BASE}?${p.toString()}`;
+      document.getElementById("iv-link").textContent = link;
+      document.getElementById("btn-whats").disabled = tel.length < 10;
+      return { link, academia, tel };
+    }
+
+    ["iv-academia","iv-nombre","iv-email","iv-tel","iv-ciudad","iv-estado"].forEach(id => {
+      document.getElementById(id).addEventListener("input", armarLink);
+      document.getElementById(id).addEventListener("change", armarLink);
+    });
+    armarLink();
+
+    async function copiar(texto, msg) {
+      try {
+        await navigator.clipboard.writeText(texto);
+        toast(msg, "success");
+      } catch (_) {
+        prompt("Copia el link:", texto);
+      }
+    }
+
+    document.getElementById("btn-copiar-generico").addEventListener("click", () => copiar(LINK_GENERICO, "Link genérico copiado"));
+    document.getElementById("btn-copiar").addEventListener("click", () => copiar(armarLink().link, "Link personalizado copiado"));
+
+    document.getElementById("btn-whats").addEventListener("click", () => {
+      const { link, academia, tel } = armarLink();
+      if (tel.length < 10) return;
+      const saludo = academia ? `¡Hola! Te escribo del Instituto IPCI. Nos encantaría que *${academia}* certifique sus cursos con nuestro respaldo institucional.` : `¡Hola! Te escribo del Instituto IPCI. Nos encantaría que tu academia certifique sus cursos con nuestro respaldo institucional.`;
+      const msg = `${saludo}\n\nAquí está tu enlace de registro directo (tus datos ya vienen pre-cargados):\n${link}\n\nEliges tu plan, pagas en línea y tu panel de emisión queda activo en minutos. Cualquier duda, con gusto te apoyo. 🤝`;
+      window.open(`https://wa.me/52${tel}?text=${encodeURIComponent(msg)}`, "_blank");
+    });
+  </script>
+</body>
+</html>

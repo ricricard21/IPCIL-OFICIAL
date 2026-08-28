@@ -325,7 +325,7 @@
   // ── Invitación aprobada: pre-llenar datos desde el enlace de RH ──
   try {
     const q = new URLSearchParams(window.location.search);
-    if (q.get("apr") === "1") {
+    if (q.get("apr") === "1" || q.get("inv") === "1") {
       const setV = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
       setV("reg-academia", q.get("academia"));
       setV("reg-coordinador", q.get("nombre"));
@@ -339,7 +339,13 @@
       }
       const banner = document.getElementById("banner-invitado");
       const ac = q.get("academia");
-      if (ac) document.getElementById("banner-invitado-txt").textContent = `La postulación de ${ac} fue aceptada.`;
+      const esDirecta = q.get("inv") === "1";
+      const txt = document.getElementById("banner-invitado-txt");
+      if (esDirecta) {
+        txt.textContent = ac ? `${ac}: fuiste invitado directamente por el equipo IPCI.` : "Fuiste invitado directamente por el equipo IPCI.";
+      } else if (ac) {
+        txt.textContent = `La postulación de ${ac} fue aceptada.`;
+      }
       banner.style.display = "block";
     }
   } catch (_) {}
