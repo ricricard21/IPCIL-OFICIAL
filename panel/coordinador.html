@@ -1340,6 +1340,21 @@
   </div>
 </div>
 
+<!-- Guía rápida de primera vez -->
+<div id="tut-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,26,51,.6);z-index:200;align-items:center;justify-content:center;padding:18px">
+  <div style="background:#fff;border-radius:20px;max-width:470px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.45)">
+    <div style="background:linear-gradient(135deg,#0b4ea2,#073b80);padding:20px 24px;border-radius:20px 20px 0 0">
+      <div style="color:#E3C06A;font-size:10px;font-weight:800;letter-spacing:.25em;text-transform:uppercase">Guía rápida · primera vez</div>
+      <div id="tut-titulo" style="color:#fff;font-size:19px;font-weight:800;margin-top:4px">Bienvenido</div>
+    </div>
+    <div id="tut-cuerpo" style="padding:20px 24px 6px"></div>
+    <div style="padding:14px 24px 20px;display:flex;flex-direction:column;gap:10px">
+      <button id="tut-ok" style="border:none;cursor:pointer;font-family:inherit;background:#0b4ea2;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:999px">¡Entendido!</button>
+      <button id="tut-nomas" style="border:none;background:none;cursor:pointer;font-family:inherit;color:#94a3b8;font-size:11.5px;font-weight:600;text-decoration:underline">No volver a mostrar guías</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import {
     auth, db, functions,
@@ -1787,6 +1802,7 @@
       btn.classList.add("active");
       document.querySelectorAll(".section").forEach(v => v.classList.remove("active"));
       document.getElementById(`view-${btn.dataset.view}`).classList.add("active");
+      mostrarGuia(btn.dataset.view);
       document.getElementById("sidebar").classList.remove("open");
       document.querySelector(".sidebar-backdrop")?.classList.remove("show");
       if (btn.dataset.view === "apertura") renderApertura();
@@ -5127,6 +5143,96 @@
   }
 
   window.addEventListener("beforeunload", () => unsubAll.forEach(fn => fn && fn()));
+
+  // ═══ GUÍAS DE PRIMERA VEZ (una por sección, se recuerdan por usuario) ═══
+  const TUT_GUIAS = {
+    dashboard: {
+      t: "Tu centro de control",
+      b: [
+        "Aquí ves tus <b>créditos disponibles</b> (cada certificado usa 1), el estado de tu plan y el resumen de tu emisión.",
+        "Primer paso recomendado: crea tu primer curso en la sección <b>Cursos</b>.",
+        "Si tu plan queda pendiente de pago, aquí mismo aparecerá el aviso para regularizarlo.",
+      ],
+    },
+    cursos: {
+      t: "Crea tus cursos",
+      b: [
+        "Registra cada curso con su nombre, modalidad y duración — estos datos salen impresos en el certificado.",
+        "<span style='display:block;background:#FEF7E5;border:1px solid #F0D998;border-radius:10px;padding:10px 12px'><b>⭐ Email del ponente: ponlo correcto.</b> A ese correo llegan las notificaciones automáticas del curso (avisos de alumnos inscritos y más). Sin él, el ponente no se entera de nada.</span>",
+        "La <b>firma del ponente</b>, el <b>Director General</b> y el <b>instituto</b> que captures aquí aparecen impresos en el certificado.",
+        "La <b>Clave IPCI</b> del curso se genera sola al emitir el primer certificado — no tienes que capturarla.",
+      ],
+    },
+    vendedores: {
+      t: "Tu equipo de ventas",
+      b: [
+        "Tu plan incluye <b>2 cuentas de vendedor</b>: créalas con nombre, correo y contraseña; ellos entran por el mismo login del panel.",
+        "Puedes <b>desactivar y reactivar</b> vendedores cuando quieras — desactivar no cancela ningún cobro.",
+        "¿Necesitas un tercero? Al llegar al tope, el panel te ofrece el <b>asiento extra ($500/mes)</b> y se agrega solo al pagar.",
+      ],
+    },
+    alumnos: {
+      t: "Alumnos y certificados",
+      b: [
+        "Registra a cada alumno en su curso; desde aquí emites su <b>certificado con folio único y QR</b> (usa 1 crédito).",
+        "El alumno queda en el <b>padrón público de ipcil.org</b>: cualquier empleador puede verificar su certificado al instante.",
+        "Puedes descargar o reenviar el certificado cuando lo necesites.",
+      ],
+    },
+    apertura: {
+      t: "Apertura de grupos",
+      b: [
+        "Abre <b>grupos o generaciones</b> de un curso con su fecha de inicio.",
+        "Te ayuda a organizar inscripciones por grupo y a llevar el control de cada generación.",
+      ],
+    },
+    cronograma: {
+      t: "Cronograma",
+      b: [
+        "Agenda las <b>sesiones y fechas clave</b> de tus cursos.",
+        "Tu equipo ve el calendario y todos quedan sincronizados con las próximas actividades.",
+      ],
+    },
+    historicos: {
+      t: "Históricos",
+      b: [
+        "Consulta todos los <b>certificados ya emitidos</b>: folios, alumnos, fechas y descargas.",
+        "Es tu archivo permanente — nada de lo emitido se pierde.",
+      ],
+    },
+  };
+
+  function tutKey(vista) { return `ipci_tut_${usuario?.uid || "anon"}_${vista}`; }
+  let _tutVistaActual = null;
+
+  function mostrarGuia(vista) {
+    const g = TUT_GUIAS[vista];
+    if (!g) return;
+    try {
+      if (localStorage.getItem(tutKey("SILENCIADAS")) === "1") return;
+      if (localStorage.getItem(tutKey(vista)) === "1") return;
+    } catch (_) { return; }
+    _tutVistaActual = vista;
+    document.getElementById("tut-titulo").textContent = g.t;
+    document.getElementById("tut-cuerpo").innerHTML = g.b.map(x => `
+      <div style="display:flex;gap:10px;margin-bottom:12px;font-size:13.5px;line-height:1.6;color:#33465C">
+        <span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#C8982E;color:#081A33;font-weight:900;font-size:.72rem;display:flex;align-items:center;justify-content:center;margin-top:2px">✓</span>
+        <div>${x}</div>
+      </div>`).join("");
+    document.getElementById("tut-overlay").style.display = "flex";
+  }
+
+  document.getElementById("tut-ok").addEventListener("click", () => {
+    try { if (_tutVistaActual) localStorage.setItem(tutKey(_tutVistaActual), "1"); } catch (_) {}
+    document.getElementById("tut-overlay").style.display = "none";
+  });
+  document.getElementById("tut-nomas").addEventListener("click", () => {
+    try { localStorage.setItem(tutKey("SILENCIADAS"), "1"); } catch (_) {}
+    document.getElementById("tut-overlay").style.display = "none";
+  });
+
+  // Guía del dashboard al entrar por primera vez
+  setTimeout(() => mostrarGuia("dashboard"), 900);
 </script>
 
 <script type="module" src="chat-widget.js?v=4"></script>
