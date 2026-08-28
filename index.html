@@ -140,20 +140,30 @@
     <section class="section" id="video-institucional" style="padding-bottom:26px">
       <div class="container">
         <div class="section-heading centered reveal">
-          <span class="section-kicker">Conoce IPCI</span>
+          <span class="section-kicker">Conoce IPCIL</span>
         </div>
         <div class="reveal" style="max-width:920px;margin:0 auto">
           <div style="position:relative;width:100%;padding-top:56.25%;border-radius:22px;overflow:hidden;box-shadow:0 26px 60px rgba(15,44,84,.18);border:1px solid var(--line);background:#081A33">
-            <iframe
+            <iframe id="video-ipcil"
               src="https://iframe.mediadelivery.net/embed/739234/1cf479af-67ed-4d5c-afa0-9a3b973c01e3?autoplay=true&muted=true&loop=true&preload=true&responsive=true"
               style="position:absolute;inset:0;width:100%;height:100%;border:0"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowfullscreen
-              loading="lazy"
-              title="Video institucional IPCI">
+              title="Video institucional IPCIL">
             </iframe>
+            <button id="video-sonido" type="button"
+              style="position:absolute;right:16px;bottom:16px;z-index:5;border:none;cursor:pointer;font-family:inherit;background:#C8982E;color:#081A33;font-weight:800;font-size:.85rem;padding:11px 18px;border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.35);display:flex;align-items:center;gap:8px">
+              🔊 Activar sonido
+            </button>
           </div>
         </div>
+        <script>
+          document.getElementById("video-sonido").addEventListener("click", function () {
+            var f = document.getElementById("video-ipcil");
+            f.src = "https://iframe.mediadelivery.net/embed/739234/1cf479af-67ed-4d5c-afa0-9a3b973c01e3?autoplay=true&muted=false&loop=true&preload=true&responsive=true";
+            this.style.display = "none";
+          });
+        </script>
       </div>
     </section>
 
