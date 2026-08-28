@@ -152,17 +152,31 @@
               title="Video institucional IPCIL">
             </iframe>
             <button id="video-sonido" type="button"
-              style="position:absolute;right:16px;bottom:16px;z-index:5;border:none;cursor:pointer;font-family:inherit;background:#C8982E;color:#081A33;font-weight:800;font-size:.85rem;padding:11px 18px;border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.35);display:flex;align-items:center;gap:8px">
+              style="display:none;position:absolute;right:16px;bottom:16px;z-index:5;border:none;cursor:pointer;font-family:inherit;background:#C8982E;color:#081A33;font-weight:800;font-size:.85rem;padding:11px 18px;border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.35);align-items:center;gap:8px">
               🔊 Activar sonido
             </button>
           </div>
         </div>
         <script>
-          document.getElementById("video-sonido").addEventListener("click", function () {
-            var f = document.getElementById("video-ipcil");
-            f.src = "https://iframe.mediadelivery.net/embed/739234/1cf479af-67ed-4d5c-afa0-9a3b973c01e3?autoplay=true&muted=false&loop=true&preload=true&responsive=true";
-            this.style.display = "none";
-          });
+          (function () {
+            var btn = document.getElementById("video-sonido");
+            var frame = document.getElementById("video-ipcil");
+            // Solo en pantallas grandes: en el teléfono el player ya trae el audio a la mano
+            if (window.matchMedia("(min-width: 821px)").matches) {
+              btn.style.display = "flex";
+            }
+            function ocultar() { btn.style.display = "none"; }
+            btn.addEventListener("click", function () {
+              frame.src = "https://iframe.mediadelivery.net/embed/739234/1cf479af-67ed-4d5c-afa0-9a3b973c01e3?autoplay=true&muted=false&loop=true&preload=true&responsive=true";
+              ocultar();
+            });
+            // Si el usuario ya interactuó con el video, el botón sobra
+            frame.parentElement.addEventListener("pointerdown", function (e) {
+              if (e.target !== btn) ocultar();
+            });
+            // Y de cualquier forma, se retira solo después de un rato
+            setTimeout(ocultar, 15000);
+          })();
         </script>
       </div>
     </section>
