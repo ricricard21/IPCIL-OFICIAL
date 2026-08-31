@@ -3605,10 +3605,10 @@
   // ── Firma del ponente: comprimir en el navegador y guardar como base64 en el curso ──
   let _firmaPonenteB64 = "";
 
-  // Consultoras donde la firma y el Director General se COMPARTEN entre todos los cursos:
+  // Firma, instituto y Director General se COMPARTEN entre todos los cursos de la
+  // consultora (antes solo Academia Prueba; desde 31-ago-2026 aplica a TODAS):
   // al crear un curso nuevo se pre-llenan, y al cambiarlos en un curso se propagan a los demás.
-  const CONSULTORAS_FIRMA_COMPARTIDA = ["Kbo505Nxz9Q8mgs8fn8W"]; // Academia Prueba IPCI
-  const firmaCompartidaActiva = () => CONSULTORAS_FIRMA_COMPARTIDA.includes(usuario.consultoraId);
+  const firmaCompartidaActiva = () => true;
 
   function defaultsFirmaCompartida() {
     // Toma la firma/director/instituto del primer curso que los tenga capturados
@@ -3621,10 +3621,17 @@
   }
 
   async function propagarFirmaCompartida(cursoGuardadoId, firma, director, instituto) {
-    // Copia firma, director e instituto a TODOS los demás cursos de la consultora
+    // Copia firma, director e instituto a TODOS los demás cursos de la consultora.
+    // 🔒 Seguro anti-borrado: solo se propagan los campos CON contenido — guardar
+    // un curso viejo con estos campos vacíos NO borra los datos de los demás cursos.
+    const cambios = {};
+    if ((firma || "").length) cambios.firmaPonente = firma;
+    if ((director || "").trim()) cambios.directorInstituto = director;
+    if ((instituto || "").trim()) cambios.institutoPonente = instituto;
+    if (!Object.keys(cambios).length) return 0;
     const otros = cursos.filter(c => c.id !== cursoGuardadoId);
     for (const c of otros) {
-      await updateDoc(doc(db, "cursos", c.id), { firmaPonente: firma, directorInstituto: director, institutoPonente: instituto });
+      await updateDoc(doc(db, "cursos", c.id), cambios);
     }
     return otros.length;
   }
