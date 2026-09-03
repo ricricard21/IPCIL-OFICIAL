@@ -786,6 +786,23 @@
         </button>
       </div>
 
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Logo de tu consultora</div>
+            <div class="card-subtitle">Aparecerá en la esquina superior izquierda de todos los certificados que emitas</div>
+          </div>
+          <div id="logo-consultora-preview" style="display:none;align-items:center;gap:10px">
+            <img id="logo-consultora-img" alt="Logo de la consultora" style="max-height:56px;max-width:150px;border:1px solid var(--line-soft);border-radius:8px;background:#fff;padding:4px">
+            <button type="button" id="logo-consultora-quitar" class="btn btn-ghost" style="font-size:12px">Quitar logo</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:4px">
+          <input class="input" type="file" id="logo-consultora-file" accept="image/png,image/jpeg">
+          <div class="field-hint">PNG con fondo transparente se ve mejor. Se guarda al seleccionarlo y aplica a toda tu consultora (no por curso).</div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div>
@@ -1491,6 +1508,7 @@
         pintarChipCreditos(c);
         pintarCentroPagos(c);
         pintarSeccionVendedores(c);
+        pintarLogoConsultora(c);
         // Aviso de gracia: una vez por sesión, en cuanto entra al panel
         if (c.estadoSuscripcion === "cancelada" && !_avisoCancelacionMostrado) {
           _avisoCancelacionMostrado = true;
@@ -3642,6 +3660,75 @@
     if (b64) { img.src = b64; box.style.display = "block"; }
     else { img.src = ""; box.style.display = "none"; document.getElementById("curso-firma-ponente").value = ""; }
   }
+
+  // ── Logo de la consultora (nivel consultora, no por curso) ──
+  function comprimirLogo(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          const MAX_W = 400; // logos un poco más grandes que la firma
+          const scale = Math.min(1, MAX_W / image.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(image.width * scale);
+          canvas.height = Math.round(image.height * scale);
+          canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/png")); // PNG conserva transparencia
+        };
+        image.onerror = () => reject(new Error("No pude leer la imagen"));
+        image.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error("No pude leer el archivo"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function pintarLogoConsultora(c) {
+    const box = document.getElementById("logo-consultora-preview");
+    const img = document.getElementById("logo-consultora-img");
+    const fileInput = document.getElementById("logo-consultora-file");
+    if (!box || !img) return;
+    const b64 = (c && c.logoCertificado) || "";
+    if (b64) { img.src = b64; box.style.display = "flex"; }
+    else { img.src = ""; box.style.display = "none"; if (fileInput) fileInput.value = ""; }
+  }
+
+  async function guardarLogoConsultora(b64) {
+    if (!usuario?.consultoraId) return;
+    await updateDoc(doc(db, "consultoras", usuario.consultoraId), { logoCertificado: b64 });
+  }
+
+  (function initLogoConsultora() {
+    const fileInput = document.getElementById("logo-consultora-file");
+    const quitar = document.getElementById("logo-consultora-quitar");
+    if (fileInput) fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const b64 = await comprimirLogo(file);
+        if (b64.length > 300000) { // tope ~300KB; Firestore aguanta 1MB por doc
+          toast("El logo quedó muy pesado, usa una imagen más simple", "warning");
+          return;
+        }
+        await guardarLogoConsultora(b64);
+        document.getElementById("logo-consultora-img").src = b64;
+        document.getElementById("logo-consultora-preview").style.display = "flex";
+        toast("Logo guardado. Aparecerá en tus próximos certificados.", "success");
+      } catch (err) {
+        toast("Error con el logo: " + err.message, "error");
+      }
+    });
+    if (quitar) quitar.addEventListener("click", async () => {
+      try {
+        await guardarLogoConsultora("");
+        pintarLogoConsultora({ logoCertificado: "" });
+        toast("Logo quitado.", "success");
+      } catch (err) {
+        toast("No se pudo quitar el logo: " + err.message, "error");
+      }
+    });
+  })();
 
   function comprimirFirma(file) {
     return new Promise((resolve, reject) => {
