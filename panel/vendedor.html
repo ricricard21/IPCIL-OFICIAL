@@ -3308,7 +3308,7 @@
   });
 
   function abrirModalEnviarLink(cursoId, cursoNombre, aperturaKey) {
-    if (!whatsappVinculado()) { abrirModalVincularWA(); return; }
+    // (botón Gmail: va por correo, NO depende de WATI — sin candado)
     waLinkCursoActual = cursoId;
     waLinkAperturaActual = aperturaKey || null;
     document.getElementById("waLinkCursoNombre").textContent = cursoNombre;
