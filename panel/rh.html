@@ -103,6 +103,14 @@
       <div class="rh-sum is-blue"><div class="rh-sum-val" id="sum-aprobadas" style="color:var(--primary)">0</div><div class="rh-sum-lbl">Aprobadas</div></div>
     </div>
 
+    <div class="rh-card" id="wa-card" style="margin-bottom:18px;border:2px solid #16a34a">
+      <div class="rh-card-h">
+        <div class="rh-card-t">📲 Vincular WhatsApp · <span id="wa-pendientes" style="display:inline-block;background:#dc2626;color:#fff;border-radius:999px;padding:1px 9px;font-size:12px;vertical-align:middle">0</span> por llamar</div>
+        <div style="font-size:12px;color:var(--muted)">Academias que pidieron que un técnico les vincule la API de WhatsApp. Márcalas al contactarlas.</div>
+      </div>
+      <div id="wa-contenedor"><div class="rh-loading">Cargando solicitudes…</div></div>
+    </div>
+
     <div class="rh-card">
       <div class="rh-card-h">
         <div class="rh-card-t">Solicitudes recibidas</div>
@@ -123,7 +131,7 @@
   </div>
 
   <script type="module">
-    import { auth, db, cerrarSesion, formatFecha, toast, escapeHtml, doc, getDoc } from "./firebase-config.js";
+    import { auth, db, cerrarSesion, formatFecha, toast, escapeHtml, doc, getDoc, updateDoc, collection, query, where, orderBy, onSnapshot, serverTimestamp } from "./firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const ENDPOINT = "https://gestionpostulaciones-imsrzczhta-uc.a.run.app";
@@ -296,6 +304,41 @@
     });
 
     document.getElementById("btn-recargar").addEventListener("click", cargar);
+
+    // ── Solicitudes de vinculación de WhatsApp (en vivo) ──
+    function escucharSolicitudesWA() {
+      const cont = document.getElementById("wa-contenedor");
+      const q = query(collection(db, "solicitudesWhatsapp"), orderBy("creadoEn", "desc"));
+      onSnapshot(q, (snap) => {
+        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const pend = items.filter(i => i.estado === "pendiente");
+        document.getElementById("wa-pendientes").textContent = pend.length;
+        document.title = (pend.length ? `(${pend.length}) ` : "") + "Panel RH · IPCI";
+        if (!items.length) { cont.innerHTML = '<div class="rh-loading">Sin solicitudes de WhatsApp.</div>'; return; }
+        cont.innerHTML = items.map(i => {
+          const f = i.creadoEn?.toDate ? i.creadoEn.toDate().toLocaleString("es-MX", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+          const pendiente = i.estado === "pendiente";
+          return `<div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);${pendiente ? "" : "opacity:.55"}">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:800;color:var(--text)">${escapeHtml(i.consultoraNombre || i.consultoraId || "—")} ${pendiente ? '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px">POR LLAMAR</span>' : '<span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px">CONTACTADA</span>'}</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${escapeHtml(i.nombre || "")} (${escapeHtml(i.rol || "")}) · ${escapeHtml(i.email || "")} · ${f}</div>
+              <div style="font-size:13px;margin-top:3px"><b>📞 ${escapeHtml(i.telefono || "")}</b>${i.horario ? " · " + escapeHtml(i.horario) : ""} · <a href="https://wa.me/52${escapeHtml(i.telefono || "")}" target="_blank" style="color:#16a34a;font-weight:700">Abrir WhatsApp</a></div>
+            </div>
+            ${pendiente ? `<button class="rh-btn-mini" data-wa-id="${i.id}">✓ Ya la contacté</button>` : ""}
+          </div>`;
+        }).join("");
+        cont.querySelectorAll("[data-wa-id]").forEach(b => b.addEventListener("click", async () => {
+          b.disabled = true;
+          try {
+            await updateDoc(doc(db, "solicitudesWhatsapp", b.dataset.waId), {
+              estado: "contactada", contactadaPor: usuario.uid, contactadaEn: serverTimestamp(),
+            });
+            toast("Marcada como contactada", "success");
+          } catch (e) { toast("Error: " + e.message, "error"); b.disabled = false; }
+        }));
+      }, (e) => { cont.innerHTML = `<div class="rh-loading">Error: ${escapeHtml(e.message)}</div>`; });
+    }
+    escucharSolicitudesWA();
     cargar();
   </script>
 </body>

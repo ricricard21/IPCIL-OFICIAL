@@ -1689,6 +1689,24 @@
 </div>
 
 <!-- MODIFICADO: Modal para enviar avisos (varios tipos) al correo de los alumnos -->
+<!-- ══ Vincular WhatsApp API: solicitud de contacto técnico ══ -->
+<div class="wa-modal-overlay" id="waVincularOverlay">
+  <div class="wa-modal">
+    <div class="wa-modal-titulo">📲 Vincula tu WhatsApp con IPCIL</div>
+    <div class="wa-modal-sub">Envíos automáticos de grupos, membresías e invitaciones</div>
+    <div class="wa-modal-desc">Para vincular la API de WhatsApp de tu academia es necesario que un técnico de IPCIL se comunique contigo y haga la configuración (toma unos minutos). ¿Deseas que te contactemos?</div>
+    <label class="wa-modal-label" for="waVincularTel">Tu WhatsApp / teléfono para llamarte *</label>
+    <input class="wa-modal-input" id="waVincularTel" type="tel" placeholder="Ej. 2221234567 (10 dígitos)" maxlength="15">
+    <label class="wa-modal-label" for="waVincularHorario" style="margin-top:10px">¿A qué hora te marcamos? (opcional)</label>
+    <input class="wa-modal-input" id="waVincularHorario" type="text" placeholder="Ej. Lunes a viernes de 10 a 2" maxlength="80">
+    <div class="wa-modal-error" id="waVincularError"></div>
+    <div class="wa-modal-actions">
+      <button class="wa-btn-cancel" id="waVincularCancel" type="button">Ahora no</button>
+      <button class="wa-btn-send" id="waVincularSend" type="button">Sí, que me contacten</button>
+    </div>
+  </div>
+</div>
+
 <div class="wa-modal-overlay" id="waLinkOverlay">
   <div class="wa-modal">
     <div class="wa-modal-titulo">
@@ -3242,7 +3260,55 @@
     document.getElementById("waLinkError").textContent = "";
   }
 
+  // ── Vinculación de WhatsApp API ──
+  // La consultora tiene WhatsApp vinculado cuando el admin/técnico le pone
+  // watiVinculado:true en su doc (al dar de alta su token en watiConfigs).
+  // Si no, el botón de WhatsApp abre la solicitud de contacto técnico, que
+  // aparece en el panel RH para llamarle.
+  function whatsappVinculado() {
+    return !!(consultora && consultora.watiVinculado === true);
+  }
+  function abrirModalVincularWA() {
+    const tel = document.getElementById("waVincularTel");
+    tel.value = (usuario && usuario.telefono) || (consultora && consultora.telefono) || "";
+    document.getElementById("waVincularHorario").value = "";
+    document.getElementById("waVincularError").textContent = "";
+    const btn = document.getElementById("waVincularSend");
+    btn.disabled = false; btn.textContent = "Sí, que me contacten";
+    document.getElementById("waVincularOverlay").classList.add("open");
+    setTimeout(() => tel.focus(), 50);
+  }
+  document.getElementById("waVincularCancel").addEventListener("click", () =>
+    document.getElementById("waVincularOverlay").classList.remove("open"));
+  document.getElementById("waVincularSend").addEventListener("click", async () => {
+    const err = document.getElementById("waVincularError");
+    const tel = document.getElementById("waVincularTel").value.replace(/\D/g, "");
+    if (tel.length < 10) { err.textContent = "Escribe un teléfono de 10 dígitos."; return; }
+    const btn = document.getElementById("waVincularSend");
+    btn.disabled = true; btn.textContent = "Enviando…";
+    try {
+      await addDoc(collection(db, "solicitudesWhatsapp"), {
+        consultoraId: usuario.consultoraId,
+        consultoraNombre: (consultora && consultora.nombre) || "",
+        solicitadoPor: usuario.uid,
+        nombre: usuario.nombre || usuario.email || "",
+        email: usuario.email || "",
+        rol: usuario.rol || "vendedor",
+        telefono: tel,
+        horario: document.getElementById("waVincularHorario").value.trim(),
+        estado: "pendiente",
+        creadoEn: serverTimestamp(),
+      });
+      document.getElementById("waVincularOverlay").classList.remove("open");
+      toast("✅ Listo. Un técnico de IPCIL te contactará para vincular tu WhatsApp.", "success", 6000);
+    } catch (e) {
+      err.textContent = "No se pudo enviar la solicitud: " + e.message;
+      btn.disabled = false; btn.textContent = "Sí, que me contacten";
+    }
+  });
+
   function abrirModalEnviarLink(cursoId, cursoNombre, aperturaKey) {
+    if (!whatsappVinculado()) { abrirModalVincularWA(); return; }
     waLinkCursoActual = cursoId;
     waLinkAperturaActual = aperturaKey || null;
     document.getElementById("waLinkCursoNombre").textContent = cursoNombre;
@@ -3354,6 +3420,7 @@
   }
 
   function abrirModalWaDirecto(cursoId, cursoNombre, btnOrigen) {
+    if (!whatsappVinculado()) { abrirModalVincularWA(); return; }
     waDirectoCursoId = cursoId;
     waDirectoCursoNombre = cursoNombre;
     waDirectoBloqueEl = btnOrigen.closest(".curso-bloque");
