@@ -557,6 +557,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Dashboard
       </button>
+      <button class="sidebar-link" data-view="configuracion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configuración
+      </button>
       <button class="sidebar-link" data-view="cursos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         Cursos
@@ -774,6 +778,64 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CURSOS                                               -->
     <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-configuracion" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Configuración de tu escuela</h1>
+          <p class="main-subtitle">Estos datos aparecen en TODOS tus certificados. Se configuran una sola vez.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Logo de tu escuela</div>
+            <div class="card-subtitle">Esquina superior izquierda del certificado, junto al logo IPCIL</div>
+          </div>
+          <div id="logo-consultora-preview" style="display:none;align-items:center;gap:10px">
+            <img id="logo-consultora-img" alt="Logo de la escuela" style="max-height:56px;max-width:150px;border:1px solid var(--line-soft);border-radius:8px;background:#fff;padding:4px">
+            <button type="button" id="logo-consultora-quitar" class="btn btn-ghost" style="font-size:12px">Quitar logo</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:4px">
+          <input class="input" type="file" id="logo-consultora-file" accept="image/png,image/jpeg">
+          <div class="field-hint">PNG con fondo transparente se ve mejor. Se guarda al seleccionarlo.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Firma institucional</div>
+            <div class="card-subtitle">Bloque derecho de firmas del certificado: instituto, director y su rúbrica</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Nombre de tu instituto / escuela</label>
+          <input class="input" type="text" id="cfg-instituto" placeholder="Ej. Instituto Gastronómico de Puebla">
+          <div class="field-hint">Aparece debajo del cargo "Director General" en el certificado</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Director General del instituto</label>
+          <input class="input" type="text" id="cfg-director" placeholder="Ej. Dra. Laura Méndez Torres">
+          <div class="field-hint">Nombre de quien firma por tu instituto</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Firma del director</label>
+          <input class="input" type="file" id="cfg-firma-file" accept="image/png,image/jpeg">
+          <div class="field-hint">Imagen de la rúbrica (PNG con fondo transparente, recortada a la tinta). Se coloca sobre la línea de firma.</div>
+          <div id="cfg-firma-preview" style="display:none;margin-top:8px;padding:8px;border:1px solid var(--line-soft);border-radius:10px;background:#fff;text-align:center">
+            <img id="cfg-firma-img" alt="Vista previa de la firma" style="max-height:60px;max-width:220px">
+            <button type="button" id="cfg-firma-quitar" class="btn btn-ghost" style="display:block;margin:6px auto 0;font-size:11px">Quitar firma</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px">
+          <button type="button" class="btn btn-primary" id="cfg-guardar">Guardar configuración</button>
+        </div>
+        <div class="field-hint" id="cfg-estado" style="margin-top:8px"></div>
+      </div>
+    </section>
+
     <section id="view-cursos" class="section">
       <div class="main-header">
         <div>
@@ -784,23 +846,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Nuevo curso
         </button>
-      </div>
-
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Logo de tu consultora</div>
-            <div class="card-subtitle">Aparecerá en la esquina superior izquierda de todos los certificados que emitas</div>
-          </div>
-          <div id="logo-consultora-preview" style="display:none;align-items:center;gap:10px">
-            <img id="logo-consultora-img" alt="Logo de la consultora" style="max-height:56px;max-width:150px;border:1px solid var(--line-soft);border-radius:8px;background:#fff;padding:4px">
-            <button type="button" id="logo-consultora-quitar" class="btn btn-ghost" style="font-size:12px">Quitar logo</button>
-          </div>
-        </div>
-        <div class="field" style="margin-top:4px">
-          <input class="input" type="file" id="logo-consultora-file" accept="image/png,image/jpeg">
-          <div class="field-hint">PNG con fondo transparente se ve mejor. Se guarda al seleccionarlo y aplica a toda tu consultora (no por curso).</div>
-        </div>
       </div>
 
       <div class="card">
@@ -1269,6 +1314,7 @@
           <div class="field-hint">También recibirá el aviso de apertura por WhatsApp (además del correo)</div>
         </div>
 
+        <div id="curso-campos-institucionales" style="display:none">
         <div class="field">
           <label class="field-label">Instituto / escuela del ponente</label>
           <input class="input" type="text" id="curso-instituto-ponente" placeholder="Ej. Instituto Gastronómico de Puebla">
@@ -1290,6 +1336,7 @@
             <button type="button" id="firma-ponente-quitar" class="btn btn-ghost" style="display:block;margin:6px auto 0;font-size:11px">Quitar firma</button>
           </div>
         </div>
+        </div><!-- /curso-campos-institucionales (ahora se configuran en Configuración) -->
 
         <div class="field">
           <label class="field-label">Hora de inicio del curso</label>
@@ -1407,8 +1454,8 @@
     el.classList.toggle("warn", n > 0 && n <= 20);
     el.classList.toggle("zero", n <= 0);
     el.title = n <= 0
-      ? "Sin créditos: la emisión está pausada. Recarga desde tu enlace de pago IPCI."
-      : "Cada certificado emitido consume 1 crédito. Se recargan con tu mensualidad o paquetes.";
+      ? "Sin créditos: la emisión está pausada. Compra un paquete desde tu Dashboard."
+      : "Cada certificado emitido consume 1 crédito. Compra paquetes cuando los necesites, sin mensualidad.";
     el.style.display = "inline-flex";
   }
 
@@ -1439,29 +1486,20 @@
     const est = document.getElementById("pagos-estado");
     const txt = document.getElementById("pagos-estado-txt");
     const btnPlan = document.getElementById("btn-pagar-plan");
-    const estado = c.estadoSuscripcion || "pendiente_pago";
+    // 💡 Modelo pago-por-uso (sep-2026): el software es gratis. Solo se muestra
+    // el estado de "plan" a las academias que AÚN tienen una suscripción activa
+    // de Stripe (siguen recibiendo 100 créditos/mes hasta que ellas cancelen).
     est.classList.remove("mal", "pend");
-    if (estado === "activa") {
-      txt.textContent = "Licencia activa · 100 créditos se abonan con cada mensualidad";
-      btnPlan.style.display = "none";
-    } else if (estado === "cancelada") {
-      est.classList.add("pend");
-      const hasta = c.accesoHasta?.toDate ? c.accesoHasta.toDate().toLocaleDateString("es-MX", { day: "numeric", month: "long" }) : "3 días";
-      txt.textContent = `⚠️ Plan cancelado · conservas tu acceso hasta el ${hasta} · reactívalo para no interrumpir tu operación`;
-      btnPlan.textContent = "Reactivar mi plan";
-      btnPlan.style.display = "";
-    } else if (estado === "suspendida") {
+    btnPlan.style.display = "none";
+    const tieneSuscripcion = !!c.stripeSubscriptionId && c.estadoSuscripcion === "activa";
+    if (tieneSuscripcion) {
+      txt.textContent = "Plan mensual activo · 100 créditos se abonan con cada pago · también puedes comprar paquetes";
+    } else if (n <= 0) {
       est.classList.add("mal");
-      txt.textContent = "Licencia suspendida — la emisión está pausada. Tus datos están a salvo: reactiva y retoma donde te quedaste";
-      btnPlan.textContent = "Reactivar mi plan";
-      btnPlan.style.display = "";
+      txt.textContent = "Sin créditos — la emisión está pausada. Compra un paquete para seguir certificando (sin mensualidad)";
     } else {
-      est.classList.add("pend");
-      txt.textContent = "Pago de licencia pendiente — actívala para emitir";
-      btnPlan.textContent = "Pagar mi licencia";
-      btnPlan.style.display = "";
+      txt.textContent = "Pago por uso · 1 crédito = 1 certificado · compra paquetes cuando los necesites, sin mensualidad";
     }
-    btnPlan.onclick = () => abrirPago(c.plan === "anual" ? (links.linkAnual || links.linkMensual) : links.linkMensual);
     card.style.display = "block";
   }
 
@@ -1509,12 +1547,9 @@
         pintarCentroPagos(c);
         pintarSeccionVendedores(c);
         pintarLogoConsultora(c);
+        pintarConfiguracion();
         // Aviso de gracia: una vez por sesión, en cuanto entra al panel
-        if (c.estadoSuscripcion === "cancelada" && !_avisoCancelacionMostrado) {
-          _avisoCancelacionMostrado = true;
-          const hasta = c.accesoHasta?.toDate ? c.accesoHasta.toDate().toLocaleDateString("es-MX", { day: "numeric", month: "long" }) : "3 días";
-          toast(`⚠️ Tu plan está cancelado. Conservas el acceso hasta el ${hasta}. Reactívalo desde el Dashboard.`, "warning");
-        }
+        // (pago-por-uso: cancelar la mensualidad ya no bloquea nada; sin aviso)
       }
     }, () => {});
   }
@@ -1560,7 +1595,8 @@
     if (!c || c.tipo !== "aliado") { btn.style.display = "none"; limTxt.style.display = "none"; menuPortal.style.display = "none"; return; }
     btn.style.display = "inline-flex";
     limTxt.style.display = "inline";
-    menuPortal.style.display = "";
+    // Portal de Stripe solo para quien AÚN tiene mensualidad o vendedores extra contratados
+    menuPortal.style.display = (c.stripeSubscriptionId || c.stripeCustomerId) ? "" : "none";
     document.getElementById("vend-limite").textContent = Number(c.limiteVendedores) || 2;
     document.getElementById("vend-usados").textContent = vendedores.filter(v => v.activo !== false).length;
   }
@@ -1849,6 +1885,7 @@
     query(collection(db, "cursos"), where("consultoraId", "==", usuario.consultoraId)),
     (snap) => {
       cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (typeof pintarConfiguracion === "function") pintarConfiguracion();
       cursos.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
       renderCursos();
       actualizarDashboard();
@@ -3593,6 +3630,14 @@
       // Firma del ponente guardada
       _firmaPonenteB64 = cursoData.firmaPonente || "";
       mostrarPreviewFirma(_firmaPonenteB64);
+      // 🔧 Los datos institucionales viven en Configuración: si ahí ya hay valores,
+      // mandan sobre lo que traiga el curso (evita que un curso viejo re-propague datos caducos)
+      {
+        const d = defaultsFirmaCompartida();
+        if (d.instituto) document.getElementById("curso-instituto-ponente").value = d.instituto;
+        if (d.director) document.getElementById("curso-director-instituto").value = d.director;
+        if (d.firma) { _firmaPonenteB64 = d.firma; mostrarPreviewFirma(d.firma); }
+      }
 
     } else {
       document.getElementById("modal-curso-title").textContent = "Nuevo curso";
@@ -3629,14 +3674,78 @@
   const firmaCompartidaActiva = () => true;
 
   function defaultsFirmaCompartida() {
-    // Toma la firma/director/instituto del primer curso que los tenga capturados
+    // 1º lo guardado en Configuración (doc de la consultora); 2º el primer curso
+    // que ya los tenga capturados (respeta lo que los coordinadores ya configuraron)
+    const cl = _consultoraLive || {};
     const conDatos = cursos.find(c => (c.firmaPonente || "").length > 0 || (c.directorInstituto || "").trim() || (c.institutoPonente || "").trim());
     return {
-      firma: conDatos?.firmaPonente || "",
-      director: conDatos?.directorInstituto || "",
-      instituto: conDatos?.institutoPonente || "",
+      firma: cl.firmaPonente || conDatos?.firmaPonente || "",
+      director: cl.directorInstituto || conDatos?.directorInstituto || "",
+      instituto: cl.institutoPonente || conDatos?.institutoPonente || "",
     };
   }
+
+  // ── Configuración de la escuela (instituto / director / firma) ──
+  let _cfgFirmaB64 = "";
+  function pintarConfiguracion() {
+    const d = defaultsFirmaCompartida();
+    const inst = document.getElementById("cfg-instituto");
+    const dir = document.getElementById("cfg-director");
+    if (!inst || !dir) return;
+    // No pisar lo que el coordinador está escribiendo
+    if (document.activeElement !== inst) inst.value = d.instituto;
+    if (document.activeElement !== dir) dir.value = d.director;
+    _cfgFirmaB64 = d.firma;
+    const prev = document.getElementById("cfg-firma-preview");
+    const img = document.getElementById("cfg-firma-img");
+    if (_cfgFirmaB64) { img.src = _cfgFirmaB64; prev.style.display = "block"; }
+    else { img.src = ""; prev.style.display = "none"; }
+  }
+
+  (function initConfiguracion() {
+    const fileFirma = document.getElementById("cfg-firma-file");
+    const quitar = document.getElementById("cfg-firma-quitar");
+    const guardar = document.getElementById("cfg-guardar");
+    const estado = document.getElementById("cfg-estado");
+    if (!guardar) return;
+    if (fileFirma) fileFirma.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const b64 = await comprimirFirma(file);
+        if (b64.length > 200000) { toast("La firma quedó muy pesada, recórtala a la tinta", "warning"); return; }
+        _cfgFirmaB64 = b64;
+        document.getElementById("cfg-firma-img").src = b64;
+        document.getElementById("cfg-firma-preview").style.display = "block";
+      } catch (err) { toast("Error con la firma: " + err.message, "error"); }
+    });
+    if (quitar) quitar.addEventListener("click", () => {
+      _cfgFirmaB64 = "";
+      document.getElementById("cfg-firma-img").src = "";
+      document.getElementById("cfg-firma-preview").style.display = "none";
+      if (fileFirma) fileFirma.value = "";
+    });
+    guardar.addEventListener("click", async () => {
+      const instituto = document.getElementById("cfg-instituto").value.trim();
+      const director = document.getElementById("cfg-director").value.trim();
+      guardar.disabled = true; guardar.textContent = "Guardando…";
+      try {
+        // 1) Fuente de verdad: doc de la consultora
+        await updateDoc(doc(db, "consultoras", usuario.consultoraId), {
+          institutoPonente: instituto, directorInstituto: director, firmaPonente: _cfgFirmaB64 || "",
+        });
+        // 2) Sincronizar a TODOS los cursos (el certificado lee estos datos del curso)
+        const cambios = { institutoPonente: instituto, directorInstituto: director, firmaPonente: _cfgFirmaB64 || "" };
+        for (const c of cursos) await updateDoc(doc(db, "cursos", c.id), cambios);
+        estado.textContent = `Guardado y aplicado a ${cursos.length} curso${cursos.length === 1 ? "" : "s"}.`;
+        toast("Configuración guardada", "success");
+      } catch (err) {
+        toast("No se pudo guardar: " + err.message, "error");
+      } finally {
+        guardar.disabled = false; guardar.textContent = "Guardar configuración";
+      }
+    });
+  })();
 
   async function propagarFirmaCompartida(cursoGuardadoId, firma, director, instituto) {
     // Copia firma, director e instituto a TODOS los demás cursos de la consultora.

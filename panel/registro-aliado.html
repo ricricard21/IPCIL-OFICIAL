@@ -85,9 +85,8 @@
 
   <div class="reg-form-col">
     <div class="reg-ok" id="msg-pago-ok">
-      ✅ <b>¡Pago recibido!</b> Tu cuenta se está activando.
-      Revisa tu correo para confirmar tu dirección.<br><br>
-      Te llevamos al panel en <b><span id="cuenta-regresiva">10</span> segundos</b>…
+      ✅ <b>¡Tu academia ya está registrada!</b> Tu panel está activo y tienes <b>7 créditos de regalo</b> para empezar a certificar.<br><br>
+      Te llevamos al panel en <b><span id="cuenta-regresiva">5</span> segundos</b>…
       <a href="https://ipcil.org/panel/" style="display:block;margin-top:12px;background:var(--primary);color:#fff;text-align:center;padding:12px;border-radius:10px;font-weight:800;text-decoration:none">Entrar al panel ahora →</a>
     </div>
 
@@ -96,7 +95,7 @@
     </div>
     <form id="form-registro" autocomplete="on">
       <h2>Registra tu academia</h2>
-      <div class="form-sub">Llena tus datos, elige tu plan y paga en línea. Tu panel queda listo en minutos.</div>
+      <div class="form-sub">Registro <b>gratuito</b>. Sin mensualidades: te regalamos <b>7 créditos</b> para tus primeros certificados y después solo pagas los que uses. Tu panel queda listo al instante.</div>
 
       <div class="rf">
         <label class="rf-label">Nombre de tu academia / instituto *</label>
@@ -150,29 +149,17 @@
         <input class="rf-input" type="tel" id="reg-telefono" placeholder="Ej. 2211234567 (10 dígitos)">
       </div>
 
-      <div class="rf">
-        <label class="rf-label">Elige tu plan *</label>
-        <div class="plan-grid">
-          <div class="plan-card" data-plan="mensual">
-            <div class="p-nombre">Mensual</div>
-            <div class="p-precio">$3,000</div>
-            <div class="p-det">100 certificados al mes<br>$30 c/u</div>
-          </div>
-          <div class="plan-card" data-plan="anual">
-            <span class="p-badge">Mejor precio</span>
-            <div class="p-nombre">Anual</div>
-            <div class="p-precio">$30,000</div>
-            <div class="p-det">1,200 certificados al año<br>$25 c/u</div>
-          </div>
-        </div>
+      <div class="rf" style="background:var(--primary-soft);border:1.5px solid var(--primary);border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--primary)">🎁 Incluye 7 créditos de regalo</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5">1 crédito = 1 certificado con aval institucional, folio y QR verificable. Cuando los uses, compra el paquete que necesites desde tu panel. Sin membresía ni cobros recurrentes.</div>
       </div>
 
-      <button class="reg-btn" id="btn-registrar" type="submit" disabled>Continuar a pago seguro →</button>
+      <button class="reg-btn" id="btn-registrar" type="submit">Crear mi cuenta gratis →</button>
       <div class="reg-error" id="reg-error"></div>
     </form>
 
     <div class="reg-nota">
-      Pago procesado por Stripe · Tu cuenta se activa automáticamente al confirmarse el pago<br>
+      Sin tarjeta para registrarte · Los paquetes de créditos se pagan en línea cuando los necesites<br>
       ¿Ya tienes cuenta? <a href="https://ipcil.org/panel/">Inicia sesión</a>
     </div>
   </div>
@@ -213,44 +200,24 @@
 
   const ENDPOINT_REGISTRO = "https://registraraliado-imsrzczhta-uc.a.run.app";
 
-  let planSeleccionado = null;
   const btn = document.getElementById("btn-registrar");
   const errBox = document.getElementById("reg-error");
 
-  document.querySelectorAll(".plan-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      document.querySelectorAll(".plan-card.selected").forEach((el) => el.classList.remove("selected"));
-      card.classList.add("selected");
-      planSeleccionado = card.dataset.plan;
-      btn.disabled = false;
-    });
-  });
-
-  // Retorno de Stripe
-  const params = new URLSearchParams(location.search);
-  if (params.get("pago") === "ok") {
+  // Pantalla de éxito (registro gratuito: la cuenta ya existe, entra directo)
+  function mostrarExito() {
     document.getElementById("msg-pago-ok").style.display = "block";
     document.getElementById("form-registro").style.display = "none";
-    // Cuenta regresiva → login del panel (da tiempo al webhook de crear la cuenta)
-    let seg = 10;
+    let seg = 5;
     const cuentaEl = document.getElementById("cuenta-regresiva");
     const timer = setInterval(() => {
       seg--;
-      cuentaEl.textContent = seg;
-      if (seg <= 0) {
-        clearInterval(timer);
-        window.location.href = "https://ipcil.org/panel/";
-      }
+      if (cuentaEl) cuentaEl.textContent = seg;
+      if (seg <= 0) { clearInterval(timer); window.location.href = "https://ipcil.org/panel/coordinador.html"; }
     }, 1000);
-  } else if (params.get("pago") === "cancelado") {
-    errBox.textContent = "El pago no se completó. Puedes intentarlo de nuevo cuando quieras.";
-    errBox.style.display = "block";
   }
 
   document.getElementById("form-registro").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!planSeleccionado) { errBox.textContent = "Elige un plan."; errBox.style.display = "block"; return; }
-
     // Honeypot: si un bot lo llenó, abortamos en silencio
     if (document.getElementById("reg-sitio-web").value) return;
 
@@ -294,24 +261,20 @@
           telefono: document.getElementById("reg-telefono").value.trim(),
           ciudad: document.getElementById("reg-ciudad").value.trim(),
           estado: document.getElementById("reg-estado").value,
-          plan: planSeleccionado,
           sitio_web: document.getElementById("reg-sitio-web").value,
         }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Error en el registro");
 
-      // Iniciar sesión con la cuenta NUEVA antes de ir a Stripe:
-      // así, al volver del pago, la sesión activa es la del recién registrado
-      // (y se reemplaza cualquier sesión anterior que hubiera en este navegador).
+      // La cuenta ya existe y está activa: iniciar sesión y mandar al panel
       try {
         await signOut(auth);
         await signInWithEmailAndPassword(auth, email, password);
       } catch (e2) {
-        console.warn("Auto-login falló (el pago sigue):", e2.message);
+        console.warn("Auto-login falló (puede entrar manualmente):", e2.message);
       }
-
-      window.location.href = data.url; // → Stripe Checkout
+      mostrarExito();
     } catch (err) {
       errBox.textContent = err.message === "Failed to fetch"
         ? "No pude conectar con el servidor de registro. Intenta de nuevo en un minuto."
