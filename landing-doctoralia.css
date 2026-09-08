@@ -33,7 +33,7 @@
 
 /* Hero: bloque teal, título blanco en caja normal (no mayúsculas gigantes) */
 .hero{
-  background:#128a77 url("assets/hero-ipcil.jpg") center bottom / cover no-repeat !important;
+  background:#128a77 url("/assets/hero-ipcil.jpg") center bottom / cover no-repeat !important;
   color:#fff !important;
   padding:150px 0 70px !important;
   border-radius:0 0 40px 40px;
