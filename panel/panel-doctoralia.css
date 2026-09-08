@@ -1,0 +1,195 @@
+/* ═══════════════════════════════════════════════════════════════
+   TEMA "DOCTORALIA" · IPCIL paneles
+   Capa de estilo que se carga DESPUÉS de panel.css. No cambia
+   estructura ni lógica: solo tokens y apariencia.
+   Principios: fondo gris muy claro · tarjetas blancas con borde
+   suave · UN acento (teal) · píldoras · íconos en círculo · aire.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Fondo y superficies */
+  --bg: #f6f8f9;
+  --bg-deep: #eef2f4;
+  --surface: #ffffff;
+  --surface-soft: #f3f7f6;
+  --surface-hover: #e9f4f0;
+
+  /* Texto */
+  --text: #0f1f1a;
+  --text-soft: #2f3f3a;
+  --muted: #66746f;
+  --muted-light: #9aa5a0;
+
+  /* Acento único: teal */
+  --primary: #1D9E75;
+  --primary-dark: #0F6E56;
+  --primary-light: #E1F5EE;
+  --primary-soft: #eefaf5;
+  --primary-glow: rgba(29, 158, 117, 0.16);
+
+  /* Dorado se apaga (era para plan/Trayectoria) → toma el acento */
+  --gold: #0F6E56;
+  --gold-light: #E1F5EE;
+
+  /* Líneas más suaves */
+  --line: #e6ebe9;
+  --line-soft: #f0f4f2;
+  --line-strong: #cfd9d5;
+
+  /* Semánticos, versión suave */
+  --green: #0F6E56;   --green-bg: #E1F5EE;  --green-soft: #eefaf5;
+  --red: #A32D2D;     --red-bg: #FCEBEB;    --red-soft: #fdf3f3;
+  --yellow: #854F0B;  --yellow-bg: #FAEEDA; --yellow-soft: #fdf6ea;
+  --info: #185FA5;    --info-bg: #E6F1FB;
+
+  /* Sombras: casi ninguna */
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow: 0 1px 2px rgba(15, 31, 26, 0.04);
+  --shadow-md: 0 6px 18px rgba(15, 31, 26, 0.06);
+  --shadow-lg: 0 18px 40px rgba(15, 31, 26, 0.10);
+  --shadow-soft: none;
+
+  /* Esquinas */
+  --radius: 16px;
+  --radius-sm: 12px;
+}
+
+body { background: var(--bg); }
+
+/* ─── Sidebar ─── */
+.sidebar { border-right: 1px solid var(--line-soft); }
+.sidebar-nav { gap: 4px; }
+.sidebar-link {
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.sidebar-link:hover { background: var(--surface-soft); color: var(--primary-dark); }
+.sidebar-link.active {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  box-shadow: none;
+  font-weight: 600;
+}
+.sidebar-link.active svg { stroke: var(--primary-dark); }
+.sidebar-user { border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+.user-avatar { background: var(--primary-light); color: var(--primary-dark); border-radius: 50%; }
+
+/* ─── Encabezados ─── */
+.main-title { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+.main-subtitle { color: var(--muted); }
+
+/* ─── Tarjetas ─── */
+.card {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  box-shadow: none;
+  padding: 22px 24px;
+}
+.card:hover { box-shadow: none; }
+.card-title { font-weight: 700; }
+.card-subtitle { color: var(--muted); }
+
+/* ─── KPIs: ícono en círculo de color ─── */
+.kpi { border: 1px solid var(--line-soft); border-radius: var(--radius); box-shadow: none; }
+.kpi:hover { box-shadow: none; transform: none; border-color: var(--line-strong); }
+.kpi-icon { width: 40px; height: 40px; border-radius: 50%; }
+.kpi-icon-blue   { background: var(--info-bg);      color: var(--info); }
+.kpi-icon-green  { background: var(--primary-light); color: var(--primary-dark); }
+.kpi-icon-yellow { background: var(--yellow-bg);    color: var(--yellow); }
+.kpi-icon-gold   { background: #EEEDFE;             color: #534AB7; }
+.kpi-value { font-weight: 700; }
+.kpi-label { color: var(--muted); }
+
+/* ─── Botones: píldora ─── */
+.btn { border-radius: 999px; font-weight: 600; box-shadow: none; }
+.btn-primary { background: var(--primary); box-shadow: none; }
+.btn-primary:hover { background: var(--primary-dark); box-shadow: none; transform: none; }
+.btn-secondary { background: var(--surface); border-color: var(--line-strong); color: var(--primary-dark); }
+.btn-secondary:hover { background: var(--primary-soft); border-color: var(--primary); }
+.btn-ghost { color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-soft); color: var(--primary-dark); }
+.btn-danger { background: var(--red-bg); color: var(--red); border-color: transparent; }
+.btn-danger:hover { background: #F7C1C1; }
+
+/* ─── Filtros de periodo: píldoras en riel ─── */
+.filter-bar { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 999px; padding: 4px; gap: 2px; }
+.filter-btn { border-radius: 999px; padding: 6px 14px; font-weight: 600; }
+.filter-btn.active { background: var(--primary-light); color: var(--primary-dark); box-shadow: none; }
+
+/* ─── Chips ─── */
+.chip { font-weight: 600; }
+.chip-green { background: var(--primary-light); color: var(--primary-dark); }
+.chip-blue  { background: var(--info-bg); color: var(--info); }
+.chip-gold  { background: var(--primary-light); color: var(--primary-dark); }
+.chip-creditos { background: var(--primary-light); color: var(--primary-dark); border: 1px solid #9FE1CB; border-radius: 999px; }
+.chip-creditos .cred-dot { background: var(--primary); }
+
+/* ─── Inputs ─── */
+.input, .select, .textarea { border-radius: var(--radius-sm); border-color: var(--line); }
+.input:focus, .select:focus, .textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.field-label { color: var(--text-soft); font-weight: 600; }
+.field-hint { color: var(--muted); }
+.search-box { border-radius: 999px; }
+.search-box .input, .search-box input { border-radius: 999px; }
+
+/* ─── Tablas: filas con línea, sin encabezado gris pesado ─── */
+.table-wrap { border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden; }
+.table th { background: var(--surface); color: var(--muted); font-size: 11px; letter-spacing: 0.05em; border-bottom: 1px solid var(--line); }
+.table td { border-bottom: 1px solid var(--line-soft); }
+.row-hover:hover { background: var(--surface-soft); }
+
+/* ─── Modales ─── */
+.modal { border-radius: 20px; box-shadow: var(--shadow-lg); }
+.modal-title { font-weight: 700; }
+.modal-close { border-radius: 50%; }
+
+/* ─── Toasts / alerts ─── */
+.toast { border-radius: 14px; box-shadow: var(--shadow-md); }
+.alert { border-radius: var(--radius-sm); }
+.alert-success { background: var(--primary-light); color: var(--primary-dark); }
+
+/* ─── Estados vacíos ─── */
+.empty-icon { background: var(--primary-light); color: var(--primary-dark); border-radius: 50%; }
+
+/* ═══ Tarjeta de créditos (antes franja azul marino) ═══ */
+.pagos-card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid #9FE1CB;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+}
+.pagos-titulo { color: var(--muted); opacity: 1; font-weight: 700; letter-spacing: 0.06em; }
+.pagos-saldo { color: var(--text); font-weight: 700; }
+.pagos-saldo small { color: var(--muted); opacity: 1; }
+.pagos-estado { background: var(--primary-light); color: var(--primary-dark); border: 1px solid #9FE1CB; }
+.pagos-estado.mal { background: var(--red-bg); color: var(--red); border-color: #F7C1C1; }
+.pagos-estado.pend { background: var(--yellow-bg); color: var(--yellow); border-color: #FAC775; }
+.pagos-nota { color: var(--muted); opacity: 1; }
+.btn-comprar-creditos {
+  background: var(--primary); color: #fff; border: none;
+  border-radius: 999px; padding: 12px 22px; font-weight: 700;
+}
+.btn-comprar-creditos:hover { background: var(--primary-dark); transform: none; }
+.btn-recarga { background: var(--surface); border: 1px solid var(--line-strong); color: var(--primary-dark); border-radius: 999px; }
+.btn-recarga small { color: var(--muted); opacity: 1; }
+.btn-recarga:hover { background: var(--primary-soft); transform: none; }
+.btn-pagar-plan { background: var(--primary); box-shadow: none; border-radius: 999px; }
+.btn-pagar-plan:hover { background: var(--primary-dark); }
+
+/* Modal comprar créditos */
+.pack-card { border-radius: var(--radius); }
+.pack-card.selected { box-shadow: 0 0 0 3px var(--primary-glow); }
+.pack-card .pack-precio { color: var(--primary-dark); }
+.pack-card .pack-badge { background: var(--primary); }
+.btn-continuar-pago { border-radius: 999px; }
+
+/* ═══ Panel de ventas (vendedor.html) ═══ */
+.wa-modal { border-radius: 20px; }
+.wa-btn-send { border-radius: 999px; background: var(--primary); }
+.wa-btn-cancel { border-radius: 999px; }
+.wa-desc-chip { border-radius: 999px; }
+.wa-desc-chip.active { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary); }
