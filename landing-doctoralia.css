@@ -165,3 +165,26 @@
 .footer, footer{ background:#0b3d34 !important; }
 input, select, textarea{ border-radius:14px !important; }
 input:focus, select:focus, textarea:focus{ border-color:var(--doc-teal) !important; box-shadow:0 0 0 3px rgba(15,124,106,.18) !important; outline:none !important; }
+
+/* ═══ Menú desplegable (hamburguesa, aparece < 1600px como en styles.css): panel teal con enlaces blancos ═══ */
+@media (max-width: 1600px){
+  .main-nav{
+    background:var(--doc-teal-deep) !important;
+    border:1px solid rgba(255,255,255,.18) !important;
+    box-shadow:0 16px 40px rgba(0,0,0,.25) !important;
+    border-radius:18px !important;
+    padding:12px !important;
+    gap:4px !important;
+  }
+  .main-nav a{
+    color:#fff !important;
+    padding:12px 14px !important;
+    border-radius:12px !important;
+    font-size:15px !important;
+    background:transparent !important;
+  }
+  .main-nav a:hover, .main-nav a:active{ background:rgba(255,255,255,.14) !important; }
+  .main-nav a.nav-btn{ background:#fff !important; color:var(--doc-teal-deep) !important; margin:6px 0 0 !important; text-align:center; }
+  .nav-toggle, .menu-toggle, .hamburger{ background:#fff !important; color:var(--doc-teal-deep) !important; border-radius:12px !important; }
+  .site-header .brand-bottom{ display:none !important; }
+}
