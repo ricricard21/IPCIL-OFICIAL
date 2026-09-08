@@ -84,32 +84,36 @@
 
   <main>
     <!-- INICIO -->
-    <section class="hero" id="inicio">
-      <div class="container hero-center reveal">
+    <section class="hero hero-doc" id="inicio">
+      <div class="container hero-center">
         <div class="hero-content">
-          <h1 class="hero-title">
-            Certificación profesional con aval institucional, folio único y verificación pública
-          </h1>
+          <h1 class="hero-title">Certifica con aval institucional y verificación pública</h1>
+          <p class="hero-subtitle">Emite certificados con folio único y QR que cualquier empleador puede comprobar en segundos.</p>
 
-          <p class="hero-subtitle">
-            Formación aplicada y certificación profesional para sectores industriales,
-            científicos y empresariales.
-          </p>
+          <form class="hero-search" id="heroSearch" autocomplete="off">
+            <span class="hero-search-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+            </span>
+            <input type="text" id="heroFolio" placeholder="Valida un certificado por folio, ej. IPCI-ABC-2026-0001" aria-label="Folio del certificado">
+            <button type="submit" class="hero-search-btn" aria-label="Validar">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            </button>
+          </form>
 
-          <p class="hero-description">
-            Certificación privada profesional con folio único, verificación pública 24/7,
-            vigencia definida y padrón consultable: credenciales que cualquier empleador
-            puede comprobar en segundos.
-          </p>
-
-          <div class="hero-buttons">
-            <a href="#certificados" class="btn-primary">Validar un certificado</a>
-            <a href="certifica.html" class="btn-primary">Certifica con IPCIL</a>
-            <a href="padron.html" class="btn-secondary">Padrón de Profesionales</a>
-            <a href="#aliadas" class="btn-secondary">Empresas aliadas</a>
+          <div class="hero-chips">
+            <a href="certifica.html" class="hero-chip hero-chip-main">Certifica con IPCIL</a>
+            <a href="padron.html" class="hero-chip">Padrón de profesionales</a>
+            <a href="#aliadas" class="hero-chip">Empresas aliadas</a>
+            <a href="empleadores.html" class="hero-chip">Empleadores</a>
+            <a href="#metodologia" class="hero-chip">Metodología</a>
+            <a href="panel/registro-aliado.html" class="hero-chip">Registra tu academia gratis</a>
           </div>
         </div>
+      </div>
+    </section>
 
+    <section class="stats-strip">
+      <div class="container">
         <div class="hero-stats">
           <div class="stat reveal">
             <span class="stat-number" id="stat-certificados">6,500+</span>
@@ -637,5 +641,23 @@
     if (f) location.href = "panel/validar.html?folio=" + encodeURIComponent(f);
   });
 </script>
+
+  <script>
+    (function(){
+      var f = document.getElementById("heroSearch");
+      if (!f) return;
+      f.addEventListener("submit", function(e){
+        e.preventDefault();
+        var v = (document.getElementById("heroFolio").value || "").trim();
+        var inp = document.getElementById("folio");
+        var form = document.getElementById("validateForm");
+        var sec = document.getElementById("certificados");
+        if (inp) inp.value = v.toUpperCase();
+        if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (v && form) setTimeout(function(){ form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event("submit", { cancelable: true })); }, 350);
+        else if (inp) setTimeout(function(){ inp.focus(); }, 400);
+      });
+    })();
+  </script>
 </body>
 </html>
