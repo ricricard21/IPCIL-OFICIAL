@@ -71,7 +71,11 @@
 .topbar .brand-t{ color:#fff !important; }
 .topbar .brand-s{ color:rgba(255,255,255,.75) !important; }
 .topbar .brand img{ border-color:#fff !important; background:#fff; }
+.top-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .top-link{ background:#fff !important; color:var(--doc-teal-deep) !important; }
+.top-link-ghost{ background:rgba(255,255,255,.14) !important; color:#fff !important; border:1px solid rgba(255,255,255,.35); }
+.top-link-ghost:hover{ background:rgba(255,255,255,.26) !important; }
+@media (max-width:640px){ .top-actions{ gap:6px } .top-link{ padding:8px 12px !important; font-size:12px !important } }
 .kicker, .eyebrow{ color:var(--doc-teal-deep) !important; }
 .banda, .cta{ background:var(--doc-teal) !important; border-radius:22px !important; }
 .banda .btn, .cta .btn, .banda a.btn{ background:#fff !important; color:var(--doc-teal-deep) !important; border-radius:999px !important; }
