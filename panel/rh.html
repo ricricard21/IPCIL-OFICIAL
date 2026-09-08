@@ -4,7 +4,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel RH — Postulaciones IPCI</title>
+  <title>Panel RH — Postulaciones IPCIL</title>
   <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="panel.css">
@@ -73,9 +73,9 @@
 
   <header class="rh-topbar">
     <div class="rh-brand">
-      <img src="../assets/logo.jpeg" alt="IPCI">
+      <img src="../assets/logo.jpeg" alt="IPCIL">
       <div>
-        <div class="rh-brand-t">Panel RH · IPCI</div>
+        <div class="rh-brand-t">Panel RH · IPCIL</div>
         <div class="rh-brand-s">Evaluación de postulaciones</div>
       </div>
     </div>
@@ -314,7 +314,7 @@
         const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         const pend = items.filter(i => i.estado === "pendiente");
         document.getElementById("wa-pendientes").textContent = pend.length;
-        document.title = (pend.length ? `(${pend.length}) ` : "") + "Panel RH · IPCI";
+        document.title = (pend.length ? `(${pend.length}) ` : "") + "Panel RH · IPCIL";
         if (!items.length) { cont.innerHTML = '<div class="rh-loading">Sin solicitudes de WhatsApp.</div>'; return; }
         cont.innerHTML = items.map(i => {
           const f = i.creadoEn?.toDate ? i.creadoEn.toDate().toLocaleString("es-MX", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
