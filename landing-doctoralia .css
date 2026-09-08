@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════════════════════════════════
+   TEMA "DOCTORALIA" · Landing ipcil.org
+   Se carga DESPUÉS de styles.css. Solo apariencia.
+   Hero como el de Doctoralia: bloque teal sólido, texto blanco,
+   buscador/botones en píldora blanca. Resto: fondo claro, tarjetas
+   blancas, acento teal único.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#f2f6f5;
+  --surface:#ffffff;
+  --surface-soft:#eef8f5;
+  --text:#16302a;
+  --muted:#5f7570;
+  --primary:#0f7c6a;
+  --primary-dark:#0b6555;
+  --line:#e3ebe8;
+  --shadow:0 18px 45px rgba(22,48,42,.08);
+  --shadow-soft:0 8px 24px rgba(22,48,42,.06);
+  --radius:24px;
+  --doc-teal:#0f7c6a;
+  --doc-teal-deep:#0b6555;
+  --doc-teal-light:#dff3ee;
+}
+
+/* ═══ Header: teal sólido, ordenado, con animación al pasar el cursor ═══ */
+.site-header{ background:var(--doc-teal) !important; backdrop-filter:none !important; border-bottom:none !important; }
+.site-header .container, .site-header .header-inner, .site-header nav{ align-items:center; }
+.site-header .brand{ gap:10px !important; }
+.site-header .brand-logo, .site-header .brand-logo img{ width:38px !important; height:38px !important; }
+.site-header .brand-logo img{ background:#fff; border-radius:50%; padding:2px; }
+.site-header .brand-top{ color:#fff !important; font-size:18px !important; font-weight:800 !important; letter-spacing:.02em; }
+.site-header .brand-bottom{ display:none !important; }  /* el nombre largo se cortaba con "..." */
+.main-nav{ gap:4px !important; }
+.main-nav a{
+  color:rgba(255,255,255,.9) !important; font-weight:600 !important; font-size:.88rem !important;
+  padding:8px 12px !important; border-radius:999px; position:relative;
+  transition:background .25s ease, color .25s ease;
+}
+.main-nav a:hover{ color:#fff !important; background:rgba(255,255,255,.16); }
+.nav-btn, .main-nav .nav-btn, .main-nav a.nav-btn{
+  background:#fff !important; color:var(--doc-teal-deep) !important; box-shadow:none !important;
+  font-weight:800 !important; padding:10px 18px !important; margin-left:8px;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease !important;
+}
+.nav-btn::after, .main-nav a.nav-btn::after{ display:none !important; }
+.nav-btn:hover, .main-nav a.nav-btn:hover{
+  background:var(--doc-teal-light) !important; color:var(--doc-teal-deep) !important;
+  transform:translateY(-1px) !important; box-shadow:none !important;
+}
+
+/* ═══ Animaciones al tocar: botones, chips, tarjetas ═══ */
+.btn-primary, .btn-secondary, .btn, .hero-chip, .hero-search-btn, .top-link, .cta a, .stat, .card, .feature-card, .service-card, .area-card{
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease !important;
+}
+.btn-primary, .btn-secondary, .btn, .top-link, .hero-chip, .nav-btn, .cert-cta, .hero-search-btn, .cta a, .banda a{ box-shadow:none !important; }
+.btn-primary:hover, .btn-secondary:hover, .btn:hover, .top-link:hover, .cert-cta:hover, .cta a:hover{ transform:translateY(-1px) !important; box-shadow:none !important; }
+.btn-primary:active, .btn-secondary:active, .hero-chip:active, .nav-btn:active{ transform:translateY(0) scale(.98) !important; }
+.hero-chip:hover{ transform:translateY(-1px); background:rgba(255,255,255,.3); }
+.hero-search{ transition:transform .2s ease; box-shadow:none !important; }
+.hero-search:focus-within{ transform:translateY(-1px); }
+.hero-search-btn:hover{ transform:scale(1.06); }
+.card:hover, .feature-card:hover, .service-card:hover, .area-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(22,48,42,.07) !important; border-color:#b9e4d9 !important; }
+
+/* ═══ Páginas con CSS propio (empleadores, padrón, reglamento, suscripción, gracias) ═══ */
+.hero:not(.hero-doc):not(.cert-hero){ background:transparent !important; color:var(--text) !important; }
+.hero:not(.hero-doc) .hero-kicker{ color:var(--doc-teal-deep) !important; }
+.hero:not(.hero-doc) h1{ color:var(--text) !important; }
+.hero:not(.hero-doc) p{ color:var(--muted) !important; }
+:root{ --primary-soft:#eef8f5; --gold:#0a5e50; --gold-soft:#dff3ee; --green:#0a5e50; --green-soft:#dff3ee; }
+.topbar{ background:var(--doc-teal) !important; border-bottom:none !important; }
+.topbar .brand-t{ color:#fff !important; }
+.topbar .brand-s{ color:rgba(255,255,255,.75) !important; }
+.topbar .brand img{ border-color:#fff !important; background:#fff; }
+.top-link{ background:#fff !important; color:var(--doc-teal-deep) !important; }
+.kicker, .eyebrow{ color:var(--doc-teal-deep) !important; }
+.banda, .cta{ background:var(--doc-teal) !important; border-radius:22px !important; }
+.banda .btn, .cta .btn, .banda a.btn{ background:#fff !important; color:var(--doc-teal-deep) !important; border-radius:999px !important; }
+.card-num, .step-num{ background:var(--doc-teal) !important; }
+.card{ border-radius:20px !important; }
+
+/* ═══ Hero estilo Doctoralia: poco texto, buscador píldora, chips, ilustración abajo ═══ */
+.hero-doc{
+  background:#128a77 url("/assets/hero-ipcil.jpg") center bottom / 100% auto no-repeat !important;
+  color:#fff !important;
+  padding:130px 0 0 !important;
+  min-height:760px;
+  border-radius:0 !important;
+  position:relative; overflow:hidden;
+  text-align:center;
+}
+/* Velo para leer el texto sobre la parte alta de la ilustración */
+.hero-doc::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(18,138,119,.55) 0%, rgba(18,138,119,.35) 45%, rgba(18,138,119,0) 75%);
+  pointer-events:none;
+}
+.hero-doc > *{ position:relative; z-index:1; }
+.hero-doc .hero-center{ max-width:960px !important; }
+.hero-doc .hero-title{
+  color:#fff !important; text-transform:none !important;
+  font-size:clamp(2rem,4vw,3.1rem) !important; font-weight:800 !important;
+  letter-spacing:-0.02em !important; line-height:1.15 !important;
+  max-width:760px; margin:0 auto 12px !important; text-wrap:balance;
+}
+.hero-doc .hero-subtitle{
+  color:rgba(255,255,255,.92) !important; font-weight:500 !important;
+  font-size:1.1rem !important; max-width:640px !important; margin:0 auto 28px !important;
+}
+
+/* Buscador píldora (como el de Doctoralia) */
+.hero-search{
+  display:flex; align-items:center; gap:8px;
+  max-width:640px; margin:0 auto 18px;
+  background:#fff; border-radius:999px; padding:6px 6px 6px 18px;
+  box-shadow:none;
+}
+.hero-search-ico{ color:var(--doc-teal); display:flex; }
+.hero-search input{
+  flex:1; min-width:0; border:none !important; outline:none !important; background:transparent !important;
+  font:inherit; font-size:15px; color:var(--text); padding:10px 4px; border-radius:0 !important; box-shadow:none !important;
+}
+.hero-search input::placeholder{ color:#7b8b86; }
+.hero-search-btn{
+  width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
+  background:var(--doc-teal); color:#fff; display:flex; align-items:center; justify-content:center;
+}
+.hero-search-btn:hover{ background:var(--doc-teal-deep); }
+
+/* Chips */
+.hero-chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:720px; margin:0 auto 60px; }
+.hero-chip{
+  display:inline-block; padding:9px 16px; border-radius:999px;
+  background:rgba(255,255,255,.16); color:#fff !important; text-decoration:none;
+  font-size:14px; font-weight:600; border:1px solid rgba(255,255,255,.25);
+}
+.hero-chip:hover{ background:rgba(255,255,255,.28); }
+.hero-chip-main{ background:#fff; color:var(--doc-teal-deep) !important; border-color:#fff; }
+.hero-chip-main:hover{ background:var(--doc-teal-light); }
+
+/* Franja de estadísticas debajo del hero (como "+36M visitas" de Doctoralia) */
+.stats-strip{ background:#fff; padding:36px 0 8px; }
+.hero-stats{ margin:0 !important; }
+.stat{ background:transparent !important; border:none !important; box-shadow:none !important; text-align:center; }
+.stat-number{ color:var(--doc-teal-deep) !important; font-weight:800 !important; font-size:2.2rem !important; }
+.stat-text{ color:var(--muted) !important; font-weight:600 !important; }
+
+@media (max-width: 900px){
+  .hero-doc{ min-height:640px; padding-top:110px !important; background-size:190% auto !important; }
+  .hero-search{ padding-left:14px; }
+  .hero-search input{ font-size:14px; }
+}
+
+/* Resto del sitio: botones píldora, acento teal, tarjetas suaves */
+.btn-primary{ background:var(--doc-teal) !important; border-color:var(--doc-teal) !important; color:#fff !important; border-radius:999px !important; box-shadow:none !important; }
+.btn-primary:hover{ background:var(--doc-teal-deep) !important; border-color:var(--doc-teal-deep) !important; transform:none !important; }
+.btn-secondary{ border-radius:999px !important; border:1.5px solid var(--doc-teal) !important; color:var(--doc-teal-deep) !important; background:#fff !important; }
+.btn-secondary:hover{ background:var(--doc-teal-light) !important; }
+.card, .service-card, .feature-card, .area-card, .step, .aliada-card, .info-card{ border-radius:22px !important; box-shadow:none !important; border:1px solid var(--line) !important; }
+.section-title, h2{ color:var(--text); }
+.section-kicker, .eyebrow, .tag{ color:var(--doc-teal-deep) !important; }
+.footer, footer{ background:#0b3d34 !important; }
+input, select, textarea{ border-radius:14px !important; }
+input:focus, select:focus, textarea:focus{ border-color:var(--doc-teal) !important; box-shadow:0 0 0 3px rgba(15,124,106,.18) !important; outline:none !important; }
