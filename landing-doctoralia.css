@@ -62,10 +62,10 @@
 .card:hover, .feature-card:hover, .service-card:hover, .area-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(22,48,42,.07) !important; border-color:#b9e4d9 !important; }
 
 /* ═══ Páginas con CSS propio (empleadores, padrón, reglamento, suscripción, gracias) ═══ */
-.topbar + .hero, .topbar ~ main .hero, main > .hero{ background:transparent !important; color:var(--text) !important; }
-.hero-kicker{ color:var(--doc-teal-deep) !important; }
-.hero h1{ color:var(--text) !important; }
-.hero p{ color:var(--muted) !important; }
+.hero:not(.hero-doc):not(.cert-hero){ background:transparent !important; color:var(--text) !important; }
+.hero:not(.hero-doc) .hero-kicker{ color:var(--doc-teal-deep) !important; }
+.hero:not(.hero-doc) h1{ color:var(--text) !important; }
+.hero:not(.hero-doc) p{ color:var(--muted) !important; }
 :root{ --primary-soft:#eef8f5; --gold:#0a5e50; --gold-soft:#dff3ee; --green:#0a5e50; --green-soft:#dff3ee; }
 .topbar{ background:var(--doc-teal) !important; border-bottom:none !important; }
 .topbar .brand-t{ color:#fff !important; }
