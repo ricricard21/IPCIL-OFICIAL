@@ -497,30 +497,30 @@
   .chip-creditos {
     display: none; align-items: center; gap: 8px; margin-top: 9px;
     padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 800;
-    background: #dcfce7; color: #15803d; border: 1px solid #b5e5c6; width: fit-content;
+    background: var(--primary-light); color: var(--primary-dark); border: 1px solid #9FE1CB; width: fit-content;
   }
   .chip-creditos .cred-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
   .chip-creditos.warn { background: #fef3c7; color: #92400e; border-color: #f0d998; }
   .chip-creditos.zero { background: #fee2e2; color: #b91c1c; border-color: #f5b8b8; }
 
   /* ═══ Centro de Plan y Créditos (solo aliados) ═══ */
-  .pagos-card { display: none; background: linear-gradient(135deg, #0F2B4C, #163a63); color: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 22px; }
+  .pagos-card { display: none; background: var(--surface); color: var(--text); border: 1.5px solid #9FE1CB; border-radius: 16px; padding: 20px 24px; margin-bottom: 22px; }
   .pagos-fila { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
   .pagos-info { flex: 1; min-width: 240px; }
-  .pagos-titulo { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
-  .pagos-saldo { font-size: 26px; font-weight: 800; margin-top: 4px; }
-  .pagos-saldo small { font-size: 12.5px; font-weight: 600; opacity: 0.8; }
-  .pagos-estado { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(34,197,94,0.18); color: #86efac; border: 1px solid rgba(134,239,172,0.35); }
-  .pagos-estado.mal { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(252,165,165,0.35); }
-  .pagos-estado.pend { background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(252,211,77,0.35); }
+  .pagos-titulo { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .pagos-saldo { font-size: 30px; font-weight: 700; margin-top: 4px; color: var(--text); }
+  .pagos-saldo small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+  .pagos-estado { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; background: var(--primary-light); color: var(--primary-dark); border: 1px solid #9FE1CB; }
+  .pagos-estado.mal { background: var(--red-bg); color: var(--red); border-color: #F7C1C1; }
+  .pagos-estado.pend { background: var(--yellow-bg); color: var(--yellow); border-color: #FAC775; }
   .pagos-botones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .btn-recarga { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.28); color: #fff; border-radius: 12px; padding: 10px 14px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.35; }
-  .btn-recarga small { display: block; font-weight: 600; opacity: 0.75; font-size: 10.5px; }
-  .btn-recarga:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
-  .btn-pagar-plan { background: #b08d2e; border: none; color: #fff; border-radius: 12px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(176,141,46,0.35); }
-  .btn-pagar-plan:hover { background: #96771f; }
-  .btn-comprar-creditos { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.32); color: #fff; border-radius: 12px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.15s; }
-  .btn-comprar-creditos:hover { background: rgba(255,255,255,0.26); transform: translateY(-1px); }
+  .btn-recarga { background: var(--surface); border: 1px solid var(--line-strong); color: var(--primary-dark); border-radius: 999px; padding: 10px 14px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.35; }
+  .btn-recarga small { display: block; font-weight: 500; color: var(--muted); font-size: 10.5px; }
+  .btn-recarga:hover { background: var(--primary-soft); border-color: var(--primary); }
+  .btn-pagar-plan { background: var(--primary); border: none; color: #fff; border-radius: 999px; padding: 12px 20px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-pagar-plan:hover { background: var(--primary-dark); }
+  .btn-comprar-creditos { background: var(--primary); border: none; color: #fff; border-radius: 999px; padding: 12px 22px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .btn-comprar-creditos:hover { background: var(--primary-dark); }
 
   /* ═══ Modal Comprar Créditos (estilo WATI) ═══ */
   .pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 4px 0 4px; }
@@ -537,7 +537,7 @@
   .btn-continuar-pago:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-continuar-pago:not(:disabled):hover { background: var(--primary-dark); }
   @media (max-width: 520px) { .pack-grid { grid-template-columns: 1fr; } }
-  .pagos-nota { font-size: 10.5px; opacity: 0.65; margin-top: 10px; }
+  .pagos-nota { font-size: 10.5px; color: var(--muted); margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -638,7 +638,7 @@
       <div class="pagos-card" id="pagos-card">
         <div class="pagos-fila">
           <div class="pagos-info">
-            <div class="pagos-titulo">Tu plan Aliado IPCI</div>
+            <div class="pagos-titulo">Tus créditos de certificación</div>
             <div class="pagos-saldo"><span id="pagos-saldo-num">—</span> <small>créditos disponibles</small></div>
             <div class="pagos-estado" id="pagos-estado"><span class="cred-dot"></span><span id="pagos-estado-txt">—</span></div>
           </div>
@@ -1847,7 +1847,7 @@
     { const s = document.getElementById("dash-saludo"); if (s) { const n = ((usuario && usuario.nombre) || "").trim().split(" ")[0]; s.textContent = n ? `Hola, ${n}` : "Hola"; } }
   document.getElementById("user-consultora").textContent = usuario.consultoraNombre || "—";
   document.getElementById("user-initial").textContent = iniciales(usuario.nombre);
-  document.getElementById("header-consultora").textContent = usuario.consultoraNombre || "—";
+  document.getElementById("header-consultora").textContent = usuario.consultoraNombre || "tu academia";
 
   setupSidebar();
 
