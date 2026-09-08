@@ -45,22 +45,27 @@
 .nav-btn::after, .main-nav a.nav-btn::after{ display:none !important; }
 .nav-btn:hover, .main-nav a.nav-btn:hover{
   background:var(--doc-teal-light) !important; color:var(--doc-teal-deep) !important;
-  transform:translateY(-1px) !important; box-shadow:0 6px 16px rgba(0,0,0,.14) !important;
+  transform:translateY(-1px) !important; box-shadow:none !important;
 }
 
 /* ═══ Animaciones al tocar: botones, chips, tarjetas ═══ */
 .btn-primary, .btn-secondary, .btn, .hero-chip, .hero-search-btn, .top-link, .cta a, .stat, .card, .feature-card, .service-card, .area-card{
   transition:transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease !important;
 }
-.btn-primary:hover, .btn-secondary:hover, .btn:hover, .top-link:hover{ transform:translateY(-1px) !important; box-shadow:0 6px 16px rgba(15,124,106,.18) !important; }
+.btn-primary, .btn-secondary, .btn, .top-link, .hero-chip, .nav-btn, .cert-cta, .hero-search-btn, .cta a, .banda a{ box-shadow:none !important; }
+.btn-primary:hover, .btn-secondary:hover, .btn:hover, .top-link:hover, .cert-cta:hover, .cta a:hover{ transform:translateY(-1px) !important; box-shadow:none !important; }
 .btn-primary:active, .btn-secondary:active, .hero-chip:active, .nav-btn:active{ transform:translateY(0) scale(.98) !important; }
 .hero-chip:hover{ transform:translateY(-1px); background:rgba(255,255,255,.3); }
-.hero-search{ transition:box-shadow .2s ease, transform .2s ease; }
-.hero-search:focus-within{ box-shadow:0 14px 34px rgba(0,0,0,.18); transform:translateY(-1px); }
+.hero-search{ transition:transform .2s ease; box-shadow:none !important; }
+.hero-search:focus-within{ transform:translateY(-1px); }
 .hero-search-btn:hover{ transform:scale(1.06); }
 .card:hover, .feature-card:hover, .service-card:hover, .area-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(22,48,42,.07) !important; border-color:#b9e4d9 !important; }
 
 /* ═══ Páginas con CSS propio (empleadores, padrón, reglamento, suscripción, gracias) ═══ */
+.topbar + .hero, .topbar ~ main .hero, main > .hero{ background:transparent !important; color:var(--text) !important; }
+.hero-kicker{ color:var(--doc-teal-deep) !important; }
+.hero h1{ color:var(--text) !important; }
+.hero p{ color:var(--muted) !important; }
 :root{ --primary-soft:#eef8f5; --gold:#0a5e50; --gold-soft:#dff3ee; --green:#0a5e50; --green-soft:#dff3ee; }
 .topbar{ background:var(--doc-teal) !important; border-bottom:none !important; }
 .topbar .brand-t{ color:#fff !important; }
@@ -74,7 +79,7 @@
 .card{ border-radius:20px !important; }
 
 /* ═══ Hero estilo Doctoralia: poco texto, buscador píldora, chips, ilustración abajo ═══ */
-.hero{
+.hero-doc{
   background:#128a77 url("/assets/hero-ipcil.jpg") center bottom / 100% auto no-repeat !important;
   color:#fff !important;
   padding:130px 0 0 !important;
@@ -84,20 +89,20 @@
   text-align:center;
 }
 /* Velo para leer el texto sobre la parte alta de la ilustración */
-.hero::before{
+.hero-doc::before{
   content:""; position:absolute; inset:0;
   background:linear-gradient(180deg, rgba(18,138,119,.55) 0%, rgba(18,138,119,.35) 45%, rgba(18,138,119,0) 75%);
   pointer-events:none;
 }
-.hero > *{ position:relative; z-index:1; }
-.hero-center{ max-width:960px !important; }
-.hero-title{
+.hero-doc > *{ position:relative; z-index:1; }
+.hero-doc .hero-center{ max-width:960px !important; }
+.hero-doc .hero-title{
   color:#fff !important; text-transform:none !important;
   font-size:clamp(2rem,4vw,3.1rem) !important; font-weight:800 !important;
   letter-spacing:-0.02em !important; line-height:1.15 !important;
   max-width:760px; margin:0 auto 12px !important; text-wrap:balance;
 }
-.hero-subtitle{
+.hero-doc .hero-subtitle{
   color:rgba(255,255,255,.92) !important; font-weight:500 !important;
   font-size:1.1rem !important; max-width:640px !important; margin:0 auto 28px !important;
 }
@@ -107,7 +112,7 @@
   display:flex; align-items:center; gap:8px;
   max-width:640px; margin:0 auto 18px;
   background:#fff; border-radius:999px; padding:6px 6px 6px 18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.12);
+  box-shadow:none;
 }
 .hero-search-ico{ color:var(--doc-teal); display:flex; }
 .hero-search input{
@@ -140,7 +145,7 @@
 .stat-text{ color:var(--muted) !important; font-weight:600 !important; }
 
 @media (max-width: 900px){
-  .hero{ min-height:640px; padding-top:110px !important; background-size:190% auto !important; }
+  .hero-doc{ min-height:640px; padding-top:110px !important; background-size:190% auto !important; }
   .hero-search{ padding-left:14px; }
   .hero-search input{ font-size:14px; }
 }
