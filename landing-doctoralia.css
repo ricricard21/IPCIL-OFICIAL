@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════
+   TEMA "DOCTORALIA" · Landing ipcil.org
+   Se carga DESPUÉS de styles.css. Solo apariencia.
+   Hero como el de Doctoralia: bloque teal sólido, texto blanco,
+   buscador/botones en píldora blanca. Resto: fondo claro, tarjetas
+   blancas, acento teal único.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#f2f6f5;
+  --surface:#ffffff;
+  --surface-soft:#eef8f5;
+  --text:#16302a;
+  --muted:#5f7570;
+  --primary:#0f7c6a;
+  --primary-dark:#0b6555;
+  --line:#e3ebe8;
+  --shadow:0 18px 45px rgba(22,48,42,.08);
+  --shadow-soft:0 8px 24px rgba(22,48,42,.06);
+  --radius:24px;
+  --doc-teal:#0f7c6a;
+  --doc-teal-deep:#0b6555;
+  --doc-teal-light:#dff3ee;
+}
+
+/* Header: teal sólido con texto blanco (como Doctoralia) */
+.site-header{ background:var(--doc-teal) !important; backdrop-filter:none !important; border-bottom:none !important; }
+.site-header .brand-text, .site-header .brand-top, .site-header .brand-bottom{ color:#fff !important; }
+.site-header .brand-logo img{ background:#fff; border-radius:50%; padding:2px; }
+.main-nav a{ color:rgba(255,255,255,.9) !important; font-weight:600 !important; }
+.main-nav a:hover{ color:#fff !important; }
+.nav-btn{ background:#fff !important; color:var(--doc-teal-deep) !important; box-shadow:none !important; font-weight:800 !important; }
+.nav-btn:hover{ background:var(--doc-teal-light) !important; }
+
+/* Hero: bloque teal, título blanco en caja normal (no mayúsculas gigantes) */
+.hero{
+  background:var(--doc-teal) !important;
+  color:#fff !important;
+  padding:150px 0 70px !important;
+  border-radius:0 0 40px 40px;
+}
+.hero-title{
+  color:#fff !important;
+  text-transform:none !important;
+  font-size:clamp(2.2rem,4.6vw,3.6rem) !important;
+  font-weight:800 !important;
+  letter-spacing:-0.02em !important;
+  max-width:900px; margin:0 auto 18px !important;
+}
+.hero-subtitle{ color:rgba(255,255,255,.92) !important; font-weight:500 !important; font-size:1.25rem !important; }
+.hero-description{ color:rgba(255,255,255,.78) !important; }
+
+/* Botones del hero: píldoras. Principal blanca, secundarias borde blanco */
+.hero-buttons .btn-primary, .hero-buttons .btn-secondary{ border-radius:999px !important; padding:14px 26px !important; }
+.hero-buttons .btn-primary{ background:#fff !important; border-color:#fff !important; color:var(--doc-teal-deep) !important; box-shadow:none !important; }
+.hero-buttons .btn-primary:hover{ background:var(--doc-teal-light) !important; transform:none !important; }
+.hero-buttons .btn-secondary{ background:transparent !important; border:1.5px solid rgba(255,255,255,.7) !important; color:#fff !important; }
+.hero-buttons .btn-secondary:hover{ background:rgba(255,255,255,.14) !important; }
+
+/* Stats: tarjetas blancas que "flotan" sobre el borde del hero */
+.hero-stats{ margin-top:48px !important; }
+.stat{ background:#fff !important; border-radius:20px !important; box-shadow:var(--shadow-soft) !important; border:none !important; }
+.stat-number{ color:var(--doc-teal-deep) !important; font-weight:800 !important; }
+.stat-text{ color:var(--muted) !important; }
+
+/* Resto del sitio: botones píldora, acento teal, tarjetas suaves */
+.btn-primary{ background:var(--doc-teal) !important; border-color:var(--doc-teal) !important; color:#fff !important; border-radius:999px !important; box-shadow:none !important; }
+.btn-primary:hover{ background:var(--doc-teal-deep) !important; border-color:var(--doc-teal-deep) !important; transform:none !important; }
+.btn-secondary{ border-radius:999px !important; border:1.5px solid var(--doc-teal) !important; color:var(--doc-teal-deep) !important; background:#fff !important; }
+.btn-secondary:hover{ background:var(--doc-teal-light) !important; }
+.card, .service-card, .feature-card, .area-card, .step, .aliada-card, .info-card{ border-radius:22px !important; box-shadow:none !important; border:1px solid var(--line) !important; }
+.section-title, h2{ color:var(--text); }
+.section-kicker, .eyebrow, .tag{ color:var(--doc-teal-deep) !important; }
+.footer, footer{ background:#0b3d34 !important; }
+input, select, textarea{ border-radius:14px !important; }
+input:focus, select:focus, textarea:focus{ border-color:var(--doc-teal) !important; box-shadow:0 0 0 3px rgba(15,124,106,.18) !important; outline:none !important; }
