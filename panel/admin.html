@@ -692,7 +692,7 @@
       <div class="main-header">
         <div>
           <h1 class="main-title">Análisis semanal</h1>
-          <p class="main-subtitle" id="an-sub">Qué consultoras van mal contra la semana pasada, por qué, y qué hacer</p>
+          <p class="main-subtitle" id="an-sub">Comparación a la misma altura de la semana</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <select class="select" id="an-modo" style="max-width:170px">
@@ -702,27 +702,24 @@
           <button class="btn btn-secondary" type="button" id="an-prev">◀</button>
           <button class="btn btn-secondary" type="button" id="an-hoy">Actual</button>
           <button class="btn btn-secondary" type="button" id="an-next">▶</button>
-          <button class="btn btn-primary" type="button" id="an-ia">✨ Analizar con IA</button>
           <button class="btn btn-secondary" type="button" id="an-print">🖨 Imprimir</button>
         </div>
       </div>
 
+      <div class="card" style="margin-bottom:18px;background:#eef8f5;border-color:#b9e4d9">
+        <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:13px;color:#0b3d34">
+          <div><span style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0a5e50">Cómo se compara</span><br><span id="an-explica">—</span></div>
+        </div>
+      </div>
+
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Consultoras en caída</div><div class="kpi-value" id="an-k-caida" style="color:#b3261e">—</div><span class="kpi-trend kpi-trend-flat">vendieron menos que el periodo anterior</span></div></div>
-        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Sin ventas</div><div class="kpi-value" id="an-k-cero" style="color:#b3261e">—</div><span class="kpi-trend kpi-trend-flat">0 alumnos en el periodo</span></div></div>
-        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Cursos que dejaron de venderse</div><div class="kpi-value" id="an-k-cursos" style="color:#8a5a00">—</div><span class="kpi-trend kpi-trend-flat">vendían antes y ahora van en 0</span></div></div>
-        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Consultoras en crecimiento</div><div class="kpi-value" id="an-k-sube" style="color:#0a5e50">—</div><span class="kpi-trend kpi-trend-flat">vendieron más que el periodo anterior</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Alumnos a la fecha</div><div class="kpi-value" id="an-k-total">—</div><span class="kpi-trend kpi-trend-flat" id="an-k-total-sub">—</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Van por debajo</div><div class="kpi-value" id="an-k-caida" style="color:#b3261e">—</div><span class="kpi-trend kpi-trend-flat">consultoras vs misma altura</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Sin ventas</div><div class="kpi-value" id="an-k-cero" style="color:#b3261e">—</div><span class="kpi-trend kpi-trend-flat">0 alumnos en lo que va</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Van por arriba</div><div class="kpi-value" id="an-k-sube" style="color:#0a5e50">—</div><span class="kpi-trend kpi-trend-flat">consultoras vs misma altura</span></div></div>
       </div>
 
-      <div class="card" id="an-ia-card" style="display:none;margin-bottom:22px;border:1.5px solid #9fe1cb">
-        <div class="card-header"><div><div class="card-title">✨ Análisis con IA</div><div class="card-subtitle" id="an-ia-sub">—</div></div></div>
-        <div id="an-ia-texto" style="line-height:1.6;font-size:13.5px"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><div><div class="card-title">Diagnóstico por consultora</div><div class="card-subtitle">Ordenadas de la que va peor a la que va mejor · clic para ver el detalle de cursos</div></div></div>
-        <div id="an-tabla"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
+      <div id="an-lista"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
     </section>
 
     <section id="view-ranking" class="section">
@@ -2395,9 +2392,12 @@
 
 
   // ═══════════════════════════════════════════════════════════
-  // ANÁLISIS SEMANAL: quién va mal vs el periodo anterior, por qué, y qué hacer
+  // ANÁLISIS SEMANAL — comparación "a la misma altura" (a la fecha vs
+  // el mismo tramo del periodo anterior), diagnóstico limpio por
+  // consultora, e IA por consultora.
   // ═══════════════════════════════════════════════════════════
-  let anOffset = 0, anModo = 7; const _anAbiertas = new Set(); let _anResumen = null;
+  let anOffset = 0, anModo = 7; const _anAbiertas = new Set(); const _anIA = {}; let _anDatos = null;
+  const DIAS_SEM = { 0: "domingo", 1: "lunes", 2: "martes", 3: "miércoles", 4: "jueves", 5: "viernes", 6: "sábado" };
   function rangoAn(offset) {
     if (anModo === 7) { const ini = inicioSemana(offset), fin = new Date(ini); fin.setDate(ini.getDate() + 7); return { ini, fin }; }
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -2405,113 +2405,156 @@
     const ini = new Date(fin); ini.setDate(fin.getDate() - 15);
     return { ini, fin };
   }
-  function construirResumenAnalisis() {
-    const { ini, fin } = rangoAn(anOffset); const { ini: iniAnt } = rangoAn(anOffset - 1);
-    const dur = fin - ini;
+  function construirAnalisis() {
+    const { ini, fin } = rangoAn(anOffset); const { ini: iniAnt, fin: finAnt } = rangoAn(anOffset - 1);
+    const ahora = new Date();
+    const enCurso = anOffset === 0 && ahora < fin;
+    const hasta = enCurso ? ahora : fin;                       // hasta dónde llevamos este periodo
+    const span = hasta - ini;                                  // tramo transcurrido
+    const hastaAnt = new Date(iniAnt.getTime() + span);        // misma altura del periodo anterior
     const t = (a) => a.creadoEn?.toMillis?.() || 0;
-    const act = alumnos.filter(a => t(a) >= ini.getTime() && t(a) < fin.getTime());
-    const ant = alumnos.filter(a => t(a) >= iniAnt.getTime() && t(a) < ini.getTime());
-    const desde60 = ini.getTime() - 60 * 86400000;
-    const hist60 = alumnos.filter(a => t(a) >= desde60 && t(a) < ini.getTime());
+    const rango = (arr, d1, d2) => arr.filter(a => t(a) >= d1.getTime() && t(a) < d2.getTime());
+    const act = rango(alumnos, ini, hasta), mismaAltura = rango(alumnos, iniAnt, hastaAnt), cierreAnt = rango(alumnos, iniAnt, finAnt);
+    const hoy0 = new Date(ahora); hoy0.setHours(0, 0, 0, 0);
+    const hoyAnt = new Date(hoy0.getTime() - (ini - iniAnt));
+    const hoyAntFin = new Date(hoyAnt.getTime() + (ahora - hoy0));
+    const hist60 = rango(alumnos, new Date(ini.getTime() - 60 * 86400000), ini);
     const nombreCurso = (id) => cursos.find(c => c.id === id)?.nombre || "Curso";
+    const cnt = (arr) => { const m = {}; arr.forEach(a => { m[a.cursoId] = (m[a.cursoId] || 0) + 1; }); return m; };
+    const diasTrans = Math.max(1, span / 86400000), diasTot = (fin - ini) / 86400000;
+
     const filas = consultoras.filter(co => co.activa !== false).map(co => {
-      const A = act.filter(a => a.consultoraId === co.id), B = ant.filter(a => a.consultoraId === co.id), H = hist60.filter(a => a.consultoraId === co.id);
-      const cnt = (arr) => { const m = {}; arr.forEach(a => { m[a.cursoId] = (m[a.cursoId] || 0) + 1; }); return m; };
-      const cA = cnt(A), cB = cnt(B), cH = cnt(H);
-      const cursosA = Object.keys(cA), cursosB = Object.keys(cB);
-      const dejaron = cursosB.filter(id => !cA[id]).map(id => ({ id, nombre: nombreCurso(id), antes: cB[id] }));
-      const nuevos = cursosA.filter(id => !cB[id]).map(id => ({ id, nombre: nombreCurso(id), ahora: cA[id] }));
-      const cayeron = cursosA.filter(id => cB[id] && cA[id] < cB[id] * 0.6).map(id => ({ id, nombre: nombreCurso(id), ahora: cA[id], antes: cB[id] }));
-      const historicosSinVenta = Object.keys(cH).filter(id => !cA[id] && cH[id] >= 5).map(id => ({ id, nombre: nombreCurso(id), en60dias: cH[id] })).sort((a, b) => b.en60dias - a.en60dias).slice(0, 6);
-      const n = A.length, nA = B.length; const pct = nA ? Math.round(((n - nA) / nA) * 100) : (n ? 100 : 0);
-      // Diagnóstico heurístico
-      const diag = [];
-      if (n === 0 && nA === 0) diag.push("Sin actividad en los dos periodos: consultora detenida o sin anuncios activos.");
-      else if (n === 0) diag.push(`Cero ventas cuando el periodo anterior tuvo ${nA}: casi seguro no se publicaron aperturas o los anuncios se detuvieron.`);
+      const A = act.filter(a => a.consultoraId === co.id), M = mismaAltura.filter(a => a.consultoraId === co.id), C = cierreAnt.filter(a => a.consultoraId === co.id);
+      const H = hist60.filter(a => a.consultoraId === co.id);
+      const hoyN = enCurso ? rango(A, hoy0, ahora).length : null, hoyAntN = enCurso ? rango(alumnos.filter(a => a.consultoraId === co.id), hoyAnt, hoyAntFin).length : null;
+      const cA = cnt(A), cM = cnt(M), cH = cnt(H);
+      const n = A.length, m = M.length, cierre = C.length;
+      const pct = m ? Math.round(((n - m) / m) * 100) : (n ? 100 : 0);
+      const proy = enCurso ? Math.round(n / diasTrans * diasTot) : n;
+      const dejaron = Object.keys(cM).filter(id => !cA[id]).map(id => ({ nombre: nombreCurso(id), antes: cM[id] })).sort((a, b) => b.antes - a.antes);
+      const cayeron = Object.keys(cA).filter(id => cM[id] && cA[id] < cM[id] * 0.6).map(id => ({ nombre: nombreCurso(id), antes: cM[id], ahora: cA[id] })).sort((a, b) => (b.antes - b.ahora) - (a.antes - a.ahora));
+      const suben = Object.keys(cA).filter(id => (cM[id] || 0) < cA[id]).map(id => ({ nombre: nombreCurso(id), antes: cM[id] || 0, ahora: cA[id] })).sort((a, b) => b.ahora - a.ahora);
+      const historicos = Object.keys(cH).filter(id => !cA[id] && !cM[id] && cH[id] >= 5).map(id => ({ nombre: nombreCurso(id), en60: cH[id] })).sort((a, b) => b.en60 - a.en60).slice(0, 5);
+      const top = Object.keys(cA).map(id => ({ nombre: nombreCurso(id), ahora: cA[id], antes: cM[id] || 0 })).sort((a, b) => b.ahora - a.ahora);
+      const estado = n === 0 && m === 0 ? "inactiva" : n === 0 ? "critica" : pct <= -30 ? "critica" : pct < -10 ? "caida" : pct <= 10 ? "estable" : "crece";
+      const obs = [];
+      if (estado === "inactiva") obs.push("Sin alumnos en este periodo ni en el anterior.");
+      else if (n === 0) obs.push(`A esta altura el periodo pasado ya llevaba ${m}. Nada publicado o anuncios detenidos.`);
       else {
-        if (pct <= -30) diag.push(`Caída fuerte (${pct}%).`);
-        if (cursosA.length < cursosB.length) diag.push(`Vendió ${cursosA.length} cursos vs ${cursosB.length} del periodo anterior: faltaron ${cursosB.length - cursosA.length} cursos por subir/abrir.`);
-        if (dejaron.length) diag.push(`Dejaron de venderse: ${dejaron.slice(0, 4).map(d => d.nombre).join(" · ")}${dejaron.length > 4 ? ` y ${dejaron.length - 4} más` : ""} → revisar si se programó la apertura y si el anuncio sigue activo.`);
-        if (cayeron.length) diag.push(`Cayeron más de 40%: ${cayeron.slice(0, 3).map(d => `${d.nombre} (${d.antes}→${d.ahora})`).join(" · ")} → anuncio sin presupuesto/clics o audiencia agotada.`);
-        if (!dejaron.length && !cayeron.length && pct < 0 && cursosA.length >= cursosB.length) diag.push("Mismos cursos pero menos alumnos en todos: probable causa general (presupuesto de anuncios, quincena, o seguimiento del vendedor).");
-        if (pct > 0 && !diag.length) diag.push(`Crece ${pct}% con ${cursosA.length} cursos en venta.`);
+        if (Object.keys(cA).length < Object.keys(cM).length) obs.push(`${Object.keys(cA).length} cursos en venta vs ${Object.keys(cM).length} a la misma altura: faltan ${Object.keys(cM).length - Object.keys(cA).length} por abrir o anunciar.`);
+        if (dejaron.length) obs.push(`${dejaron.length} curso${dejaron.length > 1 ? "s" : ""} que vendían y hoy van en 0: ${dejaron.slice(0, 2).map(d => d.nombre).join(", ")}${dejaron.length > 2 ? "…" : ""}.`);
+        if (cayeron.length) obs.push(`${cayeron.length} curso${cayeron.length > 1 ? "s" : ""} cayeron más de 40% (posible anuncio sin presupuesto o audiencia agotada).`);
+        if (!dejaron.length && !cayeron.length && pct < -10) obs.push("Mismos cursos, menos alumnos en todos: revisar presupuesto de anuncios, quincena o seguimiento del vendedor.");
+        if (estado === "crece") obs.push(`Va ${pct}% arriba de la misma altura del periodo pasado.`);
+        if (estado === "estable" && !obs.length) obs.push("Ritmo similar al periodo anterior.");
       }
-      return { id: co.id, nombre: co.nombre, codigo: co.codigo, alumnos: n, alumnosAnterior: nA, pct, cursosEnVenta: cursosA.length, cursosAnterior: cursosB.length,
-               top: cursosA.map(id => ({ nombre: nombreCurso(id), ahora: cA[id], antes: cB[id] || 0 })).sort((a, b) => b.ahora - a.ahora),
-               dejaronDeVenderse: dejaron, cayeron, nuevos, historicosSinVenta, diagnostico: diag };
-    }).sort((a, b) => (a.pct - b.pct) || (a.alumnos - b.alumnos));
-    return { periodo: { modo: anModo === 7 ? "semana" : "quincena", inicio: ini.toISOString().slice(0, 10), fin: new Date(fin - 1).toISOString().slice(0, 10) }, consultoras: filas };
+      return { id: co.id, nombre: co.nombre, codigo: co.codigo, n, m, cierre, pct, proy, hoyN, hoyAntN, estado, obs,
+               cursosEnVenta: Object.keys(cA).length, cursosAnt: Object.keys(cM).length, dejaron, cayeron, suben, historicos, top };
+    }).sort((a, b) => { const o = { critica: 0, caida: 1, inactiva: 2, estable: 3, crece: 4 }; return o[a.estado] - o[b.estado] || a.pct - b.pct; });
+
+    return { ini, fin, iniAnt, hastaAnt, hasta, enCurso, ahora, hoyAnt, diasTrans, diasTot, filas };
   }
+
   function renderAnalisis() {
-    const cont = document.getElementById("an-tabla"); if (!cont) return;
-    const R = construirResumenAnalisis(); _anResumen = R;
-    const fmt = (s) => new Date(s + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" });
-    document.getElementById("an-sub").textContent = `${R.periodo.modo === "semana" ? "Semana" : "Quincena"} ${fmt(R.periodo.inicio)} → ${fmt(R.periodo.fin)} comparada con el periodo anterior`;
+    const cont = document.getElementById("an-lista"); if (!cont) return;
+    const D = construirAnalisis(); _anDatos = D;
+    const f = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+    const fh = (d) => d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+    const nombreP = anModo === 7 ? "semana" : "quincena";
+    document.getElementById("an-sub").textContent = D.enCurso
+      ? `${nombreP === "semana" ? "Semana" : "Quincena"} en curso · ${f(D.ini)} → hoy ${DIAS_SEM[D.ahora.getDay()]} ${f(D.ahora)} (${Math.ceil(D.diasTrans)} de ${D.diasTot} días)`
+      : `${nombreP === "semana" ? "Semana" : "Quincena"} ${f(D.ini)} → ${f(new Date(D.fin - 1))} (cerrada)`;
+    document.getElementById("an-explica").innerHTML = D.enCurso
+      ? `Lo que llevas <b>hasta hoy ${DIAS_SEM[D.ahora.getDay()]} ${fh(D.ahora)}</b> se compara contra lo que llevabas <b>el ${DIAS_SEM[D.hoyAnt.getDay()]} ${f(D.hoyAnt)} a la misma hora</b> (misma altura de la ${nombreP} pasada). Así no sale todo en rojo por no haber llegado al domingo. También se muestra el cierre completo del periodo anterior y la proyección al ritmo actual.`
+      : `Periodo cerrado: se compara completo contra el periodo anterior completo (${f(D.iniAnt)} → ${f(new Date(D.hastaAnt - 1))}).`;
     const nx = document.getElementById("an-next"); if (nx) nx.disabled = anOffset >= 0;
-    const C = R.consultoras;
-    document.getElementById("an-k-caida").textContent = C.filter(c => c.pct < 0).length;
-    document.getElementById("an-k-cero").textContent = C.filter(c => c.alumnos === 0).length;
-    document.getElementById("an-k-cursos").textContent = C.reduce((s, c) => s + c.dejaronDeVenderse.length, 0);
-    document.getElementById("an-k-sube").textContent = C.filter(c => c.pct > 0).length;
-    const color = (c) => c.alumnos === 0 ? "#b3261e" : c.pct <= -30 ? "#b3261e" : c.pct < 0 ? "#8a5a00" : "#0a5e50";
-    cont.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Consultora</th><th>Alumnos</th><th>vs anterior</th><th>Cursos en venta</th><th style="width:44%">Diagnóstico</th><th></th></tr></thead>
-      <tbody>${C.map(c => { const ab = _anAbiertas.has(c.id); return `<tr class="an-row row-hover" data-id="${c.id}" style="cursor:pointer">
-        <td><strong>${escapeHtml(c.nombre || "")}</strong> <span class="text-muted text-sm">${escapeHtml(c.codigo || "")}</span></td>
-        <td><strong style="font-size:16px;color:${color(c)}">${c.alumnos}</strong> <span class="text-muted">/ ${c.alumnosAnterior}</span></td>
-        <td>${c.alumnosAnterior === 0 && c.alumnos === 0 ? '<span class="text-muted">—</span>' : `<span class="chip ${c.pct >= 0 ? "chip-green" : "chip-red"}">${c.pct >= 0 ? "▲" : "▼"} ${Math.abs(c.pct)}%</span>`}</td>
-        <td>${c.cursosEnVenta} <span class="text-muted">/ ${c.cursosAnterior}</span>${c.dejaronDeVenderse.length ? ` <span class="chip chip-red" style="margin-left:4px">${c.dejaronDeVenderse.length} dejaron de venderse</span>` : ""}</td>
-        <td style="font-size:12.5px;line-height:1.45;color:${color(c)}">${c.diagnostico.map(escapeHtml).join("<br>") || '<span class="text-muted">Sin observaciones</span>'}</td>
-        <td class="text-muted" style="text-align:right">${ab ? "▲" : "▼"}</td>
-      </tr>${ab ? `<tr><td colspan="6" style="background:#f6f9f8;padding:12px 18px">${detalleAnalisis(c)}</td></tr>` : ""}`; }).join("")}</tbody></table></div>`;
-    cont.querySelectorAll(".an-row").forEach(tr => tr.addEventListener("click", () => { const id = tr.dataset.id; _anAbiertas.has(id) ? _anAbiertas.delete(id) : _anAbiertas.add(id); renderAnalisis(); }));
+    const F = D.filas;
+    const total = F.reduce((s, c) => s + c.n, 0), totalM = F.reduce((s, c) => s + c.m, 0);
+    document.getElementById("an-k-total").textContent = total;
+    document.getElementById("an-k-total-sub").textContent = `misma altura periodo pasado: ${totalM} (${totalM ? (total >= totalM ? "▲ " : "▼ ") + Math.abs(Math.round(((total - totalM) / totalM) * 100)) + "%" : "—"})`;
+    document.getElementById("an-k-caida").textContent = F.filter(c => c.pct < -10 && c.estado !== "inactiva").length;
+    document.getElementById("an-k-cero").textContent = F.filter(c => c.n === 0).length;
+    document.getElementById("an-k-sube").textContent = F.filter(c => c.pct > 10).length;
+
+    const ESTADO = { critica: ["Crítica", "#b3261e", "#fde8e6"], caida: ["En caída", "#8a5a00", "#fff1d6"], inactiva: ["Inactiva", "#5f7570", "#eef2f0"], estable: ["Estable", "#145f9e", "#e5f0fb"], crece: ["Creciendo", "#0a5e50", "#dff3ee"] };
+    cont.innerHTML = F.map(c => {
+      const [lbl, col, bg] = ESTADO[c.estado]; const ab = _anAbiertas.has(c.id); const ia = _anIA[c.id];
+      const num = (v, sub, colr) => `<div style="text-align:center;min-width:92px"><div style="font-size:24px;font-weight:800;color:${colr || "var(--text)"};line-height:1">${v}</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">${sub}</div></div>`;
+      return `<div class="card an-card" style="margin-bottom:12px;padding:16px 20px;border-left:5px solid ${col}">
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div style="flex:1;min-width:220px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:15px">${escapeHtml(c.nombre || "")}</strong><span class="text-muted text-sm">${escapeHtml(c.codigo || "")}</span><span class="chip" style="background:${bg};color:${col}">${lbl}</span></div>
+            <div style="font-size:12.5px;color:var(--text-soft);margin-top:6px;line-height:1.5">${c.obs.map(o => `<div>• ${escapeHtml(o)}</div>`).join("")}</div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            ${num(c.n, "a la fecha", col)}
+            ${num(c.m, "misma altura ant.")}
+            ${num(c.m || c.n ? `${c.pct >= 0 ? "▲" : "▼"} ${Math.abs(c.pct)}%` : "—", "diferencia", c.pct >= 0 ? "#0a5e50" : "#b3261e")}
+            ${D.enCurso ? num(`${c.hoyN} <span style="font-size:13px;color:var(--muted)">/ ${c.hoyAntN}</span>`, "hoy / mismo día ant.") : ""}
+            ${num(c.cierre, "cierre periodo ant.")}
+            ${D.enCurso ? num(`≈${c.proy}`, "proyección cierre", c.proy >= c.cierre ? "#0a5e50" : "#8a5a00") : ""}
+            ${num(`${c.cursosEnVenta} <span style="font-size:13px;color:var(--muted)">/ ${c.cursosAnt}</span>`, "cursos en venta")}
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm an-ver" data-id="${c.id}">${ab ? "Ocultar" : "Ver cursos"}</button>
+            <button class="btn btn-primary btn-sm an-ia" data-id="${c.id}" ${ia === "cargando" ? "disabled" : ""}>${ia === "cargando" ? "Analizando…" : "✨ IA"}</button>
+          </div>
+        </div>
+        ${ab ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)">${detalleAnalisis(c)}</div>` : ""}
+        ${ia && ia !== "cargando" ? `<div style="margin-top:14px;padding:14px 16px;background:#eef8f5;border:1px solid #b9e4d9;border-radius:14px"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0a5e50;margin-bottom:6px">✨ Análisis IA · ${escapeHtml(ia.fecha)}</div><div style="font-size:13px;line-height:1.6">${markdownSimple(ia.texto)}</div></div>` : ""}
+      </div>`;
+    }).join("");
+    cont.querySelectorAll(".an-ver").forEach(b => b.addEventListener("click", () => { const id = b.dataset.id; _anAbiertas.has(id) ? _anAbiertas.delete(id) : _anAbiertas.add(id); renderAnalisis(); }));
+    cont.querySelectorAll(".an-ia").forEach(b => b.addEventListener("click", () => analizarConsultoraIA(b.dataset.id)));
   }
+
   function detalleAnalisis(c) {
-    const lista = (t, items, f, col) => items.length ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${col};margin-bottom:4px">${t} · ${items.length}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${items.map(i => `<span class="chip" style="background:#fff;border:1px solid #dde5e2;color:#16302a">${escapeHtml(i.nombre)} <b style="margin-left:4px;color:${col}">${f(i)}</b></span>`).join("")}</div></div>` : "";
-    return lista("Dejaron de venderse (vendían el periodo anterior)", c.dejaronDeVenderse, i => `antes ${i.antes} → 0`, "#b3261e")
-      + lista("Cayeron más de 40%", c.cayeron, i => `${i.antes} → ${i.ahora}`, "#8a5a00")
-      + lista("Cursos con historial que no se vendieron (60 días)", c.historicosSinVenta, i => `${i.en60dias} en 60d → 0`, "#8a5a00")
-      + lista("Nuevos este periodo", c.nuevos, i => `${i.ahora}`, "#145f9e")
-      + lista("Lo que sí vendió", c.top, i => `${i.ahora}${i.antes ? ` (antes ${i.antes})` : ""}`, "#0a5e50")
-      || '<span class="text-muted">Sin movimientos en ningún curso.</span>';
+    const tabla = (titulo, items, cols, col) => items.length ? `<div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${col};margin-bottom:6px">${titulo} · ${items.length}</div>
+      <table class="table" style="font-size:12px"><thead><tr>${cols.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.nombre)}</td>${i.cells.map(v => `<td style="white-space:nowrap">${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : "";
+    const izq = tabla("Dejaron de venderse", c.dejaron.map(i => ({ nombre: i.nombre, cells: [`<b style="color:#b3261e">0</b>`, i.antes] })), ["Curso", "Ahora", "Misma altura ant."], "#b3261e")
+      + tabla("Cayeron más de 40%", c.cayeron.map(i => ({ nombre: i.nombre, cells: [`<b style="color:#8a5a00">${i.ahora}</b>`, i.antes] })), ["Curso", "Ahora", "Misma altura ant."], "#8a5a00")
+      + tabla("Con historial y sin venta", c.historicos.map(i => ({ nombre: i.nombre, cells: [`<b style="color:#8a5a00">0</b>`, `${i.en60} en 60 días`] })), ["Curso", "Ahora", "Historial"], "#8a5a00");
+    const der = tabla("Lo que sí vende", c.top.map(i => ({ nombre: i.nombre, cells: [`<b style="color:${i.ahora >= i.antes ? "#0a5e50" : "#8a5a00"}">${i.ahora}</b>`, i.antes] })), ["Curso", "Ahora", "Misma altura ant."], "#0a5e50");
+    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">${izq || '<div class="text-muted">Sin cursos en caída.</div>'}${der || '<div class="text-muted">Sin ventas en el periodo.</div>'}</div>`;
   }
   function markdownSimple(t) {
     return escapeHtml(t)
-      .replace(/^### (.*)$/gm, '<h4 style="margin:12px 0 4px;color:#0b3d34">$1</h4>')
-      .replace(/^## (.*)$/gm, '<h3 style="margin:14px 0 6px;color:#0b3d34">$1</h3>')
-      .replace(/^# (.*)$/gm, '<h3 style="margin:14px 0 6px;color:#0b3d34">$1</h3>')
+      .replace(/^#{1,3} (.*)$/gm, '<div style="font-weight:800;color:#0b3d34;margin:10px 0 4px">$1</div>')
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/^\s*[-•] (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">• $1</div>')
-      .replace(/^\s*(\d+)\) (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">$1) $2</div>')
+      .replace(/^\s*(\d+)[\).] (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">$1) $2</div>')
       .replace(/\n{2,}/g, "<br>");
+  }
+  async function analizarConsultoraIA(id) {
+    if (!_anDatos) renderAnalisis();
+    const c = _anDatos.filas.find(x => x.id === id); if (!c) return;
+    const D = _anDatos; const f = (d) => d.toISOString().slice(0, 10);
+    const totalM = D.filas.reduce((s, x) => s + x.m, 0), total = D.filas.reduce((s, x) => s + x.n, 0);
+    const resumen = {
+      periodo: { tipo: anModo === 7 ? "semana" : "quincena", enCurso: D.enCurso, inicio: f(D.ini), hasta: f(D.hasta), diasTranscurridos: Math.ceil(D.diasTrans), diasTotales: D.diasTot, comparadoContra: `mismo tramo del periodo anterior (${f(D.iniAnt)} → ${f(D.hastaAnt)})` },
+      contextoRed: { alumnosRedALaFecha: total, alumnosRedMismaAlturaAnterior: totalM, cambioRedPct: totalM ? Math.round(((total - totalM) / totalM) * 100) : 0 },
+      consultora: { nombre: c.nombre, alumnosALaFecha: c.n, mismaAlturaAnterior: c.m, cambioPct: c.pct, cierrePeriodoAnterior: c.cierre, proyeccionCierre: c.proy,
+        hoy: c.hoyN, mismoDiaAnterior: c.hoyAntN, cursosEnVenta: c.cursosEnVenta, cursosMismaAlturaAnterior: c.cursosAnt,
+        dejaronDeVenderse: c.dejaron.slice(0, 8).map(i => `${i.nombre} (antes ${i.antes})`),
+        cayeronMas40: c.cayeron.slice(0, 6).map(i => `${i.nombre} (${i.antes}→${i.ahora})`),
+        conHistorialSinVenta: c.historicos.map(i => `${i.nombre} (${i.en60} en 60 días)`),
+        loQueSiVende: c.top.slice(0, 8).map(i => `${i.nombre} (${i.ahora}, antes ${i.antes})`),
+        observacionesSistema: c.obs },
+    };
+    _anIA[id] = "cargando"; renderAnalisis();
+    try {
+      const fn = httpsCallable(functions, "analisisVentasIA");
+      const r = await fn({ resumen });
+      _anIA[id] = { texto: r.data.texto || "", fecha: new Date(r.data.fecha).toLocaleString("es-MX") };
+    } catch (e) { _anIA[id] = { texto: "No se pudo generar el análisis: " + e.message, fecha: "" }; }
+    _anAbiertas.add(id); renderAnalisis();
   }
   document.getElementById("an-modo")?.addEventListener("change", (e) => { anModo = Number(e.target.value); anOffset = 0; renderAnalisis(); });
   document.getElementById("an-prev")?.addEventListener("click", () => { anOffset--; renderAnalisis(); });
   document.getElementById("an-next")?.addEventListener("click", () => { if (anOffset < 0) { anOffset++; renderAnalisis(); } });
   document.getElementById("an-hoy")?.addEventListener("click", () => { anOffset = 0; renderAnalisis(); });
   document.getElementById("an-print")?.addEventListener("click", () => window.print());
-  document.getElementById("an-ia")?.addEventListener("click", async () => {
-    const btn = document.getElementById("an-ia"); const card = document.getElementById("an-ia-card"); const out = document.getElementById("an-ia-texto");
-    if (!_anResumen) renderAnalisis();
-    // Resumen compacto para la IA: todas las consultoras, sin listas eternas
-    const resumen = { periodo: _anResumen.periodo, consultoras: _anResumen.consultoras.map(c => ({
-      consultora: c.nombre, alumnos: c.alumnos, alumnosPeriodoAnterior: c.alumnosAnterior, cambioPct: c.pct,
-      cursosEnVenta: c.cursosEnVenta, cursosPeriodoAnterior: c.cursosAnterior,
-      dejaronDeVenderse: c.dejaronDeVenderse.slice(0, 6).map(i => `${i.nombre} (antes ${i.antes})`),
-      cayeronMas40: c.cayeron.slice(0, 5).map(i => `${i.nombre} (${i.antes}→${i.ahora})`),
-      conHistorialSinVenta: c.historicosSinVenta.slice(0, 4).map(i => `${i.nombre} (${i.en60dias} en 60 días)`),
-      mejoresCursos: c.top.slice(0, 4).map(i => `${i.nombre} (${i.ahora})`),
-    })) };
-    btn.disabled = true; btn.textContent = "Analizando…"; card.style.display = ""; out.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">La IA está revisando las ' + resumen.consultoras.length + ' consultoras…</div></div>';
-    try {
-      const fn = httpsCallable(functions, "analisisVentasIA");
-      const r = await fn({ resumen });
-      out.innerHTML = markdownSimple(r.data.texto || "");
-      document.getElementById("an-ia-sub").textContent = `Generado ${new Date(r.data.fecha).toLocaleString("es-MX")} · ${r.data.modelo}`;
-    } catch (e) {
-      out.innerHTML = `<div class="alert alert-error">No se pudo generar el análisis: ${escapeHtml(e.message)}</div>`;
-    } finally { btn.disabled = false; btn.textContent = "✨ Analizar con IA"; }
-  });
+
   document.getElementById("btn-imprimir-dash")?.addEventListener("click", () => {
     const f = document.getElementById("print-fecha"); if (f) f.textContent = `Generado el ${new Date().toLocaleString("es-MX")} · ${document.getElementById("sem-rango")?.textContent || ""}`;
     window.print();
