@@ -194,14 +194,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Usuarios
       </button>
-      <button class="sidebar-link" data-view="cursos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        Cursos
-      </button>
-      <button class="sidebar-link" data-view="certificados">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        Certificados
-      </button>
       <button class="sidebar-link" data-view="comisiones">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Comisiones
@@ -475,54 +467,10 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CURSOS                                               -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-cursos" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">Todos los cursos</h1>
-          <p class="main-subtitle">Cursos del ecosistema IPCI</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Listado completo</div>
-            <div class="card-subtitle"><span id="cursos-count">0</span> cursos en el sistema</div>
-          </div>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="input" type="search" id="search-curso" placeholder="Buscar curso...">
-          </div>
-        </div>
-        <div id="cursos-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CERTIFICADOS                                         -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-certificados" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">Certificados emitidos</h1>
-          <p class="main-subtitle">Historial completo de certificaciones</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Histórico</div>
-            <div class="card-subtitle"><span id="cert-count">0</span> certificados · <span id="cert-ingresos">$0</span> facturados</div>
-          </div>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="input" type="search" id="search-cert" placeholder="Buscar folio o nombre...">
-          </div>
-        </div>
-        <div id="certificados-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- COMISIONES                                           -->
@@ -1382,9 +1330,6 @@
     // Counts por sección
     document.getElementById("consultoras-count").textContent = consultoras.length;
     document.getElementById("usuarios-count").textContent = usuarios.length;
-    document.getElementById("cursos-count").textContent = cursos.length;
-    document.getElementById("cert-count").textContent = totalCertificadosHistorico !== null ? totalCertificadosHistorico : certificados.length;
-    document.getElementById("cert-ingresos").textContent = formatMoney(certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0));
 
     renderChartFacturacion();
     renderChartConsultoras();
@@ -1894,6 +1839,7 @@
   // CURSOS
   // ═══════════════════════════════════════════════════════════
   function renderCursos() {
+    if (!document.getElementById("cursos-container")) return; // vista eliminada del admin (sep-2026)
     const c = document.getElementById("cursos-container");
     const search = (document.getElementById("search-curso")?.value || "").toLowerCase();
     let lista = [...cursos];
@@ -1936,7 +1882,7 @@
       b.addEventListener("click", () => abrirModalEditarCurso(b.dataset.editCurso))
     );
   }
-  document.getElementById("search-curso").addEventListener("input", renderCursos);
+  document.getElementById("search-curso")?.addEventListener("input", renderCursos);
 
   // Modal editar curso
   function abrirModalEditarCurso(cursoId) {
@@ -2046,6 +1992,7 @@
   // CERTIFICADOS
   // ═══════════════════════════════════════════════════════════
   function renderCertificados() {
+    if (!document.getElementById("certificados-container")) return; // vista eliminada del admin (sep-2026)
     const c = document.getElementById("certificados-container");
     const search = (document.getElementById("search-cert")?.value || "").toLowerCase();
     const filtrados = search
@@ -2073,7 +2020,7 @@
       </tr>`).join("")}</tbody></table></div>
       ${filtrados.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${filtrados.length}. Usa la búsqueda para refinar.</div>` : ""}`;
   }
-  document.getElementById("search-cert").addEventListener("input", renderCertificados);
+  document.getElementById("search-cert")?.addEventListener("input", renderCertificados);
 
   // ═══════════════════════════════════════════════════════════
   // COMISIONES
