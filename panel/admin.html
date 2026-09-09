@@ -695,8 +695,9 @@
           <p class="main-subtitle" id="an-sub">Comparación a la misma altura de la semana</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select class="select" id="an-modo" style="max-width:170px">
-            <option value="7">Semana (lun → dom)</option>
+          <select class="select" id="an-modo" style="max-width:190px">
+            <option value="1">Día (vs mismo día sem. pasada)</option>
+            <option value="7" selected>Semana (lun → dom)</option>
             <option value="15">Quincena (15 días)</option>
           </select>
           <button class="btn btn-secondary" type="button" id="an-prev">◀</button>
@@ -1161,6 +1162,7 @@
       actualizarDashboard();
       if (typeof renderComisiones === "function") renderComisiones();
       if (typeof renderRanking === "function") renderRanking();
+      if (typeof renderAnalisis === "function" && document.getElementById("view-analisis")?.classList.contains("active")) renderAnalisis();
     } catch (e) { console.error("[ADMIN] alumnos:", e); }
   }
   cargarAlumnos();
@@ -1395,7 +1397,7 @@
         const a = { id: ch.doc.id, ...ch.doc.data() };
         if (!alumnos.find(x => x.id === a.id)) { alumnos.push(a); hubo = true; }
       });
-      if (hubo) { invalidarConteosRecientes(); debounce("alumnos-vivo", () => { actualizarDashboard(); renderRanking(); }, 800); }
+      if (hubo) { invalidarConteosRecientes(); debounce("alumnos-vivo", () => { actualizarDashboard(); renderRanking(); if (document.getElementById("view-analisis")?.classList.contains("active")) renderAnalisis(); }, 800); }
     },
     (e) => console.warn("[ADMIN] escucha alumnos:", e.message)
   );
@@ -2401,11 +2403,23 @@
   const fFecha = (d) => d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "short" });
   const fHora = (d) => d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   function rangoAn(offset) {
-    if (anModo === 7) { const ini = inicioSemana(offset), fin = new Date(ini); fin.setDate(ini.getDate() + 7); return { ini, fin }; }
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    if (anModo === 1) { // un día; se compara contra el mismo día de la semana pasada
+      const ini = new Date(hoy); ini.setDate(hoy.getDate() + offset);
+      const fin = new Date(ini); fin.setDate(ini.getDate() + 1);
+      const iniAnt = new Date(ini); iniAnt.setDate(ini.getDate() - 7);
+      const finAnt = new Date(iniAnt); finAnt.setDate(iniAnt.getDate() + 1);
+      return { ini, fin, iniAnt, finAnt };
+    }
+    if (anModo === 7) {
+      const ini = inicioSemana(offset), fin = new Date(ini); fin.setDate(ini.getDate() + 7);
+      const iniAnt = inicioSemana(offset - 1), finAnt = new Date(ini);
+      return { ini, fin, iniAnt, finAnt };
+    }
     const fin = new Date(hoy); fin.setDate(hoy.getDate() + 1 + offset * 15);
     const ini = new Date(fin); ini.setDate(fin.getDate() - 15);
-    return { ini, fin };
+    const iniAnt = new Date(ini); iniAnt.setDate(ini.getDate() - 15);
+    return { ini, fin, iniAnt, finAnt: new Date(ini) };
   }
   // Corrida anterior de un curso: el bloque de ventas (huecos ≤ 3 días) que termina en la última venta antes de `antesDe`
   function corridaAnterior(ventasOrdenadas, antesDe) {
@@ -2417,7 +2431,7 @@
     return { ini: iniC, fin: finC, ventas: prev.slice(i) };
   }
   function construirAnalisis() {
-    const { ini, fin } = rangoAn(anOffset); const { ini: iniAnt, fin: finAnt } = rangoAn(anOffset - 1);
+    const { ini, fin, iniAnt, finAnt } = rangoAn(anOffset);
     const ahora = new Date(); const enCurso = anOffset === 0 && ahora < fin;
     const hasta = enCurso ? ahora : fin; const span = hasta - ini; const hastaAnt = new Date(iniAnt.getTime() + span);
     const t = (a) => a.creadoEn?.toMillis?.() || 0;
@@ -2438,21 +2452,36 @@
       const pct = m ? Math.round(((n - m) / m) * 100) : (n ? 100 : 0);
       const proy = enCurso ? Math.round(n / diasTrans * diasTot) : n;
 
-      // ── Detalle por CURSO: corrida actual vs su propia corrida anterior (misma altura en días) ──
-      const porCurso = {}; todos.forEach(a => { (porCurso[a.cursoId] ||= []).push(t(a)); });
+      // ── Detalle por CURSO: corrida = fecha de apertura (aperturaKey). La corrida se LANZA el día
+      //    de la apertura anterior (ese día se cierran inscripciones y se sube la publicidad de la
+      //    siguiente). Se compara acumulado al día D desde el lanzamiento vs el mismo día D de la
+      //    corrida anterior, día por día hasta el cierre. ──
+      const fechaKey = (k) => { const [y, mo, d] = k.split("-").map(Number); return new Date(y, mo - 1, d).getTime(); };
+      const porCursoAp = {}; todos.forEach(a => { if (!a.cursoId) return; const k = a.aperturaKey || "_"; ((porCursoAp[a.cursoId] ||= {})[k] ||= []).push(t(a)); });
       const cursosDet = Object.keys(cA).map(id => {
-        const ventas = (porCurso[id] || []).sort((a, b) => a - b);
-        const actuales = ventas.filter(v => v >= ini.getTime() && v < hasta.getTime());
-        const iniRun = actuales[0]; const diasRun = Math.max(1, (hasta.getTime() - iniRun) / 86400000);
-        const prev = corridaAnterior(ventas, iniRun);
-        let prevMismaAltura = null, prevTotal = null, prevIni = null, prevDias = null, gapDias = null;
-        if (prev) {
-          prevIni = prev.ini; prevTotal = prev.ventas.length; prevDias = Math.max(1, Math.round((prev.fin - prev.ini) / 86400000) + 1);
-          prevMismaAltura = prev.ventas.filter(v => v < prev.ini + diasRun * 86400000).length;
-          gapDias = Math.round((iniRun - prev.fin) / 86400000);
-        }
-        const pctC = prevMismaAltura ? Math.round(((actuales.length - prevMismaAltura) / prevMismaAltura) * 100) : null;
-        return { id, nombre: nombreCurso(id), ahora: actuales.length, iniRun: new Date(iniRun), diasRun: Math.ceil(diasRun), prevMismaAltura, prevTotal, prevIni: prevIni ? new Date(prevIni) : null, prevDias, gapDias, pct: pctC };
+        const nombre = nombreCurso(id); const aps = porCursoAp[id] || {};
+        const keys = Object.keys(aps).filter(k => k !== "_" && /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+        // apertura actual = la más usada por los alumnos de este periodo
+        const enPeriodo = A.filter(a => a.cursoId === id); const votos = {}; enPeriodo.forEach(a => { const k = a.aperturaKey || "_"; votos[k] = (votos[k] || 0) + 1; });
+        const curKey = Object.keys(votos).filter(k => k !== "_").sort((p, q) => votos[q] - votos[p])[0] || null;
+        if (!curKey) return { id, nombre, ahora: enPeriodo.length, sinApertura: true };
+        const i = keys.indexOf(curKey); const prevKey = i > 0 ? keys[i - 1] : null; const prevPrevKey = i > 1 ? keys[i - 2] : null;
+        const ventasCur = aps[curKey].slice().sort((p, q) => p - q), ventasPrev = prevKey ? aps[prevKey].slice().sort((p, q) => p - q) : [];
+        const lanzCur = prevKey ? fechaKey(prevKey) : ventasCur[0];
+        const lanzPrev = prevKey ? (prevPrevKey ? fechaKey(prevPrevKey) : ventasPrev[0]) : null;
+        const cierreCur = fechaKey(curKey), cierrePrev = prevKey ? fechaKey(prevKey) : null;
+        const D = Math.max(0, (Math.min(hasta.getTime(), cierreCur) - lanzCur) / 86400000);
+        const ventanaCur = Math.max(1, Math.round((cierreCur - lanzCur) / 86400000)), ventanaPrev = prevKey ? Math.max(1, Math.round((cierrePrev - lanzPrev) / 86400000)) : null;
+        const acumAl = (ventas, lanz, d) => ventas.filter(v => v - lanz <= d * 86400000).length;
+        const ahora = acumAl(ventasCur, lanzCur, D), prevMismaAltura = prevKey ? acumAl(ventasPrev, lanzPrev, D) : null;
+        const prevTotal = prevKey ? ventasPrev.length : null;
+        const dias = Math.max(ventanaCur, ventanaPrev || 0);
+        const curvaCur = [], curvaPrev = [];
+        for (let d = 0; d <= dias; d++) { curvaCur.push(d <= D ? acumAl(ventasCur, lanzCur, d) : null); curvaPrev.push(prevKey && d <= ventanaPrev ? acumAl(ventasPrev, lanzPrev, d) : null); }
+        const primeroCur = ventasCur.length ? Math.ceil((ventasCur[0] - lanzCur) / 86400000) : null, primeroPrev = ventasPrev.length ? Math.ceil((ventasPrev[0] - lanzPrev) / 86400000) : null;
+        const pctC = prevMismaAltura ? Math.round(((ahora - prevMismaAltura) / prevMismaAltura) * 100) : null;
+        return { id, nombre, ahora, curKey, prevKey, lanzCur: new Date(lanzCur), cierreCur: new Date(cierreCur), lanzPrev: lanzPrev ? new Date(lanzPrev) : null, cierrePrev: cierrePrev ? new Date(cierrePrev) : null,
+                 D: Math.round(D * 10) / 10, ventanaCur, ventanaPrev, prevMismaAltura, prevTotal, curvaCur, curvaPrev, primeroCur, primeroPrev, pct: pctC, cerrada: hasta.getTime() >= cierreCur };
       }).sort((a, b) => b.ahora - a.ahora);
       const dejaron = Object.keys(cM).filter(id => !cA[id]).map(id => ({ nombre: nombreCurso(id), antes: cM[id] })).sort((a, b) => b.antes - a.antes);
       const estado = n === 0 && m === 0 ? "inactiva" : n === 0 ? "critica" : pct <= -30 ? "critica" : pct < -10 ? "caida" : pct <= 10 ? "estable" : "crece";
@@ -2463,7 +2492,7 @@
       else {
         if (Object.keys(cA).length < Object.keys(cM).length) obs.push(`${Object.keys(cA).length} cursos en venta vs ${Object.keys(cM).length} a la misma altura: faltan ${Object.keys(cM).length - Object.keys(cA).length} por abrir o anunciar.`);
         if (dejaron.length) obs.push(`${dejaron.length} curso${dejaron.length > 1 ? "s" : ""} que vendían y hoy van en 0: ${dejaron.slice(0, 2).map(d => d.nombre).join(", ")}${dejaron.length > 2 ? "…" : ""}.`);
-        if (cay.length) obs.push(`${cay.length} curso${cay.length > 1 ? "s" : ""} van más de 40% abajo de su corrida anterior.`);
+        if (cay.length) obs.push(`${cay.length} curso${cay.length > 1 ? "s" : ""} van más de 40% abajo de su corrida anterior al mismo día: ${cay.slice(0, 2).map(k => k.nombre).join(", ")}${cay.length > 2 ? "…" : ""}.`);
         if (!dejaron.length && !cay.length && pct < -10) obs.push("Mismos cursos, menos alumnos en todos: revisar presupuesto de anuncios, quincena o seguimiento del vendedor.");
         if (estado === "crece") obs.push(`Va ${pct}% arriba de la misma altura del periodo pasado.`);
         if (estado === "estable" && !obs.length) obs.push("Ritmo similar al periodo anterior.");
@@ -2478,11 +2507,15 @@
     Object.values(_anCharts).forEach(ch => { try { ch.destroy(); } catch (e) {} }); Object.keys(_anCharts).forEach(k => delete _anCharts[k]);
     const D = construirAnalisis(); _anDatos = D;
     const f = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
-    const nombreP = anModo === 7 ? "Semana" : "Quincena";
-    document.getElementById("an-sub").textContent = D.enCurso
+    const nombreP = anModo === 1 ? "Día" : anModo === 7 ? "Semana" : "Quincena";
+    document.getElementById("an-sub").textContent = anModo === 1
+      ? `${D.enCurso ? "Hoy " : ""}${fFecha(D.ini)} vs ${fFecha(D.iniAnt)} · mejores arriba, peores abajo`
+      : D.enCurso
       ? `${nombreP} en curso · ${f(D.ini)} → hoy ${fFecha(D.ahora)} (${Math.ceil(D.diasTrans)} de ${D.diasTot} días) · mejores arriba, peores abajo`
       : `${nombreP} ${f(D.ini)} → ${f(new Date(D.fin - 1))} (cerrada) · mejores arriba, peores abajo`;
-    document.getElementById("an-explica").innerHTML = D.enCurso
+    document.getElementById("an-explica").innerHTML = anModo === 1
+      ? (D.enCurso ? `<b>Hoy ${fFecha(D.ini)} hasta las ${fHora(D.ahora)}</b> &nbsp;vs&nbsp; <b>${fFecha(D.iniAnt)} hasta las ${fHora(D.ahora)}</b> (mismo día de la semana pasada, misma hora).` : `<b>${fFecha(D.ini)}</b> completo &nbsp;vs&nbsp; <b>${fFecha(D.iniAnt)}</b> completo (mismo día de la semana pasada).`)
+      : D.enCurso
       ? `<b>Hoy ${fFecha(D.ahora)} ${fHora(D.ahora)}</b> &nbsp;vs&nbsp; <b>${fFecha(D.hoyAnt)} ${fHora(D.ahora)}</b> (misma altura de la ${nombreP.toLowerCase()} pasada). Cada consultora muestra su total a la fecha, el del mismo punto anterior, el cierre completo anterior y la proyección al ritmo actual. En "Ver cursos", cada curso se compara contra <b>su propia corrida anterior</b> (ej. un curso quincenal se compara con su apertura de hace 15 días, a los mismos días transcurridos).`
       : `Periodo cerrado: <b>${f(D.ini)} → ${f(new Date(D.fin - 1))}</b> completo &nbsp;vs&nbsp; <b>${f(D.iniAnt)} → ${f(new Date(D.hastaAnt - 1))}</b> completo.`;
     const nx = document.getElementById("an-next"); if (nx) nx.disabled = anOffset >= 0;
@@ -2531,32 +2564,36 @@
 
   function detalleCursos(c, D) {
     const f = (d) => d ? d.toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—";
-    if (!c.cursosDet.length) return '<div class="text-muted">Sin ventas en el periodo.</div>' + (c.dejaron.length ? `<div style="margin-top:8px"><b style="color:#b3261e">Dejaron de venderse:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (antes ${d.antes})`).join(" · ")}</div>` : "");
-    const filas = c.cursosDet.map(k => {
+    if (!c.cursosDet.length) return '<div class="text-muted">Sin ventas en el periodo.</div>' + (c.dejaron.length ? `<div style="margin-top:8px"><b style="color:#b3261e">Vendían a esta altura y hoy van en 0:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (${d.antes})`).join(" · ")}</div>` : "");
+    const filas = c.cursosDet.map((k, i) => {
+      if (k.sinApertura) return `<tr><td colspan="6"><strong>${escapeHtml(k.nombre)}</strong> <span class="text-muted text-sm">· ${k.ahora} alumnos sin fecha de apertura asignada (no se puede comparar por corrida)</span></td></tr>`;
       const col = k.pct === null ? "#145f9e" : k.pct <= -40 ? "#b3261e" : k.pct < -10 ? "#8a5a00" : "#0a5e50";
       const est = k.pct === null ? '<span class="chip chip-blue">Primera corrida</span>' : k.pct <= -40 ? '<span class="chip chip-red">Muy abajo</span>' : k.pct < -10 ? '<span class="chip" style="background:#fff1d6;color:#8a5a00">Abajo</span>' : k.pct <= 10 ? '<span class="chip" style="background:#e5f0fb;color:#145f9e">Igual</span>' : '<span class="chip chip-green">Arriba</span>';
       return `<tr>
-        <td><strong>${escapeHtml(k.nombre)}</strong><div class="text-xs text-muted">Corrida actual desde ${f(k.iniRun)} · día ${k.diasRun}${k.gapDias !== null ? ` · se abre cada ~${k.gapDias + (k.prevDias || 0)} días` : ""}</div></td>
-        <td><strong style="font-size:16px;color:${col}">${k.ahora}</strong></td>
-        <td>${k.prevMismaAltura === null ? '<span class="text-muted">—</span>' : `<strong>${k.prevMismaAltura}</strong> <span class="text-xs text-muted">al día ${k.diasRun} de la corrida del ${f(k.prevIni)}</span>`}</td>
-        <td>${k.prevTotal === null ? '<span class="text-muted">—</span>' : `${k.prevTotal} <span class="text-xs text-muted">en ${k.prevDias} días</span>`}</td>
+        <td><strong>${escapeHtml(k.nombre)}</strong>
+          <div class="text-xs text-muted">Apertura <b>${f(k.cierreCur)}</b> · lanzada el ${f(k.lanzCur)} · día <b>${Math.ceil(k.D)}</b> de ${k.ventanaCur}${k.primeroCur !== null ? ` · 1er alumno al día ${k.primeroCur}` : ""}${k.primeroPrev !== null ? ` (ant.: día ${k.primeroPrev})` : ""}</div></td>
+        <td><strong style="font-size:16px;color:${col}">${k.ahora}</strong><div class="text-xs text-muted">al día ${Math.ceil(k.D)}</div></td>
+        <td>${k.prevMismaAltura === null ? '<span class="text-muted">—</span>' : `<strong>${k.prevMismaAltura}</strong><div class="text-xs text-muted">al día ${Math.ceil(k.D)} · corrida ${f(k.lanzPrev)} → ${f(k.cierrePrev)}</div>`}</td>
+        <td>${k.prevTotal === null ? '<span class="text-muted">—</span>' : `${k.prevTotal}<div class="text-xs text-muted">en ${k.ventanaPrev} días</div>`}</td>
         <td>${k.pct === null ? "—" : `<strong style="color:${col}">${k.pct >= 0 ? "▲" : "▼"} ${Math.abs(k.pct)}%</strong>`}</td>
         <td>${est}</td>
+        <td style="width:150px"><div style="height:46px"><canvas id="an-sp-${c.id}-${i}"></canvas></div></td>
       </tr>`; }).join("");
-    return `<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start">
-      <div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Cursos en venta · cada uno contra su propia corrida anterior</div>
-      <div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Curso</th><th>Ahora</th><th>Corrida anterior (misma altura)</th><th>Cierre corrida ant.</th><th>Dif.</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table></div>
-      ${c.dejaron.length ? `<div style="margin-top:10px;font-size:12.5px"><b style="color:#b3261e">Vendían a esta altura y hoy van en 0:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (${d.antes})`).join(" · ")}</div>` : ""}</div>
-      <div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Actual vs corrida anterior</div><div style="height:${Math.max(180, 34 * c.cursosDet.length + 40)}px"><canvas id="an-ch-${c.id}"></canvas></div></div>
-    </div>`;
+    return `<div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Cursos en venta · acumulado al mismo día desde el lanzamiento, contra su corrida anterior</div>
+      <div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Curso · corrida actual</th><th>Ahora</th><th>Corrida anterior (mismo día)</th><th>Cierre ant.</th><th>Dif.</th><th>Estado</th><th>Curva día a día</th></tr></thead><tbody>${filas}</tbody></table></div>
+      <div class="text-xs text-muted" style="margin-top:6px">Curva: línea oscura = corrida actual, línea clara = corrida anterior, ambas acumuladas por día desde el lanzamiento.</div>
+      ${c.dejaron.length ? `<div style="margin-top:10px;font-size:12.5px"><b style="color:#b3261e">Vendían a esta altura y hoy van en 0:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (${d.antes})`).join(" · ")}</div>` : ""}</div>`;
   }
   function dibujarChartCursos(c) {
-    const ctx = document.getElementById(`an-ch-${c.id}`)?.getContext("2d"); if (!ctx || !c.cursosDet.length) return;
-    const L = c.cursosDet.slice(0, 12);
-    _anCharts["c" + c.id] = new Chart(ctx, { type: "bar", data: { labels: L.map(k => k.nombre.length > 28 ? k.nombre.slice(0, 28) + "…" : k.nombre), datasets: [
-      { label: "Ahora", data: L.map(k => k.ahora), backgroundColor: "#0f7c6a", borderRadius: 6, maxBarThickness: 14 },
-      { label: "Corrida anterior (misma altura)", data: L.map(k => k.prevMismaAltura ?? 0), backgroundColor: "#c2ecdc", borderRadius: 6, maxBarThickness: 14 } ] },
-      options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#eef2f0" } }, y: { grid: { display: false }, ticks: { font: { size: 10.5 } } } } } });
+    c.cursosDet.forEach((k, i) => {
+      if (k.sinApertura) return;
+      const ctx = document.getElementById(`an-sp-${c.id}-${i}`)?.getContext("2d"); if (!ctx) return;
+      const labels = k.curvaCur.map((_, d) => "día " + d);
+      _anCharts[`sp${c.id}-${i}`] = new Chart(ctx, { type: "line", data: { labels, datasets: [
+        { label: "Actual", data: k.curvaCur, borderColor: "#0a5e50", backgroundColor: "rgba(10,94,80,.12)", fill: true, tension: .3, pointRadius: 0, borderWidth: 2, spanGaps: false },
+        { label: "Anterior", data: k.curvaPrev, borderColor: "#9fe1cb", borderDash: [4, 3], tension: .3, pointRadius: 0, borderWidth: 2, spanGaps: false } ] },
+        options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false, callbacks: { label: (x) => ` ${x.dataset.label}: ${x.parsed.y ?? "—"} alumnos` } } }, scales: { x: { display: false }, y: { display: false, beginAtZero: true } } } });
+    });
   }
 
   // ── IA estructurada ──
@@ -2597,10 +2634,14 @@
     const D = _anDatos; const f = (d) => d ? d.toISOString().slice(0, 10) : null;
     const totalM = D.filas.reduce((s, x) => s + x.m, 0), total = D.filas.reduce((s, x) => s + x.n, 0);
     const resumen = {
-      periodo: { tipo: anModo === 7 ? "semana" : "quincena", enCurso: D.enCurso, inicio: f(D.ini), hasta: f(D.hasta), horaCorte: fHora(D.ahora), diaHoy: DIAS_SEM[D.ahora.getDay()], comparadoContra: `${DIAS_SEM[D.hoyAnt.getDay()]} ${f(D.hoyAnt)} a la misma hora`, diasTranscurridos: Math.ceil(D.diasTrans), diasTotales: D.diasTot },
+      periodo: { tipo: anModo === 1 ? "día" : anModo === 7 ? "semana" : "quincena", enCurso: D.enCurso, inicio: f(D.ini), hasta: f(D.hasta), horaCorte: fHora(D.ahora), diaHoy: DIAS_SEM[D.ahora.getDay()], comparadoContra: `${DIAS_SEM[D.hoyAnt.getDay()]} ${f(D.hoyAnt)} a la misma hora`, diasTranscurridos: Math.ceil(D.diasTrans), diasTotales: D.diasTot },
       contextoRed: { alumnosRedALaFecha: total, alumnosRedMismaAlturaAnterior: totalM, cambioRedPct: totalM ? Math.round(((total - totalM) / totalM) * 100) : 0, posicionEnRanking: D.filas.indexOf(c) + 1, totalConsultoras: D.filas.length },
       consultora: { nombre: c.nombre, alumnosALaFecha: c.n, mismaAlturaAnterior: c.m, cambioPct: c.pct, cierrePeriodoAnterior: c.cierre, proyeccionCierre: c.proy, hoy: c.hoyN, mismoDiaAnterior: c.hoyAntN, cursosEnVenta: c.cursosEnVenta, cursosMismaAlturaAnterior: c.cursosAnt,
-        cursos: c.cursosDet.map(k => ({ curso: k.nombre, ahora: k.ahora, diaDeCorrida: k.diasRun, corridaAnteriorMismaAltura: k.prevMismaAltura, corridaAnteriorTotal: k.prevTotal, corridaAnteriorInicio: f(k.prevIni), cambioPct: k.pct })),
+        cursos: c.cursosDet.map(k => k.sinApertura ? { curso: k.nombre, ahora: k.ahora, nota: "sin fecha de apertura asignada" } : ({
+          curso: k.nombre, aperturaActual: f(k.cierreCur), lanzadaEl: f(k.lanzCur), diaDesdeLanzamiento: Math.ceil(k.D), diasDeVentana: k.ventanaCur, cerrada: k.cerrada,
+          acumuladoAhora: k.ahora, corridaAnterior: k.prevKey ? { lanzadaEl: f(k.lanzPrev), apertura: f(k.cierrePrev), acumuladoAlMismoDia: k.prevMismaAltura, totalAlCierre: k.prevTotal } : null,
+          primerAlumnoAlDia: k.primeroCur, primerAlumnoAlDiaAnterior: k.primeroPrev, cambioPct: k.pct,
+          curvaActual: k.curvaCur.filter(v => v !== null), curvaAnterior: k.curvaPrev.filter(v => v !== null) })),
         dejaronDeVenderse: c.dejaron.slice(0, 8).map(i => `${i.nombre} (antes ${i.antes})`), observacionesSistema: c.obs },
     };
     _anIA[id] = "cargando"; renderAnalisis();
