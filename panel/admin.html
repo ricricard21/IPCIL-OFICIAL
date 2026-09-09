@@ -2392,12 +2392,14 @@
 
 
   // ═══════════════════════════════════════════════════════════
-  // ANÁLISIS SEMANAL — comparación "a la misma altura" (a la fecha vs
-  // el mismo tramo del periodo anterior), diagnóstico limpio por
-  // consultora, e IA por consultora.
+  // ANÁLISIS SEMANAL — global por consultora a la misma altura,
+  // detalle por curso contra su propia corrida anterior, e IA
+  // estructurada (JSON) con gráficas.
   // ═══════════════════════════════════════════════════════════
-  let anOffset = 0, anModo = 7; const _anAbiertas = new Set(); const _anIA = {}; let _anDatos = null;
+  let anOffset = 0, anModo = 7; const _anAbiertas = new Set(); const _anIA = {}; let _anDatos = null; const _anCharts = {};
   const DIAS_SEM = { 0: "domingo", 1: "lunes", 2: "martes", 3: "miércoles", 4: "jueves", 5: "viernes", 6: "sábado" };
+  const fFecha = (d) => d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "short" });
+  const fHora = (d) => d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   function rangoAn(offset) {
     if (anModo === 7) { const ini = inicioSemana(offset), fin = new Date(ini); fin.setDate(ini.getDate() + 7); return { ini, fin }; }
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -2405,68 +2407,84 @@
     const ini = new Date(fin); ini.setDate(fin.getDate() - 15);
     return { ini, fin };
   }
+  // Corrida anterior de un curso: el bloque de ventas (huecos ≤ 3 días) que termina en la última venta antes de `antesDe`
+  function corridaAnterior(ventasOrdenadas, antesDe) {
+    const prev = ventasOrdenadas.filter(t => t < antesDe);
+    if (!prev.length) return null;
+    let i = prev.length - 1; const finC = prev[i];
+    while (i > 0 && prev[i] - prev[i - 1] <= 3 * 86400000) i--;
+    const iniC = prev[i];
+    return { ini: iniC, fin: finC, ventas: prev.slice(i) };
+  }
   function construirAnalisis() {
     const { ini, fin } = rangoAn(anOffset); const { ini: iniAnt, fin: finAnt } = rangoAn(anOffset - 1);
-    const ahora = new Date();
-    const enCurso = anOffset === 0 && ahora < fin;
-    const hasta = enCurso ? ahora : fin;                       // hasta dónde llevamos este periodo
-    const span = hasta - ini;                                  // tramo transcurrido
-    const hastaAnt = new Date(iniAnt.getTime() + span);        // misma altura del periodo anterior
+    const ahora = new Date(); const enCurso = anOffset === 0 && ahora < fin;
+    const hasta = enCurso ? ahora : fin; const span = hasta - ini; const hastaAnt = new Date(iniAnt.getTime() + span);
     const t = (a) => a.creadoEn?.toMillis?.() || 0;
     const rango = (arr, d1, d2) => arr.filter(a => t(a) >= d1.getTime() && t(a) < d2.getTime());
     const act = rango(alumnos, ini, hasta), mismaAltura = rango(alumnos, iniAnt, hastaAnt), cierreAnt = rango(alumnos, iniAnt, finAnt);
     const hoy0 = new Date(ahora); hoy0.setHours(0, 0, 0, 0);
-    const hoyAnt = new Date(hoy0.getTime() - (ini - iniAnt));
-    const hoyAntFin = new Date(hoyAnt.getTime() + (ahora - hoy0));
-    const hist60 = rango(alumnos, new Date(ini.getTime() - 60 * 86400000), ini);
+    const hoyAnt = new Date(hoy0.getTime() - (ini - iniAnt)); const hoyAntFin = new Date(hoyAnt.getTime() + (ahora - hoy0));
     const nombreCurso = (id) => cursos.find(c => c.id === id)?.nombre || "Curso";
     const cnt = (arr) => { const m = {}; arr.forEach(a => { m[a.cursoId] = (m[a.cursoId] || 0) + 1; }); return m; };
     const diasTrans = Math.max(1, span / 86400000), diasTot = (fin - ini) / 86400000;
 
     const filas = consultoras.filter(co => co.activa !== false).map(co => {
-      const A = act.filter(a => a.consultoraId === co.id), M = mismaAltura.filter(a => a.consultoraId === co.id), C = cierreAnt.filter(a => a.consultoraId === co.id);
-      const H = hist60.filter(a => a.consultoraId === co.id);
-      const hoyN = enCurso ? rango(A, hoy0, ahora).length : null, hoyAntN = enCurso ? rango(alumnos.filter(a => a.consultoraId === co.id), hoyAnt, hoyAntFin).length : null;
-      const cA = cnt(A), cM = cnt(M), cH = cnt(H);
+      const todos = alumnos.filter(a => a.consultoraId === co.id);
+      const A = rango(todos, ini, hasta), M = rango(todos, iniAnt, hastaAnt), C = rango(todos, iniAnt, finAnt);
+      const hoyN = enCurso ? rango(todos, hoy0, ahora).length : null, hoyAntN = enCurso ? rango(todos, hoyAnt, hoyAntFin).length : null;
+      const cA = cnt(A), cM = cnt(M);
       const n = A.length, m = M.length, cierre = C.length;
       const pct = m ? Math.round(((n - m) / m) * 100) : (n ? 100 : 0);
       const proy = enCurso ? Math.round(n / diasTrans * diasTot) : n;
+
+      // ── Detalle por CURSO: corrida actual vs su propia corrida anterior (misma altura en días) ──
+      const porCurso = {}; todos.forEach(a => { (porCurso[a.cursoId] ||= []).push(t(a)); });
+      const cursosDet = Object.keys(cA).map(id => {
+        const ventas = (porCurso[id] || []).sort((a, b) => a - b);
+        const actuales = ventas.filter(v => v >= ini.getTime() && v < hasta.getTime());
+        const iniRun = actuales[0]; const diasRun = Math.max(1, (hasta.getTime() - iniRun) / 86400000);
+        const prev = corridaAnterior(ventas, iniRun);
+        let prevMismaAltura = null, prevTotal = null, prevIni = null, prevDias = null, gapDias = null;
+        if (prev) {
+          prevIni = prev.ini; prevTotal = prev.ventas.length; prevDias = Math.max(1, Math.round((prev.fin - prev.ini) / 86400000) + 1);
+          prevMismaAltura = prev.ventas.filter(v => v < prev.ini + diasRun * 86400000).length;
+          gapDias = Math.round((iniRun - prev.fin) / 86400000);
+        }
+        const pctC = prevMismaAltura ? Math.round(((actuales.length - prevMismaAltura) / prevMismaAltura) * 100) : null;
+        return { id, nombre: nombreCurso(id), ahora: actuales.length, iniRun: new Date(iniRun), diasRun: Math.ceil(diasRun), prevMismaAltura, prevTotal, prevIni: prevIni ? new Date(prevIni) : null, prevDias, gapDias, pct: pctC };
+      }).sort((a, b) => b.ahora - a.ahora);
       const dejaron = Object.keys(cM).filter(id => !cA[id]).map(id => ({ nombre: nombreCurso(id), antes: cM[id] })).sort((a, b) => b.antes - a.antes);
-      const cayeron = Object.keys(cA).filter(id => cM[id] && cA[id] < cM[id] * 0.6).map(id => ({ nombre: nombreCurso(id), antes: cM[id], ahora: cA[id] })).sort((a, b) => (b.antes - b.ahora) - (a.antes - a.ahora));
-      const suben = Object.keys(cA).filter(id => (cM[id] || 0) < cA[id]).map(id => ({ nombre: nombreCurso(id), antes: cM[id] || 0, ahora: cA[id] })).sort((a, b) => b.ahora - a.ahora);
-      const historicos = Object.keys(cH).filter(id => !cA[id] && !cM[id] && cH[id] >= 5).map(id => ({ nombre: nombreCurso(id), en60: cH[id] })).sort((a, b) => b.en60 - a.en60).slice(0, 5);
-      const top = Object.keys(cA).map(id => ({ nombre: nombreCurso(id), ahora: cA[id], antes: cM[id] || 0 })).sort((a, b) => b.ahora - a.ahora);
       const estado = n === 0 && m === 0 ? "inactiva" : n === 0 ? "critica" : pct <= -30 ? "critica" : pct < -10 ? "caida" : pct <= 10 ? "estable" : "crece";
+      const cay = cursosDet.filter(c => c.pct !== null && c.pct <= -40);
       const obs = [];
       if (estado === "inactiva") obs.push("Sin alumnos en este periodo ni en el anterior.");
       else if (n === 0) obs.push(`A esta altura el periodo pasado ya llevaba ${m}. Nada publicado o anuncios detenidos.`);
       else {
         if (Object.keys(cA).length < Object.keys(cM).length) obs.push(`${Object.keys(cA).length} cursos en venta vs ${Object.keys(cM).length} a la misma altura: faltan ${Object.keys(cM).length - Object.keys(cA).length} por abrir o anunciar.`);
         if (dejaron.length) obs.push(`${dejaron.length} curso${dejaron.length > 1 ? "s" : ""} que vendían y hoy van en 0: ${dejaron.slice(0, 2).map(d => d.nombre).join(", ")}${dejaron.length > 2 ? "…" : ""}.`);
-        if (cayeron.length) obs.push(`${cayeron.length} curso${cayeron.length > 1 ? "s" : ""} cayeron más de 40% (posible anuncio sin presupuesto o audiencia agotada).`);
-        if (!dejaron.length && !cayeron.length && pct < -10) obs.push("Mismos cursos, menos alumnos en todos: revisar presupuesto de anuncios, quincena o seguimiento del vendedor.");
+        if (cay.length) obs.push(`${cay.length} curso${cay.length > 1 ? "s" : ""} van más de 40% abajo de su corrida anterior.`);
+        if (!dejaron.length && !cay.length && pct < -10) obs.push("Mismos cursos, menos alumnos en todos: revisar presupuesto de anuncios, quincena o seguimiento del vendedor.");
         if (estado === "crece") obs.push(`Va ${pct}% arriba de la misma altura del periodo pasado.`);
         if (estado === "estable" && !obs.length) obs.push("Ritmo similar al periodo anterior.");
       }
-      return { id: co.id, nombre: co.nombre, codigo: co.codigo, n, m, cierre, pct, proy, hoyN, hoyAntN, estado, obs,
-               cursosEnVenta: Object.keys(cA).length, cursosAnt: Object.keys(cM).length, dejaron, cayeron, suben, historicos, top };
-    }).sort((a, b) => { const o = { critica: 0, caida: 1, inactiva: 2, estable: 3, crece: 4 }; return o[a.estado] - o[b.estado] || a.pct - b.pct; });
-
+      return { id: co.id, nombre: co.nombre, codigo: co.codigo, n, m, cierre, pct, proy, hoyN, hoyAntN, estado, obs, cursosEnVenta: Object.keys(cA).length, cursosAnt: Object.keys(cM).length, cursosDet, dejaron };
+    }).sort((a, b) => b.n - a.n || b.pct - a.pct); // MEJORES arriba, peores abajo
     return { ini, fin, iniAnt, hastaAnt, hasta, enCurso, ahora, hoyAnt, diasTrans, diasTot, filas };
   }
 
   function renderAnalisis() {
     const cont = document.getElementById("an-lista"); if (!cont) return;
+    Object.values(_anCharts).forEach(ch => { try { ch.destroy(); } catch (e) {} }); Object.keys(_anCharts).forEach(k => delete _anCharts[k]);
     const D = construirAnalisis(); _anDatos = D;
     const f = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
-    const fh = (d) => d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-    const nombreP = anModo === 7 ? "semana" : "quincena";
+    const nombreP = anModo === 7 ? "Semana" : "Quincena";
     document.getElementById("an-sub").textContent = D.enCurso
-      ? `${nombreP === "semana" ? "Semana" : "Quincena"} en curso · ${f(D.ini)} → hoy ${DIAS_SEM[D.ahora.getDay()]} ${f(D.ahora)} (${Math.ceil(D.diasTrans)} de ${D.diasTot} días)`
-      : `${nombreP === "semana" ? "Semana" : "Quincena"} ${f(D.ini)} → ${f(new Date(D.fin - 1))} (cerrada)`;
+      ? `${nombreP} en curso · ${f(D.ini)} → hoy ${fFecha(D.ahora)} (${Math.ceil(D.diasTrans)} de ${D.diasTot} días) · mejores arriba, peores abajo`
+      : `${nombreP} ${f(D.ini)} → ${f(new Date(D.fin - 1))} (cerrada) · mejores arriba, peores abajo`;
     document.getElementById("an-explica").innerHTML = D.enCurso
-      ? `Lo que llevas <b>hasta hoy ${DIAS_SEM[D.ahora.getDay()]} ${fh(D.ahora)}</b> se compara contra lo que llevabas <b>el ${DIAS_SEM[D.hoyAnt.getDay()]} ${f(D.hoyAnt)} a la misma hora</b> (misma altura de la ${nombreP} pasada). Así no sale todo en rojo por no haber llegado al domingo. También se muestra el cierre completo del periodo anterior y la proyección al ritmo actual.`
-      : `Periodo cerrado: se compara completo contra el periodo anterior completo (${f(D.iniAnt)} → ${f(new Date(D.hastaAnt - 1))}).`;
+      ? `<b>Hoy ${fFecha(D.ahora)} ${fHora(D.ahora)}</b> &nbsp;vs&nbsp; <b>${fFecha(D.hoyAnt)} ${fHora(D.ahora)}</b> (misma altura de la ${nombreP.toLowerCase()} pasada). Cada consultora muestra su total a la fecha, el del mismo punto anterior, el cierre completo anterior y la proyección al ritmo actual. En "Ver cursos", cada curso se compara contra <b>su propia corrida anterior</b> (ej. un curso quincenal se compara con su apertura de hace 15 días, a los mismos días transcurridos).`
+      : `Periodo cerrado: <b>${f(D.ini)} → ${f(new Date(D.fin - 1))}</b> completo &nbsp;vs&nbsp; <b>${f(D.iniAnt)} → ${f(new Date(D.hastaAnt - 1))}</b> completo.`;
     const nx = document.getElementById("an-next"); if (nx) nx.disabled = anOffset >= 0;
     const F = D.filas;
     const total = F.reduce((s, c) => s + c.n, 0), totalM = F.reduce((s, c) => s + c.m, 0);
@@ -2477,77 +2495,122 @@
     document.getElementById("an-k-sube").textContent = F.filter(c => c.pct > 10).length;
 
     const ESTADO = { critica: ["Crítica", "#b3261e", "#fde8e6"], caida: ["En caída", "#8a5a00", "#fff1d6"], inactiva: ["Inactiva", "#5f7570", "#eef2f0"], estable: ["Estable", "#145f9e", "#e5f0fb"], crece: ["Creciendo", "#0a5e50", "#dff3ee"] };
-    cont.innerHTML = F.map(c => {
+    cont.innerHTML = F.map((c, idx) => {
       const [lbl, col, bg] = ESTADO[c.estado]; const ab = _anAbiertas.has(c.id); const ia = _anIA[c.id];
-      const num = (v, sub, colr) => `<div style="text-align:center;min-width:92px"><div style="font-size:24px;font-weight:800;color:${colr || "var(--text)"};line-height:1">${v}</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">${sub}</div></div>`;
+      const num = (v, sub, colr) => `<div style="text-align:center;min-width:88px"><div style="font-size:22px;font-weight:800;color:${colr || "var(--text)"};line-height:1">${v}</div><div style="font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">${sub}</div></div>`;
       return `<div class="card an-card" style="margin-bottom:12px;padding:16px 20px;border-left:5px solid ${col}">
         <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div style="width:34px;height:34px;border-radius:50%;background:${idx < 3 ? "#0f7c6a" : "#eef2f0"};color:${idx < 3 ? "#fff" : "#5f7570"};font-weight:800;display:flex;align-items:center;justify-content:center">${idx + 1}</div>
           <div style="flex:1;min-width:220px">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:15px">${escapeHtml(c.nombre || "")}</strong><span class="text-muted text-sm">${escapeHtml(c.codigo || "")}</span><span class="chip" style="background:${bg};color:${col}">${lbl}</span></div>
             <div style="font-size:12.5px;color:var(--text-soft);margin-top:6px;line-height:1.5">${c.obs.map(o => `<div>• ${escapeHtml(o)}</div>`).join("")}</div>
           </div>
-          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
             ${num(c.n, "a la fecha", col)}
-            ${num(c.m, "misma altura ant.")}
+            ${num(c.m, `${D.enCurso ? DIAS_SEM[D.hoyAnt.getDay()].slice(0, 3) + " " + f(D.hoyAnt) : "periodo ant."}`)}
             ${num(c.m || c.n ? `${c.pct >= 0 ? "▲" : "▼"} ${Math.abs(c.pct)}%` : "—", "diferencia", c.pct >= 0 ? "#0a5e50" : "#b3261e")}
-            ${D.enCurso ? num(`${c.hoyN} <span style="font-size:13px;color:var(--muted)">/ ${c.hoyAntN}</span>`, "hoy / mismo día ant.") : ""}
-            ${num(c.cierre, "cierre periodo ant.")}
+            ${D.enCurso ? num(`${c.hoyN} <span style="font-size:12px;color:var(--muted)">/ ${c.hoyAntN}</span>`, "hoy / mismo día ant.") : ""}
+            ${num(c.cierre, "cierre ant. completo")}
             ${D.enCurso ? num(`≈${c.proy}`, "proyección cierre", c.proy >= c.cierre ? "#0a5e50" : "#8a5a00") : ""}
-            ${num(`${c.cursosEnVenta} <span style="font-size:13px;color:var(--muted)">/ ${c.cursosAnt}</span>`, "cursos en venta")}
+            ${num(`${c.cursosEnVenta} <span style="font-size:12px;color:var(--muted)">/ ${c.cursosAnt}</span>`, "cursos en venta")}
           </div>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-secondary btn-sm an-ver" data-id="${c.id}">${ab ? "Ocultar" : "Ver cursos"}</button>
-            <button class="btn btn-primary btn-sm an-ia" data-id="${c.id}" ${ia === "cargando" ? "disabled" : ""}>${ia === "cargando" ? "Analizando…" : "✨ IA"}</button>
+            <button class="btn btn-secondary btn-sm an-ver" data-id="${c.id}">${ab ? "Ocultar cursos" : "Ver cursos"}</button>
+            <button class="btn btn-primary btn-sm an-ia" data-id="${c.id}" ${ia === "cargando" ? "disabled" : ""}>${ia === "cargando" ? "Analizando…" : "✨ Análisis IA"}</button>
           </div>
         </div>
-        ${ab ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)">${detalleAnalisis(c)}</div>` : ""}
-        ${ia && ia !== "cargando" ? `<div style="margin-top:14px;padding:14px 16px;background:#eef8f5;border:1px solid #b9e4d9;border-radius:14px"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0a5e50;margin-bottom:6px">✨ Análisis IA · ${escapeHtml(ia.fecha)}</div><div style="font-size:13px;line-height:1.6">${markdownSimple(ia.texto)}</div></div>` : ""}
+        ${ab ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)">${detalleCursos(c, D)}</div>` : ""}
+        ${ia && ia !== "cargando" ? `<div style="margin-top:14px">${renderIA(c, ia)}</div>` : ""}
       </div>`;
     }).join("");
     cont.querySelectorAll(".an-ver").forEach(b => b.addEventListener("click", () => { const id = b.dataset.id; _anAbiertas.has(id) ? _anAbiertas.delete(id) : _anAbiertas.add(id); renderAnalisis(); }));
     cont.querySelectorAll(".an-ia").forEach(b => b.addEventListener("click", () => analizarConsultoraIA(b.dataset.id)));
+    // Gráficas de los bloques abiertos
+    F.forEach(c => { if (_anAbiertas.has(c.id)) dibujarChartCursos(c); if (_anIA[c.id] && _anIA[c.id] !== "cargando") dibujarChartIA(c, _anIA[c.id]); });
   }
 
-  function detalleAnalisis(c) {
-    const tabla = (titulo, items, cols, col) => items.length ? `<div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${col};margin-bottom:6px">${titulo} · ${items.length}</div>
-      <table class="table" style="font-size:12px"><thead><tr>${cols.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.nombre)}</td>${i.cells.map(v => `<td style="white-space:nowrap">${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : "";
-    const izq = tabla("Dejaron de venderse", c.dejaron.map(i => ({ nombre: i.nombre, cells: [`<b style="color:#b3261e">0</b>`, i.antes] })), ["Curso", "Ahora", "Misma altura ant."], "#b3261e")
-      + tabla("Cayeron más de 40%", c.cayeron.map(i => ({ nombre: i.nombre, cells: [`<b style="color:#8a5a00">${i.ahora}</b>`, i.antes] })), ["Curso", "Ahora", "Misma altura ant."], "#8a5a00")
-      + tabla("Con historial y sin venta", c.historicos.map(i => ({ nombre: i.nombre, cells: [`<b style="color:#8a5a00">0</b>`, `${i.en60} en 60 días`] })), ["Curso", "Ahora", "Historial"], "#8a5a00");
-    const der = tabla("Lo que sí vende", c.top.map(i => ({ nombre: i.nombre, cells: [`<b style="color:${i.ahora >= i.antes ? "#0a5e50" : "#8a5a00"}">${i.ahora}</b>`, i.antes] })), ["Curso", "Ahora", "Misma altura ant."], "#0a5e50");
-    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">${izq || '<div class="text-muted">Sin cursos en caída.</div>'}${der || '<div class="text-muted">Sin ventas en el periodo.</div>'}</div>`;
+  function detalleCursos(c, D) {
+    const f = (d) => d ? d.toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—";
+    if (!c.cursosDet.length) return '<div class="text-muted">Sin ventas en el periodo.</div>' + (c.dejaron.length ? `<div style="margin-top:8px"><b style="color:#b3261e">Dejaron de venderse:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (antes ${d.antes})`).join(" · ")}</div>` : "");
+    const filas = c.cursosDet.map(k => {
+      const col = k.pct === null ? "#145f9e" : k.pct <= -40 ? "#b3261e" : k.pct < -10 ? "#8a5a00" : "#0a5e50";
+      const est = k.pct === null ? '<span class="chip chip-blue">Primera corrida</span>' : k.pct <= -40 ? '<span class="chip chip-red">Muy abajo</span>' : k.pct < -10 ? '<span class="chip" style="background:#fff1d6;color:#8a5a00">Abajo</span>' : k.pct <= 10 ? '<span class="chip" style="background:#e5f0fb;color:#145f9e">Igual</span>' : '<span class="chip chip-green">Arriba</span>';
+      return `<tr>
+        <td><strong>${escapeHtml(k.nombre)}</strong><div class="text-xs text-muted">Corrida actual desde ${f(k.iniRun)} · día ${k.diasRun}${k.gapDias !== null ? ` · se abre cada ~${k.gapDias + (k.prevDias || 0)} días` : ""}</div></td>
+        <td><strong style="font-size:16px;color:${col}">${k.ahora}</strong></td>
+        <td>${k.prevMismaAltura === null ? '<span class="text-muted">—</span>' : `<strong>${k.prevMismaAltura}</strong> <span class="text-xs text-muted">al día ${k.diasRun} de la corrida del ${f(k.prevIni)}</span>`}</td>
+        <td>${k.prevTotal === null ? '<span class="text-muted">—</span>' : `${k.prevTotal} <span class="text-xs text-muted">en ${k.prevDias} días</span>`}</td>
+        <td>${k.pct === null ? "—" : `<strong style="color:${col}">${k.pct >= 0 ? "▲" : "▼"} ${Math.abs(k.pct)}%</strong>`}</td>
+        <td>${est}</td>
+      </tr>`; }).join("");
+    return `<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start">
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Cursos en venta · cada uno contra su propia corrida anterior</div>
+      <div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Curso</th><th>Ahora</th><th>Corrida anterior (misma altura)</th><th>Cierre corrida ant.</th><th>Dif.</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table></div>
+      ${c.dejaron.length ? `<div style="margin-top:10px;font-size:12.5px"><b style="color:#b3261e">Vendían a esta altura y hoy van en 0:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (${d.antes})`).join(" · ")}</div>` : ""}</div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Actual vs corrida anterior</div><div style="height:${Math.max(180, 34 * c.cursosDet.length + 40)}px"><canvas id="an-ch-${c.id}"></canvas></div></div>
+    </div>`;
+  }
+  function dibujarChartCursos(c) {
+    const ctx = document.getElementById(`an-ch-${c.id}`)?.getContext("2d"); if (!ctx || !c.cursosDet.length) return;
+    const L = c.cursosDet.slice(0, 12);
+    _anCharts["c" + c.id] = new Chart(ctx, { type: "bar", data: { labels: L.map(k => k.nombre.length > 28 ? k.nombre.slice(0, 28) + "…" : k.nombre), datasets: [
+      { label: "Ahora", data: L.map(k => k.ahora), backgroundColor: "#0f7c6a", borderRadius: 6, maxBarThickness: 14 },
+      { label: "Corrida anterior (misma altura)", data: L.map(k => k.prevMismaAltura ?? 0), backgroundColor: "#c2ecdc", borderRadius: 6, maxBarThickness: 14 } ] },
+      options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#eef2f0" } }, y: { grid: { display: false }, ticks: { font: { size: 10.5 } } } } } });
+  }
+
+  // ── IA estructurada ──
+  function renderIA(c, ia) {
+    if (!ia.json) return `<div style="padding:14px 16px;background:#eef8f5;border:1px solid #b9e4d9;border-radius:14px"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0a5e50;margin-bottom:6px">✨ Análisis IA · ${escapeHtml(ia.fecha)}</div><div style="font-size:13px;line-height:1.6">${markdownSimple(ia.texto || "")}</div></div>`;
+    const J = ia.json; const sem = { rojo: ["#b3261e", "#fde8e6", "Requiere acción inmediata"], amarillo: ["#8a5a00", "#fff1d6", "Atención esta semana"], verde: ["#0a5e50", "#dff3ee", "En buen camino"] }[J.semaforo] || ["#145f9e", "#e5f0fb", "Sin clasificar"];
+    const ind = (J.indicadores || []).map(i => `<div style="background:#fff;border:1px solid var(--line-soft);border-radius:12px;padding:10px 12px"><div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700">${escapeHtml(i.nombre)}</div><div style="font-size:18px;font-weight:800;color:${i.estado === "malo" ? "#b3261e" : i.estado === "regular" ? "#8a5a00" : "#0a5e50"}">${escapeHtml(String(i.valor))}</div><div class="text-xs text-muted">${escapeHtml(i.comentario || "")}</div></div>`).join("");
+    const acc = (J.acciones || []).map((a, i) => `<tr><td><strong>${i + 1}.</strong> ${escapeHtml(a.accion)}</td><td>${escapeHtml(a.responsable || "—")}</td><td>${escapeHtml(a.plazo || "—")}</td><td><span class="chip ${a.impacto === "alto" ? "chip-green" : a.impacto === "medio" ? "" : "chip-gray"}" style="${a.impacto === "medio" ? "background:#fff1d6;color:#8a5a00" : ""}">${escapeHtml(a.impacto || "—")}</span></td></tr>`).join("");
+    return `<div style="border:1.5px solid ${sem[0]};border-radius:16px;overflow:hidden">
+      <div style="background:${sem[1]};padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="width:12px;height:12px;border-radius:50%;background:${sem[0]}"></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${sem[0]}">✨ Análisis IA · ${sem[2]}</div><div style="font-size:13.5px;font-weight:600;color:#16302a;margin-top:2px">${escapeHtml(J.resumen || "")}</div></div>
+        <div class="text-xs text-muted">${escapeHtml(ia.fecha)}</div>
+      </div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${ind}</div>
+      <div style="padding:0 16px 14px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+        <div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Causas probables</div>
+          <div style="height:${Math.max(120, 44 * (J.causas || []).length)}px"><canvas id="an-ia-ch-${c.id}"></canvas></div>
+          <div style="font-size:12px;margin-top:8px;line-height:1.5">${(J.causas || []).map(k => `<div><b>${escapeHtml(k.causa)}</b> — <span class="text-muted">${escapeHtml(k.evidencia || "")}</span></div>`).join("")}</div></div>
+        <div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Plan de acción</div>
+          <table class="table" style="font-size:12px"><thead><tr><th>Acción</th><th>Responsable</th><th>Plazo</th><th>Impacto</th></tr></thead><tbody>${acc}</tbody></table>
+          ${J.riesgo ? `<div style="margin-top:10px;padding:10px 12px;background:#fde8e6;border-radius:10px;font-size:12.5px"><b style="color:#b3261e">Riesgo si no se actúa:</b> ${escapeHtml(J.riesgo)}</div>` : ""}
+          ${J.meta ? `<div style="margin-top:8px;padding:10px 12px;background:#dff3ee;border-radius:10px;font-size:12.5px"><b style="color:#0a5e50">Meta para el cierre:</b> ${escapeHtml(J.meta)}</div>` : ""}</div>
+      </div></div>`;
+  }
+  function dibujarChartIA(c, ia) {
+    const ctx = document.getElementById(`an-ia-ch-${c.id}`)?.getContext("2d"); if (!ctx || !ia.json || !(ia.json.causas || []).length) return;
+    const C = ia.json.causas;
+    _anCharts["ia" + c.id] = new Chart(ctx, { type: "bar", data: { labels: C.map(k => k.causa.length > 34 ? k.causa.slice(0, 34) + "…" : k.causa), datasets: [{ data: C.map(k => Number(k.probabilidad) || 0), backgroundColor: C.map((k, i) => i === 0 ? "#b3261e" : i === 1 ? "#8a5a00" : "#1aa88f"), borderRadius: 6, maxBarThickness: 18 }] },
+      options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (x) => ` ${x.parsed.x}% de probabilidad` } } }, scales: { x: { min: 0, max: 100, ticks: { callback: v => v + "%" }, grid: { color: "#eef2f0" } }, y: { grid: { display: false }, ticks: { font: { size: 10.5 } } } } } });
   }
   function markdownSimple(t) {
-    return escapeHtml(t)
-      .replace(/^#{1,3} (.*)$/gm, '<div style="font-weight:800;color:#0b3d34;margin:10px 0 4px">$1</div>')
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/^\s*[-•] (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">• $1</div>')
-      .replace(/^\s*(\d+)[\).] (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">$1) $2</div>')
-      .replace(/\n{2,}/g, "<br>");
+    return escapeHtml(t).replace(/^#{1,3} (.*)$/gm, '<div style="font-weight:800;color:#0b3d34;margin:10px 0 4px">$1</div>').replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/^\s*[-•] (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">• $1</div>').replace(/\n{2,}/g, "<br>");
   }
   async function analizarConsultoraIA(id) {
     if (!_anDatos) renderAnalisis();
     const c = _anDatos.filas.find(x => x.id === id); if (!c) return;
-    const D = _anDatos; const f = (d) => d.toISOString().slice(0, 10);
+    const D = _anDatos; const f = (d) => d ? d.toISOString().slice(0, 10) : null;
     const totalM = D.filas.reduce((s, x) => s + x.m, 0), total = D.filas.reduce((s, x) => s + x.n, 0);
     const resumen = {
-      periodo: { tipo: anModo === 7 ? "semana" : "quincena", enCurso: D.enCurso, inicio: f(D.ini), hasta: f(D.hasta), diasTranscurridos: Math.ceil(D.diasTrans), diasTotales: D.diasTot, comparadoContra: `mismo tramo del periodo anterior (${f(D.iniAnt)} → ${f(D.hastaAnt)})` },
-      contextoRed: { alumnosRedALaFecha: total, alumnosRedMismaAlturaAnterior: totalM, cambioRedPct: totalM ? Math.round(((total - totalM) / totalM) * 100) : 0 },
-      consultora: { nombre: c.nombre, alumnosALaFecha: c.n, mismaAlturaAnterior: c.m, cambioPct: c.pct, cierrePeriodoAnterior: c.cierre, proyeccionCierre: c.proy,
-        hoy: c.hoyN, mismoDiaAnterior: c.hoyAntN, cursosEnVenta: c.cursosEnVenta, cursosMismaAlturaAnterior: c.cursosAnt,
-        dejaronDeVenderse: c.dejaron.slice(0, 8).map(i => `${i.nombre} (antes ${i.antes})`),
-        cayeronMas40: c.cayeron.slice(0, 6).map(i => `${i.nombre} (${i.antes}→${i.ahora})`),
-        conHistorialSinVenta: c.historicos.map(i => `${i.nombre} (${i.en60} en 60 días)`),
-        loQueSiVende: c.top.slice(0, 8).map(i => `${i.nombre} (${i.ahora}, antes ${i.antes})`),
-        observacionesSistema: c.obs },
+      periodo: { tipo: anModo === 7 ? "semana" : "quincena", enCurso: D.enCurso, inicio: f(D.ini), hasta: f(D.hasta), horaCorte: fHora(D.ahora), diaHoy: DIAS_SEM[D.ahora.getDay()], comparadoContra: `${DIAS_SEM[D.hoyAnt.getDay()]} ${f(D.hoyAnt)} a la misma hora`, diasTranscurridos: Math.ceil(D.diasTrans), diasTotales: D.diasTot },
+      contextoRed: { alumnosRedALaFecha: total, alumnosRedMismaAlturaAnterior: totalM, cambioRedPct: totalM ? Math.round(((total - totalM) / totalM) * 100) : 0, posicionEnRanking: D.filas.indexOf(c) + 1, totalConsultoras: D.filas.length },
+      consultora: { nombre: c.nombre, alumnosALaFecha: c.n, mismaAlturaAnterior: c.m, cambioPct: c.pct, cierrePeriodoAnterior: c.cierre, proyeccionCierre: c.proy, hoy: c.hoyN, mismoDiaAnterior: c.hoyAntN, cursosEnVenta: c.cursosEnVenta, cursosMismaAlturaAnterior: c.cursosAnt,
+        cursos: c.cursosDet.map(k => ({ curso: k.nombre, ahora: k.ahora, diaDeCorrida: k.diasRun, corridaAnteriorMismaAltura: k.prevMismaAltura, corridaAnteriorTotal: k.prevTotal, corridaAnteriorInicio: f(k.prevIni), cambioPct: k.pct })),
+        dejaronDeVenderse: c.dejaron.slice(0, 8).map(i => `${i.nombre} (antes ${i.antes})`), observacionesSistema: c.obs },
     };
     _anIA[id] = "cargando"; renderAnalisis();
     try {
       const fn = httpsCallable(functions, "analisisVentasIA");
       const r = await fn({ resumen });
-      _anIA[id] = { texto: r.data.texto || "", fecha: new Date(r.data.fecha).toLocaleString("es-MX") };
-    } catch (e) { _anIA[id] = { texto: "No se pudo generar el análisis: " + e.message, fecha: "" }; }
-    _anAbiertas.add(id); renderAnalisis();
+      let json = null; try { const s = (r.data.texto || "").replace(/```json|```/g, "").trim(); json = JSON.parse(s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1)); } catch (e) { json = null; }
+      _anIA[id] = { json, texto: r.data.texto || "", fecha: new Date(r.data.fecha).toLocaleString("es-MX") };
+    } catch (e) { _anIA[id] = { json: null, texto: "No se pudo generar el análisis: " + e.message, fecha: "" }; }
+    renderAnalisis();
   }
   document.getElementById("an-modo")?.addEventListener("change", (e) => { anModo = Number(e.target.value); anOffset = 0; renderAnalisis(); });
   document.getElementById("an-prev")?.addEventListener("click", () => { anOffset--; renderAnalisis(); });
