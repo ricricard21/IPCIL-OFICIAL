@@ -1135,7 +1135,7 @@
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, escapeHtml, iniciales, setupSidebar,
     calcularComisionPct,
     collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot,
-    httpsCallable, Timestamp
+    httpsCallable, Timestamp, getCountFromServer
   } from "./firebase-config.js";
 
   let usuario = null;
@@ -1268,12 +1268,18 @@
     if (typeof renderPagos === "function") renderPagos();
   }
 
-  // Certificados: carga única…
+  // Certificados: carga única del ÚLTIMO AÑO (el filtro máximo del panel es "Año").
+  // Los totales históricos se piden como conteo al servidor, sin bajar documentos.
   const _arranque = Timestamp.now();
-  getDocs(collection(db, "certificados")).then((snap) => {
+  const _haceUnAnio = Timestamp.fromMillis(Date.now() - 366 * 86400000);
+  let totalCertificadosHistorico = null;
+  let totalAlumnosHistorico = null;
+  getDocs(query(collection(db, "certificados"), where("creadoEn", ">=", _haceUnAnio))).then((snap) => {
     certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     refrescarVistasCertificados();
   }).catch(e => console.error("[ADMIN] certificados:", e));
+  getCountFromServer(collection(db, "certificados")).then(r => { totalCertificadosHistorico = r.data().count; actualizarDashboard(); }).catch(() => {});
+  getCountFromServer(collection(db, "alumnos")).then(r => { totalAlumnosHistorico = r.data().count; actualizarDashboard(); }).catch(() => {});
 
   // …y escucha SOLO de los que se emitan de aquí en adelante
   onSnapshot(
@@ -1299,7 +1305,7 @@
   // Botón "Actualizar" en el dashboard para recargar cuando haga falta.
   async function cargarAlumnos() {
     try {
-      const snap = await getDocs(collection(db, "alumnos"));
+      const snap = await getDocs(query(collection(db, "alumnos"), where("creadoEn", ">=", _haceUnAnio)));
       alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       actualizarDashboard();
       if (typeof renderComisiones === "function") renderComisiones();
@@ -1308,7 +1314,7 @@
   cargarAlumnos();
   window.recargarDatosAdmin = async () => {
     toast("Actualizando datos…", "info");
-    const snap = await getDocs(collection(db, "certificados"));
+    const snap = await getDocs(query(collection(db, "certificados"), where("creadoEn", ">=", _haceUnAnio)));
     certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     refrescarVistasCertificados();
     await cargarAlumnos();
@@ -1330,8 +1336,9 @@
     const ingresos = certsPeriodo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
 
     document.getElementById("kpi-ingresos").textContent = formatMoney(ingresos);
-    document.getElementById("kpi-certs").textContent = certsPeriodo.length;
-    document.getElementById("kpi-alumnos").textContent = alumnosPeriodo.length;
+    const esHistorico = periodoActual === "all";
+    document.getElementById("kpi-certs").textContent = (esHistorico && totalCertificadosHistorico !== null) ? totalCertificadosHistorico : certsPeriodo.length;
+    document.getElementById("kpi-alumnos").textContent = (esHistorico && totalAlumnosHistorico !== null) ? totalAlumnosHistorico : alumnosPeriodo.length;
 
     const consActivas = consultoras.filter(c => c.activa !== false).length;
     document.getElementById("kpi-consultoras").textContent = consActivas;
@@ -1376,7 +1383,7 @@
     document.getElementById("consultoras-count").textContent = consultoras.length;
     document.getElementById("usuarios-count").textContent = usuarios.length;
     document.getElementById("cursos-count").textContent = cursos.length;
-    document.getElementById("cert-count").textContent = certificados.length;
+    document.getElementById("cert-count").textContent = totalCertificadosHistorico !== null ? totalCertificadosHistorico : certificados.length;
     document.getElementById("cert-ingresos").textContent = formatMoney(certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0));
 
     renderChartFacturacion();
@@ -3294,14 +3301,18 @@
     if (!cont) return;
     if (!consId) { cont.innerHTML = ""; return; }
 
-    // Contar documentos a borrar
-    const certCount = certificados.filter(c => c.consultoraId === consId).length;
-    const alumnosCount = alumnos.filter(a => a.consultoraId === consId).length;
-    // Aperturas no las cargamos en admin actualmente, mostramos guión
+    // Contar documentos a borrar (conteo exacto en servidor: el admin solo carga el último año)
     const c = consultoras.find(x => x.id === consId);
     const nombre = c?.nombre || "esta consultora";
-
-    cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: <strong style="color:#dc2626">${certCount}</strong> certificados · <strong style="color:#dc2626">${alumnosCount}</strong> alumnos · todas sus aperturas (cronograma)`;
+    cont.innerHTML = `Contando registros de <strong>${escapeHtml(nombre)}</strong>…`;
+    Promise.all([
+      getCountFromServer(query(collection(db, "certificados"), where("consultoraId", "==", consId))),
+      getCountFromServer(query(collection(db, "alumnos"), where("consultoraId", "==", consId))),
+    ]).then(([rc, ra]) => {
+      cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: <strong style="color:#dc2626">${rc.data().count}</strong> certificados · <strong style="color:#dc2626">${ra.data().count}</strong> alumnos · todas sus aperturas (cronograma)`;
+    }).catch(() => {
+      cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: certificados, alumnos y aperturas (cronograma)`;
+    });
   }
 
   document.getElementById("limpiar-consultora")?.addEventListener("change", () => {
