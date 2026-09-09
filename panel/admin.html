@@ -1513,7 +1513,7 @@
     const { ini: iniAnt } = rangoRank(rankOffset - 1);
     const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
     const sub = document.getElementById("rank-sem-sub");
-    if (sub) sub.textContent = (rankModo === 7 ? `Lunes ${fmt(ini)} → domingo ${fmt(new Date(fin - 1))}` : `Quincena ${fmt(ini)} → ${fmt(new Date(fin - 1))}`) + ` · de mejor a peor por alumnos · clic en una consultora para ver qué cursos en venta no vendieron`;
+    if (sub) sub.textContent = (rankModo === 7 ? `Lunes ${fmt(ini)} → domingo ${fmt(new Date(fin - 1))}` : `Quincena ${fmt(ini)} → ${fmt(new Date(fin - 1))}`) + ` · de mejor a peor por alumnos · clic en una consultora para ver cómo va cada curso que se vendió en el periodo`;
     const nx = document.getElementById("rank-next"); if (nx) nx.disabled = rankOffset >= 0;
 
     const enRango = (a, d1, d2) => { const t = a.creadoEn?.toMillis?.() || 0; return t >= d1.getTime() && t < d2.getTime(); };
@@ -1550,36 +1550,45 @@
     }));
   }
   function detalleCursosBajos(consId, semana, finPeriodo) {
-    // "En venta" = curso activo con ≥1 alumno en los últimos 60 días (antes del cierre del periodo).
-    // Los cursos que se crearon y nunca se vendieron quedan ocultos.
-    const desdeAct = new Date(finPeriodo); desdeAct.setDate(desdeAct.getDate() - DIAS_ACTIVIDAD);
-    const activos = cursos.filter(c => c.consultoraId === consId && c.activo !== false);
-    if (!activos.length) return '<span class="text-muted">Esta consultora no tiene cursos activos.</span>';
-    const rec = {}; alumnos.forEach(a => { if (a.consultoraId !== consId) return; const t = a.creadoEn?.toMillis?.() || 0; if (t >= desdeAct.getTime() && t < finPeriodo.getTime()) rec[a.cursoId] = (rec[a.cursoId] || 0) + 1; });
+    // Solo los cursos que SE ESTÁN VENDIENDO en este periodo (≥1 alumno). Los demás no aparecen.
+    // Para cada uno: cómo va contra el promedio del grupo y contra su vez anterior.
     const porCurso = {}; semana.filter(a => a.consultoraId === consId).forEach(a => { porCurso[a.cursoId] = (porCurso[a.cursoId] || 0) + 1; });
-    const enVenta = activos.filter(c => (rec[c.id] || 0) > 0);
-    const ocultos = activos.length - enVenta.length;
-    if (!enVenta.length) return `<span class="text-muted">Ningún curso con ventas en los últimos ${DIAS_ACTIVIDAD} días (${ocultos} cursos creados sin actividad, ocultos).</span>`;
-    const lista = enVenta.map(c => ({ c, n: porCurso[c.id] || 0, rec: rec[c.id] || 0 })).sort((a, b) => a.n - b.n || b.rec - a.rec);
+    const ids = Object.keys(porCurso).filter(id => porCurso[id] > 0);
+    if (!ids.length) return '<span class="text-muted">Esta consultora no vendió ningún curso en el periodo.</span>';
+    const dur = finPeriodo.getTime() - (rankModo === 7 ? 7 : 15) * 86400000; // inicio del periodo
+    // "Vez anterior": última corrida de ese curso ANTES de este periodo (mismo tamaño de ventana, buscando hacia atrás hasta 90 días)
+    const vezAnterior = (cursoId) => {
+      const vent = (rankModo === 7 ? 7 : 15) * 86400000;
+      for (let k = 1; k <= Math.ceil(90 / (rankModo === 7 ? 7 : 15)); k++) {
+        const f = dur - (k - 1) * vent, i = f - vent;
+        const n = alumnos.filter(a => a.consultoraId === consId && a.cursoId === cursoId && (a.creadoEn?.toMillis?.() || 0) >= i && (a.creadoEn?.toMillis?.() || 0) < f).length;
+        if (n > 0) return n;
+      }
+      return null;
+    };
+    const lista = ids.map(id => { const c = cursos.find(k => k.id === id) || {}; return { c, n: porCurso[id], ant: vezAnterior(id) }; })
+      .sort((a, b) => b.n - a.n);
+    const total = lista.reduce((s, l) => s + l.n, 0);
+    const prom = total / lista.length;
     const max = Math.max(1, ...lista.map(l => l.n));
-    const etiqueta = (n) => n === 0 ? '<span class="chip chip-red">No vendió</span>' : n <= 2 ? '<span class="chip" style="background:#fff1d6;color:#8a5a00">Bajo</span>' : '<span class="chip chip-green">Vende</span>';
-    const color = (n) => n === 0 ? "#b3261e" : n <= 2 ? "#8a5a00" : "#0a5e50";
-    const sin = lista.filter(l => l.n === 0).length, bajos = lista.filter(l => l.n > 0 && l.n <= 2).length, ok = lista.filter(l => l.n > 2).length;
+    const estado = (n) => n < prom * 0.6 ? ['<span class="chip chip-red">Muy por debajo</span>', "#b3261e"] : n < prom ? ['<span class="chip" style="background:#fff1d6;color:#8a5a00">Debajo del promedio</span>', "#8a5a00"] : ['<span class="chip chip-green">Arriba del promedio</span>', "#0a5e50"];
+    const vsAnt = (n, ant) => ant === null ? '<span class="text-muted">sin registro previo</span>' : `${n >= ant ? '<span style="color:#0a5e50;font-weight:700">▲</span>' : '<span style="color:#b3261e;font-weight:700">▼</span>'} ${Math.abs(Math.round(((n - ant) / ant) * 100))}% <span class="text-muted">(antes ${ant})</span>`;
+    const bajos = lista.filter(l => l.n < prom).length;
     return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
-        <span class="chip chip-red">No vendieron en el periodo: ${sin}</span>
-        <span class="chip" style="background:#fff1d6;color:#8a5a00">Bajos (1-2): ${bajos}</span>
-        <span class="chip chip-green">Con ventas: ${ok}</span>
-        <span class="text-muted text-sm">· ${enVenta.length} cursos en venta (≥1 alumno en ${DIAS_ACTIVIDAD} días) · ${ocultos} sin actividad ocultos</span>
+        <span class="chip chip-green">${lista.length} cursos en venta este periodo</span>
+        <span class="chip" style="background:#eef2f0;color:#16302a">Promedio: ${prom.toFixed(1)} alumnos por curso</span>
+        <span class="chip chip-red">${bajos} por debajo del promedio</span>
+        <span class="text-muted text-sm">· ordenados de mayor a menor</span>
       </div>
       <div class="table-wrap" style="background:#fff"><table class="table" style="font-size:12.5px">
-        <thead><tr><th style="width:44%">Curso</th><th>Ponente</th><th style="width:20%">Alumnos del periodo</th><th>Últimos ${DIAS_ACTIVIDAD} días</th><th>Estado</th></tr></thead>
-        <tbody>${lista.map(l => `<tr>
-          <td><strong>${escapeHtml(l.c.nombre || "")}</strong></td>
+        <thead><tr><th style="width:38%">Curso</th><th>Ponente</th><th style="width:18%">Alumnos del periodo</th><th>vs vez anterior</th><th>vs promedio</th></tr></thead>
+        <tbody>${lista.map(l => { const [chip, color] = estado(l.n); return `<tr>
+          <td><strong>${escapeHtml(l.c.nombre || "Curso")}</strong></td>
           <td class="text-muted">${escapeHtml(l.c.ponente || "—")}</td>
-          <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#eef2f0;border-radius:999px;overflow:hidden"><div style="width:${Math.round((l.n / max) * 100)}%;height:100%;background:${color(l.n)};border-radius:999px"></div></div><strong style="min-width:26px;text-align:right;color:${color(l.n)}">${l.n}</strong></div></td>
-          <td class="text-muted">${l.rec} alumnos</td>
-          <td>${etiqueta(l.n)}</td>
-        </tr>`).join("")}</tbody></table></div>`;
+          <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#eef2f0;border-radius:999px;overflow:hidden"><div style="width:${Math.round((l.n / max) * 100)}%;height:100%;background:${color};border-radius:999px"></div></div><strong style="min-width:26px;text-align:right;color:${color}">${l.n}</strong></div></td>
+          <td>${vsAnt(l.n, l.ant)}</td>
+          <td>${chip}</td>
+        </tr>`; }).join("")}</tbody></table></div>`;
   }
   document.getElementById("rank-modo")?.addEventListener("change", (e) => { rankModo = Number(e.target.value); rankOffset = 0; renderRankingSemanal(); });
   document.getElementById("rank-prev")?.addEventListener("click", () => { rankOffset--; renderRankingSemanal(); });
