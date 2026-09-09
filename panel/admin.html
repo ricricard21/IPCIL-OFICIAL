@@ -167,6 +167,27 @@
     box-shadow: var(--shadow-xs);
   }
 </style>
+
+<style>
+  /* ═══ Impresión del Dashboard (Ctrl+P o botón "Imprimir reporte") ═══ */
+  @media print {
+    @page { size: A4 landscape; margin: 12mm; }
+    body { background: #fff !important; }
+    .sidebar, .filter-bar, #btn-imprimir-dash, .modal-backdrop, .toast, .toast-container, .chat-flotante, #chat-interno-btn { display: none !important; }
+    .main, .main-content, .content { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
+    .section { display: none !important; }
+    .section.active { display: block !important; }
+    .card, .chart-card, .kpi { box-shadow: none !important; border: 1px solid #ddd !important; break-inside: avoid; page-break-inside: avoid; }
+    .chart-card { margin-bottom: 14px !important; }
+    .chart-canvas-wrap { height: 260px !important; }
+    #print-cabecera { display: block !important; }
+    .rank-row { cursor: default !important; }
+    a[href]::after { content: "" !important; }
+  }
+  #print-cabecera { display: none; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #0f7c6a; }
+  #print-cabecera h1 { margin: 0; font-size: 20px; color: #0b3d34; }
+  #print-cabecera p { margin: 2px 0 0; font-size: 12px; color: #555; }
+</style>
 </head>
 <body>
 
@@ -207,6 +228,10 @@
         Aperturas globales
         <span id="badge-aperturas" class="badge" style="background:#dcfce7;color:#166534">0</span>
       </button>
+      <button class="sidebar-link" data-view="analisis">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 3-2 5-3 6H8c-1-1-3-3-3-6a7 7 0 0 1 7-7z"/><path d="M9 21h6M10 18h4"/></svg>
+        Análisis semanal
+      </button>
       <button class="sidebar-link" data-view="ranking">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 0 0 0-6M9 22l3-7 3 7M6 9l-3 9M21 9l-3 9"/></svg>
         Ranking
@@ -242,6 +267,7 @@
     <!-- DASHBOARD GLOBAL                                     -->
     <!-- ═══════════════════════════════════════════════════ -->
     <section id="view-dashboard" class="section active">
+      <div id="print-cabecera"><h1>IPCIL · Reporte de alumnos</h1><p id="print-fecha"></p></div>
       <div class="main-header">
         <div>
           <h1 class="main-title">Dashboard global</h1>
@@ -254,6 +280,7 @@
           <button class="filter-btn" data-period="365">Año</button>
           <button class="filter-btn" data-period="all">Histórico</button>
           <button class="filter-btn" type="button" onclick="window.recargarDatosAdmin && window.recargarDatosAdmin()" title="Vuelve a cargar certificados y alumnos">↻ Actualizar</button>
+          <button class="filter-btn" type="button" id="btn-imprimir-dash" title="Imprimir o guardar en PDF este reporte">🖨 Imprimir reporte</button>
         </div>
       </div>
 
@@ -661,6 +688,43 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- RANKING                                              -->
     <!-- ═══════════════════════════════════════════════════ -->
+    <section id="view-analisis" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Análisis semanal</h1>
+          <p class="main-subtitle" id="an-sub">Qué consultoras van mal contra la semana pasada, por qué, y qué hacer</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="select" id="an-modo" style="max-width:170px">
+            <option value="7">Semana (lun → dom)</option>
+            <option value="15">Quincena (15 días)</option>
+          </select>
+          <button class="btn btn-secondary" type="button" id="an-prev">◀</button>
+          <button class="btn btn-secondary" type="button" id="an-hoy">Actual</button>
+          <button class="btn btn-secondary" type="button" id="an-next">▶</button>
+          <button class="btn btn-primary" type="button" id="an-ia">✨ Analizar con IA</button>
+          <button class="btn btn-secondary" type="button" id="an-print">🖨 Imprimir</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Consultoras en caída</div><div class="kpi-value" id="an-k-caida" style="color:#b3261e">—</div><span class="kpi-trend kpi-trend-flat">vendieron menos que el periodo anterior</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Sin ventas</div><div class="kpi-value" id="an-k-cero" style="color:#b3261e">—</div><span class="kpi-trend kpi-trend-flat">0 alumnos en el periodo</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Cursos que dejaron de venderse</div><div class="kpi-value" id="an-k-cursos" style="color:#8a5a00">—</div><span class="kpi-trend kpi-trend-flat">vendían antes y ahora van en 0</span></div></div>
+        <div class="kpi"><div class="kpi-content"><div class="kpi-label">Consultoras en crecimiento</div><div class="kpi-value" id="an-k-sube" style="color:#0a5e50">—</div><span class="kpi-trend kpi-trend-flat">vendieron más que el periodo anterior</span></div></div>
+      </div>
+
+      <div class="card" id="an-ia-card" style="display:none;margin-bottom:22px;border:1.5px solid #9fe1cb">
+        <div class="card-header"><div><div class="card-title">✨ Análisis con IA</div><div class="card-subtitle" id="an-ia-sub">—</div></div></div>
+        <div id="an-ia-texto" style="line-height:1.6;font-size:13.5px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Diagnóstico por consultora</div><div class="card-subtitle">Ordenadas de la que va peor a la que va mejor · clic para ver el detalle de cursos</div></div></div>
+        <div id="an-tabla"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+      </div>
+    </section>
+
     <section id="view-ranking" class="section">
       <div class="main-header">
         <div>
@@ -682,7 +746,7 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">⭐ Vendedores del mes</div>
+            <div class="card-title">⭐ Vendedores del mes · por consultora</div>
             <div class="card-subtitle" id="rk-vend-sub">Alumnos registrados en el mes en curso · del 1 al último día</div>
           </div>
         </div>
@@ -972,6 +1036,7 @@
       if (btn.dataset.view === "ranking") renderRanking();
       if (btn.dataset.view === "comisiones") renderComisiones();
       if (btn.dataset.view === "ultimos") renderUltimos();
+      if (btn.dataset.view === "analisis") renderAnalisis();
       if (btn.dataset.view === "aperturas") renderAperturasGlobales();
       if (btn.dataset.view === "generar-cert") {
         llenarSelectsAdminCert();
@@ -2307,22 +2372,150 @@
     const iniMesAnt = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
     const sub2 = document.getElementById("rk-vend-sub"); if (sub2) sub2.textContent = `Alumnos registrados en ${hoy.toLocaleDateString("es-MX", { month: "long", year: "numeric" })} · del 1 al ${new Date(finMes - 1).getDate()}`;
     const mes = alumnos.filter(a => enRango(a, iniMes, finMes)), mesAnt = alumnos.filter(a => enRango(a, iniMesAnt, iniMes));
+    // Una fila por CONSULTORA (todas, incluidas las que van en 0), con sus vendedores
+    const porConsMes = {}; mes.forEach(a => { porConsMes[a.consultoraId] = (porConsMes[a.consultoraId] || 0) + 1; });
+    const porConsMesAnt = {}; mesAnt.forEach(a => { porConsMesAnt[a.consultoraId] = (porConsMesAnt[a.consultoraId] || 0) + 1; });
     const porVend = {}; mes.forEach(a => { const k = a.registradoPor || a.vendedorId; if (k) porVend[k] = (porVend[k] || 0) + 1; });
-    const porVendAnt = {}; mesAnt.forEach(a => { const k = a.registradoPor || a.vendedorId; if (k) porVendAnt[k] = (porVendAnt[k] || 0) + 1; });
-    const rVendedores = usuarios.filter(u => u.rol === "vendedor").map(v => ({ vendedor: v, n: porVend[v.id] || 0, ant: porVendAnt[v.id] || 0 }))
-      .filter(r => r.n > 0).sort((a, b) => b.n - a.n);
-    vRk.innerHTML = rVendedores.length === 0
-      ? '<div class="empty"><div class="empty-text">Aún no hay alumnos este mes</div></div>'
-      : `<div class="ranking-list">${rVendedores.slice(0, 20).map((r, i) => `
-        <div class="ranking-item">
-          <div class="ranking-medal">${i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
+    const vendedores = usuarios.filter(u => u.rol === "vendedor");
+    const rMes = consultoras.filter(co => co.activa !== false).map(co => {
+      const vs = vendedores.filter(v => v.consultoraId === co.id).map(v => ({ v, n: porVend[v.id] || 0 })).sort((a, b) => b.n - a.n);
+      return { consultora: co, n: porConsMes[co.id] || 0, ant: porConsMesAnt[co.id] || 0, vs };
+    }).sort((a, b) => b.n - a.n || (a.consultora.nombre || "").localeCompare(b.consultora.nombre || ""));
+    const trendMes = (n, ant) => ant === 0 ? "" : `<span class="chip ${n >= ant ? "chip-green" : "chip-red"}">${n >= ant ? "▲" : "▼"} ${Math.abs(Math.round(((n - ant) / ant) * 100))}% vs mes pasado</span>`;
+    vRk.innerHTML = `<div class="ranking-list">${rMes.map((r, i) => `
+        <div class="ranking-item" style="${r.n === 0 ? "opacity:.75" : ""}">
+          <div class="ranking-medal">${i < 3 && r.n > 0 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
           <div class="ranking-info">
-            <div class="ranking-name">${escapeHtml(r.vendedor.nombre)}</div>
-            <div class="ranking-sub">${escapeHtml(r.vendedor.consultoraNombre || consultoras.find(c => c.id === r.vendedor.consultoraId)?.nombre || "—")} · <span class="text-muted">mes pasado: ${r.ant}</span></div>
+            <div class="ranking-name">${escapeHtml(r.consultora.nombre)}</div>
+            <div class="ranking-sub">${r.vs.length ? r.vs.map(x => `${escapeHtml(x.v.nombre || "")} <b>${x.n}</b>`).join(" · ") : '<span class="text-muted">sin vendedores</span>'} ${trendMes(r.n, r.ant)} <span class="text-muted">mes pasado: ${r.ant}</span></div>
           </div>
-          <div class="ranking-stat"><strong>${r.n}</strong><span>alumnos este mes</span></div>
+          <div class="ranking-stat"><strong style="${r.n === 0 ? "color:#b3261e" : ""}">${r.n}</strong><span>alumnos este mes</span></div>
         </div>`).join("")}</div>`;
   }
+
+
+  // ═══════════════════════════════════════════════════════════
+  // ANÁLISIS SEMANAL: quién va mal vs el periodo anterior, por qué, y qué hacer
+  // ═══════════════════════════════════════════════════════════
+  let anOffset = 0, anModo = 7; const _anAbiertas = new Set(); let _anResumen = null;
+  function rangoAn(offset) {
+    if (anModo === 7) { const ini = inicioSemana(offset), fin = new Date(ini); fin.setDate(ini.getDate() + 7); return { ini, fin }; }
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const fin = new Date(hoy); fin.setDate(hoy.getDate() + 1 + offset * 15);
+    const ini = new Date(fin); ini.setDate(fin.getDate() - 15);
+    return { ini, fin };
+  }
+  function construirResumenAnalisis() {
+    const { ini, fin } = rangoAn(anOffset); const { ini: iniAnt } = rangoAn(anOffset - 1);
+    const dur = fin - ini;
+    const t = (a) => a.creadoEn?.toMillis?.() || 0;
+    const act = alumnos.filter(a => t(a) >= ini.getTime() && t(a) < fin.getTime());
+    const ant = alumnos.filter(a => t(a) >= iniAnt.getTime() && t(a) < ini.getTime());
+    const desde60 = ini.getTime() - 60 * 86400000;
+    const hist60 = alumnos.filter(a => t(a) >= desde60 && t(a) < ini.getTime());
+    const nombreCurso = (id) => cursos.find(c => c.id === id)?.nombre || "Curso";
+    const filas = consultoras.filter(co => co.activa !== false).map(co => {
+      const A = act.filter(a => a.consultoraId === co.id), B = ant.filter(a => a.consultoraId === co.id), H = hist60.filter(a => a.consultoraId === co.id);
+      const cnt = (arr) => { const m = {}; arr.forEach(a => { m[a.cursoId] = (m[a.cursoId] || 0) + 1; }); return m; };
+      const cA = cnt(A), cB = cnt(B), cH = cnt(H);
+      const cursosA = Object.keys(cA), cursosB = Object.keys(cB);
+      const dejaron = cursosB.filter(id => !cA[id]).map(id => ({ id, nombre: nombreCurso(id), antes: cB[id] }));
+      const nuevos = cursosA.filter(id => !cB[id]).map(id => ({ id, nombre: nombreCurso(id), ahora: cA[id] }));
+      const cayeron = cursosA.filter(id => cB[id] && cA[id] < cB[id] * 0.6).map(id => ({ id, nombre: nombreCurso(id), ahora: cA[id], antes: cB[id] }));
+      const historicosSinVenta = Object.keys(cH).filter(id => !cA[id] && cH[id] >= 5).map(id => ({ id, nombre: nombreCurso(id), en60dias: cH[id] })).sort((a, b) => b.en60dias - a.en60dias).slice(0, 6);
+      const n = A.length, nA = B.length; const pct = nA ? Math.round(((n - nA) / nA) * 100) : (n ? 100 : 0);
+      // Diagnóstico heurístico
+      const diag = [];
+      if (n === 0 && nA === 0) diag.push("Sin actividad en los dos periodos: consultora detenida o sin anuncios activos.");
+      else if (n === 0) diag.push(`Cero ventas cuando el periodo anterior tuvo ${nA}: casi seguro no se publicaron aperturas o los anuncios se detuvieron.`);
+      else {
+        if (pct <= -30) diag.push(`Caída fuerte (${pct}%).`);
+        if (cursosA.length < cursosB.length) diag.push(`Vendió ${cursosA.length} cursos vs ${cursosB.length} del periodo anterior: faltaron ${cursosB.length - cursosA.length} cursos por subir/abrir.`);
+        if (dejaron.length) diag.push(`Dejaron de venderse: ${dejaron.slice(0, 4).map(d => d.nombre).join(" · ")}${dejaron.length > 4 ? ` y ${dejaron.length - 4} más` : ""} → revisar si se programó la apertura y si el anuncio sigue activo.`);
+        if (cayeron.length) diag.push(`Cayeron más de 40%: ${cayeron.slice(0, 3).map(d => `${d.nombre} (${d.antes}→${d.ahora})`).join(" · ")} → anuncio sin presupuesto/clics o audiencia agotada.`);
+        if (!dejaron.length && !cayeron.length && pct < 0 && cursosA.length >= cursosB.length) diag.push("Mismos cursos pero menos alumnos en todos: probable causa general (presupuesto de anuncios, quincena, o seguimiento del vendedor).");
+        if (pct > 0 && !diag.length) diag.push(`Crece ${pct}% con ${cursosA.length} cursos en venta.`);
+      }
+      return { id: co.id, nombre: co.nombre, codigo: co.codigo, alumnos: n, alumnosAnterior: nA, pct, cursosEnVenta: cursosA.length, cursosAnterior: cursosB.length,
+               top: cursosA.map(id => ({ nombre: nombreCurso(id), ahora: cA[id], antes: cB[id] || 0 })).sort((a, b) => b.ahora - a.ahora),
+               dejaronDeVenderse: dejaron, cayeron, nuevos, historicosSinVenta, diagnostico: diag };
+    }).sort((a, b) => (a.pct - b.pct) || (a.alumnos - b.alumnos));
+    return { periodo: { modo: anModo === 7 ? "semana" : "quincena", inicio: ini.toISOString().slice(0, 10), fin: new Date(fin - 1).toISOString().slice(0, 10) }, consultoras: filas };
+  }
+  function renderAnalisis() {
+    const cont = document.getElementById("an-tabla"); if (!cont) return;
+    const R = construirResumenAnalisis(); _anResumen = R;
+    const fmt = (s) => new Date(s + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+    document.getElementById("an-sub").textContent = `${R.periodo.modo === "semana" ? "Semana" : "Quincena"} ${fmt(R.periodo.inicio)} → ${fmt(R.periodo.fin)} comparada con el periodo anterior`;
+    const nx = document.getElementById("an-next"); if (nx) nx.disabled = anOffset >= 0;
+    const C = R.consultoras;
+    document.getElementById("an-k-caida").textContent = C.filter(c => c.pct < 0).length;
+    document.getElementById("an-k-cero").textContent = C.filter(c => c.alumnos === 0).length;
+    document.getElementById("an-k-cursos").textContent = C.reduce((s, c) => s + c.dejaronDeVenderse.length, 0);
+    document.getElementById("an-k-sube").textContent = C.filter(c => c.pct > 0).length;
+    const color = (c) => c.alumnos === 0 ? "#b3261e" : c.pct <= -30 ? "#b3261e" : c.pct < 0 ? "#8a5a00" : "#0a5e50";
+    cont.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Consultora</th><th>Alumnos</th><th>vs anterior</th><th>Cursos en venta</th><th style="width:44%">Diagnóstico</th><th></th></tr></thead>
+      <tbody>${C.map(c => { const ab = _anAbiertas.has(c.id); return `<tr class="an-row row-hover" data-id="${c.id}" style="cursor:pointer">
+        <td><strong>${escapeHtml(c.nombre || "")}</strong> <span class="text-muted text-sm">${escapeHtml(c.codigo || "")}</span></td>
+        <td><strong style="font-size:16px;color:${color(c)}">${c.alumnos}</strong> <span class="text-muted">/ ${c.alumnosAnterior}</span></td>
+        <td>${c.alumnosAnterior === 0 && c.alumnos === 0 ? '<span class="text-muted">—</span>' : `<span class="chip ${c.pct >= 0 ? "chip-green" : "chip-red"}">${c.pct >= 0 ? "▲" : "▼"} ${Math.abs(c.pct)}%</span>`}</td>
+        <td>${c.cursosEnVenta} <span class="text-muted">/ ${c.cursosAnterior}</span>${c.dejaronDeVenderse.length ? ` <span class="chip chip-red" style="margin-left:4px">${c.dejaronDeVenderse.length} dejaron de venderse</span>` : ""}</td>
+        <td style="font-size:12.5px;line-height:1.45;color:${color(c)}">${c.diagnostico.map(escapeHtml).join("<br>") || '<span class="text-muted">Sin observaciones</span>'}</td>
+        <td class="text-muted" style="text-align:right">${ab ? "▲" : "▼"}</td>
+      </tr>${ab ? `<tr><td colspan="6" style="background:#f6f9f8;padding:12px 18px">${detalleAnalisis(c)}</td></tr>` : ""}`; }).join("")}</tbody></table></div>`;
+    cont.querySelectorAll(".an-row").forEach(tr => tr.addEventListener("click", () => { const id = tr.dataset.id; _anAbiertas.has(id) ? _anAbiertas.delete(id) : _anAbiertas.add(id); renderAnalisis(); }));
+  }
+  function detalleAnalisis(c) {
+    const lista = (t, items, f, col) => items.length ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${col};margin-bottom:4px">${t} · ${items.length}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${items.map(i => `<span class="chip" style="background:#fff;border:1px solid #dde5e2;color:#16302a">${escapeHtml(i.nombre)} <b style="margin-left:4px;color:${col}">${f(i)}</b></span>`).join("")}</div></div>` : "";
+    return lista("Dejaron de venderse (vendían el periodo anterior)", c.dejaronDeVenderse, i => `antes ${i.antes} → 0`, "#b3261e")
+      + lista("Cayeron más de 40%", c.cayeron, i => `${i.antes} → ${i.ahora}`, "#8a5a00")
+      + lista("Cursos con historial que no se vendieron (60 días)", c.historicosSinVenta, i => `${i.en60dias} en 60d → 0`, "#8a5a00")
+      + lista("Nuevos este periodo", c.nuevos, i => `${i.ahora}`, "#145f9e")
+      + lista("Lo que sí vendió", c.top, i => `${i.ahora}${i.antes ? ` (antes ${i.antes})` : ""}`, "#0a5e50")
+      || '<span class="text-muted">Sin movimientos en ningún curso.</span>';
+  }
+  function markdownSimple(t) {
+    return escapeHtml(t)
+      .replace(/^### (.*)$/gm, '<h4 style="margin:12px 0 4px;color:#0b3d34">$1</h4>')
+      .replace(/^## (.*)$/gm, '<h3 style="margin:14px 0 6px;color:#0b3d34">$1</h3>')
+      .replace(/^# (.*)$/gm, '<h3 style="margin:14px 0 6px;color:#0b3d34">$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/^\s*[-•] (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">• $1</div>')
+      .replace(/^\s*(\d+)\) (.*)$/gm, '<div style="padding-left:14px;text-indent:-10px">$1) $2</div>')
+      .replace(/\n{2,}/g, "<br>");
+  }
+  document.getElementById("an-modo")?.addEventListener("change", (e) => { anModo = Number(e.target.value); anOffset = 0; renderAnalisis(); });
+  document.getElementById("an-prev")?.addEventListener("click", () => { anOffset--; renderAnalisis(); });
+  document.getElementById("an-next")?.addEventListener("click", () => { if (anOffset < 0) { anOffset++; renderAnalisis(); } });
+  document.getElementById("an-hoy")?.addEventListener("click", () => { anOffset = 0; renderAnalisis(); });
+  document.getElementById("an-print")?.addEventListener("click", () => window.print());
+  document.getElementById("an-ia")?.addEventListener("click", async () => {
+    const btn = document.getElementById("an-ia"); const card = document.getElementById("an-ia-card"); const out = document.getElementById("an-ia-texto");
+    if (!_anResumen) renderAnalisis();
+    // Resumen compacto para la IA: todas las consultoras, sin listas eternas
+    const resumen = { periodo: _anResumen.periodo, consultoras: _anResumen.consultoras.map(c => ({
+      consultora: c.nombre, alumnos: c.alumnos, alumnosPeriodoAnterior: c.alumnosAnterior, cambioPct: c.pct,
+      cursosEnVenta: c.cursosEnVenta, cursosPeriodoAnterior: c.cursosAnterior,
+      dejaronDeVenderse: c.dejaronDeVenderse.slice(0, 6).map(i => `${i.nombre} (antes ${i.antes})`),
+      cayeronMas40: c.cayeron.slice(0, 5).map(i => `${i.nombre} (${i.antes}→${i.ahora})`),
+      conHistorialSinVenta: c.historicosSinVenta.slice(0, 4).map(i => `${i.nombre} (${i.en60dias} en 60 días)`),
+      mejoresCursos: c.top.slice(0, 4).map(i => `${i.nombre} (${i.ahora})`),
+    })) };
+    btn.disabled = true; btn.textContent = "Analizando…"; card.style.display = ""; out.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">La IA está revisando las ' + resumen.consultoras.length + ' consultoras…</div></div>';
+    try {
+      const fn = httpsCallable(functions, "analisisVentasIA");
+      const r = await fn({ resumen });
+      out.innerHTML = markdownSimple(r.data.texto || "");
+      document.getElementById("an-ia-sub").textContent = `Generado ${new Date(r.data.fecha).toLocaleString("es-MX")} · ${r.data.modelo}`;
+    } catch (e) {
+      out.innerHTML = `<div class="alert alert-error">No se pudo generar el análisis: ${escapeHtml(e.message)}</div>`;
+    } finally { btn.disabled = false; btn.textContent = "✨ Analizar con IA"; }
+  });
+  document.getElementById("btn-imprimir-dash")?.addEventListener("click", () => {
+    const f = document.getElementById("print-fecha"); if (f) f.textContent = `Generado el ${new Date().toLocaleString("es-MX")} · ${document.getElementById("sem-rango")?.textContent || ""}`;
+    window.print();
+  });
 
   // ═══════════════════════════════════════════════════════════
   // MODALES
