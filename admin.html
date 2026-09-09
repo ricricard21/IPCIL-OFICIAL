@@ -5,10 +5,11 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Super Admin — IPCI</title>
+<title>Panel Super Admin — IPCIL</title>
 <link rel="icon" href="../assets/logo.jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="panel.css">
+<link rel="stylesheet" href="panel-doctoralia.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   .ranking-list {
@@ -173,9 +174,9 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <img src="../assets/logo.jpeg" alt="IPCI">
+      <img src="../assets/logo.jpeg" alt="IPCIL">
       <div class="sidebar-brand-text">
-        <strong>IPCI</strong>
+        <strong>IPCIL</strong>
         <span>Super Admin</span>
       </div>
     </div>
@@ -185,10 +186,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Dashboard
       </button>
-      <button class="sidebar-link" data-view="postulaciones" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#4c1d95">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-        Postulaciones
-      </button>
       <button class="sidebar-link" data-view="consultoras">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
         Consultoras
@@ -197,25 +194,13 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Usuarios
       </button>
-      <button class="sidebar-link" data-view="cursos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        Cursos
-      </button>
-      <button class="sidebar-link" data-view="certificados">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        Certificados
-      </button>
       <button class="sidebar-link" data-view="comisiones">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Comisiones
       </button>
-      <button class="sidebar-link" data-view="pagos" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
-        Pagos a vendedores
-      </button>
-      <button class="sidebar-link" data-view="historial-diario">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Historial diario
+      <button class="sidebar-link" data-view="ultimos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+        Últimos certificados
       </button>
       <button class="sidebar-link" data-view="aperturas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -272,33 +257,34 @@
           <button class="filter-btn" data-period="90">90 días</button>
           <button class="filter-btn" data-period="365">Año</button>
           <button class="filter-btn" data-period="all">Histórico</button>
+          <button class="filter-btn" type="button" onclick="window.recargarDatosAdmin && window.recargarDatosAdmin()" title="Vuelve a cargar certificados y alumnos">↻ Actualizar</button>
         </div>
       </div>
 
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Facturación total</div>
-            <div class="kpi-value" id="kpi-ingresos">$0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-ingresos-trend">—</span>
+            <div class="kpi-label">Alumnos esta semana</div>
+            <div class="kpi-value" id="kpi-sem-alumnos">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-sem-alumnos-trend">lun → dom</span>
           </div>
-          <div class="kpi-icon kpi-icon-blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Certificados</div>
-            <div class="kpi-value" id="kpi-certs">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-certs-trend">—</span>
+            <div class="kpi-label">Certificados esta semana</div>
+            <div class="kpi-value" id="kpi-sem-certs">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-sem-certs-trend">lun → dom</span>
           </div>
-          <div class="kpi-icon kpi-icon-green">
+          <div class="kpi-icon kpi-icon-blue">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Alumnos</div>
+            <div class="kpi-label">Alumnos en el periodo</div>
             <div class="kpi-value" id="kpi-alumnos">0</div>
             <span class="kpi-trend kpi-trend-flat" id="kpi-alumnos-trend">—</span>
           </div>
@@ -318,48 +304,42 @@
         </div>
       </div>
 
-      <div class="kpi-grid" style="grid-template-columns:repeat(3, 1fr)">
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Cursos</div>
-            <div class="kpi-value" id="kpi-cursos">0</div>
-            <span class="kpi-trend kpi-trend-flat"><span id="kpi-cursos-activos">0</span> activos</span>
+      <!-- Alumnos por día · semana lun-dom navegable, en tiempo real -->
+      <div class="chart-card" style="margin-bottom:22px">
+        <div class="chart-card-header" style="align-items:center">
+          <div>
+            <div class="chart-title">Alumnos por día</div>
+            <div class="chart-subtitle" id="sem-rango">Semana en curso · lunes a domingo</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-secondary" type="button" id="sem-prev" title="Semana anterior">◀</button>
+            <button class="btn btn-secondary" type="button" id="sem-hoy">Esta semana</button>
+            <button class="btn btn-secondary" type="button" id="sem-next" title="Semana siguiente">▶</button>
+            <span class="chip chip-green" id="sem-total" style="margin-left:6px">— alumnos</span>
           </div>
         </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Vendedores</div>
-            <div class="kpi-value" id="kpi-vendedores">0</div>
-            <span class="kpi-trend kpi-trend-flat"><span id="kpi-vendedores-activos">0</span> activos</span>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Coordinadores</div>
-            <div class="kpi-value" id="kpi-coordinadores">0</div>
-            <span class="kpi-trend kpi-trend-flat">en consultoras</span>
-          </div>
-        </div>
+        <div class="chart-canvas-wrap" style="height:340px"><canvas id="chart-semana"></canvas></div>
       </div>
 
       <div class="chart-grid">
         <div class="chart-card">
           <div class="chart-card-header">
             <div>
-              <div class="chart-title">Facturación por mes</div>
-              <div class="chart-subtitle">Últimos 12 meses</div>
+              <div class="chart-title">Alumnos por mes</div>
+              <div class="chart-subtitle">Últimos 12 meses · del 1 al último día de cada mes</div>
             </div>
+            <span class="chip chip-green" id="mes-total">—</span>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-facturacion"></canvas></div>
+          <div class="chart-canvas-wrap" style="height:300px"><canvas id="chart-mes"></canvas></div>
         </div>
         <div class="chart-card">
           <div class="chart-card-header">
             <div>
               <div class="chart-title">Top consultoras</div>
-              <div class="chart-subtitle">Por facturación del periodo</div>
+              <div class="chart-subtitle">Por alumnos del periodo seleccionado</div>
             </div>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-consultoras"></canvas></div>
+          <div class="chart-canvas-wrap" style="height:300px"><canvas id="chart-consultoras"></canvas></div>
         </div>
       </div>
 
@@ -367,73 +347,43 @@
         <div class="chart-card">
           <div class="chart-card-header">
             <div>
-              <div class="chart-title">Top cursos</div>
-              <div class="chart-subtitle">Más vendidos</div>
+              <div class="chart-title">Top cursos · todas las consultoras</div>
+              <div class="chart-subtitle">Más certificados en el periodo</div>
             </div>
           </div>
           <div class="chart-canvas-wrap"><canvas id="chart-cursos"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-card-header">
+          <div class="chart-card-header" style="align-items:center">
             <div>
-              <div class="chart-title">Ventas diarias</div>
-              <div class="chart-subtitle">Últimos 30 días</div>
+              <div class="chart-title">Top cursos · por consultora</div>
+              <div class="chart-subtitle">Elige una consultora</div>
             </div>
+            <select class="select" id="topcursos-consultora" style="max-width:240px"></select>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-diario"></canvas></div>
+          <div class="chart-canvas-wrap"><canvas id="chart-cursos-cons"></canvas></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-header">
+        <div class="card-header" style="align-items:center">
           <div>
-            <div class="card-title">Resumen por consultora</div>
-            <div class="card-subtitle">Datos financieros del periodo seleccionado</div>
+            <div class="card-title">Ranking semanal de consultoras</div>
+            <div class="card-subtitle" id="rank-sem-sub">De mejor a peor por alumnos de la semana · da clic en una consultora para ver sus cursos con ventas bajas</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-secondary" type="button" id="rank-prev" title="Semana anterior">◀</button>
+            <button class="btn btn-secondary" type="button" id="rank-hoy">Esta semana</button>
+            <button class="btn btn-secondary" type="button" id="rank-next" title="Semana siguiente">▶</button>
           </div>
         </div>
-        <div id="resumen-consultoras"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Últimos certificados emitidos</div>
-            <div class="card-subtitle">Actualizado en tiempo real</div>
-          </div>
-        </div>
-        <div id="dash-ultimos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+        <div id="rank-semanal"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CONSULTORAS                                          -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!-- POSTULACIONES DE ALIADOS                             -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-postulaciones" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">Postulaciones de Aliados</h1>
-          <p class="main-subtitle">Solicitudes del Programa Aliado Certificador — compromiso: contactar en menos de 24 horas</p>
-        </div>
-        <button class="btn btn-secondary" id="btn-recargar-postulaciones">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-          Recargar
-        </button>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Solicitudes recibidas</div>
-            <div class="card-subtitle"><span id="post-count">0</span> postulaciones · <span id="post-nuevas">0</span> por contactar</div>
-          </div>
-        </div>
-        <div id="postulaciones-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
-
     <section id="view-consultoras" class="section">
       <div class="main-header">
         <div>
@@ -488,6 +438,7 @@
               <option value="coordinador">Coordinadores</option>
               <option value="vendedor">Vendedores</option>
               <option value="superadmin">Super admins</option>
+              <option value="rh">RH</option>
             </select>
             <div class="search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -502,54 +453,10 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CURSOS                                               -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-cursos" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">Todos los cursos</h1>
-          <p class="main-subtitle">Cursos del ecosistema IPCI</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Listado completo</div>
-            <div class="card-subtitle"><span id="cursos-count">0</span> cursos en el sistema</div>
-          </div>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="input" type="search" id="search-curso" placeholder="Buscar curso...">
-          </div>
-        </div>
-        <div id="cursos-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CERTIFICADOS                                         -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-certificados" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">Certificados emitidos</h1>
-          <p class="main-subtitle">Historial completo de certificaciones</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Histórico</div>
-            <div class="card-subtitle"><span id="cert-count">0</span> certificados · <span id="cert-ingresos">$0</span> facturados</div>
-          </div>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input class="input" type="search" id="search-cert" placeholder="Buscar folio o nombre...">
-          </div>
-        </div>
-        <div id="certificados-container"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- COMISIONES                                           -->
@@ -663,116 +570,20 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- PAGOS A VENDEDORES (semanal)                         -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-pagos" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title">💰 Pagos a vendedores</h1>
-          <p class="main-subtitle">Resumen semanal de comisiones por pagar (lunes a domingo)</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header" style="flex-wrap:wrap;gap:14px">
-          <div>
-            <div class="card-title" id="pagos-semana-titulo">Esta semana</div>
-            <div class="card-subtitle" id="pagos-semana-rango">Cargando...</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn btn-secondary btn-sm" id="btn-pagos-prev">◀ Semana anterior</button>
-            <button class="btn btn-secondary btn-sm" id="btn-pagos-hoy">Esta semana</button>
-            <button class="btn btn-secondary btn-sm" id="btn-pagos-next">Semana siguiente ▶</button>
-          </div>
-        </div>
-
-        <!-- KPIs -->
-        <div style="padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
-          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Ventas en la semana</div>
-            <div style="font-size:24px;font-weight:800;color:#0f172a;margin-top:4px" id="pagos-kpi-ventas">0</div>
-          </div>
-          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Facturación</div>
-            <div style="font-size:24px;font-weight:800;color:#0b4ea2;margin-top:4px" id="pagos-kpi-facturacion">$0</div>
-          </div>
-          <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:14px 16px;border-radius:10px;border:1px solid #fbbf24">
-            <div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:.06em;font-weight:700">💰 Total a pagar</div>
-            <div style="font-size:24px;font-weight:800;color:#78350f;margin-top:4px" id="pagos-kpi-total">$0</div>
-          </div>
-          <div style="background:white;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0">
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Vendedores activos</div>
-            <div style="font-size:24px;font-weight:800;color:#0f172a;margin-top:4px" id="pagos-kpi-vendedores">0</div>
-          </div>
-        </div>
-
-        <div id="pagos-container" style="padding:20px"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-      </div>
-    </section>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- HISTORIAL DIARIO                                     -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-historial-diario" class="section">
+    <section id="view-ultimos" class="section">
       <div class="main-header">
         <div>
-          <h1 class="main-title">📊 Historial diario por vendedor</h1>
-          <p class="main-subtitle">Vista global de TODAS las comisiones · El admin ve todo el histórico (no se borra)</p>
+          <h1 class="main-title">Últimos certificados emitidos</h1>
+          <p class="main-subtitle">Actualizado en tiempo real · los 100 más recientes</p>
         </div>
+        <div class="search-box"><input class="input" type="text" id="ultimos-buscar" placeholder="Buscar folio, alumno, curso o consultora…"></div>
       </div>
-
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <div>
-            <div class="card-title">Filtro</div>
-            <div class="card-subtitle">Selecciona vendedor y rango</div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <select id="hist-filtro-vendedor" class="select" style="min-width:200px">
-              <option value="">— Todos los vendedores —</option>
-            </select>
-            <select id="hist-filtro-mes" class="select" style="min-width:160px">
-              <option value="actual">Mes actual</option>
-              <option value="anterior">Mes anterior</option>
-              <option value="3meses">Últimos 3 meses</option>
-              <option value="todo">Todo el historial</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- KPIs -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px">
-        <div style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;border-radius:12px;padding:18px 20px">
-          <div style="font-size:11px;color:#15803d;font-weight:700;text-transform:uppercase;letter-spacing:.06em">HOY</div>
-          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-hoy-monto">$0</div>
-          <div style="font-size:12.5px;color:#15803d;margin-top:4px" id="adm-hist-hoy-ventas">0 ventas</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fbbf24;border-radius:12px;padding:18px 20px">
-          <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.06em">AYER</div>
-          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-ayer-monto">$0</div>
-          <div style="font-size:12.5px;color:#92400e;margin-top:4px" id="adm-hist-ayer-ventas">0 ventas</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:1px solid #60a5fa;border-radius:12px;padding:18px 20px">
-          <div style="font-size:11px;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:.06em">ESTA SEMANA</div>
-          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-semana-monto">$0</div>
-          <div style="font-size:12.5px;color:#1e40af;margin-top:4px" id="adm-hist-semana-ventas">0 ventas</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#f3e8ff,#e9d5ff);border:1px solid #a78bfa;border-radius:12px;padding:18px 20px">
-          <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:.06em">RANGO</div>
-          <div style="font-size:28px;font-weight:800;color:#0f172a;margin-top:6px" id="adm-hist-rango-monto">$0</div>
-          <div style="font-size:12.5px;color:#6b21a8;margin-top:4px" id="adm-hist-rango-ventas">0 ventas</div>
-        </div>
-      </div>
-
       <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Detalle día por día</div>
-            <div class="card-subtitle" id="adm-hist-subt">Cargando...</div>
-          </div>
-        </div>
-        <div id="adm-hist-container" style="padding:0">
-          <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>
-        </div>
+        <div id="dash-ultimos"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
       </div>
     </section>
 
@@ -1133,6 +944,7 @@
               <option value="vendedor">Vendedor</option>
               <option value="coordinador">Coordinador</option>
               <option value="superadmin">Super admin</option>
+              <option value="rh">RH · Postulaciones</option>
             </select>
           </div>
           <div class="field">
@@ -1161,7 +973,7 @@
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, escapeHtml, iniciales, setupSidebar,
     calcularComisionPct,
     collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot,
-    httpsCallable
+    httpsCallable, Timestamp, getCountFromServer
   } from "./firebase-config.js";
 
   let usuario = null;
@@ -1171,10 +983,10 @@
   let certificados = [];
   let alumnos = [];
 
-  let chartFacturacion = null;
+  let _chartFacturacionObsoleto = null;
   let chartConsultoras = null;
   let chartCursos = null;
-  let chartDiario = null;
+  let _chartDiarioObsoleto = null;
   let periodoActual = 30;
 
   // Debounce para inputs de comisiones — 350ms (lo más rápido cómodo)
@@ -1188,82 +1000,6 @@
     clearTimeout(debounceTimers[key]);
     fn();
   }
-
-  // ─── POSTULACIONES DE ALIADOS (solo superadmin, vía backend) ───
-  const ENDPOINT_POSTULACIONES = "https://gestionpostulaciones-imsrzczhta-uc.a.run.app";
-
-  async function llamarPostulaciones(body) {
-    const idToken = await auth.currentUser.getIdToken();
-    const resp = await fetch(ENDPOINT_POSTULACIONES, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
-      body: JSON.stringify(body),
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (!resp.ok) throw new Error(data.error || "Error al consultar postulaciones.");
-    return data;
-  }
-
-  async function cargarPostulaciones() {
-    const cont = document.getElementById("postulaciones-container");
-    cont.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>';
-    try {
-      const { postulaciones } = await llamarPostulaciones({ accion: "listar" });
-      document.getElementById("post-count").textContent = postulaciones.length;
-      document.getElementById("post-nuevas").textContent = postulaciones.filter(p => p.estatus === "nueva").length;
-
-      if (!postulaciones.length) {
-        cont.innerHTML = '<div style="padding:34px;text-align:center;color:var(--muted)">Aún no hay postulaciones. Cuando alguien llene el formulario de "Certifica con IPCI", aparecerá aquí.</div>';
-        return;
-      }
-
-      cont.innerHTML = `
-        <div style="overflow-x:auto">
-        <table class="table">
-          <thead><tr>
-            <th>Academia</th><th>Contacto</th><th>Ubicación</th><th>Correo</th><th>WhatsApp</th><th>Mensaje</th><th>Recibida</th><th>Estatus</th><th></th>
-          </tr></thead>
-          <tbody>
-            ${postulaciones.map(p => `
-              <tr>
-                <td><strong>${escapeHtml(p.academia)}</strong></td>
-                <td>${escapeHtml(p.nombre)}</td>
-                <td>${escapeHtml(p.ciudad)}, ${escapeHtml(p.entidad)}</td>
-                <td><a href="mailto:${escapeHtml(p.email)}" style="color:var(--primary);font-weight:600">${escapeHtml(p.email)}</a></td>
-                <td><a href="https://wa.me/52${escapeHtml(p.whatsapp)}" target="_blank" rel="noopener" style="color:#16a34a;font-weight:700">${escapeHtml(p.whatsapp)}</a></td>
-                <td style="max-width:220px;font-size:12px;color:var(--muted)">${escapeHtml(p.mensaje || "—")}</td>
-                <td style="white-space:nowrap;font-size:12px">${p.creadoEn ? formatFecha(new Date(p.creadoEn)) : "—"}</td>
-                <td>${p.estatus === "nueva"
-                  ? '<span style="background:#fef3c7;color:#92400e;font-weight:800;font-size:11px;padding:4px 10px;border-radius:999px">⏳ Por contactar</span>'
-                  : '<span style="background:#dcfce7;color:#166534;font-weight:800;font-size:11px;padding:4px 10px;border-radius:999px">✓ Contactada</span>'}</td>
-                <td>${p.estatus === "nueva"
-                  ? `<button class="btn btn-secondary btn-sm btn-marcar-contactada" data-id="${p.id}" style="white-space:nowrap">Marcar contactada</button>`
-                  : ""}</td>
-              </tr>`).join("")}
-          </tbody>
-        </table>
-        </div>`;
-
-      cont.querySelectorAll(".btn-marcar-contactada").forEach(b => {
-        b.addEventListener("click", async () => {
-          b.disabled = true;
-          b.textContent = "Guardando…";
-          try {
-            await llamarPostulaciones({ accion: "contactada", id: b.dataset.id });
-            toast("Postulación marcada como contactada", "success");
-            cargarPostulaciones();
-          } catch (err) {
-            toast(err.message, "error");
-            b.disabled = false;
-            b.textContent = "Marcar contactada";
-          }
-        });
-      });
-    } catch (err) {
-      cont.innerHTML = `<div style="padding:30px;text-align:center;color:#b91c1c;font-weight:600">${escapeHtml(err.message)}</div>`;
-    }
-  }
-  document.getElementById("btn-recargar-postulaciones").addEventListener("click", cargarPostulaciones);
 
   // ─── INIT ───
   usuario = await requireRole("superadmin");
@@ -1282,9 +1018,7 @@
       document.querySelector(".sidebar-backdrop")?.classList.remove("show");
       if (btn.dataset.view === "ranking") renderRanking();
       if (btn.dataset.view === "comisiones") renderComisiones();
-      if (btn.dataset.view === "pagos") renderPagos();
-      if (btn.dataset.view === "postulaciones") cargarPostulaciones();
-      if (btn.dataset.view === "historial-diario") renderHistorialDiarioAdmin();
+      if (btn.dataset.view === "ultimos") renderUltimos();
       if (btn.dataset.view === "aperturas") renderAperturasGlobales();
       if (btn.dataset.view === "generar-cert") {
         llenarSelectsAdminCert();
@@ -1320,53 +1054,109 @@
   });
 
   // ═══════════════════════════════════════════════════════════
-  // SUSCRIPCIONES GLOBALES (TIEMPO REAL)
+  // SUSCRIPCIONES GLOBALES (TIEMPO REAL) — versión ligera (sep-2026)
+  //
+  // Antes: onSnapshot a TODA la colección de certificados (30k+) y de
+  // alumnos (decenas de miles). Cada emisión o edición en cualquier
+  // consultora re-enviaba la colección completa y re-dibujaba 5 vistas
+  // → el panel se congelaba.
+  //
+  // Ahora:
+  //  · certificados: UNA carga inicial + escucha SOLO de los nuevos
+  //    (los emitidos después de abrir el panel). Misma info, sin tormenta.
+  //  · alumnos: ya no se descargan; el KPI se calcula con conteos del
+  //    servidor (getCountFromServer), que no bajan documentos.
+  //  · todos los re-dibujados pasan por un debounce de 250 ms.
   // ═══════════════════════════════════════════════════════════
   onSnapshot(collection(db, "consultoras"), (snap) => {
     consultoras = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     consultoras.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-    renderConsultoras();
-    rellenarSelectConsultoras();
-    actualizarDashboard();
-    renderComisiones();
-    if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
-    if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
+    debounce("consultoras", () => {
+      renderConsultoras();
+      rellenarSelectConsultoras();
+      actualizarDashboard();
+      renderComisiones();
+      if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
+      if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
+    });
   });
 
   onSnapshot(collection(db, "usuarios"), (snap) => {
     usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderUsuarios();
-    actualizarDashboard();
-    renderComisiones();
+    debounce("usuarios", () => { renderUsuarios(); actualizarDashboard(); renderComisiones(); });
   });
 
   onSnapshot(collection(db, "cursos"), (snap) => {
     cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderCursos();
-    actualizarDashboard();
-    renderComisiones();
-    if (typeof llenarCursosAdminCert === "function") llenarCursosAdminCert();
+    debounce("cursos", () => {
+      renderCursos();
+      actualizarDashboard();
+      renderComisiones();
+      if (typeof llenarCursosAdminCert === "function") llenarCursosAdminCert();
+    });
   });
 
-  onSnapshot(collection(db, "certificados"), (snap) => {
-    const prev = certificados.length;
-    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  function refrescarVistasCertificados() {
     certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
-    if (prev > 0 && certificados.length > prev) {
-      const nuevo = certificados[0];
-      toast(`Nueva venta · ${nuevo.nombreConsultora || ""} · ${formatMoney(nuevo.precio)}`, "success");
-    }
     renderCertificados();
     actualizarDashboard();
     renderRanking();
     if (typeof renderCertAdmin === "function") renderCertAdmin();
     if (typeof renderPagos === "function") renderPagos();
-  });
+  }
 
-  onSnapshot(collection(db, "alumnos"), (snap) => {
-    alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    actualizarDashboard();
-  });
+  // Certificados: carga única del ÚLTIMO AÑO (el filtro máximo del panel es "Año").
+  // Los totales históricos se piden como conteo al servidor, sin bajar documentos.
+  const _arranque = Timestamp.now();
+  const _haceUnAnio = Timestamp.fromMillis(Date.now() - 366 * 86400000);
+  let totalCertificadosHistorico = null;
+  let totalAlumnosHistorico = null;
+  getDocs(query(collection(db, "certificados"), where("creadoEn", ">=", _haceUnAnio))).then((snap) => {
+    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    refrescarVistasCertificados();
+  }).catch(e => console.error("[ADMIN] certificados:", e));
+  getCountFromServer(collection(db, "certificados")).then(r => { totalCertificadosHistorico = r.data().count; actualizarDashboard(); }).catch(() => {});
+  getCountFromServer(collection(db, "alumnos")).then(r => { totalAlumnosHistorico = r.data().count; actualizarDashboard(); }).catch(() => {});
+
+  // …y escucha SOLO de los que se emitan de aquí en adelante
+  onSnapshot(
+    query(collection(db, "certificados"), where("creadoEn", ">", _arranque), orderBy("creadoEn", "desc")),
+    (snap) => {
+      let hayNuevos = false;
+      snap.docChanges().forEach((ch) => {
+        const c = { id: ch.doc.id, ...ch.doc.data() };
+        const i = certificados.findIndex(x => x.id === c.id);
+        if (ch.type === "removed") { if (i >= 0) certificados.splice(i, 1); return; }
+        if (i >= 0) { certificados[i] = c; return; }
+        certificados.unshift(c); hayNuevos = true;
+        toast(`Nueva venta · ${c.nombreConsultora || ""} · ${formatMoney(c.precio)}`, "success");
+      });
+      debounce("certificados", refrescarVistasCertificados);
+    },
+    (e) => console.error("[ADMIN] escucha certificados:", e)
+  );
+
+  // Alumnos: carga ÚNICA al abrir (se usan en comisiones, inscritos por curso y
+  // limpiar datos). Ya no hay escucha en vivo: era la colección más pesada y
+  // cada alta de alumno en cualquier consultora re-enviaba todo al navegador.
+  // Botón "Actualizar" en el dashboard para recargar cuando haga falta.
+  async function cargarAlumnos() {
+    try {
+      const snap = await getDocs(query(collection(db, "alumnos"), where("creadoEn", ">=", _haceUnAnio)));
+      alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      actualizarDashboard();
+      if (typeof renderComisiones === "function") renderComisiones();
+    } catch (e) { console.error("[ADMIN] alumnos:", e); }
+  }
+  cargarAlumnos();
+  window.recargarDatosAdmin = async () => {
+    toast("Actualizando datos…", "info");
+    const snap = await getDocs(query(collection(db, "certificados"), where("creadoEn", ">=", _haceUnAnio)));
+    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    refrescarVistasCertificados();
+    await cargarAlumnos();
+    toast("Datos actualizados", "success");
+  };
 
   // ═══════════════════════════════════════════════════════════
   // DASHBOARD
@@ -1382,21 +1172,13 @@
     const alumnosPeriodo = filtrarPorPeriodo(alumnos);
     const ingresos = certsPeriodo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
 
-    document.getElementById("kpi-ingresos").textContent = formatMoney(ingresos);
-    document.getElementById("kpi-certs").textContent = certsPeriodo.length;
-    document.getElementById("kpi-alumnos").textContent = alumnosPeriodo.length;
+    const esHistorico = periodoActual === "all";
+    document.getElementById("kpi-alumnos").textContent = (esHistorico && totalAlumnosHistorico !== null) ? totalAlumnosHistorico : alumnosPeriodo.length;
 
     const consActivas = consultoras.filter(c => c.activa !== false).length;
     document.getElementById("kpi-consultoras").textContent = consActivas;
     document.getElementById("kpi-consultoras-total").textContent = consultoras.length;
 
-    document.getElementById("kpi-cursos").textContent = cursos.length;
-    document.getElementById("kpi-cursos-activos").textContent = cursos.filter(c => c.activo).length;
-
-    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
-    document.getElementById("kpi-vendedores").textContent = vendedoresList.length;
-    document.getElementById("kpi-vendedores-activos").textContent = vendedoresList.filter(v => v.activo).length;
-    document.getElementById("kpi-coordinadores").textContent = usuarios.filter(u => u.rol === "coordinador").length;
 
     // Tendencias
     if (periodoActual !== "all" && typeof periodoActual === "number") {
@@ -1414,11 +1196,9 @@
         return t >= desdeAnterior && t < desde;
       }).length;
 
-      setTrend("kpi-ingresos-trend", ingresos, ingresosAnterior);
-      setTrend("kpi-certs-trend", certsPeriodo.length, certsAnterior.length);
       setTrend("kpi-alumnos-trend", alumnosPeriodo.length, alumnosAnterior);
     } else {
-      ["kpi-ingresos-trend", "kpi-certs-trend", "kpi-alumnos-trend"].forEach(id => {
+      ["kpi-alumnos-trend"].forEach(id => {
         const el = document.getElementById(id);
         el.textContent = "—";
         el.className = "kpi-trend kpi-trend-flat";
@@ -1428,15 +1208,13 @@
     // Counts por sección
     document.getElementById("consultoras-count").textContent = consultoras.length;
     document.getElementById("usuarios-count").textContent = usuarios.length;
-    document.getElementById("cursos-count").textContent = cursos.length;
-    document.getElementById("cert-count").textContent = certificados.length;
-    document.getElementById("cert-ingresos").textContent = formatMoney(certificados.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0));
 
-    renderChartFacturacion();
     renderChartConsultoras();
     renderChartCursos();
-    renderChartDiario();
-    renderResumenConsultoras();
+    renderChartCursosConsultora();
+    renderSemana();
+    renderMeses();
+    renderRankingSemanal();
     renderUltimos();
     renderAperturasGlobales();
   }
@@ -1467,97 +1245,156 @@
   }
 
   // ─── CHART: Facturación 12 meses ───
-  function renderChartFacturacion() {
-    const ctx = document.getElementById("chart-facturacion")?.getContext("2d");
-    if (!ctx) return;
+  // ═══ ALUMNOS POR DÍA (semana lun→dom, navegable, tiempo real) ═══
+  // Los conteos se piden al servidor (getCountFromServer) por día: exactos
+  // para cualquier semana histórica, sin descargar documentos.
+  let semanaOffset = 0;          // 0 = semana en curso, -1 = anterior…
+  let chartSemana = null, chartMes = null;
+  const _cacheConteos = {};
+  function inicioSemana(offset = 0) {
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    const dow = (d.getDay() + 6) % 7; // lunes = 0
+    d.setDate(d.getDate() - dow + offset * 7);
+    return d;
+  }
+  async function contarEntre(coleccion, desde, hasta, extra = null) {
+    const k = `${coleccion}|${desde.getTime()}|${hasta.getTime()}|${extra || ""}`;
+    const esPasado = hasta.getTime() < Date.now() - 3600000; // rangos ya cerrados se cachean fijo
+    if (_cacheConteos[k] !== undefined && (esPasado || _cacheConteos[k].t > Date.now() - 45000)) return _cacheConteos[k].n;
+    const conds = [where("creadoEn", ">=", Timestamp.fromDate(desde)), where("creadoEn", "<", Timestamp.fromDate(hasta))];
+    if (extra) conds.push(extra);
+    const n = (await getCountFromServer(query(collection(db, coleccion), ...conds))).data().count;
+    _cacheConteos[k] = { n, t: Date.now() };
+    return n;
+  }
+  function invalidarConteosRecientes() {
+    Object.keys(_cacheConteos).forEach(k => { if (_cacheConteos[k].t > Date.now() - 86400000 * 8) delete _cacheConteos[k]; });
+  }
 
-    const meses = [];
-    const ahora = new Date();
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
-      meses.push({
-        label: d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" }),
-        year: d.getFullYear(),
-        month: d.getMonth(),
-        ingresos: 0,
-        certs: 0
-      });
+  async function renderSemana() {
+    const ctx = document.getElementById("chart-semana")?.getContext("2d");
+    if (!ctx) return;
+    const ini = inicioSemana(semanaOffset);
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(ini); d.setDate(ini.getDate() + i);
+      const h = new Date(d); h.setDate(d.getDate() + 1);
+      dias.push({ d, h });
+    }
+    const fin = dias[6].h;
+    const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+    document.getElementById("sem-rango").textContent =
+      `${semanaOffset === 0 ? "Semana en curso · " : semanaOffset === -1 ? "Semana pasada · " : ""}lunes ${fmt(ini)} → domingo ${fmt(dias[6].d)}`;
+    document.getElementById("sem-next").disabled = semanaOffset >= 0;
+
+    const conteos = await Promise.all(dias.map(x => contarEntre("alumnos", x.d, x.h)));
+    const total = conteos.reduce((s, n) => s + n, 0);
+    document.getElementById("sem-total").textContent = `${total} alumnos`;
+
+    // KPIs de la semana en curso (+ comparación con la anterior)
+    if (semanaOffset === 0) {
+      const iniAnt = inicioSemana(-1);
+      const [alAnt, certSem, certAnt] = await Promise.all([
+        contarEntre("alumnos", iniAnt, ini),
+        contarEntre("certificados", ini, fin),
+        contarEntre("certificados", iniAnt, ini),
+      ]);
+      document.getElementById("kpi-sem-alumnos").textContent = total;
+      document.getElementById("kpi-sem-certs").textContent = certSem;
+      setTrend("kpi-sem-alumnos-trend", total, alAnt);
+      setTrend("kpi-sem-certs-trend", certSem, certAnt);
+      const t1 = document.getElementById("kpi-sem-alumnos-trend"), t2 = document.getElementById("kpi-sem-certs-trend");
+      if (t1) t1.textContent += " vs semana pasada";
+      if (t2) t2.textContent += " vs semana pasada";
     }
 
-    certificados.forEach(c => {
-      const t = c.creadoEn?.toDate?.();
-      if (!t) return;
-      const m = meses.find(m => m.year === t.getFullYear() && m.month === t.getMonth());
-      if (m) {
-        m.ingresos += parseFloat(c.precio) || 0;
-        m.certs++;
-      }
-    });
-
-    if (chartFacturacion) chartFacturacion.destroy();
-    chartFacturacion = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: meses.map(m => m.label),
-        datasets: [{
-          label: 'Facturación (MXN)',
-          data: meses.map(m => m.ingresos),
-          borderColor: '#0b4ea2',
-          backgroundColor: (ctx) => {
-            const chart = ctx.chart;
-            const { ctx: c, chartArea } = chart;
-            if (!chartArea) return 'rgba(11, 78, 162, 0.1)';
-            const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            grad.addColorStop(0, 'rgba(11, 78, 162, 0.25)');
-            grad.addColorStop(1, 'rgba(11, 78, 162, 0)');
-            return grad;
-          },
-          borderWidth: 2.5,
-          tension: 0.35,
-          pointRadius: 3,
-          pointBackgroundColor: '#0b4ea2',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          fill: true
-        }]
-      },
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const labels = dias.map(x => x.d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric" }).replace(".", ""));
+    const colores = dias.map(x => x.d.getTime() === hoy.getTime() ? "#0a5e50" : x.d > hoy ? "#cfe6df" : "#1aa88f");
+    if (chartSemana) chartSemana.destroy();
+    chartSemana = new Chart(ctx, {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Alumnos", data: conteos, backgroundColor: colores, borderRadius: 10, maxBarThickness: 64 }] },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0f1d2e',
-            titleFont: { family: 'Montserrat', weight: '700' },
-            bodyFont: { family: 'Montserrat' },
-            padding: 12,
-            cornerRadius: 8,
-            callbacks: { label: (ctx) => `Facturación: ${formatMoney(ctx.parsed.y)}` }
-          }
-        },
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.parsed.y} alumnos` } } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: 'Montserrat' } } },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,.05)' },
-            ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' }
-          }
-        }
-      }
+          x: { grid: { display: false }, ticks: { font: { size: 13, weight: "600" } } },
+          y: { beginAtZero: true, ticks: { precision: 0, font: { size: 12 } }, grid: { color: "#eef2f0" } },
+        },
+      },
+      plugins: [{
+        id: "valores",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart; ctx.save(); ctx.font = "700 13px Montserrat, sans-serif"; ctx.fillStyle = "#16302a"; ctx.textAlign = "center";
+          chart.getDatasetMeta(0).data.forEach((bar, i) => { const v = conteos[i]; if (v > 0) ctx.fillText(v, bar.x, bar.y - 6); });
+          ctx.restore();
+        },
+      }],
+    });
+  }
+  document.getElementById("sem-prev")?.addEventListener("click", () => { semanaOffset--; renderSemana(); });
+  document.getElementById("sem-next")?.addEventListener("click", () => { if (semanaOffset < 0) { semanaOffset++; renderSemana(); } });
+  document.getElementById("sem-hoy")?.addEventListener("click", () => { semanaOffset = 0; renderSemana(); });
+
+  // ═══ ALUMNOS POR MES (últimos 12 meses, del 1 al último día) ═══
+  async function renderMeses() {
+    const ctx = document.getElementById("chart-mes")?.getContext("2d");
+    if (!ctx) return;
+    const ahora = new Date(); const meses = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+      const h = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      meses.push({ d, h, label: d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" }).replace(".", "") });
+    }
+    const conteos = await Promise.all(meses.map(m => contarEntre("alumnos", m.d, m.h)));
+    const actual = conteos[conteos.length - 1], pasado = conteos[conteos.length - 2];
+    document.getElementById("mes-total").textContent = `${meses[11].label}: ${actual} · ${meses[10].label}: ${pasado}`;
+    if (chartMes) chartMes.destroy();
+    chartMes = new Chart(ctx, {
+      type: "bar",
+      data: { labels: meses.map(m => m.label), datasets: [{ label: "Alumnos", data: conteos, backgroundColor: meses.map((m, i) => i === 11 ? "#0a5e50" : "#1aa88f"), borderRadius: 8, maxBarThickness: 40 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { title: (c) => `${meses[c[0].dataIndex].d.toLocaleDateString("es-MX", { month: "long", year: "numeric" })} (1 al ${new Date(meses[c[0].dataIndex].h - 1).getDate()})`, label: (c) => ` ${c.parsed.y} alumnos` } } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#eef2f0" } } },
+      },
+      plugins: [{
+        id: "valoresMes",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart; ctx.save(); ctx.font = "600 11px Montserrat, sans-serif"; ctx.fillStyle = "#16302a"; ctx.textAlign = "center";
+          chart.getDatasetMeta(0).data.forEach((bar, i) => { const v = conteos[i]; if (v > 0) ctx.fillText(v, bar.x, bar.y - 5); });
+          ctx.restore();
+        },
+      }],
     });
   }
 
-  // ─── CHART: Top consultoras barras horizontales ───
+  // ═══ Tiempo real: alumnos nuevos desde que se abrió el panel ═══
+  onSnapshot(
+    query(collection(db, "alumnos"), where("creadoEn", ">", _arranque)),
+    (snap) => {
+      let hubo = false;
+      snap.docChanges().forEach((ch) => {
+        if (ch.type !== "added") return;
+        const a = { id: ch.doc.id, ...ch.doc.data() };
+        if (!alumnos.find(x => x.id === a.id)) { alumnos.push(a); hubo = true; }
+      });
+      if (hubo) { invalidarConteosRecientes(); debounce("alumnos-vivo", () => { actualizarDashboard(); }, 800); }
+    },
+    (e) => console.warn("[ADMIN] escucha alumnos:", e.message)
+  );
+  // Refresco de seguridad cada 60 s (por si algún alta llega sin creadoEn)
+  setInterval(() => { if (document.getElementById("view-dashboard")?.classList.contains("active")) { invalidarConteosRecientes(); renderSemana(); } }, 60000);
+
   function renderChartConsultoras() {
     const ctx = document.getElementById("chart-consultoras")?.getContext("2d");
     if (!ctx) return;
 
-    const certsPeriodo = filtrarPorPeriodo(certificados);
+    const alumnosPeriodo = filtrarPorPeriodo(alumnos);
     const ranking = consultoras.map(co => {
-      const sus = certsPeriodo.filter(ce => ce.consultoraId === co.id);
-      const ingresos = sus.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-      return { nombre: co.nombre, ingresos, certs: sus.length };
+      const n = alumnosPeriodo.filter(a => a.consultoraId === co.id).length;
+      return { nombre: co.nombre, ingresos: n, certs: n };
     }).filter(c => c.ingresos > 0).sort((a, b) => b.ingresos - a.ingresos).slice(0, 8);
 
     if (chartConsultoras) chartConsultoras.destroy();
@@ -1582,9 +1419,9 @@
       data: {
         labels: ranking.map(r => r.nombre.length > 18 ? r.nombre.substring(0, 18) + '…' : r.nombre),
         datasets: [{
-          label: 'Facturación',
+          label: 'Alumnos',
           data: ranking.map(r => r.ingresos),
-          backgroundColor: ['#0b4ea2', '#1e5fb3', '#2e6fc1', '#3e7fcf', '#4f8fdc', '#609feb', '#71afff', '#82bfff'],
+          backgroundColor: ['#0a5e50', '#0f7c6a', '#1aa88f', '#3cb9a2', '#5dcaa5', '#7fd6b8', '#9fe1cb', '#c2ecdc'],
           borderRadius: 6,
           borderSkipped: false
         }]
@@ -1601,13 +1438,13 @@
             callbacks: {
               label: (ctx) => {
                 const r = ranking[ctx.dataIndex];
-                return [`${formatMoney(r.ingresos)}`, `${r.certs} certificados`];
+                return [`${r.certs} alumnos`];
               }
             }
           }
         },
         scales: {
-          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } },
+          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, precision: 0 } },
           y: { grid: { display: false }, ticks: { font: { family: 'Montserrat', size: 11 } } }
         }
       }
@@ -1615,6 +1452,41 @@
   }
 
   // ─── CHART: Top cursos doughnut ───
+  let chartCursosCons = null;
+  function llenarSelectTopCursos() {
+    const sel = document.getElementById("topcursos-consultora");
+    if (!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="">— Elige consultora —</option>' + consultoras.map(c => `<option value="${c.id}">${escapeHtml(c.nombre || c.id)}</option>`).join("");
+    if (val) sel.value = val;
+  }
+  document.getElementById("topcursos-consultora")?.addEventListener("change", renderChartCursosConsultora);
+  function renderChartCursosConsultora() {
+    const ctx = document.getElementById("chart-cursos-cons")?.getContext("2d");
+    if (!ctx) return;
+    llenarSelectTopCursos();
+    const consId = document.getElementById("topcursos-consultora")?.value || "";
+    const wrap = ctx.canvas.parentElement;
+    if (chartCursosCons) { chartCursosCons.destroy(); chartCursosCons = null; }
+    const certs = filtrarPorPeriodo(certificados).filter(c => c.consultoraId === consId);
+    const map = {};
+    certs.forEach(c => { const k = c.cursoId || "sin"; if (!map[k]) map[k] = { nombre: c.nombreCurso || "Sin curso", n: 0 }; map[k].n++; });
+    const ranking = Object.values(map).sort((a, b) => b.n - a.n).slice(0, 6);
+    wrap.querySelector(".chart-empty")?.remove();
+    if (!consId || !ranking.length) {
+      ctx.canvas.style.display = "none";
+      const e = document.createElement("div"); e.className = "chart-empty empty"; e.style.cssText = "padding:60px 20px";
+      e.innerHTML = `<div class="empty-text">${consId ? "Sin certificados en el periodo" : "Elige una consultora arriba"}</div>`;
+      wrap.appendChild(e); return;
+    }
+    ctx.canvas.style.display = "";
+    chartCursosCons = new Chart(ctx, {
+      type: "bar",
+      data: { labels: ranking.map(r => r.nombre.length > 34 ? r.nombre.substring(0, 34) + "…" : r.nombre), datasets: [{ data: ranking.map(r => r.n), backgroundColor: "#1aa88f", borderRadius: 8, maxBarThickness: 26 }] },
+      options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.parsed.x} certificados` } } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#eef2f0" } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } } },
+    });
+  }
+
   function renderChartCursos() {
     const ctx = document.getElementById("chart-cursos")?.getContext("2d");
     if (!ctx) return;
@@ -1651,7 +1523,7 @@
         labels: ranking.map(r => r.nombre.length > 25 ? r.nombre.substring(0, 25) + '…' : r.nombre),
         datasets: [{
           data: ranking.map(r => r.certs),
-          backgroundColor: ['#0b4ea2', '#C8982E', '#15803d', '#7c3aed', '#dc2626'],
+          backgroundColor: ['#0a5e50', '#1aa88f', '#5dcaa5', '#9fe1cb', '#145f9e'],
           borderWidth: 2,
           borderColor: '#fff'
         }]
@@ -1669,152 +1541,101 @@
   }
 
   // ─── CHART: Diario 30 días ───
-  function renderChartDiario() {
-    const ctx = document.getElementById("chart-diario")?.getContext("2d");
-    if (!ctx) return;
+  // ═══ RANKING SEMANAL DE CONSULTORAS (lun→dom) + cursos con ventas bajas ═══
+  let rankOffset = 0;
+  const _rankAbiertas = new Set();
+  function renderRankingSemanal() {
+    const cont = document.getElementById("rank-semanal");
+    if (!cont) return;
+    const ini = inicioSemana(rankOffset), fin = new Date(ini); fin.setDate(ini.getDate() + 7);
+    const iniAnt = inicioSemana(rankOffset - 1);
+    const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+    const sub = document.getElementById("rank-sem-sub");
+    if (sub) sub.textContent = `Lunes ${fmt(ini)} → domingo ${fmt(new Date(fin - 1))} · de mejor a peor por alumnos · clic en una consultora para ver sus cursos con ventas bajas`;
+    const nx = document.getElementById("rank-next"); if (nx) nx.disabled = rankOffset >= 0;
 
-    const dias = [];
-    const ahora = new Date();
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - i);
-      dias.push({
-        label: d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
-        date: d.toISOString().split('T')[0],
-        certs: 0,
-        ingresos: 0
-      });
-    }
+    const enRango = (a, d1, d2) => { const t = a.creadoEn?.toMillis?.() || 0; return t >= d1.getTime() && t < d2.getTime(); };
+    const semana = alumnos.filter(a => enRango(a, ini, fin));
+    const anterior = alumnos.filter(a => enRango(a, iniAnt, ini));
+    const porCons = {}; semana.forEach(a => { porCons[a.consultoraId] = (porCons[a.consultoraId] || 0) + 1; });
+    const porConsAnt = {}; anterior.forEach(a => { porConsAnt[a.consultoraId] = (porConsAnt[a.consultoraId] || 0) + 1; });
 
-    certificados.forEach(c => {
-      const t = c.creadoEn?.toDate?.();
-      if (!t) return;
-      const key = t.toISOString().split('T')[0];
-      const d = dias.find(x => x.date === key);
-      if (d) {
-        d.certs++;
-        d.ingresos += parseFloat(c.precio) || 0;
-      }
-    });
+    const filas = consultoras
+      .filter(co => co.activa !== false)
+      .map(co => ({ co, n: porCons[co.id] || 0, ant: porConsAnt[co.id] || 0 }))
+      .sort((a, b) => b.n - a.n || (a.co.nombre || "").localeCompare(b.co.nombre || ""));
+    const max = Math.max(1, ...filas.map(f => f.n));
 
-    if (chartDiario) chartDiario.destroy();
-    chartDiario = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: dias.map(d => d.label),
-        datasets: [{
-          label: 'Certificados',
-          data: dias.map(d => d.certs),
-          backgroundColor: 'rgba(200, 152, 46, 0.85)',
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0f1d2e', padding: 12, cornerRadius: 8,
-            titleFont: { family: 'Montserrat' }, bodyFont: { family: 'Montserrat' },
-            callbacks: {
-              label: (ctx) => {
-                const d = dias[ctx.dataIndex];
-                return [`${d.certs} certificados`, `${formatMoney(d.ingresos)}`];
-              }
-            }
-          }
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { family: 'Montserrat', size: 9 }, maxRotation: 0, autoSkip: true, autoSkipPadding: 8 } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, stepSize: 1 } }
-        }
-      }
-    });
-  }
-
-  // ─── RESUMEN POR CONSULTORA ───
-  function renderResumenConsultoras() {
-    const c = document.getElementById("resumen-consultoras");
-    if (consultoras.length === 0) {
-      c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay consultoras</div></div>';
-      return;
-    }
-
-    const certsPeriodo = filtrarPorPeriodo(certificados);
-    const alumnosPeriodo = filtrarPorPeriodo(alumnos);
-
-    // Periodo anterior para comparar
-    const ahora = Date.now();
-    let certsAnterior = [];
-    if (typeof periodoActual === "number") {
-      const desde = ahora - periodoActual * 24 * 60 * 60 * 1000;
-      const desdeAnt = desde - periodoActual * 24 * 60 * 60 * 1000;
-      certsAnterior = certificados.filter(ce => {
-        const t = ce.creadoEn?.toMillis?.() || 0;
-        return t >= desdeAnt && t < desde;
-      });
-    }
-
-    const datos = consultoras.map(co => {
-      const sus = certsPeriodo.filter(ce => ce.consultoraId === co.id);
-      const ingresos = sus.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-      const ingresosAnt = certsAnterior.filter(ce => ce.consultoraId === co.id).reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-      const numAlumnos = alumnosPeriodo.filter(a => a.consultoraId === co.id).length;
-      const numVend = usuarios.filter(u => u.consultoraId === co.id && u.rol === "vendedor").length;
-
-      let cambio = 0;
-      if (ingresosAnt > 0) cambio = ((ingresos - ingresosAnt) / ingresosAnt) * 100;
-      else if (ingresos > 0) cambio = 999;
-
-      return { consultora: co, ingresos, certs: sus.length, alumnos: numAlumnos, vendedores: numVend, cambio };
-    }).sort((a, b) => b.ingresos - a.ingresos);
-
-    c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr>
-        <th>Consultora</th><th>Vendedores</th><th>Alumnos</th>
-        <th>Certificados</th><th>Facturado</th><th>vs periodo anterior</th>
-      </tr></thead>
-      <tbody>${datos.map(d => {
-        let badge = '<span class="text-muted text-sm">—</span>';
-        if (d.cambio === 999) badge = '<span class="chip chip-green">🆕 Nuevo</span>';
-        else if (d.cambio > 0) badge = `<span style="color:var(--green);font-weight:700;font-size:13px">↑ ${d.cambio.toFixed(0)}%</span>`;
-        else if (d.cambio < 0) badge = `<span style="color:var(--red);font-weight:700;font-size:13px">↓ ${Math.abs(d.cambio).toFixed(0)}%</span>`;
-        else if (d.ingresos > 0) badge = '<span class="text-muted text-sm">0%</span>';
-
-        return `<tr>
-          <td>
-            <div style="display:flex;align-items:center;gap:10px">
-              <code style="color:var(--primary);font-weight:700;font-size:11.5px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(d.consultora.codigo || "?")}</code>
-              <strong>${escapeHtml(d.consultora.nombre)}</strong>
-            </div>
-          </td>
-          <td>${d.vendedores}</td>
-          <td>${d.alumnos}</td>
-          <td><strong>${d.certs}</strong></td>
-          <td><strong style="color:var(--primary)">${formatMoney(d.ingresos)}</strong></td>
-          <td>${badge}</td>
-        </tr>`;
+    cont.innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th style="width:44px">#</th><th>Consultora</th><th style="width:34%">Alumnos de la semana</th><th>vs semana anterior</th><th></th></tr></thead>
+      <tbody>${filas.map((f, i) => {
+        const diff = f.n - f.ant; const pct = f.ant ? Math.round((diff / f.ant) * 100) : (f.n ? 100 : 0);
+        const color = f.n === 0 ? "#b3261e" : f.n < max * 0.25 ? "#8a5a00" : "#0a5e50";
+        const abierta = _rankAbiertas.has(f.co.id);
+        return `<tr class="rank-row row-hover" data-cons="${f.co.id}" style="cursor:pointer">
+          <td><strong style="color:${i < 3 ? "#0a5e50" : "var(--muted)"}">${i + 1}</strong></td>
+          <td><strong>${escapeHtml(f.co.nombre || "")}</strong> <span class="text-muted text-sm">${escapeHtml(f.co.codigo || "")}</span></td>
+          <td><div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:10px;background:#eef2f0;border-radius:999px;overflow:hidden"><div style="width:${Math.round((f.n / max) * 100)}%;height:100%;background:${color};border-radius:999px"></div></div><strong style="min-width:34px;text-align:right;color:${color}">${f.n}</strong></div></td>
+          <td>${f.ant === 0 && f.n === 0 ? '<span class="text-muted">—</span>' : `<span class="chip ${diff > 0 ? "chip-green" : diff < 0 ? "chip-red" : ""}">${diff > 0 ? "▲" : diff < 0 ? "▼" : "="} ${Math.abs(pct)}% <span style="opacity:.7">(${f.ant})</span></span>`}</td>
+          <td class="text-muted" style="text-align:right">${abierta ? "▲" : "▼"}</td>
+        </tr>${abierta ? `<tr class="rank-detalle"><td colspan="5" style="background:#f6f9f8;padding:12px 18px">${detalleCursosBajos(f.co.id, semana)}</td></tr>` : ""}`;
       }).join("")}</tbody></table></div>`;
-  }
 
-  // ─── ÚLTIMOS CERTIFICADOS ───
+    cont.querySelectorAll(".rank-row").forEach(tr => tr.addEventListener("click", () => {
+      const id = tr.dataset.cons;
+      if (_rankAbiertas.has(id)) _rankAbiertas.delete(id); else _rankAbiertas.add(id);
+      renderRankingSemanal();
+    }));
+  }
+  function detalleCursosBajos(consId, semana) {
+    const activos = cursos.filter(c => c.consultoraId === consId && c.activo !== false);
+    if (!activos.length) return '<span class="text-muted">Esta consultora no tiene cursos activos.</span>';
+    const porCurso = {}; semana.filter(a => a.consultoraId === consId).forEach(a => { porCurso[a.cursoId] = (porCurso[a.cursoId] || 0) + 1; });
+    const lista = activos.map(c => ({ c, n: porCurso[c.id] || 0 })).sort((a, b) => a.n - b.n || (a.c.nombre || "").localeCompare(b.c.nombre || ""));
+    const max = Math.max(1, ...lista.map(l => l.n));
+    const etiqueta = (n) => n === 0 ? '<span class="chip chip-red">Sin ventas</span>' : n <= 2 ? '<span class="chip" style="background:#fff1d6;color:#8a5a00">Bajo</span>' : '<span class="chip chip-green">Vende</span>';
+    const color = (n) => n === 0 ? "#b3261e" : n <= 2 ? "#8a5a00" : "#0a5e50";
+    const sin = lista.filter(l => l.n === 0).length, bajos = lista.filter(l => l.n > 0 && l.n <= 2).length, ok = lista.filter(l => l.n > 2).length;
+    return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="chip chip-red">Sin ventas: ${sin}</span>
+        <span class="chip" style="background:#fff1d6;color:#8a5a00">Bajos (1-2): ${bajos}</span>
+        <span class="chip chip-green">Con ventas: ${ok}</span>
+        <span class="text-muted text-sm" style="align-self:center">· ${activos.length} cursos activos · ordenados de menor a mayor</span>
+      </div>
+      <div class="table-wrap" style="background:#fff"><table class="table" style="font-size:12.5px">
+        <thead><tr><th style="width:50%">Curso</th><th>Ponente</th><th style="width:22%">Alumnos de la semana</th><th>Estado</th></tr></thead>
+        <tbody>${lista.map(l => `<tr>
+          <td><strong>${escapeHtml(l.c.nombre || "")}</strong></td>
+          <td class="text-muted">${escapeHtml(l.c.ponente || "—")}</td>
+          <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#eef2f0;border-radius:999px;overflow:hidden"><div style="width:${Math.round((l.n / max) * 100)}%;height:100%;background:${color(l.n)};border-radius:999px"></div></div><strong style="min-width:26px;text-align:right;color:${color(l.n)}">${l.n}</strong></div></td>
+          <td>${etiqueta(l.n)}</td>
+        </tr>`).join("")}</tbody></table></div>`;
+  }
+  document.getElementById("rank-prev")?.addEventListener("click", () => { rankOffset--; renderRankingSemanal(); });
+  document.getElementById("rank-next")?.addEventListener("click", () => { if (rankOffset < 0) { rankOffset++; renderRankingSemanal(); } });
+  document.getElementById("rank-hoy")?.addEventListener("click", () => { rankOffset = 0; renderRankingSemanal(); });
+
+  document.getElementById("ultimos-buscar")?.addEventListener("input", () => renderUltimos());
   function renderUltimos() {
     const c = document.getElementById("dash-ultimos");
-    const ultimos = certificados.slice(0, 8);
+    if (!c) return;
+    const q = (document.getElementById("ultimos-buscar")?.value || "").toLowerCase().trim();
+    const base = q ? certificados.filter(ce => [ce.folio, ce.nombreAlumno, ce.nombreCurso, ce.nombreConsultora].some(v => (v || "").toLowerCase().includes(q))) : certificados;
+    const ultimos = base.slice(0, 100);
     if (ultimos.length === 0) {
       c.innerHTML = '<div class="empty"><div class="empty-text">Aún no hay certificados</div></div>';
       return;
     }
     c.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr><th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th><th>Precio</th><th>Fecha</th></tr></thead>
+      <thead><tr><th>Folio</th><th>Alumno</th><th>Curso</th><th>Consultora</th><th>Fecha · hora</th><th>PDF</th></tr></thead>
       <tbody>${ultimos.map(cert => `<tr>
         <td><code style="color:var(--primary);font-weight:700;font-size:11.5px">${escapeHtml(cert.folio)}</code></td>
         <td><strong>${escapeHtml(cert.nombreAlumno)}</strong></td>
         <td>${escapeHtml(cert.nombreCurso)}</td>
         <td>${escapeHtml(cert.nombreConsultora)}</td>
-        <td><strong>${formatMoney(cert.precio || 0)}</strong></td>
-        <td class="text-sm text-muted">${escapeHtml(cert.fecha || "—")}</td>
-      </tr>`).join("")}</tbody></table></div>`;
+        <td class="text-sm text-muted">${escapeHtml(cert.fecha || "—")}${cert.creadoEn?.toDate ? `<div style="font-weight:700;color:var(--text)">${cert.creadoEn.toDate().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })} h</div>` : ""}</td>
+        <td>${cert.pdfUrl ? `<a class="btn btn-secondary btn-sm" href="${cert.pdfUrl}" target="_blank">Ver</a>` : "—"}</td>
+      </tr>`).join("")}</tbody></table>${base.length > 100 ? `<div style="padding:12px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 100 de ${base.length}. Usa la búsqueda.</div>` : ""}</div>`;
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1940,6 +1761,7 @@
   // CURSOS
   // ═══════════════════════════════════════════════════════════
   function renderCursos() {
+    if (!document.getElementById("cursos-container")) return; // vista eliminada del admin (sep-2026)
     const c = document.getElementById("cursos-container");
     const search = (document.getElementById("search-curso")?.value || "").toLowerCase();
     let lista = [...cursos];
@@ -1982,7 +1804,7 @@
       b.addEventListener("click", () => abrirModalEditarCurso(b.dataset.editCurso))
     );
   }
-  document.getElementById("search-curso").addEventListener("input", renderCursos);
+  document.getElementById("search-curso")?.addEventListener("input", renderCursos);
 
   // Modal editar curso
   function abrirModalEditarCurso(cursoId) {
@@ -2092,6 +1914,7 @@
   // CERTIFICADOS
   // ═══════════════════════════════════════════════════════════
   function renderCertificados() {
+    if (!document.getElementById("certificados-container")) return; // vista eliminada del admin (sep-2026)
     const c = document.getElementById("certificados-container");
     const search = (document.getElementById("search-cert")?.value || "").toLowerCase();
     const filtrados = search
@@ -2119,7 +1942,7 @@
       </tr>`).join("")}</tbody></table></div>
       ${filtrados.length > 200 ? `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">Mostrando 200 de ${filtrados.length}. Usa la búsqueda para refinar.</div>` : ""}`;
   }
-  document.getElementById("search-cert").addEventListener("input", renderCertificados);
+  document.getElementById("search-cert")?.addEventListener("input", renderCertificados);
 
   // ═══════════════════════════════════════════════════════════
   // COMISIONES
@@ -2342,14 +2165,21 @@
   // ═══════════════════════════════════════════════════════════
   // APERTURAS GLOBALES
   // ═══════════════════════════════════════════════════════════
+  let _idxAlumnosPorCurso = null;
+  function indexarAlumnosPorCurso() {
+    const m = new Map();
+    for (const a of alumnos) { if (!m.has(a.cursoId)) m.set(a.cursoId, []); m.get(a.cursoId).push(a); }
+    _idxAlumnosPorCurso = m;
+  }
   function calcularEstadoCurso(curso) {
     const minimo = curso.minimoAlumnos || 8;
     const frecuencia = curso.frecuenciaDiasApertura || 15;
     const ultimaApertura = curso.ultimaApertura?.toDate?.() || null;
     const desde = ultimaApertura ? ultimaApertura.getTime() : 0;
 
-    const inscritos = alumnos.filter(a =>
-      a.cursoId === curso.id &&
+    // Índice por curso (se arma una vez por render; antes era alumnos.filter por cada curso = muy lento)
+    const lista = _idxAlumnosPorCurso ? (_idxAlumnosPorCurso.get(curso.id) || []) : alumnos.filter(a => a.cursoId === curso.id);
+    const inscritos = lista.filter(a =>
       a.estado !== "email_enviado" &&
       (a.creadoEn?.toMillis?.() || 0) >= desde
     ).length;
@@ -2366,119 +2196,95 @@
     return { minimo, frecuencia, inscritos, pct, listo, ultimaApertura, proxima };
   }
 
+  const _apAbiertas = new Set();
   function renderAperturasGlobales() {
     const container = document.getElementById("aperturas-container");
     if (!container) return;
-
-    // Llenar select de consultoras (si está vacío)
     const selCons = document.getElementById("ag-filter-consultora");
     if (selCons.options.length <= 1) {
-      consultoras.forEach(co => {
-        const opt = document.createElement("option");
-        opt.value = co.id;
-        opt.textContent = co.nombre;
-        selCons.appendChild(opt);
-      });
+      consultoras.forEach(co => { const opt = document.createElement("option"); opt.value = co.id; opt.textContent = co.nombre; selCons.appendChild(opt); });
     }
-
     const filtroCons = selCons.value;
     const filtroEstado = document.getElementById("ag-filter-estado").value;
 
-    // Calcular estado de cada curso activo
+    indexarAlumnosPorCurso();
     let lista = cursos.filter(c => c.activo);
-    if (filtroCons) lista = lista.filter(c => c.consultoraId === filtroCons);
+    const conEstado = lista.map(c => ({ curso: c, consultora: consultoras.find(co => co.id === c.consultoraId), estado: calcularEstadoCurso(c) }));
 
-    const conEstado = lista.map(c => ({
-      curso: c,
-      consultora: consultoras.find(co => co.id === c.consultoraId),
-      estado: calcularEstadoCurso(c),
-    }));
-
-    let filtrados = [...conEstado];
-    if (filtroEstado === "listo") filtrados = filtrados.filter(x => x.estado.listo);
-    else if (filtroEstado === "proceso") filtrados = filtrados.filter(x => !x.estado.listo && x.estado.inscritos > 0);
-    else if (filtroEstado === "vacio") filtrados = filtrados.filter(x => x.estado.inscritos === 0);
-
-    // Ordenar: listos primero, luego por % desc
-    filtrados.sort((a, b) => {
-      if (a.estado.listo !== b.estado.listo) return a.estado.listo ? -1 : 1;
-      return b.estado.pct - a.estado.pct;
-    });
-
-    // KPIs (sobre TODOS los cursos, no filtrados)
+    // KPIs globales
     const listos = conEstado.filter(x => x.estado.listo).length;
     const proceso = conEstado.filter(x => !x.estado.listo && x.estado.inscritos > 0).length;
     const totalInscritos = conEstado.reduce((s, x) => s + x.estado.inscritos, 0);
     const consultsConApertura = new Set(conEstado.filter(x => x.estado.listo).map(x => x.curso.consultoraId)).size;
-
     document.getElementById("ag-listos").textContent = listos;
     document.getElementById("ag-proceso").textContent = proceso;
     document.getElementById("ag-inscritos").textContent = totalInscritos;
     document.getElementById("ag-consultoras").textContent = consultsConApertura;
-
-    // Badge sidebar
     const badge = document.getElementById("badge-aperturas");
-    if (badge) {
-      badge.textContent = listos;
-      badge.style.display = listos === 0 ? "none" : "";
-    }
+    if (badge) { badge.textContent = listos; badge.style.display = listos === 0 ? "none" : ""; }
 
-    if (filtrados.length === 0) {
-      container.innerHTML = `<div class="empty">
-        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
-        <div class="empty-text">${(filtroCons || filtroEstado) ? 'Sin resultados con esos filtros' : 'No hay cursos activos'}</div>
-        <div class="empty-hint">${(filtroCons || filtroEstado) ? 'Intenta otra combinación' : 'Espera a que las consultoras activen sus cursos'}</div>
-      </div>`;
+    // La tabla solo se dibuja cuando la vista está visible (el badge y los KPIs ya quedaron arriba)
+    if (!document.getElementById("view-aperturas")?.classList.contains("active")) return;
+
+    const pasaEstado = (x) => filtroEstado === "listo" ? x.estado.listo : filtroEstado === "proceso" ? (!x.estado.listo && x.estado.inscritos > 0) : filtroEstado === "vacio" ? x.estado.inscritos === 0 : true;
+
+    // Agrupar por consultora
+    const grupos = {};
+    conEstado.forEach(x => {
+      const id = x.curso.consultoraId || "sin";
+      if (filtroCons && id !== filtroCons) return;
+      if (!grupos[id]) grupos[id] = { consultora: x.consultora, cursos: [] };
+      grupos[id].cursos.push(x);
+    });
+    const filas = Object.entries(grupos).map(([id, g]) => {
+      const vis = g.cursos.filter(pasaEstado);
+      return { id, consultora: g.consultora, total: g.cursos.length, listos: g.cursos.filter(x => x.estado.listo).length,
+               proceso: g.cursos.filter(x => !x.estado.listo && x.estado.inscritos > 0).length,
+               vacios: g.cursos.filter(x => x.estado.inscritos === 0).length,
+               inscritos: g.cursos.reduce((s, x) => s + x.estado.inscritos, 0), vis };
+    }).filter(f => f.vis.length > 0).sort((a, b) => b.listos - a.listos || b.inscritos - a.inscritos);
+    if (filtroCons && filas.length === 1) _apAbiertas.add(filtroCons);
+
+    if (!filas.length) {
+      container.innerHTML = `<div class="empty"><div class="empty-text">${(filtroCons || filtroEstado) ? "Sin resultados con esos filtros" : "No hay cursos activos"}</div></div>`;
       return;
     }
 
+    const filaCurso = ({ curso, estado }) => {
+      const f = (d) => d ? d.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : '<span class="text-muted">—</span>';
+      const colorBar = estado.listo ? "var(--green)" : (estado.pct > 50 ? "#8a5a00" : "var(--primary)");
+      return `<tr>
+        <td><strong>${escapeHtml(curso.nombre)}</strong><div class="text-sm text-muted">${escapeHtml(curso.ponente || "Sin ponente")}</div></td>
+        <td><strong style="font-size:17px;color:${estado.listo ? "var(--green)" : "var(--text)"}">${estado.inscritos}</strong> <span class="text-muted">/ ${estado.minimo}</span></td>
+        <td style="min-width:130px"><div style="background:#eef2f0;border-radius:6px;height:8px;overflow:hidden"><div style="background:${colorBar};width:${estado.pct}%;height:100%;border-radius:6px"></div></div><div class="text-xs text-muted" style="margin-top:3px">${estado.pct}%</div></td>
+        <td class="text-sm">${estado.ultimaApertura ? f(estado.ultimaApertura) : '<span class="text-muted">Nunca</span>'}</td>
+        <td class="text-sm">${f(estado.proxima)}</td>
+        <td>${estado.listo ? '<span class="chip chip-green chip-dot">🟢 Listo</span>' : estado.inscritos === 0 ? '<span class="chip chip-gray">Sin inscritos</span>' : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}</td>
+      </tr>`;
+    };
+
     container.innerHTML = `<div class="table-wrap"><table class="table">
-      <thead><tr>
-        <th>Curso</th>
-        <th>Consultora</th>
-        <th>Inscritos / Mín</th>
-        <th>Progreso</th>
-        <th>Última apertura</th>
-        <th>Próxima</th>
-        <th>Estado</th>
-      </tr></thead>
-      <tbody>${filtrados.map(({ curso, consultora, estado }) => {
-        const fechaUlt = estado.ultimaApertura
-          ? estado.ultimaApertura.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
-          : '<span class="text-muted">Nunca</span>';
-        const fechaProx = estado.proxima
-          ? estado.proxima.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
-          : '<span class="text-muted">—</span>';
-        const colorBar = estado.listo ? 'var(--green)' : (estado.pct > 50 ? 'var(--gold)' : 'var(--primary)');
-        return `<tr>
-          <td>
-            <strong>${escapeHtml(curso.nombre)}</strong>
-            <div class="text-sm text-muted">${escapeHtml(curso.ponente || "Sin ponente")}</div>
-          </td>
-          <td>
-            <div style="display:flex;align-items:center;gap:8px">
-              <code style="color:var(--primary);font-weight:700;font-size:11px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(consultora?.codigo || "?")}</code>
-              <span>${escapeHtml(consultora?.nombre || "—")}</span>
-            </div>
-          </td>
-          <td><strong style="font-size:18px;color:${estado.listo ? 'var(--green)' : 'var(--text)'}">${estado.inscritos}</strong> <span class="text-muted">/ ${estado.minimo}</span></td>
-          <td style="min-width:140px">
-            <div style="background:var(--surface-soft);border-radius:6px;height:8px;overflow:hidden;border:1px solid var(--line-soft)">
-              <div style="background:${colorBar};width:${estado.pct}%;height:100%;transition:width 0.4s ease;border-radius:6px"></div>
-            </div>
-            <div class="text-xs text-muted" style="margin-top:4px">${estado.pct}%</div>
-          </td>
-          <td class="text-sm">${fechaUlt}</td>
-          <td class="text-sm">${fechaProx}</td>
-          <td>
-            ${estado.listo
-              ? '<span class="chip chip-green chip-dot">🟢 Listo</span>'
-              : estado.inscritos === 0
-                ? '<span class="chip chip-gray">Sin inscritos</span>'
-                : `<span class="chip chip-blue">Faltan ${estado.minimo - estado.inscritos}</span>`}
-          </td>
-        </tr>`;
+      <thead><tr><th>Consultora</th><th>Cursos activos</th><th>Listos</th><th>En proceso</th><th>Sin inscritos</th><th>Inscritos esperando</th><th></th></tr></thead>
+      <tbody>${filas.map(f => {
+        const abierta = _apAbiertas.has(f.id);
+        return `<tr class="ap-row row-hover" data-cons="${f.id}" style="cursor:pointer">
+          <td><div style="display:flex;align-items:center;gap:8px"><code style="color:var(--primary);font-weight:700;font-size:11px;background:var(--primary-soft);padding:3px 7px;border-radius:4px">${escapeHtml(f.consultora?.codigo || "?")}</code><strong>${escapeHtml(f.consultora?.nombre || "—")}</strong></div></td>
+          <td>${f.total}</td>
+          <td><strong style="color:var(--green)">${f.listos}</strong></td>
+          <td>${f.proceso}</td>
+          <td style="color:${f.vacios ? "#b3261e" : "inherit"}">${f.vacios}</td>
+          <td><strong>${f.inscritos}</strong></td>
+          <td class="text-muted" style="text-align:right">${abierta ? "▲" : "▼"}</td>
+        </tr>${abierta ? `<tr><td colspan="7" style="background:#f6f9f8;padding:10px 16px"><div class="table-wrap" style="background:#fff"><table class="table" style="font-size:12.5px">
+          <thead><tr><th>Curso</th><th>Inscritos / Mín</th><th>Progreso</th><th>Última apertura</th><th>Próxima</th><th>Estado</th></tr></thead>
+          <tbody>${f.vis.sort((a, b) => (a.estado.listo !== b.estado.listo) ? (a.estado.listo ? -1 : 1) : b.estado.pct - a.estado.pct).map(filaCurso).join("")}</tbody></table></div></td></tr>` : ""}`;
       }).join("")}</tbody></table></div>`;
+
+    container.querySelectorAll(".ap-row").forEach(tr => tr.addEventListener("click", () => {
+      const id = tr.dataset.cons;
+      if (_apAbiertas.has(id)) _apAbiertas.delete(id); else _apAbiertas.add(id);
+      renderAperturasGlobales();
+    }));
   }
 
   document.getElementById("ag-filter-consultora").addEventListener("change", renderAperturasGlobales);
@@ -2609,11 +2415,20 @@
     document.getElementById("modal-usuario").classList.remove("hidden");
   });
 
+  document.getElementById("usuario-rol").addEventListener("change", (e) => {
+    const sel = document.getElementById("usuario-consultora");
+    const esRH = e.target.value === "rh";
+    sel.required = !esRH;
+    sel.disabled = esRH;
+    if (esRH) sel.value = "";
+  });
+
   document.getElementById("form-usuario").addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
       const uid = document.getElementById("usuario-uid").value.trim();
-      const consultoraId = document.getElementById("usuario-consultora").value;
+      const esRH = document.getElementById("usuario-rol").value === "rh";
+      const consultoraId = esRH ? "" : document.getElementById("usuario-consultora").value;
       const consultora = consultoras.find(c => c.id === consultoraId);
 
       const data = {
@@ -2621,7 +2436,7 @@
         nombre: document.getElementById("usuario-nombre").value.trim(),
         rol: document.getElementById("usuario-rol").value,
         consultoraId,
-        consultoraNombre: consultora?.nombre || "",
+        consultoraNombre: esRH ? "IPCI · RH" : (consultora?.nombre || ""),
         activo: true
       };
 
@@ -2864,6 +2679,7 @@
   // HISTORIAL DIARIO POR VENDEDOR (admin)
   // ═══════════════════════════════════════════════════════════
   function renderHistorialDiarioAdmin() {
+    if (!document.getElementById("hist-filtro-vendedor")) return; // vista eliminada (sep-2026)
     // Llenar select de vendedores si está vacío
     const selVend = document.getElementById("hist-filtro-vendedor");
     if (selVend && selVend.children.length <= 1) {
@@ -3036,6 +2852,7 @@
   }
 
   function renderPagos() {
+    if (!document.getElementById("pagos-lista") && !document.getElementById("pagos-kpi-vendedores")) return; // vista oculta (sep-2026)
     const { inicio, fin } = obtenerRangoSemana(pagosOffset);
 
     // Título
@@ -3338,14 +3155,18 @@
     if (!cont) return;
     if (!consId) { cont.innerHTML = ""; return; }
 
-    // Contar documentos a borrar
-    const certCount = certificados.filter(c => c.consultoraId === consId).length;
-    const alumnosCount = alumnos.filter(a => a.consultoraId === consId).length;
-    // Aperturas no las cargamos en admin actualmente, mostramos guión
+    // Contar documentos a borrar (conteo exacto en servidor: el admin solo carga el último año)
     const c = consultoras.find(x => x.id === consId);
     const nombre = c?.nombre || "esta consultora";
-
-    cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: <strong style="color:#dc2626">${certCount}</strong> certificados · <strong style="color:#dc2626">${alumnosCount}</strong> alumnos · todas sus aperturas (cronograma)`;
+    cont.innerHTML = `Contando registros de <strong>${escapeHtml(nombre)}</strong>…`;
+    Promise.all([
+      getCountFromServer(query(collection(db, "certificados"), where("consultoraId", "==", consId))),
+      getCountFromServer(query(collection(db, "alumnos"), where("consultoraId", "==", consId))),
+    ]).then(([rc, ra]) => {
+      cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: <strong style="color:#dc2626">${rc.data().count}</strong> certificados · <strong style="color:#dc2626">${ra.data().count}</strong> alumnos · todas sus aperturas (cronograma)`;
+    }).catch(() => {
+      cont.innerHTML = `Vas a borrar de <strong>${escapeHtml(nombre)}</strong>: certificados, alumnos y aperturas (cronograma)`;
+    });
   }
 
   document.getElementById("limpiar-consultora")?.addEventListener("change", () => {
