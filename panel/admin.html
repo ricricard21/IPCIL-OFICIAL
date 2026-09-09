@@ -268,27 +268,27 @@
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Facturación total</div>
-            <div class="kpi-value" id="kpi-ingresos">$0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-ingresos-trend">—</span>
+            <div class="kpi-label">Alumnos esta semana</div>
+            <div class="kpi-value" id="kpi-sem-alumnos">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-sem-alumnos-trend">lun → dom</span>
           </div>
-          <div class="kpi-icon kpi-icon-blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Certificados</div>
-            <div class="kpi-value" id="kpi-certs">0</div>
-            <span class="kpi-trend kpi-trend-flat" id="kpi-certs-trend">—</span>
+            <div class="kpi-label">Certificados esta semana</div>
+            <div class="kpi-value" id="kpi-sem-certs">—</div>
+            <span class="kpi-trend kpi-trend-flat" id="kpi-sem-certs-trend">lun → dom</span>
           </div>
-          <div class="kpi-icon kpi-icon-green">
+          <div class="kpi-icon kpi-icon-blue">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
           </div>
         </div>
         <div class="kpi">
           <div class="kpi-content">
-            <div class="kpi-label">Alumnos</div>
+            <div class="kpi-label">Alumnos en el periodo</div>
             <div class="kpi-value" id="kpi-alumnos">0</div>
             <span class="kpi-trend kpi-trend-flat" id="kpi-alumnos-trend">—</span>
           </div>
@@ -308,48 +308,42 @@
         </div>
       </div>
 
-      <div class="kpi-grid" style="grid-template-columns:repeat(3, 1fr)">
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Cursos</div>
-            <div class="kpi-value" id="kpi-cursos">0</div>
-            <span class="kpi-trend kpi-trend-flat"><span id="kpi-cursos-activos">0</span> activos</span>
+      <!-- Alumnos por día · semana lun-dom navegable, en tiempo real -->
+      <div class="chart-card" style="margin-bottom:22px">
+        <div class="chart-card-header" style="align-items:center">
+          <div>
+            <div class="chart-title">Alumnos por día</div>
+            <div class="chart-subtitle" id="sem-rango">Semana en curso · lunes a domingo</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-secondary" type="button" id="sem-prev" title="Semana anterior">◀</button>
+            <button class="btn btn-secondary" type="button" id="sem-hoy">Esta semana</button>
+            <button class="btn btn-secondary" type="button" id="sem-next" title="Semana siguiente">▶</button>
+            <span class="chip chip-green" id="sem-total" style="margin-left:6px">— alumnos</span>
           </div>
         </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Vendedores</div>
-            <div class="kpi-value" id="kpi-vendedores">0</div>
-            <span class="kpi-trend kpi-trend-flat"><span id="kpi-vendedores-activos">0</span> activos</span>
-          </div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-content">
-            <div class="kpi-label">Coordinadores</div>
-            <div class="kpi-value" id="kpi-coordinadores">0</div>
-            <span class="kpi-trend kpi-trend-flat">en consultoras</span>
-          </div>
-        </div>
+        <div class="chart-canvas-wrap" style="height:340px"><canvas id="chart-semana"></canvas></div>
       </div>
 
       <div class="chart-grid">
         <div class="chart-card">
           <div class="chart-card-header">
             <div>
-              <div class="chart-title">Facturación por mes</div>
-              <div class="chart-subtitle">Últimos 12 meses</div>
+              <div class="chart-title">Alumnos por mes</div>
+              <div class="chart-subtitle">Últimos 12 meses · del 1 al último día de cada mes</div>
             </div>
+            <span class="chip chip-green" id="mes-total">—</span>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-facturacion"></canvas></div>
+          <div class="chart-canvas-wrap" style="height:300px"><canvas id="chart-mes"></canvas></div>
         </div>
         <div class="chart-card">
           <div class="chart-card-header">
             <div>
               <div class="chart-title">Top consultoras</div>
-              <div class="chart-subtitle">Por facturación del periodo</div>
+              <div class="chart-subtitle">Por alumnos del periodo seleccionado</div>
             </div>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-consultoras"></canvas></div>
+          <div class="chart-canvas-wrap" style="height:300px"><canvas id="chart-consultoras"></canvas></div>
         </div>
       </div>
 
@@ -357,20 +351,21 @@
         <div class="chart-card">
           <div class="chart-card-header">
             <div>
-              <div class="chart-title">Top cursos</div>
-              <div class="chart-subtitle">Más vendidos</div>
+              <div class="chart-title">Top cursos · todas las consultoras</div>
+              <div class="chart-subtitle">Más certificados en el periodo</div>
             </div>
           </div>
           <div class="chart-canvas-wrap"><canvas id="chart-cursos"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-card-header">
+          <div class="chart-card-header" style="align-items:center">
             <div>
-              <div class="chart-title">Ventas diarias</div>
-              <div class="chart-subtitle">Últimos 30 días</div>
+              <div class="chart-title">Top cursos · por consultora</div>
+              <div class="chart-subtitle">Elige una consultora</div>
             </div>
+            <select class="select" id="topcursos-consultora" style="max-width:240px"></select>
           </div>
-          <div class="chart-canvas-wrap"><canvas id="chart-diario"></canvas></div>
+          <div class="chart-canvas-wrap"><canvas id="chart-cursos-cons"></canvas></div>
         </div>
       </div>
 
@@ -1093,10 +1088,10 @@
   let certificados = [];
   let alumnos = [];
 
-  let chartFacturacion = null;
+  let _chartFacturacionObsoleto = null;
   let chartConsultoras = null;
   let chartCursos = null;
-  let chartDiario = null;
+  let _chartDiarioObsoleto = null;
   let periodoActual = 30;
 
   // Debounce para inputs de comisiones — 350ms (lo más rápido cómodo)
@@ -1283,22 +1278,13 @@
     const alumnosPeriodo = filtrarPorPeriodo(alumnos);
     const ingresos = certsPeriodo.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
 
-    document.getElementById("kpi-ingresos").textContent = formatMoney(ingresos);
     const esHistorico = periodoActual === "all";
-    document.getElementById("kpi-certs").textContent = (esHistorico && totalCertificadosHistorico !== null) ? totalCertificadosHistorico : certsPeriodo.length;
     document.getElementById("kpi-alumnos").textContent = (esHistorico && totalAlumnosHistorico !== null) ? totalAlumnosHistorico : alumnosPeriodo.length;
 
     const consActivas = consultoras.filter(c => c.activa !== false).length;
     document.getElementById("kpi-consultoras").textContent = consActivas;
     document.getElementById("kpi-consultoras-total").textContent = consultoras.length;
 
-    document.getElementById("kpi-cursos").textContent = cursos.length;
-    document.getElementById("kpi-cursos-activos").textContent = cursos.filter(c => c.activo).length;
-
-    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
-    document.getElementById("kpi-vendedores").textContent = vendedoresList.length;
-    document.getElementById("kpi-vendedores-activos").textContent = vendedoresList.filter(v => v.activo).length;
-    document.getElementById("kpi-coordinadores").textContent = usuarios.filter(u => u.rol === "coordinador").length;
 
     // Tendencias
     if (periodoActual !== "all" && typeof periodoActual === "number") {
@@ -1316,11 +1302,9 @@
         return t >= desdeAnterior && t < desde;
       }).length;
 
-      setTrend("kpi-ingresos-trend", ingresos, ingresosAnterior);
-      setTrend("kpi-certs-trend", certsPeriodo.length, certsAnterior.length);
       setTrend("kpi-alumnos-trend", alumnosPeriodo.length, alumnosAnterior);
     } else {
-      ["kpi-ingresos-trend", "kpi-certs-trend", "kpi-alumnos-trend"].forEach(id => {
+      ["kpi-alumnos-trend"].forEach(id => {
         const el = document.getElementById(id);
         el.textContent = "—";
         el.className = "kpi-trend kpi-trend-flat";
@@ -1331,10 +1315,11 @@
     document.getElementById("consultoras-count").textContent = consultoras.length;
     document.getElementById("usuarios-count").textContent = usuarios.length;
 
-    renderChartFacturacion();
     renderChartConsultoras();
     renderChartCursos();
-    renderChartDiario();
+    renderChartCursosConsultora();
+    renderSemana();
+    renderMeses();
     renderResumenConsultoras();
     renderUltimos();
     renderAperturasGlobales();
@@ -1366,97 +1351,156 @@
   }
 
   // ─── CHART: Facturación 12 meses ───
-  function renderChartFacturacion() {
-    const ctx = document.getElementById("chart-facturacion")?.getContext("2d");
-    if (!ctx) return;
+  // ═══ ALUMNOS POR DÍA (semana lun→dom, navegable, tiempo real) ═══
+  // Los conteos se piden al servidor (getCountFromServer) por día: exactos
+  // para cualquier semana histórica, sin descargar documentos.
+  let semanaOffset = 0;          // 0 = semana en curso, -1 = anterior…
+  let chartSemana = null, chartMes = null;
+  const _cacheConteos = {};
+  function inicioSemana(offset = 0) {
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    const dow = (d.getDay() + 6) % 7; // lunes = 0
+    d.setDate(d.getDate() - dow + offset * 7);
+    return d;
+  }
+  async function contarEntre(coleccion, desde, hasta, extra = null) {
+    const k = `${coleccion}|${desde.getTime()}|${hasta.getTime()}|${extra || ""}`;
+    const esPasado = hasta.getTime() < Date.now() - 3600000; // rangos ya cerrados se cachean fijo
+    if (_cacheConteos[k] !== undefined && (esPasado || _cacheConteos[k].t > Date.now() - 45000)) return _cacheConteos[k].n;
+    const conds = [where("creadoEn", ">=", Timestamp.fromDate(desde)), where("creadoEn", "<", Timestamp.fromDate(hasta))];
+    if (extra) conds.push(extra);
+    const n = (await getCountFromServer(query(collection(db, coleccion), ...conds))).data().count;
+    _cacheConteos[k] = { n, t: Date.now() };
+    return n;
+  }
+  function invalidarConteosRecientes() {
+    Object.keys(_cacheConteos).forEach(k => { if (_cacheConteos[k].t > Date.now() - 86400000 * 8) delete _cacheConteos[k]; });
+  }
 
-    const meses = [];
-    const ahora = new Date();
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
-      meses.push({
-        label: d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" }),
-        year: d.getFullYear(),
-        month: d.getMonth(),
-        ingresos: 0,
-        certs: 0
-      });
+  async function renderSemana() {
+    const ctx = document.getElementById("chart-semana")?.getContext("2d");
+    if (!ctx) return;
+    const ini = inicioSemana(semanaOffset);
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(ini); d.setDate(ini.getDate() + i);
+      const h = new Date(d); h.setDate(d.getDate() + 1);
+      dias.push({ d, h });
+    }
+    const fin = dias[6].h;
+    const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+    document.getElementById("sem-rango").textContent =
+      `${semanaOffset === 0 ? "Semana en curso · " : semanaOffset === -1 ? "Semana pasada · " : ""}lunes ${fmt(ini)} → domingo ${fmt(dias[6].d)}`;
+    document.getElementById("sem-next").disabled = semanaOffset >= 0;
+
+    const conteos = await Promise.all(dias.map(x => contarEntre("alumnos", x.d, x.h)));
+    const total = conteos.reduce((s, n) => s + n, 0);
+    document.getElementById("sem-total").textContent = `${total} alumnos`;
+
+    // KPIs de la semana en curso (+ comparación con la anterior)
+    if (semanaOffset === 0) {
+      const iniAnt = inicioSemana(-1);
+      const [alAnt, certSem, certAnt] = await Promise.all([
+        contarEntre("alumnos", iniAnt, ini),
+        contarEntre("certificados", ini, fin),
+        contarEntre("certificados", iniAnt, ini),
+      ]);
+      document.getElementById("kpi-sem-alumnos").textContent = total;
+      document.getElementById("kpi-sem-certs").textContent = certSem;
+      setTrend("kpi-sem-alumnos-trend", total, alAnt);
+      setTrend("kpi-sem-certs-trend", certSem, certAnt);
+      const t1 = document.getElementById("kpi-sem-alumnos-trend"), t2 = document.getElementById("kpi-sem-certs-trend");
+      if (t1) t1.textContent += " vs semana pasada";
+      if (t2) t2.textContent += " vs semana pasada";
     }
 
-    certificados.forEach(c => {
-      const t = c.creadoEn?.toDate?.();
-      if (!t) return;
-      const m = meses.find(m => m.year === t.getFullYear() && m.month === t.getMonth());
-      if (m) {
-        m.ingresos += parseFloat(c.precio) || 0;
-        m.certs++;
-      }
-    });
-
-    if (chartFacturacion) chartFacturacion.destroy();
-    chartFacturacion = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: meses.map(m => m.label),
-        datasets: [{
-          label: 'Facturación (MXN)',
-          data: meses.map(m => m.ingresos),
-          borderColor: '#0b4ea2',
-          backgroundColor: (ctx) => {
-            const chart = ctx.chart;
-            const { ctx: c, chartArea } = chart;
-            if (!chartArea) return 'rgba(11, 78, 162, 0.1)';
-            const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            grad.addColorStop(0, 'rgba(11, 78, 162, 0.25)');
-            grad.addColorStop(1, 'rgba(11, 78, 162, 0)');
-            return grad;
-          },
-          borderWidth: 2.5,
-          tension: 0.35,
-          pointRadius: 3,
-          pointBackgroundColor: '#0b4ea2',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          fill: true
-        }]
-      },
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const labels = dias.map(x => x.d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric" }).replace(".", ""));
+    const colores = dias.map(x => x.d.getTime() === hoy.getTime() ? "#0a5e50" : x.d > hoy ? "#cfe6df" : "#1aa88f");
+    if (chartSemana) chartSemana.destroy();
+    chartSemana = new Chart(ctx, {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Alumnos", data: conteos, backgroundColor: colores, borderRadius: 10, maxBarThickness: 64 }] },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0f1d2e',
-            titleFont: { family: 'Montserrat', weight: '700' },
-            bodyFont: { family: 'Montserrat' },
-            padding: 12,
-            cornerRadius: 8,
-            callbacks: { label: (ctx) => `Facturación: ${formatMoney(ctx.parsed.y)}` }
-          }
-        },
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.parsed.y} alumnos` } } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: 'Montserrat' } } },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,.05)' },
-            ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' }
-          }
-        }
-      }
+          x: { grid: { display: false }, ticks: { font: { size: 13, weight: "600" } } },
+          y: { beginAtZero: true, ticks: { precision: 0, font: { size: 12 } }, grid: { color: "#eef2f0" } },
+        },
+      },
+      plugins: [{
+        id: "valores",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart; ctx.save(); ctx.font = "700 13px Montserrat, sans-serif"; ctx.fillStyle = "#16302a"; ctx.textAlign = "center";
+          chart.getDatasetMeta(0).data.forEach((bar, i) => { const v = conteos[i]; if (v > 0) ctx.fillText(v, bar.x, bar.y - 6); });
+          ctx.restore();
+        },
+      }],
+    });
+  }
+  document.getElementById("sem-prev")?.addEventListener("click", () => { semanaOffset--; renderSemana(); });
+  document.getElementById("sem-next")?.addEventListener("click", () => { if (semanaOffset < 0) { semanaOffset++; renderSemana(); } });
+  document.getElementById("sem-hoy")?.addEventListener("click", () => { semanaOffset = 0; renderSemana(); });
+
+  // ═══ ALUMNOS POR MES (últimos 12 meses, del 1 al último día) ═══
+  async function renderMeses() {
+    const ctx = document.getElementById("chart-mes")?.getContext("2d");
+    if (!ctx) return;
+    const ahora = new Date(); const meses = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+      const h = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      meses.push({ d, h, label: d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" }).replace(".", "") });
+    }
+    const conteos = await Promise.all(meses.map(m => contarEntre("alumnos", m.d, m.h)));
+    const actual = conteos[conteos.length - 1], pasado = conteos[conteos.length - 2];
+    document.getElementById("mes-total").textContent = `${meses[11].label}: ${actual} · ${meses[10].label}: ${pasado}`;
+    if (chartMes) chartMes.destroy();
+    chartMes = new Chart(ctx, {
+      type: "bar",
+      data: { labels: meses.map(m => m.label), datasets: [{ label: "Alumnos", data: conteos, backgroundColor: meses.map((m, i) => i === 11 ? "#0a5e50" : "#1aa88f"), borderRadius: 8, maxBarThickness: 40 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { title: (c) => `${meses[c[0].dataIndex].d.toLocaleDateString("es-MX", { month: "long", year: "numeric" })} (1 al ${new Date(meses[c[0].dataIndex].h - 1).getDate()})`, label: (c) => ` ${c.parsed.y} alumnos` } } },
+        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#eef2f0" } } },
+      },
+      plugins: [{
+        id: "valoresMes",
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart; ctx.save(); ctx.font = "600 11px Montserrat, sans-serif"; ctx.fillStyle = "#16302a"; ctx.textAlign = "center";
+          chart.getDatasetMeta(0).data.forEach((bar, i) => { const v = conteos[i]; if (v > 0) ctx.fillText(v, bar.x, bar.y - 5); });
+          ctx.restore();
+        },
+      }],
     });
   }
 
-  // ─── CHART: Top consultoras barras horizontales ───
+  // ═══ Tiempo real: alumnos nuevos desde que se abrió el panel ═══
+  onSnapshot(
+    query(collection(db, "alumnos"), where("creadoEn", ">", _arranque)),
+    (snap) => {
+      let hubo = false;
+      snap.docChanges().forEach((ch) => {
+        if (ch.type !== "added") return;
+        const a = { id: ch.doc.id, ...ch.doc.data() };
+        if (!alumnos.find(x => x.id === a.id)) { alumnos.push(a); hubo = true; }
+      });
+      if (hubo) { invalidarConteosRecientes(); debounce("alumnos-vivo", () => { actualizarDashboard(); }, 800); }
+    },
+    (e) => console.warn("[ADMIN] escucha alumnos:", e.message)
+  );
+  // Refresco de seguridad cada 60 s (por si algún alta llega sin creadoEn)
+  setInterval(() => { if (document.getElementById("view-dashboard")?.classList.contains("active")) { invalidarConteosRecientes(); renderSemana(); } }, 60000);
+
   function renderChartConsultoras() {
     const ctx = document.getElementById("chart-consultoras")?.getContext("2d");
     if (!ctx) return;
 
-    const certsPeriodo = filtrarPorPeriodo(certificados);
+    const alumnosPeriodo = filtrarPorPeriodo(alumnos);
     const ranking = consultoras.map(co => {
-      const sus = certsPeriodo.filter(ce => ce.consultoraId === co.id);
-      const ingresos = sus.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-      return { nombre: co.nombre, ingresos, certs: sus.length };
+      const n = alumnosPeriodo.filter(a => a.consultoraId === co.id).length;
+      return { nombre: co.nombre, ingresos: n, certs: n };
     }).filter(c => c.ingresos > 0).sort((a, b) => b.ingresos - a.ingresos).slice(0, 8);
 
     if (chartConsultoras) chartConsultoras.destroy();
@@ -1481,9 +1525,9 @@
       data: {
         labels: ranking.map(r => r.nombre.length > 18 ? r.nombre.substring(0, 18) + '…' : r.nombre),
         datasets: [{
-          label: 'Facturación',
+          label: 'Alumnos',
           data: ranking.map(r => r.ingresos),
-          backgroundColor: ['#0b4ea2', '#1e5fb3', '#2e6fc1', '#3e7fcf', '#4f8fdc', '#609feb', '#71afff', '#82bfff'],
+          backgroundColor: ['#0a5e50', '#0f7c6a', '#1aa88f', '#3cb9a2', '#5dcaa5', '#7fd6b8', '#9fe1cb', '#c2ecdc'],
           borderRadius: 6,
           borderSkipped: false
         }]
@@ -1500,13 +1544,13 @@
             callbacks: {
               label: (ctx) => {
                 const r = ranking[ctx.dataIndex];
-                return [`${formatMoney(r.ingresos)}`, `${r.certs} certificados`];
+                return [`${r.certs} alumnos`];
               }
             }
           }
         },
         scales: {
-          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, callback: v => '$' + (v / 1000).toFixed(0) + 'k' } },
+          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, precision: 0 } },
           y: { grid: { display: false }, ticks: { font: { family: 'Montserrat', size: 11 } } }
         }
       }
@@ -1514,6 +1558,41 @@
   }
 
   // ─── CHART: Top cursos doughnut ───
+  let chartCursosCons = null;
+  function llenarSelectTopCursos() {
+    const sel = document.getElementById("topcursos-consultora");
+    if (!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="">— Elige consultora —</option>' + consultoras.map(c => `<option value="${c.id}">${escapeHtml(c.nombre || c.id)}</option>`).join("");
+    if (val) sel.value = val;
+  }
+  document.getElementById("topcursos-consultora")?.addEventListener("change", renderChartCursosConsultora);
+  function renderChartCursosConsultora() {
+    const ctx = document.getElementById("chart-cursos-cons")?.getContext("2d");
+    if (!ctx) return;
+    llenarSelectTopCursos();
+    const consId = document.getElementById("topcursos-consultora")?.value || "";
+    const wrap = ctx.canvas.parentElement;
+    if (chartCursosCons) { chartCursosCons.destroy(); chartCursosCons = null; }
+    const certs = filtrarPorPeriodo(certificados).filter(c => c.consultoraId === consId);
+    const map = {};
+    certs.forEach(c => { const k = c.cursoId || "sin"; if (!map[k]) map[k] = { nombre: c.nombreCurso || "Sin curso", n: 0 }; map[k].n++; });
+    const ranking = Object.values(map).sort((a, b) => b.n - a.n).slice(0, 6);
+    wrap.querySelector(".chart-empty")?.remove();
+    if (!consId || !ranking.length) {
+      ctx.canvas.style.display = "none";
+      const e = document.createElement("div"); e.className = "chart-empty empty"; e.style.cssText = "padding:60px 20px";
+      e.innerHTML = `<div class="empty-text">${consId ? "Sin certificados en el periodo" : "Elige una consultora arriba"}</div>`;
+      wrap.appendChild(e); return;
+    }
+    ctx.canvas.style.display = "";
+    chartCursosCons = new Chart(ctx, {
+      type: "bar",
+      data: { labels: ranking.map(r => r.nombre.length > 34 ? r.nombre.substring(0, 34) + "…" : r.nombre), datasets: [{ data: ranking.map(r => r.n), backgroundColor: "#1aa88f", borderRadius: 8, maxBarThickness: 26 }] },
+      options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.parsed.x} certificados` } } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#eef2f0" } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } } },
+    });
+  }
+
   function renderChartCursos() {
     const ctx = document.getElementById("chart-cursos")?.getContext("2d");
     if (!ctx) return;
@@ -1550,7 +1629,7 @@
         labels: ranking.map(r => r.nombre.length > 25 ? r.nombre.substring(0, 25) + '…' : r.nombre),
         datasets: [{
           data: ranking.map(r => r.certs),
-          backgroundColor: ['#0b4ea2', '#C8982E', '#15803d', '#7c3aed', '#dc2626'],
+          backgroundColor: ['#0a5e50', '#1aa88f', '#5dcaa5', '#9fe1cb', '#145f9e'],
           borderWidth: 2,
           borderColor: '#fff'
         }]
@@ -1568,70 +1647,6 @@
   }
 
   // ─── CHART: Diario 30 días ───
-  function renderChartDiario() {
-    const ctx = document.getElementById("chart-diario")?.getContext("2d");
-    if (!ctx) return;
-
-    const dias = [];
-    const ahora = new Date();
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - i);
-      dias.push({
-        label: d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
-        date: d.toISOString().split('T')[0],
-        certs: 0,
-        ingresos: 0
-      });
-    }
-
-    certificados.forEach(c => {
-      const t = c.creadoEn?.toDate?.();
-      if (!t) return;
-      const key = t.toISOString().split('T')[0];
-      const d = dias.find(x => x.date === key);
-      if (d) {
-        d.certs++;
-        d.ingresos += parseFloat(c.precio) || 0;
-      }
-    });
-
-    if (chartDiario) chartDiario.destroy();
-    chartDiario = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: dias.map(d => d.label),
-        datasets: [{
-          label: 'Certificados',
-          data: dias.map(d => d.certs),
-          backgroundColor: 'rgba(200, 152, 46, 0.85)',
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0f1d2e', padding: 12, cornerRadius: 8,
-            titleFont: { family: 'Montserrat' }, bodyFont: { family: 'Montserrat' },
-            callbacks: {
-              label: (ctx) => {
-                const d = dias[ctx.dataIndex];
-                return [`${d.certs} certificados`, `${formatMoney(d.ingresos)}`];
-              }
-            }
-          }
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { family: 'Montserrat', size: 9 }, maxRotation: 0, autoSkip: true, autoSkipPadding: 8 } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { family: 'Montserrat' }, stepSize: 1 } }
-        }
-      }
-    });
-  }
-
-  // ─── RESUMEN POR CONSULTORA ───
   function renderResumenConsultoras() {
     const c = document.getElementById("resumen-consultoras");
     if (consultoras.length === 0) {
