@@ -2457,6 +2457,16 @@
       //    siguiente). Se compara acumulado al día D desde el lanzamiento vs el mismo día D de la
       //    corrida anterior, día por día hasta el cierre. ──
       const fechaKey = (k) => { const [y, mo, d] = k.split("-").map(Number); return new Date(y, mo - 1, d).getTime(); };
+      // Ciclo vigente según el calendario del curso: próxima apertura y su lanzamiento (= apertura anterior)
+      const cicloCurso = (id) => {
+        const cu = cursos.find(k => k.id === id) || {}; const freq = Number(cu.frecuenciaDiasApertura) || 15;
+        let ult = cu.ultimaApertura?.toDate?.() ? cu.ultimaApertura.toDate().getTime() : null;
+        const keysAl = Object.keys(porCursoAp[id] || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).map(fechaKey);
+        const futuras = keysAl.filter(k => k >= hasta.getTime() - 86400000).sort((p, q) => p - q);
+        if (futuras.length) { const prox = futuras[0]; const lanz = Math.max(prox - freq * 86400000, ...keysAl.filter(k => k < prox), 0); return { prox, lanz: lanz || prox - freq * 86400000, freq, D: (hasta.getTime() - (lanz || prox - freq * 86400000)) / 86400000, fuente: "alumnos" }; }
+        if (ult) { let prox = ult; while (prox < hasta.getTime()) prox += freq * 86400000; const lanz = prox - freq * 86400000; return { prox, lanz, freq, D: (hasta.getTime() - lanz) / 86400000, fuente: "calendario" }; }
+        return null;
+      };
       const porCursoAp = {}; todos.forEach(a => { if (!a.cursoId) return; const k = a.aperturaKey || "_"; ((porCursoAp[a.cursoId] ||= {})[k] ||= []).push(t(a)); });
       const cursosDet = Object.keys(cA).map(id => {
         const nombre = nombreCurso(id); const aps = porCursoAp[id] || {};
@@ -2467,9 +2477,11 @@
         if (!curKey) return { id, nombre, ahora: enPeriodo.length, sinApertura: true };
         const i = keys.indexOf(curKey); const prevKey = i > 0 ? keys[i - 1] : null; const prevPrevKey = i > 1 ? keys[i - 2] : null;
         const ventasCur = aps[curKey].slice().sort((p, q) => p - q), ventasPrev = prevKey ? aps[prevKey].slice().sort((p, q) => p - q) : [];
-        const lanzCur = prevKey ? fechaKey(prevKey) : ventasCur[0];
-        const lanzPrev = prevKey ? (prevPrevKey ? fechaKey(prevPrevKey) : ventasPrev[0]) : null;
+        const freq = (Number((cursos.find(k => k.id === id) || {}).frecuenciaDiasApertura) || 15) * 86400000;
         const cierreCur = fechaKey(curKey), cierrePrev = prevKey ? fechaKey(prevKey) : null;
+        // El lanzamiento es la apertura anterior, pero nunca más de una frecuencia antes del cierre (si hubo hueco entre aperturas)
+        const lanzCur = Math.max(prevKey ? fechaKey(prevKey) : 0, cierreCur - freq, ventasCur[0] ? Math.min(ventasCur[0], cierreCur - freq) : 0) || ventasCur[0];
+        const lanzPrev = prevKey ? Math.max(prevPrevKey ? fechaKey(prevPrevKey) : 0, cierrePrev - freq) : null;
         const D = Math.max(0, (Math.min(hasta.getTime(), cierreCur) - lanzCur) / 86400000);
         const ventanaCur = Math.max(1, Math.round((cierreCur - lanzCur) / 86400000)), ventanaPrev = prevKey ? Math.max(1, Math.round((cierrePrev - lanzPrev) / 86400000)) : null;
         const acumAl = (ventas, lanz, d) => ventas.filter(v => v - lanz <= d * 86400000).length;
@@ -2483,7 +2495,18 @@
         return { id, nombre, ahora, curKey, prevKey, lanzCur: new Date(lanzCur), cierreCur: new Date(cierreCur), lanzPrev: lanzPrev ? new Date(lanzPrev) : null, cierrePrev: cierrePrev ? new Date(cierrePrev) : null,
                  D: Math.round(D * 10) / 10, ventanaCur, ventanaPrev, prevMismaAltura, prevTotal, curvaCur, curvaPrev, primeroCur, primeroPrev, pct: pctC, cerrada: hasta.getTime() >= cierreCur };
       }).sort((a, b) => b.ahora - a.ahora);
-      const dejaron = Object.keys(cM).filter(id => !cA[id]).map(id => ({ nombre: nombreCurso(id), antes: cM[id] })).sort((a, b) => b.antes - a.antes);
+      const dejaron = Object.keys(cM).filter(id => !cA[id]).map(id => {
+        const ciclo = cicloCurso(id); const ventasPrev = (todos.filter(a => a.cursoId === id).map(t)).sort((p, q) => p - q);
+        // ¿en el ciclo anterior a qué día llegó el primer alumno?
+        let primeroAnt = null;
+        if (ciclo) { const lanzAnt = ciclo.lanz - ciclo.freq * 86400000; const v = ventasPrev.find(v => v >= lanzAnt && v < ciclo.lanz); if (v) primeroAnt = Math.ceil((v - lanzAnt) / 86400000); }
+        let situacion, tipo;
+        if (!ciclo) { situacion = "sin fecha de apertura registrada: posiblemente no se lanzó"; tipo = "sin-apertura"; }
+        else if (ciclo.D <= (primeroAnt ?? 2)) { situacion = `lanzado el ${new Date(ciclo.lanz).toLocaleDateString("es-MX", { day: "numeric", month: "short" })} (día ${Math.ceil(ciclo.D)}); aún dentro del tiempo normal para el primer alumno${primeroAnt ? ` (la vez pasada llegó al día ${primeroAnt})` : ""}`; tipo = "normal"; }
+        else { situacion = `lanzado el ${new Date(ciclo.lanz).toLocaleDateString("es-MX", { day: "numeric", month: "short" })}, día ${Math.ceil(ciclo.D)} sin alumnos${primeroAnt ? ` (la vez pasada el primero llegó al día ${primeroAnt})` : ""}: el anuncio no está jalando`; tipo = "lento"; }
+        return { nombre: nombreCurso(id), antes: cM[id], situacion, tipo, dia: ciclo ? Math.ceil(ciclo.D) : null, primeroAnt };
+      }).sort((a, b) => b.antes - a.antes);
+      const dejaronReal = dejaron.filter(d => d.tipo !== "normal");
       const estado = n === 0 && m === 0 ? "inactiva" : n === 0 ? "critica" : pct <= -30 ? "critica" : pct < -10 ? "caida" : pct <= 10 ? "estable" : "crece";
       const cay = cursosDet.filter(c => c.pct !== null && c.pct <= -40);
       const obs = [];
@@ -2491,9 +2514,13 @@
       else if (n === 0) obs.push(`A esta altura el periodo pasado ya llevaba ${m}. Nada publicado o anuncios detenidos.`);
       else {
         if (Object.keys(cA).length < Object.keys(cM).length) obs.push(`${Object.keys(cA).length} cursos en venta vs ${Object.keys(cM).length} a la misma altura: faltan ${Object.keys(cM).length - Object.keys(cA).length} por abrir o anunciar.`);
-        if (dejaron.length) obs.push(`${dejaron.length} curso${dejaron.length > 1 ? "s" : ""} que vendían y hoy van en 0: ${dejaron.slice(0, 2).map(d => d.nombre).join(", ")}${dejaron.length > 2 ? "…" : ""}.`);
+        const sinAp = dejaron.filter(d => d.tipo === "sin-apertura"), lentos = dejaron.filter(d => d.tipo === "lento");
+        if (sinAp.length) obs.push(`${sinAp.length} curso${sinAp.length > 1 ? "s" : ""} que vendían y no tienen apertura registrada: ${sinAp.slice(0, 2).map(d => d.nombre).join(", ")}${sinAp.length > 2 ? "…" : ""}.`);
+        if (lentos.length) obs.push(`${lentos.length} curso${lentos.length > 1 ? "s" : ""} ya lanzados sin su primer alumno más tarde de lo normal: ${lentos.slice(0, 2).map(d => `${d.nombre} (día ${d.dia})`).join(", ")}${lentos.length > 2 ? "…" : ""}.`);
+        const enTiempo = dejaron.filter(d => d.tipo === "normal");
+        if (enTiempo.length && !sinAp.length && !lentos.length && pct < -10) obs.push(`${enTiempo.length} curso${enTiempo.length > 1 ? "s" : ""} recién relanzado${enTiempo.length > 1 ? "s" : ""} (en tiempo normal para su primer alumno): la caída es de calendario, no de anuncios.`);
         if (cay.length) obs.push(`${cay.length} curso${cay.length > 1 ? "s" : ""} van más de 40% abajo de su corrida anterior al mismo día: ${cay.slice(0, 2).map(k => k.nombre).join(", ")}${cay.length > 2 ? "…" : ""}.`);
-        if (!dejaron.length && !cay.length && pct < -10) obs.push("Mismos cursos, menos alumnos en todos: revisar presupuesto de anuncios, quincena o seguimiento del vendedor.");
+        if (!dejaronReal.length && !cay.length && pct < -10 && !dejaron.length) obs.push("Mismos cursos, menos alumnos en todos: revisar presupuesto de anuncios, quincena o seguimiento del vendedor.");
         if (estado === "crece") obs.push(`Va ${pct}% arriba de la misma altura del periodo pasado.`);
         if (estado === "estable" && !obs.length) obs.push("Ritmo similar al periodo anterior.");
       }
@@ -2582,7 +2609,7 @@
     return `<div><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Cursos en venta · acumulado al mismo día desde el lanzamiento, contra su corrida anterior</div>
       <div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Curso · corrida actual</th><th>Ahora</th><th>Corrida anterior (mismo día)</th><th>Cierre ant.</th><th>Dif.</th><th>Estado</th><th>Curva día a día</th></tr></thead><tbody>${filas}</tbody></table></div>
       <div class="text-xs text-muted" style="margin-top:6px">Curva: línea oscura = corrida actual, línea clara = corrida anterior, ambas acumuladas por día desde el lanzamiento.</div>
-      ${c.dejaron.length ? `<div style="margin-top:10px;font-size:12.5px"><b style="color:#b3261e">Vendían a esta altura y hoy van en 0:</b> ${c.dejaron.map(d => `${escapeHtml(d.nombre)} (${d.antes})`).join(" · ")}</div>` : ""}</div>`;
+      ${c.dejaron.length ? `<div style="margin-top:12px"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b3d34;margin-bottom:6px">Vendían a esta altura del periodo pasado y hoy van en 0</div><table class="table" style="font-size:12px"><thead><tr><th>Curso</th><th>Antes</th><th>Situación</th></tr></thead><tbody>${c.dejaron.map(d => `<tr><td><strong>${escapeHtml(d.nombre)}</strong></td><td>${d.antes}</td><td><span class="chip ${d.tipo === "normal" ? "chip-green" : d.tipo === "lento" ? "" : "chip-red"}" style="${d.tipo === "lento" ? "background:#fff1d6;color:#8a5a00" : ""}">${d.tipo === "normal" ? "En tiempo" : d.tipo === "lento" ? "Anuncio lento" : "Sin apertura"}</span> <span class="text-muted">${escapeHtml(d.situacion)}</span></td></tr>`).join("")}</tbody></table></div>` : ""}</div>`;
   }
   function dibujarChartCursos(c) {
     c.cursosDet.forEach((k, i) => {
@@ -2642,7 +2669,8 @@
           acumuladoAhora: k.ahora, corridaAnterior: k.prevKey ? { lanzadaEl: f(k.lanzPrev), apertura: f(k.cierrePrev), acumuladoAlMismoDia: k.prevMismaAltura, totalAlCierre: k.prevTotal } : null,
           primerAlumnoAlDia: k.primeroCur, primerAlumnoAlDiaAnterior: k.primeroPrev, cambioPct: k.pct,
           curvaActual: k.curvaCur.filter(v => v !== null), curvaAnterior: k.curvaPrev.filter(v => v !== null) })),
-        dejaronDeVenderse: c.dejaron.slice(0, 8).map(i => `${i.nombre} (antes ${i.antes})`), observacionesSistema: c.obs },
+        cursosSinVentasEnEstePeriodo: c.dejaron.slice(0, 10).map(i => ({ curso: i.nombre, vendioALaMismaAlturaAnterior: i.antes, estado: i.tipo === "normal" ? "LANZADO Y EN TIEMPO NORMAL (no es problema)" : i.tipo === "lento" ? "LANZADO PERO EL ANUNCIO NO ESTÁ JALANDO" : "SIN APERTURA REGISTRADA (posible no lanzado)", detalle: i.situacion })),
+        observacionesSistema: c.obs },
     };
     _anIA[id] = "cargando"; renderAnalisis();
     try {
