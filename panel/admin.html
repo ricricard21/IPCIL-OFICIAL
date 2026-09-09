@@ -269,6 +269,7 @@
           <button class="filter-btn" data-period="90">90 días</button>
           <button class="filter-btn" data-period="365">Año</button>
           <button class="filter-btn" data-period="all">Histórico</button>
+          <button class="filter-btn" type="button" onclick="window.recargarDatosAdmin && window.recargarDatosAdmin()" title="Vuelve a cargar certificados y alumnos">↻ Actualizar</button>
         </div>
       </div>
 
@@ -1134,7 +1135,7 @@
     requireRole, cerrarSesion, formatFecha, formatMoney, toast, escapeHtml, iniciales, setupSidebar,
     calcularComisionPct,
     collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot,
-    httpsCallable
+    httpsCallable, Timestamp
   } from "./firebase-config.js";
 
   let usuario = null;
@@ -1216,53 +1217,103 @@
   });
 
   // ═══════════════════════════════════════════════════════════
-  // SUSCRIPCIONES GLOBALES (TIEMPO REAL)
+  // SUSCRIPCIONES GLOBALES (TIEMPO REAL) — versión ligera (sep-2026)
+  //
+  // Antes: onSnapshot a TODA la colección de certificados (30k+) y de
+  // alumnos (decenas de miles). Cada emisión o edición en cualquier
+  // consultora re-enviaba la colección completa y re-dibujaba 5 vistas
+  // → el panel se congelaba.
+  //
+  // Ahora:
+  //  · certificados: UNA carga inicial + escucha SOLO de los nuevos
+  //    (los emitidos después de abrir el panel). Misma info, sin tormenta.
+  //  · alumnos: ya no se descargan; el KPI se calcula con conteos del
+  //    servidor (getCountFromServer), que no bajan documentos.
+  //  · todos los re-dibujados pasan por un debounce de 250 ms.
   // ═══════════════════════════════════════════════════════════
   onSnapshot(collection(db, "consultoras"), (snap) => {
     consultoras = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     consultoras.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-    renderConsultoras();
-    rellenarSelectConsultoras();
-    actualizarDashboard();
-    renderComisiones();
-    if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
-    if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
+    debounce("consultoras", () => {
+      renderConsultoras();
+      rellenarSelectConsultoras();
+      actualizarDashboard();
+      renderComisiones();
+      if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
+      if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
+    });
   });
 
   onSnapshot(collection(db, "usuarios"), (snap) => {
     usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderUsuarios();
-    actualizarDashboard();
-    renderComisiones();
+    debounce("usuarios", () => { renderUsuarios(); actualizarDashboard(); renderComisiones(); });
   });
 
   onSnapshot(collection(db, "cursos"), (snap) => {
     cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderCursos();
-    actualizarDashboard();
-    renderComisiones();
-    if (typeof llenarCursosAdminCert === "function") llenarCursosAdminCert();
+    debounce("cursos", () => {
+      renderCursos();
+      actualizarDashboard();
+      renderComisiones();
+      if (typeof llenarCursosAdminCert === "function") llenarCursosAdminCert();
+    });
   });
 
-  onSnapshot(collection(db, "certificados"), (snap) => {
-    const prev = certificados.length;
-    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  function refrescarVistasCertificados() {
     certificados.sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
-    if (prev > 0 && certificados.length > prev) {
-      const nuevo = certificados[0];
-      toast(`Nueva venta · ${nuevo.nombreConsultora || ""} · ${formatMoney(nuevo.precio)}`, "success");
-    }
     renderCertificados();
     actualizarDashboard();
     renderRanking();
     if (typeof renderCertAdmin === "function") renderCertAdmin();
     if (typeof renderPagos === "function") renderPagos();
-  });
+  }
 
-  onSnapshot(collection(db, "alumnos"), (snap) => {
-    alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    actualizarDashboard();
-  });
+  // Certificados: carga única…
+  const _arranque = Timestamp.now();
+  getDocs(collection(db, "certificados")).then((snap) => {
+    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    refrescarVistasCertificados();
+  }).catch(e => console.error("[ADMIN] certificados:", e));
+
+  // …y escucha SOLO de los que se emitan de aquí en adelante
+  onSnapshot(
+    query(collection(db, "certificados"), where("creadoEn", ">", _arranque), orderBy("creadoEn", "desc")),
+    (snap) => {
+      let hayNuevos = false;
+      snap.docChanges().forEach((ch) => {
+        const c = { id: ch.doc.id, ...ch.doc.data() };
+        const i = certificados.findIndex(x => x.id === c.id);
+        if (ch.type === "removed") { if (i >= 0) certificados.splice(i, 1); return; }
+        if (i >= 0) { certificados[i] = c; return; }
+        certificados.unshift(c); hayNuevos = true;
+        toast(`Nueva venta · ${c.nombreConsultora || ""} · ${formatMoney(c.precio)}`, "success");
+      });
+      debounce("certificados", refrescarVistasCertificados);
+    },
+    (e) => console.error("[ADMIN] escucha certificados:", e)
+  );
+
+  // Alumnos: carga ÚNICA al abrir (se usan en comisiones, inscritos por curso y
+  // limpiar datos). Ya no hay escucha en vivo: era la colección más pesada y
+  // cada alta de alumno en cualquier consultora re-enviaba todo al navegador.
+  // Botón "Actualizar" en el dashboard para recargar cuando haga falta.
+  async function cargarAlumnos() {
+    try {
+      const snap = await getDocs(collection(db, "alumnos"));
+      alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      actualizarDashboard();
+      if (typeof renderComisiones === "function") renderComisiones();
+    } catch (e) { console.error("[ADMIN] alumnos:", e); }
+  }
+  cargarAlumnos();
+  window.recargarDatosAdmin = async () => {
+    toast("Actualizando datos…", "info");
+    const snap = await getDocs(collection(db, "certificados"));
+    certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    refrescarVistasCertificados();
+    await cargarAlumnos();
+    toast("Datos actualizados", "success");
+  };
 
   // ═══════════════════════════════════════════════════════════
   // DASHBOARD
