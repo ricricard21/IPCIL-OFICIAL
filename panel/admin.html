@@ -215,10 +215,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
         Generar certificado
       </button>
-      <button class="sidebar-link" data-view="limpiar" style="background:#fee2e2;color:#991b1b;margin-top:auto">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        Limpiar datos
-      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -372,9 +368,13 @@
             <div class="card-subtitle" id="rank-sem-sub">De mejor a peor por alumnos de la semana · da clic en una consultora para ver sus cursos con ventas bajas</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn btn-secondary" type="button" id="rank-prev" title="Semana anterior">◀</button>
-            <button class="btn btn-secondary" type="button" id="rank-hoy">Esta semana</button>
-            <button class="btn btn-secondary" type="button" id="rank-next" title="Semana siguiente">▶</button>
+            <select class="select" id="rank-modo" style="max-width:170px">
+              <option value="7">Semana (lun → dom)</option>
+              <option value="15">Quincena (15 días)</option>
+            </select>
+            <button class="btn btn-secondary" type="button" id="rank-prev" title="Periodo anterior">◀</button>
+            <button class="btn btn-secondary" type="button" id="rank-hoy">Actual</button>
+            <button class="btn btn-secondary" type="button" id="rank-next" title="Periodo siguiente">▶</button>
           </div>
         </div>
         <div id="rank-semanal"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
@@ -665,15 +665,15 @@
       <div class="main-header">
         <div>
           <h1 class="main-title">Ranking</h1>
-          <p class="main-subtitle">Top de consultoras y vendedores</p>
+          <p class="main-subtitle">Consultoras de la semana (lunes a domingo) y vendedores del mes · por alumnos registrados</p>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">🏆 Top consultoras</div>
-            <div class="card-subtitle">Por facturación histórica</div>
+            <div class="card-title">🏆 Consultoras de la semana</div>
+            <div class="card-subtitle" id="rk-cons-sub">Alumnos registrados esta semana · lunes a domingo</div>
           </div>
         </div>
         <div id="ranking-consultoras"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
@@ -682,8 +682,8 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">⭐ Top vendedores</div>
-            <div class="card-subtitle">Mejores resultados del sistema</div>
+            <div class="card-title">⭐ Vendedores del mes</div>
+            <div class="card-subtitle" id="rk-vend-sub">Alumnos registrados en el mes en curso · del 1 al último día</div>
           </div>
         </div>
         <div id="ranking-vendedores"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
@@ -776,53 +776,6 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- LIMPIAR DATOS (admin)                                -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <section id="view-limpiar" class="section">
-      <div class="main-header">
-        <div>
-          <h1 class="main-title" style="color:#991b1b">⚠️ Limpiar datos por consultora</h1>
-          <p class="main-subtitle">Borra los certificados, alumnos y aperturas SOLO de la consultora elegida. Mantiene cursos, consultoras y vendedores.</p>
-        </div>
-      </div>
-
-      <div class="card" style="border:2px solid #dc2626;background:#fff5f5">
-        <div style="padding:30px">
-          <div style="text-align:center">
-            <div style="font-size:48px;margin-bottom:14px">🗑️</div>
-            <h2 style="font-size:20px;color:#991b1b;margin:0 0 8px 0">Esta acción es PERMANENTE e irreversible</h2>
-            <p style="color:#4b5563;font-size:14px;line-height:1.5;max-width:560px;margin:14px auto">
-              Útil para limpiar datos de prueba de UNA consultora específica.<br>
-              <strong>Se borrarán de esa consultora:</strong> certificados · alumnos · aperturas (cronograma) · contador de folios<br>
-              <strong>Se mantiene siempre:</strong> el catálogo de cursos · datos de consultora · usuarios
-            </p>
-          </div>
-
-          <div style="max-width:560px;margin:24px auto 0 auto">
-            <div class="field" style="margin-bottom:14px">
-              <label class="field-label" style="color:#991b1b">1. Elige la consultora a limpiar *</label>
-              <select class="select" id="limpiar-consultora" style="border-color:#fca5a5">
-                <option value="">— Selecciona una consultora —</option>
-              </select>
-              <div class="field-hint" id="limpiar-resumen-consultora" style="color:#7f1d1d;font-weight:600;margin-top:8px"></div>
-            </div>
-
-            <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin:14px 0;text-align:center">
-              <div style="font-size:13px;color:#991b1b;margin-bottom:8px;font-weight:700">2. Para confirmar, escribe en mayúsculas:</div>
-              <div style="font-size:18px;color:#991b1b;font-weight:800;letter-spacing:.06em;margin-bottom:10px;font-family:monospace">BORRAR TODO</div>
-              <input class="input" type="text" id="limpiar-confirmacion" placeholder="Escribe BORRAR TODO" style="text-align:center;font-weight:700;letter-spacing:.06em">
-            </div>
-
-            <div style="text-align:center">
-              <button class="btn" id="btn-limpiar-datos" style="background:#dc2626;color:white;font-size:15px;padding:12px 28px;margin-top:8px" disabled>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                Limpiar datos de esta consultora
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="limpiar-resultado" style="margin-top:20px"></div>
-    </section>
 
   </main>
 </div>
@@ -1077,7 +1030,6 @@
       actualizarDashboard();
       renderComisiones();
       if (typeof llenarSelectsAdminCert === "function") llenarSelectsAdminCert();
-      if (typeof llenarSelectLimpiar === "function") llenarSelectLimpiar();
     });
   });
 
@@ -1146,6 +1098,7 @@
       alumnos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       actualizarDashboard();
       if (typeof renderComisiones === "function") renderComisiones();
+      if (typeof renderRanking === "function") renderRanking();
     } catch (e) { console.error("[ADMIN] alumnos:", e); }
   }
   cargarAlumnos();
@@ -1380,7 +1333,7 @@
         const a = { id: ch.doc.id, ...ch.doc.data() };
         if (!alumnos.find(x => x.id === a.id)) { alumnos.push(a); hubo = true; }
       });
-      if (hubo) { invalidarConteosRecientes(); debounce("alumnos-vivo", () => { actualizarDashboard(); }, 800); }
+      if (hubo) { invalidarConteosRecientes(); debounce("alumnos-vivo", () => { actualizarDashboard(); renderRanking(); }, 800); }
     },
     (e) => console.warn("[ADMIN] escucha alumnos:", e.message)
   );
@@ -1543,15 +1496,24 @@
   // ─── CHART: Diario 30 días ───
   // ═══ RANKING SEMANAL DE CONSULTORAS (lun→dom) + cursos con ventas bajas ═══
   let rankOffset = 0;
+  let rankModo = 7; // 7 = semana lun→dom · 15 = quincena
+  const DIAS_ACTIVIDAD = 60; // un curso cuenta como "en venta" si tuvo ≥1 alumno en los últimos 60 días
   const _rankAbiertas = new Set();
+  function rangoRank(offset) {
+    if (rankModo === 7) { const ini = inicioSemana(offset), fin = new Date(ini); fin.setDate(ini.getDate() + 7); return { ini, fin }; }
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const fin = new Date(hoy); fin.setDate(hoy.getDate() + 1 + offset * 15);
+    const ini = new Date(fin); ini.setDate(fin.getDate() - 15);
+    return { ini, fin };
+  }
   function renderRankingSemanal() {
     const cont = document.getElementById("rank-semanal");
     if (!cont) return;
-    const ini = inicioSemana(rankOffset), fin = new Date(ini); fin.setDate(ini.getDate() + 7);
-    const iniAnt = inicioSemana(rankOffset - 1);
+    const { ini, fin } = rangoRank(rankOffset);
+    const { ini: iniAnt } = rangoRank(rankOffset - 1);
     const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
     const sub = document.getElementById("rank-sem-sub");
-    if (sub) sub.textContent = `Lunes ${fmt(ini)} → domingo ${fmt(new Date(fin - 1))} · de mejor a peor por alumnos · clic en una consultora para ver sus cursos con ventas bajas`;
+    if (sub) sub.textContent = (rankModo === 7 ? `Lunes ${fmt(ini)} → domingo ${fmt(new Date(fin - 1))}` : `Quincena ${fmt(ini)} → ${fmt(new Date(fin - 1))}`) + ` · de mejor a peor por alumnos · clic en una consultora para ver qué cursos en venta no vendieron`;
     const nx = document.getElementById("rank-next"); if (nx) nx.disabled = rankOffset >= 0;
 
     const enRango = (a, d1, d2) => { const t = a.creadoEn?.toMillis?.() || 0; return t >= d1.getTime() && t < d2.getTime(); };
@@ -1578,7 +1540,7 @@
           <td><div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:10px;background:#eef2f0;border-radius:999px;overflow:hidden"><div style="width:${Math.round((f.n / max) * 100)}%;height:100%;background:${color};border-radius:999px"></div></div><strong style="min-width:34px;text-align:right;color:${color}">${f.n}</strong></div></td>
           <td>${f.ant === 0 && f.n === 0 ? '<span class="text-muted">—</span>' : `<span class="chip ${diff > 0 ? "chip-green" : diff < 0 ? "chip-red" : ""}">${diff > 0 ? "▲" : diff < 0 ? "▼" : "="} ${Math.abs(pct)}% <span style="opacity:.7">(${f.ant})</span></span>`}</td>
           <td class="text-muted" style="text-align:right">${abierta ? "▲" : "▼"}</td>
-        </tr>${abierta ? `<tr class="rank-detalle"><td colspan="5" style="background:#f6f9f8;padding:12px 18px">${detalleCursosBajos(f.co.id, semana)}</td></tr>` : ""}`;
+        </tr>${abierta ? `<tr class="rank-detalle"><td colspan="5" style="background:#f6f9f8;padding:12px 18px">${detalleCursosBajos(f.co.id, semana, fin)}</td></tr>` : ""}`;
       }).join("")}</tbody></table></div>`;
 
     cont.querySelectorAll(".rank-row").forEach(tr => tr.addEventListener("click", () => {
@@ -1587,30 +1549,39 @@
       renderRankingSemanal();
     }));
   }
-  function detalleCursosBajos(consId, semana) {
+  function detalleCursosBajos(consId, semana, finPeriodo) {
+    // "En venta" = curso activo con ≥1 alumno en los últimos 60 días (antes del cierre del periodo).
+    // Los cursos que se crearon y nunca se vendieron quedan ocultos.
+    const desdeAct = new Date(finPeriodo); desdeAct.setDate(desdeAct.getDate() - DIAS_ACTIVIDAD);
     const activos = cursos.filter(c => c.consultoraId === consId && c.activo !== false);
     if (!activos.length) return '<span class="text-muted">Esta consultora no tiene cursos activos.</span>';
+    const rec = {}; alumnos.forEach(a => { if (a.consultoraId !== consId) return; const t = a.creadoEn?.toMillis?.() || 0; if (t >= desdeAct.getTime() && t < finPeriodo.getTime()) rec[a.cursoId] = (rec[a.cursoId] || 0) + 1; });
     const porCurso = {}; semana.filter(a => a.consultoraId === consId).forEach(a => { porCurso[a.cursoId] = (porCurso[a.cursoId] || 0) + 1; });
-    const lista = activos.map(c => ({ c, n: porCurso[c.id] || 0 })).sort((a, b) => a.n - b.n || (a.c.nombre || "").localeCompare(b.c.nombre || ""));
+    const enVenta = activos.filter(c => (rec[c.id] || 0) > 0);
+    const ocultos = activos.length - enVenta.length;
+    if (!enVenta.length) return `<span class="text-muted">Ningún curso con ventas en los últimos ${DIAS_ACTIVIDAD} días (${ocultos} cursos creados sin actividad, ocultos).</span>`;
+    const lista = enVenta.map(c => ({ c, n: porCurso[c.id] || 0, rec: rec[c.id] || 0 })).sort((a, b) => a.n - b.n || b.rec - a.rec);
     const max = Math.max(1, ...lista.map(l => l.n));
-    const etiqueta = (n) => n === 0 ? '<span class="chip chip-red">Sin ventas</span>' : n <= 2 ? '<span class="chip" style="background:#fff1d6;color:#8a5a00">Bajo</span>' : '<span class="chip chip-green">Vende</span>';
+    const etiqueta = (n) => n === 0 ? '<span class="chip chip-red">No vendió</span>' : n <= 2 ? '<span class="chip" style="background:#fff1d6;color:#8a5a00">Bajo</span>' : '<span class="chip chip-green">Vende</span>';
     const color = (n) => n === 0 ? "#b3261e" : n <= 2 ? "#8a5a00" : "#0a5e50";
     const sin = lista.filter(l => l.n === 0).length, bajos = lista.filter(l => l.n > 0 && l.n <= 2).length, ok = lista.filter(l => l.n > 2).length;
-    return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-        <span class="chip chip-red">Sin ventas: ${sin}</span>
+    return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <span class="chip chip-red">No vendieron en el periodo: ${sin}</span>
         <span class="chip" style="background:#fff1d6;color:#8a5a00">Bajos (1-2): ${bajos}</span>
         <span class="chip chip-green">Con ventas: ${ok}</span>
-        <span class="text-muted text-sm" style="align-self:center">· ${activos.length} cursos activos · ordenados de menor a mayor</span>
+        <span class="text-muted text-sm">· ${enVenta.length} cursos en venta (≥1 alumno en ${DIAS_ACTIVIDAD} días) · ${ocultos} sin actividad ocultos</span>
       </div>
       <div class="table-wrap" style="background:#fff"><table class="table" style="font-size:12.5px">
-        <thead><tr><th style="width:50%">Curso</th><th>Ponente</th><th style="width:22%">Alumnos de la semana</th><th>Estado</th></tr></thead>
+        <thead><tr><th style="width:44%">Curso</th><th>Ponente</th><th style="width:20%">Alumnos del periodo</th><th>Últimos ${DIAS_ACTIVIDAD} días</th><th>Estado</th></tr></thead>
         <tbody>${lista.map(l => `<tr>
           <td><strong>${escapeHtml(l.c.nombre || "")}</strong></td>
           <td class="text-muted">${escapeHtml(l.c.ponente || "—")}</td>
           <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#eef2f0;border-radius:999px;overflow:hidden"><div style="width:${Math.round((l.n / max) * 100)}%;height:100%;background:${color(l.n)};border-radius:999px"></div></div><strong style="min-width:26px;text-align:right;color:${color(l.n)}">${l.n}</strong></div></td>
+          <td class="text-muted">${l.rec} alumnos</td>
           <td>${etiqueta(l.n)}</td>
         </tr>`).join("")}</tbody></table></div>`;
   }
+  document.getElementById("rank-modo")?.addEventListener("change", (e) => { rankModo = Number(e.target.value); rankOffset = 0; renderRankingSemanal(); });
   document.getElementById("rank-prev")?.addEventListener("click", () => { rankOffset--; renderRankingSemanal(); });
   document.getElementById("rank-next")?.addEventListener("click", () => { if (rankOffset < 0) { rankOffset++; renderRankingSemanal(); } });
   document.getElementById("rank-hoy")?.addEventListener("click", () => { rankOffset = 0; renderRankingSemanal(); });
@@ -2294,48 +2265,54 @@
   // RANKING
   // ═══════════════════════════════════════════════════════════
   function renderRanking() {
-    const rConsultoras = consultoras.map(co => {
-      const certs = certificados.filter(ce => ce.consultoraId === co.id);
-      const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-      return { consultora: co, certs: certs.length, ingresos };
-    }).filter(r => r.certs > 0).sort((a, b) => b.ingresos - a.ingresos);
+    const cRk = document.getElementById("ranking-consultoras"), vRk = document.getElementById("ranking-vendedores");
+    if (!cRk || !vRk) return;
+    const enRango = (a, d1, d2) => { const t = a.creadoEn?.toMillis?.() || 0; return t >= d1.getTime() && t < d2.getTime(); };
+    const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
 
-    if (rConsultoras.length === 0) {
-      document.getElementById("ranking-consultoras").innerHTML = '<div class="empty"><div class="empty-text">Sin datos aún</div></div>';
-    } else {
-      document.getElementById("ranking-consultoras").innerHTML = `<div class="ranking-list">${rConsultoras.slice(0, 10).map((r, i) => `
+    // ── Consultoras de la semana (lun→dom) ──
+    const iniSem = inicioSemana(0), finSem = new Date(iniSem); finSem.setDate(iniSem.getDate() + 7);
+    const iniAnt = inicioSemana(-1);
+    const sub1 = document.getElementById("rk-cons-sub"); if (sub1) sub1.textContent = `Alumnos registrados del lunes ${fmt(iniSem)} al domingo ${fmt(new Date(finSem - 1))}`;
+    const semana = alumnos.filter(a => enRango(a, iniSem, finSem));
+    const anterior = alumnos.filter(a => enRango(a, iniAnt, iniSem));
+    const porCons = {}; semana.forEach(a => { porCons[a.consultoraId] = (porCons[a.consultoraId] || 0) + 1; });
+    const porConsAnt = {}; anterior.forEach(a => { porConsAnt[a.consultoraId] = (porConsAnt[a.consultoraId] || 0) + 1; });
+    const rConsultoras = consultoras.map(co => ({ consultora: co, n: porCons[co.id] || 0, ant: porConsAnt[co.id] || 0 }))
+      .filter(r => r.n > 0).sort((a, b) => b.n - a.n);
+    const trend = (n, ant) => ant === 0 ? (n ? '<span class="chip chip-green">nuevo</span>' : "") : `<span class="chip ${n >= ant ? "chip-green" : "chip-red"}">${n >= ant ? "▲" : "▼"} ${Math.abs(Math.round(((n - ant) / ant) * 100))}% vs sem. pasada</span>`;
+    cRk.innerHTML = rConsultoras.length === 0
+      ? '<div class="empty"><div class="empty-text">Aún no hay alumnos esta semana</div></div>'
+      : `<div class="ranking-list">${rConsultoras.slice(0, 15).map((r, i) => `
         <div class="ranking-item">
           <div class="ranking-medal">${i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
           <div class="ranking-info">
             <div class="ranking-name">${escapeHtml(r.consultora.nombre)}</div>
-            <div class="ranking-sub">${r.certs} certificados emitidos</div>
+            <div class="ranking-sub">${trend(r.n, r.ant)} <span class="text-muted">semana pasada: ${r.ant}</span></div>
           </div>
-          <div class="ranking-stat"><strong>${formatMoney(r.ingresos)}</strong><span>facturado</span></div>
-        </div>
-      `).join("")}</div>`;
-    }
+          <div class="ranking-stat"><strong>${r.n}</strong><span>alumnos esta semana</span></div>
+        </div>`).join("")}</div>`;
 
-    const vendedoresList = usuarios.filter(u => u.rol === "vendedor");
-    const rVendedores = vendedoresList.map(v => {
-      const certs = certificados.filter(ce => ce.generadoPor === v.id);
-      const ingresos = certs.reduce((s, c) => s + (parseFloat(c.precio) || 0), 0);
-      return { vendedor: v, certs: certs.length, ingresos };
-    }).filter(r => r.certs > 0).sort((a, b) => b.ingresos - a.ingresos);
-
-    if (rVendedores.length === 0) {
-      document.getElementById("ranking-vendedores").innerHTML = '<div class="empty"><div class="empty-text">Sin datos aún</div></div>';
-    } else {
-      document.getElementById("ranking-vendedores").innerHTML = `<div class="ranking-list">${rVendedores.slice(0, 15).map((r, i) => `
+    // ── Vendedores del mes (1 → último día) ──
+    const hoy = new Date(); const iniMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1); const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 1);
+    const iniMesAnt = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+    const sub2 = document.getElementById("rk-vend-sub"); if (sub2) sub2.textContent = `Alumnos registrados en ${hoy.toLocaleDateString("es-MX", { month: "long", year: "numeric" })} · del 1 al ${new Date(finMes - 1).getDate()}`;
+    const mes = alumnos.filter(a => enRango(a, iniMes, finMes)), mesAnt = alumnos.filter(a => enRango(a, iniMesAnt, iniMes));
+    const porVend = {}; mes.forEach(a => { const k = a.registradoPor || a.vendedorId; if (k) porVend[k] = (porVend[k] || 0) + 1; });
+    const porVendAnt = {}; mesAnt.forEach(a => { const k = a.registradoPor || a.vendedorId; if (k) porVendAnt[k] = (porVendAnt[k] || 0) + 1; });
+    const rVendedores = usuarios.filter(u => u.rol === "vendedor").map(v => ({ vendedor: v, n: porVend[v.id] || 0, ant: porVendAnt[v.id] || 0 }))
+      .filter(r => r.n > 0).sort((a, b) => b.n - a.n);
+    vRk.innerHTML = rVendedores.length === 0
+      ? '<div class="empty"><div class="empty-text">Aún no hay alumnos este mes</div></div>'
+      : `<div class="ranking-list">${rVendedores.slice(0, 20).map((r, i) => `
         <div class="ranking-item">
           <div class="ranking-medal">${i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1)}</div>
           <div class="ranking-info">
             <div class="ranking-name">${escapeHtml(r.vendedor.nombre)}</div>
-            <div class="ranking-sub">${escapeHtml(r.vendedor.consultoraNombre || "—")} · ${r.certs} ventas</div>
+            <div class="ranking-sub">${escapeHtml(r.vendedor.consultoraNombre || consultoras.find(c => c.id === r.vendedor.consultoraId)?.nombre || "—")} · <span class="text-muted">mes pasado: ${r.ant}</span></div>
           </div>
-          <div class="ranking-stat"><strong>${formatMoney(r.ingresos)}</strong><span>facturado</span></div>
-        </div>
-      `).join("")}</div>`;
-    }
+          <div class="ranking-stat"><strong>${r.n}</strong><span>alumnos este mes</span></div>
+        </div>`).join("")}</div>`;
   }
 
   // ═══════════════════════════════════════════════════════════
