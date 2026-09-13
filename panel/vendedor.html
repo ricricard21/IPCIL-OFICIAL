@@ -1770,16 +1770,6 @@
       <button type="button" class="wa-tipo-chip active" data-watipo="grupo">💬 Abrir grupo</button>
       <button type="button" class="wa-tipo-chip" data-watipo="membresia">⭐ Membresía</button>
       <button type="button" class="wa-tipo-chip" data-watipo="invitacion">🎓 Invitar a curso</button>
-      <button type="button" class="wa-tipo-chip" data-watipo="posponer" style="border-color:#f59e0b;color:#92400e">⏳ Posponer grupo</button>
-    </div>
-
-    <!-- Campos: Posponer grupo -->
-    <div id="waCamposPosponer" style="display:none">
-      <div style="margin-bottom:8px;font-size:12px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px">Se les avisa por WhatsApp que el grupo <b>no pudo abrir</b> en esta fecha y se les da la nueva. Se manda a <b>todos los alumnos de esta apertura</b> (o solo a los marcados con checkbox).</div>
-      <label class="wa-modal-label">Nueva fecha de apertura</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px" id="posponerOpciones"></div>
-      <input type="date" id="posponerFechaInput" class="wa-modal-input">
-      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin-top:8px;cursor:pointer"><input type="checkbox" id="posponerMover" checked> También mover a los alumnos a la nueva fecha (pestaña)</label>
     </div>
 
     <!-- Campos: Abrir grupo -->
@@ -3379,26 +3369,9 @@
     document.getElementById("waCamposGrupo").style.display = tipo === "grupo" ? "block" : "none";
     document.getElementById("waCamposMembresia").style.display = tipo === "membresia" ? "block" : "none";
     document.getElementById("waCamposInvitacion").style.display = tipo === "invitacion" ? "block" : "none";
-    document.getElementById("waCamposPosponer").style.display = tipo === "posponer" ? "block" : "none";
-    if (tipo === "posponer") prepararOpcionesPosponer();
     document.getElementById("waDirectoLinkError").textContent = "";
     // Recalcular la lista de alumnos según el tipo
     waDirectoRecalcularLista();
-  }
-
-  function prepararOpcionesPosponer() {
-    const cont = document.getElementById("posponerOpciones"); const inp = document.getElementById("posponerFechaInput");
-    const base = /^\d{4}-\d{2}-\d{2}$/.test(aperturaActual) ? new Date(aperturaActual + "T12:00:00") : new Date();
-    const suma = (d) => { const f = new Date(base); f.setDate(f.getDate() + d); return f.toISOString().split("T")[0]; };
-    const curso = cursos.find(c => c.id === waDirectoCursoId) || {}; const freq = Number(curso.frecuenciaDiasApertura) || 15;
-    const keys = [...new Set(alumnos.map(a => getAperturaKey(a)))].filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k) && k > (aperturaActual || "")).sort();
-    const ops = []; if (keys[0]) ops.push({ f: keys[0], t: `Siguiente apertura · ${labelApertura(keys[0])}` });
-    ops.push({ f: suma(freq), t: `+${freq} días · ${labelApertura(suma(freq))}` });
-    if (freq !== 7) ops.push({ f: suma(7), t: `+7 días` }); if (freq !== 15) ops.push({ f: suma(15), t: `+15 días` });
-    cont.innerHTML = ops.map((o, i) => `<button type="button" class="wa-desc-chip ${i === 0 ? "active" : ""}" data-pf="${o.f}">${o.t}</button>`).join("");
-    inp.value = ops[0].f;
-    cont.querySelectorAll("[data-pf]").forEach(b => b.addEventListener("click", () => { inp.value = b.dataset.pf; cont.querySelectorAll("[data-pf]").forEach(k => k.classList.toggle("active", k === b)); }));
-    inp.addEventListener("input", () => cont.querySelectorAll("[data-pf]").forEach(k => k.classList.toggle("active", k.dataset.pf === inp.value)));
   }
 
   function waDirectoRecalcularLista() {
@@ -3408,8 +3381,8 @@
     if (marcadas.length > 0) {
       // Filas marcadas manualmente → esas, en cualquier tipo
       filas = Array.from(marcadas).map(chk => chk.closest("tr[data-alumno-id]"));
-    } else if (waDirectoTipo === "grupo" || waDirectoTipo === "posponer") {
-      // Abrir grupo / Posponer → todos los del bloque
+    } else if (waDirectoTipo === "grupo") {
+      // Abrir grupo → todos los del bloque
       filas = bloque ? Array.from(bloque.querySelectorAll("tr[data-alumno-id]")) : [];
     } else {
       // Membresía / Invitación / Software → solo los que YA concluyeron (con certificado)
@@ -3436,7 +3409,7 @@
 
     const lista = document.getElementById("waDirectoLista");
     if (waDirectoAlumnos.length === 0) {
-      const hint = (waDirectoTipo === "grupo" || waDirectoTipo === "posponer")
+      const hint = waDirectoTipo === "grupo"
         ? "No hay alumnos en este curso."
         : "No hay alumnos con certificado en este curso. Marca filas con el checkbox para elegir manualmente.";
       lista.innerHTML = `<div class="wa-directo-item"><span class="nombre" style="color:var(--muted)">${hint}</span></div>`;
@@ -3598,13 +3571,6 @@
       fnName = "enviarInvitacionCurso";
       payload.cursoPromoId = cursoPromoId;
       payload.descuento = invDescuentoActual;
-    } else if (waDirectoTipo === "posponer") {
-      const f = (document.getElementById("posponerFechaInput").value || "").trim();
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) { errEl.textContent = "Elige la nueva fecha de apertura."; return; }
-      if (f === aperturaActual) { errEl.textContent = "Es la misma fecha actual."; return; }
-      fnName = "enviarPosponerGrupo";
-      payload.nuevaFecha = f;
-      payload.moverAlumnos = document.getElementById("posponerMover").checked;
     }
 
     const sendBtn = document.getElementById("waDirectoSend");
@@ -3630,10 +3596,6 @@
       } else if (waDirectoTipo === "membresia" && consultora) {
         consultora.membresiaNombre = payload.membresiaNombre;
         consultora.membresiaLink = payload.membresiaLink;
-      } else if (waDirectoTipo === "posponer" && payload.moverAlumnos) {
-        alumnos.forEach(al => { if (ids.includes(al.id)) al.aperturaKey = payload.nuevaFecha; });
-        aperturaActual = payload.nuevaFecha;
-        renderTabsAperturas(); renderBloques();
       }
 
       if (d.fallos === 0 && d.sinTelefono === 0) {
