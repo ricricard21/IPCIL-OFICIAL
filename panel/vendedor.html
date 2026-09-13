@@ -199,8 +199,10 @@
     box-shadow: none;
   }
 
-  .btn-generar.success { background: var(--green); }
-  .btn-generar.success:hover { background: #166534; }
+  /* Certificado YA emitido: blanco con borde y texto verde (el pendiente sigue teal sólido) */
+  .btn-generar.success { background: #ffffff !important; color: #0a5e50 !important; border: 1.5px solid #0a5e50 !important; box-shadow: none !important; }
+  .btn-generar.success:hover { background: #dff3ee !important; transform: none; }
+  .btn-generar.success::before { content: "✓ "; }
 
   .estado-badge {
     display: inline-flex;
@@ -2483,6 +2485,10 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 15l2 2 4-4"></path></svg>
               Reprogramar
             </button>
+            <button class="btn-reprogramar" data-posponer="${cursoId}" data-apertura="${aperturaActual}" data-curso-nombre="${escapeHtml(nombreCurso)}" title="Posponer este curso a la siguiente apertura con un clic (mueve a todos sus alumnos)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Posponer
+            </button>
             ` : ''}
             <div class="color-fila-wrapper">
               <button class="btn-color-fila" data-toggle-color="${cursoId}" disabled title="Selecciona filas con el checkbox para pintarlas">
@@ -3215,6 +3221,9 @@
     });
 
     // MODIFICADO: Botón "Reprogramar" — recorre el curso a otra fecha
+    document.querySelectorAll("[data-posponer]").forEach(btn => {
+      btn.addEventListener("click", () => abrirModalPosponer(btn.dataset.posponer, btn.dataset.cursoNombre || "este curso", btn.dataset.apertura || ""));
+    });
     document.querySelectorAll("[data-reprogramar]").forEach(btn => {
       btn.addEventListener("click", () => {
         abrirModalReprogramar(btn.dataset.reprogramar, btn.dataset.cursoNombre || "este curso", btn.dataset.apertura || "");
@@ -4107,6 +4116,53 @@
   }
 
   // ─── MODIFICADO: Reprogramar un curso a otra fecha (mueve sus alumnos de esta apertura) ───
+  // ── Posponer: mueve el curso (y sus alumnos de esta apertura) a la siguiente fecha con un clic ──
+  async function moverCursoAApertura(cursoId, aperturaVieja, fechaNueva) {
+    const guardados = alumnos.filter(a => a.cursoId === cursoId && getAperturaKey(a) === aperturaVieja);
+    const pendientes = pendingNewRows.filter(r => r.cursoId === cursoId && (r.aperturaKey || "sin-asignar") === aperturaVieja);
+    await Promise.all(guardados.map(a => updateDoc(doc(db, "alumnos", a.id), { aperturaKey: fechaNueva })));
+    pendientes.forEach(r => { r.aperturaKey = fechaNueva; });
+    aperturaActual = fechaNueva;
+    renderTabsAperturas(); renderBloques();
+    return guardados.length + pendientes.length;
+  }
+  function abrirModalPosponer(cursoId, cursoNombre, aperturaVieja) {
+    const base = /^\d{4}-\d{2}-\d{2}$/.test(aperturaVieja) ? new Date(aperturaVieja + "T12:00:00") : new Date();
+    const suma = (d) => { const f = new Date(base); f.setDate(f.getDate() + d); return f.toISOString().split("T")[0]; };
+    const curso = cursos.find(c => c.id === cursoId) || {};
+    const freq = Number(curso.frecuenciaDiasApertura) || 15;
+    // Siguiente pestaña de apertura que ya exista después de la actual
+    const keysExistentes = [...new Set(alumnos.map(a => getAperturaKey(a)).concat(pendingNewRows.map(r => r.aperturaKey || "sin-asignar")))].filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k) && k > aperturaVieja).sort();
+    const siguienteTab = keysExistentes[0] || null;
+    const opciones = [];
+    if (siguienteTab) opciones.push({ f: siguienteTab, t: `Siguiente apertura ya creada · ${labelApertura(siguienteTab)}`, rec: true });
+    opciones.push({ f: suma(freq), t: `+${freq} días (frecuencia del curso) · ${labelApertura(suma(freq))}`, rec: !siguienteTab });
+    if (freq !== 7) opciones.push({ f: suma(7), t: `+7 días · ${labelApertura(suma(7))}` });
+    if (freq !== 15) opciones.push({ f: suma(15), t: `+15 días · ${labelApertura(suma(15))}` });
+    opciones.push({ f: suma(30), t: `+30 días · ${labelApertura(suma(30))}` });
+    const total = alumnos.filter(a => a.cursoId === cursoId && getAperturaKey(a) === aperturaVieja).length + pendingNewRows.filter(r => r.cursoId === cursoId && (r.aperturaKey || "sin-asignar") === aperturaVieja).length;
+    const wrap = document.createElement("div"); wrap.className = "modal-backdrop";
+    wrap.innerHTML = `<div class="modal" style="max-width:460px">
+        <div class="modal-header"><div><div class="modal-title">Posponer curso</div><div class="modal-subtitle">${escapeHtml(cursoNombre)} · apertura ${labelApertura(aperturaVieja)}</div></div>
+          <button class="modal-close" type="button" data-close-here><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+        <div class="modal-body">
+          <div class="alert alert-info"><div>Se mueven <strong>${total} alumno${total === 1 ? "" : "s"}</strong> con todos sus datos a la fecha que elijas. Elige con un clic:</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">${opciones.map(o => `<button type="button" class="btn ${o.rec ? "btn-primary" : "btn-secondary"} op-posponer" data-f="${o.f}" style="justify-content:flex-start;text-align:left">${o.rec ? "⭐ " : ""}${o.t}</button>`).join("")}</div>
+          <div class="field-hint" style="margin-top:10px">¿Otra fecha? Usa <b>Reprogramar</b>.</div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-close-here>Cancelar</button></div></div>`;
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close-here]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", e => { if (e.target === wrap) cerrar(); });
+    wrap.querySelectorAll(".op-posponer").forEach(b => b.addEventListener("click", async () => {
+      const f = b.dataset.f; if (total === 0) { toast("No hay alumnos en esta apertura", "info"); cerrar(); return; }
+      wrap.querySelectorAll(".op-posponer").forEach(k => { k.disabled = true; }); b.textContent = "Posponiendo…";
+      try { const n = await moverCursoAApertura(cursoId, aperturaVieja, f); cerrar(); toast(`Curso pospuesto a ${labelApertura(f)} · ${n} alumno${n === 1 ? "" : "s"} movido${n === 1 ? "" : "s"}`, "success"); }
+      catch (e) { console.error(e); toast("No se pudo posponer: " + e.message, "error"); wrap.querySelectorAll(".op-posponer").forEach(k => { k.disabled = false; }); }
+    }));
+  }
+
   function abrirModalReprogramar(cursoId, cursoNombre, aperturaVieja) {
     const guardados = alumnos.filter(a => a.cursoId === cursoId && getAperturaKey(a) === aperturaVieja);
     const pendientes = pendingNewRows.filter(r => r.cursoId === cursoId && (r.aperturaKey || "sin-asignar") === aperturaVieja);
