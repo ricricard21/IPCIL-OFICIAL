@@ -290,10 +290,6 @@
           <h1 class="main-title">Mi reporte</h1>
           <p class="main-subtitle">Lo mismo que tu Excel, pero sale solo de lo que capturas · por lanzamiento → consultora → curso</p>
         </div>
-        <button class="btn btn-secondary" id="rp-csv">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Descargar Excel (CSV)
-        </button>
       </div>
       <div class="sheet-wrapper">
         <div class="sheet-header">
@@ -1060,23 +1056,7 @@
     }).join("");
   }
 
-  function descargarCSV() {
-    const filas = filasReporte().filter(r => r.lanzGrupo === _repLanz);
-    if (!filas.length) { toast("No hay datos en este lanzamiento", "info"); return; }
-    const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const head = ["Lanzamiento", "Consultora", "Curso", "Apertura", "Estado", "Costo total", "Mensajes", "CPL", "Alumnos", "Costo por alumno", "Precio curso", "Última captura"];
-    const lines = filas.sort((a, b) => a.consultoraNombre.localeCompare(b.consultoraNombre) || b.pauta - a.pauta).map(r => [
-      _repLanz, r.consultoraNombre, r.cursoNombre, r.K, ESTADO_TXT[r.estado] || r.estado, r.pauta, r.mensajes,
-      r.mensajes ? (r.pauta / r.mensajes).toFixed(2) : "", r.alumnos, r.alumnos ? (r.pauta / r.alumnos).toFixed(2) : "", r.precio, r.ultima || ""
-    ].map(esc).join(","));
-    const csv = "\ufeff" + head.map(esc).join(",") + "\n" + lines.join("\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    a.download = `reporte_${(usuario.nombre || "trafiquer").replace(/\s+/g, "_")}_${_repLanz}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
-  }
   document.getElementById("rp-tabs").addEventListener("click", e => { const b = e.target.closest("[data-rp-lanz]"); if (!b) return; _repLanz = b.dataset.rpLanz; renderReporte(); });
-  document.getElementById("rp-csv").addEventListener("click", descargarCSV);
 
 
   // ═══════════════ PENDIENTES DEL GERENTE (decisionesGerente) ═══════════════
