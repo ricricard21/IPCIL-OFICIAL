@@ -65,6 +65,14 @@
     .cp-check { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow: auto; padding: 4px 2px; }
     .cp-check label { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--text); cursor: pointer; }
     .cp-check .cp-sub { font-size: 11px; color: var(--muted); }
+    .cierre { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: var(--surface-soft); color: var(--muted); white-space: nowrap; margin-left: 4px; }
+    .cierre.c-pronto { background: var(--yellow-bg); color: var(--yellow); }
+    .cierre.c-urgente { background: var(--red-bg); color: var(--red); }
+    .cierre.c-hoy { background: var(--red); color: #fff; }
+    .cierre.c-pasada { background: #e5e7eb; color: #374151; }
+    .curso-bloque.alerta .curso-bloque-header { background: linear-gradient(135deg, #b3261e 0%, #7f1d1d 100%); }
+    .cierres-fila { cursor: pointer; }
+    .cierres-fila:hover td { background: var(--yellow-soft) !important; }
     .estado-pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--surface-soft); color: var(--muted); }
     .estado-pill.funciono { background: var(--green-bg); color: var(--green); } .estado-pill.no_funciono { background: var(--red-bg); color: var(--red); } .estado-pill.pruebas { background: var(--info-bg); color: var(--info); } .estado-pill.pausada { background: #e5e7eb; color: #374151; }
 
@@ -768,6 +776,16 @@
   const lunesDe = ms => { const d = new Date(ms); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); d.setHours(0, 0, 0, 0); return d.getTime(); };
   const metId = (consultoraId, cursoId, K) => `${consultoraId}_${cursoId}_${K}`;
   const fmt$ = v => "$" + (Number(v) || 0).toLocaleString("es-MX", { maximumFractionDigits: 0 });
+  const diasPara = K => Math.round((keyMs(K) - keyMs(hoyMXs())) / DAY);
+  // Chip "cierra en N días" con semáforo: hoy → rojo sólido, ≤3 días → rojo, ≤7 → amarillo, resto gris
+  function cierreChip(K) {
+    const d = diasPara(K);
+    if (d < 0) return `<span class="cierre c-pasada">abrió hace ${-d} día${d === -1 ? "" : "s"}</span>`;
+    if (d === 0) return `<span class="cierre c-hoy">ABRE HOY · última captura</span>`;
+    if (d === 1) return `<span class="cierre c-urgente">cierra MAÑANA</span>`;
+    const cls = d <= 3 ? "c-urgente" : d <= 7 ? "c-pronto" : "";
+    return `<span class="cierre ${cls}">cierra en ${d} días</span>`;
+  }
   const ESTADOS = [["sin_iniciar", "Sin iniciar"], ["pruebas", "En pruebas"], ["funciono", "Funcionó"], ["no_funciono", "No funcionó"], ["pausada", "Pausada"]];
   const ESTADO_TXT = Object.fromEntries(ESTADOS);
   let _capLanz = null;   // lanzamiento (lunes, YYYY-MM-DD) seleccionado
@@ -848,7 +866,7 @@
       const aps = [...g.aperturas].sort();
       return `<button class="apertura-tab${g.key === _capLanz ? " active" : ""}" data-lanz="${g.key}">
         <span>Lanzamiento ${fKey(g.key)}</span>
-        ${g.aps.length ? `<span class="tab-count">${g.aps.length}</span><span class="tab-sub">abre ${aps.map(fKeyC).join(" / ")}</span>` : `<span class="tab-sub">esta semana · vacío</span>`}
+        ${g.aps.length ? `<span class="tab-count">${g.aps.length}</span><span class="tab-sub">abre ${aps.map(kk => `${fKeyC(kk)} (${diasPara(kk) === 0 ? "hoy" : "en " + diasPara(kk) + " d"})`).join(" / ")}</span>` : `<span class="tab-sub">esta semana · vacío</span>`}
       </button>`;
     }).join("");
 
@@ -864,11 +882,31 @@
     const ordenadas = [...porCons.entries()].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
 
     let html = "";
+    // ── Apartado: campañas que cierran en 3 días o menos (de cualquier lanzamiento) ──
+    const cierran = todas.filter(ap => diasPara(ap.K) <= 3).sort((a, b) => a.K.localeCompare(b.K) || a.consultoraNombre.localeCompare(b.consultoraNombre));
+    if (cierran.length) {
+      html += `<div class="curso-bloque alerta">
+        <div class="curso-bloque-header">
+          <div class="curso-bloque-titulo">Cierran en 3 días o menos</div>
+          <div class="curso-bloque-stats"><span><b>${cierran.length}</b> campaña${cierran.length === 1 ? "" : "s"}</span><span class="curso-bloque-badge">captura su acumulado final antes de que abran</span></div>
+        </div>
+        <div class="sheet-scroll"><table class="sheet-table" style="min-width:820px"><thead><tr><th style="width:44px">#</th><th>Consultora</th><th style="min-width:240px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Alumnos</th><th>Última captura</th></tr></thead>
+        <tbody>${cierran.map((ap, i) => `<tr class="cierres-fila" data-ir-lanz="${ap.lanzGrupo}" title="Ir a su lanzamiento">
+          <td class="sheet-row-num">${i + 1}</td>
+          <td class="txt"><b>${escapeHtml(ap.consultoraNombre)}</b></td>
+          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}</div></td>
+          <td class="txt">${fKey(ap.K)} ${cierreChip(ap.K)}</td>
+          <td class="txt"><span class="estado-pill ${ap.estado}">${ESTADO_TXT[ap.estado] || ap.estado}</span></td>
+          <td class="txt num"><b>${ap.alumnos}</b></td>
+          <td class="txt" style="color:var(--muted);font-size:12px">${ap.fotoDia ? `<span style="color:var(--green);font-weight:800">✓ hoy</span>` : ap.foto ? `${fKeyC(ap.foto.fecha)} · ${fmt$(ap.foto.pauta)} · ${ap.foto.mensajes} msj` : `<span style="color:var(--red);font-weight:700">sin captura</span>`}</td>
+        </tr>`).join("")}</tbody></table></div>
+      </div>`;
+    }
     ordenadas.forEach(([consId, c]) => {
       const cache = _cache.get(consId);
       const listados = new Set(c.aps.map(a => a.cursoId));
       const otros = (cache?.cursos || []).filter(cu => cu.activo !== false && !listados.has(cu.id));
-      let aps = c.aps.sort((a, b) => a.cursoNombre.localeCompare(b.cursoNombre));
+      let aps = c.aps.sort((a, b) => a.K.localeCompare(b.K) || a.cursoNombre.localeCompare(b.cursoNombre));
       if (q) aps = aps.filter(ap => ap.cursoNombre.toLowerCase().includes(q) || c.nombre.toLowerCase().includes(q));
       if (q && !aps.length && !c.nombre.toLowerCase().includes(q)) return;
       const capt = c.aps.filter(ap => ap.fotoDia).length;
@@ -884,7 +922,7 @@
           : ap.fotoPrev ? `antes: <b>${fmt$(ap.fotoPrev.pauta)}</b> · <b>${ap.fotoPrev.mensajes}</b> msj (${fKeyC(ap.fotoPrev.fecha)})${baja ? `<span class="warn">↓ menor que antes: ¿seguro?</span>` : ""}` : `<span style="color:var(--muted-light)">primera captura</span>`;
         return `<tr class="${ap.fotoDia && !dirty ? "saved" : ""}${dirty ? " dirty" : ""}">
           <td class="sheet-row-num">${idx + 1}</td>
-          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}<small>Abre ${fKey(ap.K)} · ${ap.alumnos} alumno${ap.alumnos === 1 ? "" : "s"}</small></div></td>
+          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}<small>Abre ${fKey(ap.K)} ${cierreChip(ap.K)} · ${ap.alumnos} alumno${ap.alumnos === 1 ? "" : "s"}</small></div></td>
           <td><select class="sheet-cell-select e-${estadoV}" data-row="${ap.rowId}" data-campo="estado">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === estadoV ? "selected" : ""}>${tx}</option>`).join("")}</select></td>
           <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="decimal" placeholder="${ap.fotoPrev ? ap.fotoPrev.pauta : "0"}" title="Acumulado en Meta hoy" data-row="${ap.rowId}" data-campo="pauta" value="${pautaV === "" ? "" : pautaV}"></td>
           <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="numeric" placeholder="${ap.fotoPrev ? ap.fotoPrev.mensajes : "0"}" title="Mensajes acumulados en Meta hoy" data-row="${ap.rowId}" data-campo="mensajes" value="${msgV === "" ? "" : msgV}"></td>
@@ -994,7 +1032,8 @@
     actualizarBtnGuardar();
   });
   document.getElementById("cp-contenido").addEventListener("click", e => {
-    const b = e.target.closest("[data-add-multi]"); if (b) abrirAgregarCursos(b.dataset.addMulti);
+    const b = e.target.closest("[data-add-multi]"); if (b) { abrirAgregarCursos(b.dataset.addMulti); return; }
+    const f = e.target.closest("[data-ir-lanz]"); if (f && f.dataset.irLanz !== _capLanz) { _capLanz = f.dataset.irLanz; renderCaptura(); document.getElementById("cp-tabs").scrollIntoView({ behavior: "smooth", block: "start" }); }
   });
   document.getElementById("cp-tabs").addEventListener("click", e => {
     const b = e.target.closest("[data-lanz]"); if (!b) return;
@@ -1046,7 +1085,7 @@
         </div>
         <div class="sheet-scroll"><table class="sheet-table"><thead><tr><th style="width:44px">#</th><th style="min-width:260px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Costo total</th><th class="num">Mensajes</th><th class="num">CPL</th><th class="num">Alumnos</th><th class="num">Costo/alumno</th><th>Última captura</th></tr></thead>
         <tbody>${c.filas.sort((a, b) => b.pauta - a.pauta).map((r, i) => `<tr>
-          <td class="sheet-row-num">${i + 1}</td><td class="txt"><div class="sheet-curso">${escapeHtml(r.cursoNombre)}</div></td><td class="txt">${fKeyC(r.K)}</td>
+          <td class="sheet-row-num">${i + 1}</td><td class="txt"><div class="sheet-curso">${escapeHtml(r.cursoNombre)}</div></td><td class="txt" style="white-space:nowrap">${fKeyC(r.K)} ${cierreChip(r.K)}</td>
           <td class="txt"><span class="estado-pill ${r.estado}">${ESTADO_TXT[r.estado] || r.estado}</span></td>
           <td class="txt num">${fmt$(r.pauta)}</td><td class="txt num">${r.mensajes}</td><td class="txt num"><b>${r.mensajes ? fmt$(r.pauta / r.mensajes) : "—"}</b></td>
           <td class="txt num"><b>${r.alumnos}</b></td><td class="txt num">${r.alumnos ? fmt$(r.pauta / r.alumnos) : (r.pauta ? '<span style="color:var(--red);font-weight:700">sin ventas</span>' : "—")}</td>
