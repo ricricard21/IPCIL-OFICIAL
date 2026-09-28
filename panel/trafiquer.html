@@ -200,6 +200,17 @@
     .tf-ok-s { font-size: 13px; color: var(--muted); margin-top: 5px; }
 
 
+    /* ═══ Barra de llenado (los trafiquers ven % del mínimo, nunca el número de alumnos) ═══ */
+    .ll { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .ll-bar { width: 78px; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; flex-shrink: 0; }
+    .ll-bar > i { display: block; height: 100%; border-radius: 999px; background: var(--red); }
+    .ll.mid .ll-bar > i { background: var(--yellow); }
+    .ll.ok .ll-bar > i { background: var(--green); }
+    .ll-pct { font-size: 12px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+    .ll.mal .ll-pct { color: var(--red); } .ll.mid .ll-pct { color: var(--yellow); } .ll.ok .ll-pct { color: var(--green); }
+    .ll-sub { font-size: 10.5px; color: var(--muted); font-weight: 600; }
+    .v-escalar .v-head { background: linear-gradient(135deg, #0a5e50 0%, #b7791f 100%); }
+
     /* ═══ Veredictos ═══ */
     .v-bloque { margin: 0 0 20px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: white; box-shadow: var(--shadow-sm); }
     .v-head { color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -349,7 +360,7 @@
       </div>
       <div class="sheet-wrapper">
         <div class="sheet-header">
-          <div><div class="sheet-title">Reporte por lanzamiento</div><div style="font-size:11.5px;opacity:.85;margin-top:2px">Costo total, mensajes, CPL y los alumnos reales que registró ventas</div></div>
+          <div><div class="sheet-title">Reporte por lanzamiento</div><div style="font-size:11.5px;opacity:.85;margin-top:2px">Costo total, mensajes, CPL y el llenado real de cada grupo</div></div>
           <div class="sheet-counter" id="rp-counter">Campañas: <strong>0</strong></div>
         </div>
         <div class="aperturas-tabs" id="rp-tabs"></div>
@@ -362,7 +373,7 @@
       <div class="main-header">
         <div>
           <h1 class="main-title">Qué hago con cada campaña</h1>
-          <p class="main-subtitle">Cada curso lanzado con su veredicto: va a abrir, súbele, o ya no va · aprende de la corrida anterior del mismo curso</p>
+          <p class="main-subtitle">Cada curso lanzado con su veredicto: va muy bien (súbele y gana más), va a abrir, súbele para llegar, o ya no va · aprende de la corrida anterior del mismo curso</p>
         </div>
         <div class="tf-refresh">
           <span class="tf-updated" id="tf-updated"></span>
@@ -373,14 +384,15 @@
         </div>
       </div>
       <div class="tf-summary" style="grid-template-columns:repeat(4,1fr)">
+        <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-escalar">0</div><div class="tf-sum-lbl">Van muy bien · súbeles</div></div>
         <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-nova">0</div><div class="tf-sum-lbl">No van a llegar</div></div>
         <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-subir">0</div><div class="tf-sum-lbl">Súbele para llegar</div></div>
         <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-hoy">0</div><div class="tf-sum-lbl">Abren hoy sin llenar</div></div>
-        <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-ok">0</div><div class="tf-sum-lbl">Van a abrir</div></div>
       </div>
       <div class="tf-tools">
         <div class="tf-fchips" id="tf-fchips">
           <button class="tf-fchip active" data-tipo="todos">Todas</button>
+          <button class="tf-fchip" data-tipo="escalar">Van muy bien</button>
           <button class="tf-fchip" data-tipo="nova">No va</button>
           <button class="tf-fchip" data-tipo="subir">Súbele</button>
           <button class="tf-fchip" data-tipo="hoy">Abren hoy</button>
@@ -631,11 +643,12 @@
   let _veredictos = [];
   let _verAtendidas = false;
   const VER = {
-    nova:   { orden: 0, cls: "v-rojo",     titulo: "No van a llegar",              sub: "Baja o detén la pauta y avisa a coordinación para posponer; meterle más no lo salva" },
-    subir:  { orden: 1, cls: "v-amarillo", titulo: "Pueden llegar si les subes",   sub: "Hay tiempo: mete presupuesto ahora, no la semana que entra" },
-    hoy:    { orden: 2, cls: "v-rojo",     titulo: "Abren hoy sin llenar",         sub: "Última decisión con coordinación: abre corta o se pospone (si se pospone, captura el acumulado final)" },
-    ok:     { orden: 3, cls: "v-verde",    titulo: "Van a abrir",                  sub: "Mantén la pauta como va" },
-    espera: { orden: 4, cls: "v-gris",     titulo: "Recién lanzadas",              sub: "Todavía no hay señal; se juzgan a partir del día 3" },
+    escalar:{ orden: 0, cls: "v-escalar",  titulo: "Van muy bien · súbeles y gana más", sub: "Aquí es donde se gana: ya rebasan el mínimo con días por delante; cada peso extra rinde" },
+    nova:   { orden: 1, cls: "v-rojo",     titulo: "No van a llegar",              sub: "Baja o detén la pauta y avisa a coordinación para posponer; meterle más no lo salva" },
+    subir:  { orden: 2, cls: "v-amarillo", titulo: "Pueden llegar si les subes",   sub: "Hay tiempo: mete presupuesto ahora, no la semana que entra" },
+    hoy:    { orden: 3, cls: "v-rojo",     titulo: "Abren hoy sin llenar",         sub: "Última decisión con coordinación: abre corta o se pospone (si se pospone, captura el acumulado final)" },
+    ok:     { orden: 4, cls: "v-verde",    titulo: "Van a abrir",                  sub: "Mantén la pauta como va" },
+    espera: { orden: 5, cls: "v-gris",     titulo: "Recién lanzadas",              sub: "Todavía no hay señal; se juzgan a partir del día 3" },
   };
   function fotoAlDia(m, lanzMs, D) {
     const fotos = m?.fotos || {}; const lim = msKey(lanzMs + Math.floor(D) * DAY);
@@ -693,7 +706,7 @@
         if (ap.foto) {
           if (cmpPrev) {
             const rP = cmpPrev.pauta ? pauta / cmpPrev.pauta : null, rL = cmpPrev.leads ? leads / cmpPrev.leads : null, rA = cmpPrev.alumnos ? alumnos / cmpPrev.alumnos : null;
-            notas.push({ cls: "", txt: `A estos mismos días la vez pasada: ${fmt$(cmpPrev.pauta)} de pauta, ${cmpPrev.leads} mensajes, ${cmpPrev.alumnos} alumnos (cerró con ${cmpPrev.total}). Hoy: ${fmt$(pauta)}, ${leads}, ${alumnos}.` });
+            notas.push({ cls: "", txt: `A estos mismos días la vez pasada: ${fmt$(cmpPrev.pauta)} de pauta, ${cmpPrev.leads} mensajes e iba al ${pctDe(cmpPrev.alumnos, min)}% del mínimo (cerró al ${pctDe(cmpPrev.total, min)}%). Hoy: ${fmt$(pauta)}, ${leads} mensajes, ${pctDe(alumnos, min)}%.` });
             if (rP !== null && rP < 0.6) notas.push({ cls: "pauta", txt: `Vas bajo en pauta: llevas el ${Math.round(rP * 100)}% de lo que llevabas la corrida pasada.` });
             if (rP !== null && rP >= 0.6 && rL !== null && rL < 0.6) notas.push({ cls: "mal", txt: `Ads no está trayendo mensajes: misma inversión, ${leads} mensajes contra ${cmpPrev.leads}. Cambia anuncio o segmentación, no es presupuesto.` });
             if (rL !== null && rL >= 0.8 && rA !== null && rA < 0.6) notas.push({ cls: "ventas", txt: `Llegan mensajes como la vez pasada y no se convierten (${conv !== null ? (conv * 100).toFixed(1) : "0"}% vs ${cmpPrev.conv !== null ? (cmpPrev.conv * 100).toFixed(1) : "—"}%). El problema está en ventas, no en Ads.` });
@@ -708,33 +721,38 @@
         // ── Veredicto ──
         let tipo, accion;
         const faltan = Math.max(0, min - Math.round(proy));
-        const inv = faltan > 0 && cac ? ` ≈ ${fmt$(faltan * cac)} más de pauta (a ${fmt$(cac)} por alumno${cacPrev ? ", tu costo de la corrida pasada" : bench?.cac ? ", promedio de la consultora" : ""})` : "";
+        const pct = pctDe(alumnos, min), pctProy = pctDe(proy, min), faltaPct = Math.max(0, 100 - pctProy);
+        const inv = faltan > 0 && cac ? ` ≈ <b>${fmt$(faltan * cac)}</b> más de pauta${cacPrev ? " (calculado con tu costo real de la corrida pasada)" : bench?.cac ? " (calculado con el promedio de la consultora)" : ""}` : "";
+        const cplOk = cpl === null || !bench || bench.n < 2 || cpl <= bench.cpl * 1.3;
         if (restantes === 0) {
           tipo = alumnos >= min ? "ok" : "hoy";
-          accion = alumnos >= min ? `Abre hoy con ${alumnos} alumnos (mín ${min}). Captura el acumulado final.` : `Abre hoy con ${alumnos} de ${min}. Coordinación decide si abre corta o se pospone; captura el acumulado final de la campaña.`;
+          accion = alumnos >= min ? `Abre hoy al ${pct}% del mínimo. Captura el acumulado final.` : `Abre hoy al ${pct}% del mínimo. Coordinación decide si abre corta o se pospone; captura el acumulado final de la campaña.`;
         } else if (D < 3 && alumnos < 2) {
           tipo = "espera";
-          accion = `Lanzada hace ${Math.max(1, Math.ceil(D))} día${Math.ceil(D) === 1 ? "" : "s"}. Sin alumnos todavía es normal; se juzga al día 3.${!ap.foto ? " Ve capturando la pauta." : ""}`;
+          accion = `Lanzada hace ${Math.max(1, Math.ceil(D))} día${Math.ceil(D) === 1 ? "" : "s"}. Sin ventas todavía es normal; se juzga al día 3.${!ap.foto ? " Ve capturando la pauta." : ""}`;
+        } else if (restantes >= 3 && pctProy >= 130 && cplOk) {
+          tipo = "escalar";
+          accion = `Ya va al ${pct}% del mínimo y proyecta ${pctProy}% con ${restantes} días por delante${cpl !== null ? ` y CPL de ${fmt$(cpl)}` : ""}. Aquí es donde se gana: sube la pauta 30–50 % hoy y vigila que el CPL no se dispare; si se mantiene, sigue subiendo.`;
         } else if (proy >= min) {
           tipo = "ok";
-          accion = `Va a abrir: ${alumnos} alumnos y proyección de ${Math.round(proy)} (mín ${min}). Mantén la pauta.`;
+          accion = `Va a abrir: ${pct}% del mínimo y proyección de ${pctProy}%. Mantén la pauta.`;
         } else if (alumnos === 0 && D >= 4) {
           tipo = "nova";
           accion = ventasFalla
-            ? `${Math.floor(D)} días, ${leads} mensajes y 0 alumnos: antes de bajar la pauta, ventas tiene que revisar esos chats. Si ventas confirma que no cierran, detén.`
-            : `${Math.floor(D)} días y 0 alumnos${ap.foto ? ` con ${fmt$(pauta)} gastados y ${leads} mensajes` : ""}: no va a llegar. Baja o detén la pauta y avisa a coordinación para posponer.`;
+            ? `${Math.floor(D)} días, ${leads} mensajes y ninguna venta: antes de bajar la pauta, ventas tiene que revisar esos chats. Si ventas confirma que no cierran, detén.`
+            : `${Math.floor(D)} días sin ventas${ap.foto ? ` con ${fmt$(pauta)} gastados y ${leads} mensajes` : ""}: no va a llegar. Baja o detén la pauta y avisa a coordinación para posponer.`;
         } else if (proy >= min * 0.75 || (restantes >= 5 && alumnos >= 2 && proy >= min * 0.5)) {
           tipo = "subir";
           accion = ventasFalla
-            ? `Faltan ~${faltan} alumnos y hay mensajes que no se cierran: primero ventas, luego pauta.`
-            : `Faltan ~${faltan} alumnos y quedan ${restantes} días: súbele ahora${inv}.`;
+            ? `Falta ~${faltaPct}% para el mínimo y hay mensajes que no se cierran: primero ventas, luego pauta.`
+            : `Falta ~${faltaPct}% para el mínimo y quedan ${restantes} días: súbele ahora${inv}.`;
         } else {
           tipo = "nova";
-          accion = `Al ritmo actual cierra con ${Math.round(proy)} de ${min} y quedan ${restantes} días: no va a llegar. Baja o detén la pauta y avisa a coordinación para posponer.`;
+          accion = `Al ritmo actual cierra al ${pctProy}% del mínimo y quedan ${restantes} días: no va a llegar. Baja o detén la pauta y avisa a coordinación para posponer.`;
         }
         let relanzTxt = null;
-        if (relanz && tipo !== "ok") relanzTxt = `Relanzamiento: la corrida del ${fKeyC(relanz.key)} cerró con ${relanz.total} de ${min}${relanz.fallidas >= 2 ? ` · van ${relanz.fallidas} corridas seguidas sin abrir` : ""}. Sin cambios en anuncio, segmentación u oferta va a repetir el resultado; avisa antes de meterle más.`;
-        else if (relanz) relanzTxt = `Relanzamiento que sí está funcionando (la del ${fKeyC(relanz.key)} cerró con ${relanz.total}).`;
+        if (relanz && tipo !== "ok" && tipo !== "escalar") relanzTxt = `Relanzamiento: la corrida del ${fKeyC(relanz.key)} cerró al ${pctDe(relanz.total, min)}% del mínimo${relanz.fallidas >= 2 ? ` · van ${relanz.fallidas} corridas seguidas sin abrir` : ""}. Sin cambios en anuncio, segmentación u oferta va a repetir el resultado; avisa antes de meterle más.`;
+        else if (relanz) relanzTxt = `Relanzamiento que sí está funcionando (la del ${fKeyC(relanz.key)} cerró al ${pctDe(relanz.total, min)}%).`;
 
         out.push({ id: `${consId}_${ap.cursoId}_${ap.K}`, consultoraId: consId, consultoraNombre: c.nombre, cursoId: ap.cursoId, curso: ap.cursoNombre, fecha: ap.K, K: ap.K, lanzKey: ap.lanzKey,
           rowId: ap.rowId, estado: ap.estado, foto: ap.foto, fotoDia: ap.fotoDia, min, alumnos, proy: Math.round(proy), D: Math.floor(D), ventana, restantes,
@@ -749,11 +767,11 @@
     const cont = document.getElementById("tf-contenido"); if (!cont) return;
     const todas = _veredictos;
     const n = t => todas.filter(v => v.tipo === t && !_acciones.get(accionId(v))).length;
+    document.getElementById("sum-escalar").textContent = todas.filter(v => v.tipo === "escalar").length;
     document.getElementById("sum-nova").textContent = n("nova");
     document.getElementById("sum-subir").textContent = n("subir");
     document.getElementById("sum-hoy").textContent = n("hoy");
-    document.getElementById("sum-ok").textContent = todas.filter(v => v.tipo === "ok").length;
-    { const b = document.getElementById("badge-riesgo"); const u = n("nova") + n("hoy"); b.textContent = u; b.style.display = u ? "" : "none"; }
+    { const b = document.getElementById("badge-riesgo"); const u = n("nova") + n("hoy") + n("escalar"); b.textContent = u; b.style.display = u ? "" : "none"; }
 
     let lista = todas.filter(v => _fCons === "todas" || v.consultoraId === _fCons);
     if (_fTipo === "relanz") lista = lista.filter(v => v.relanz);
@@ -769,17 +787,17 @@
       return `<div class="v-bloque ${V.cls}">
         <div class="v-head"><div><div class="t">${V.titulo}</div><div class="s">${V.sub}</div></div><span class="n">${vs.length} campaña${vs.length === 1 ? "" : "s"}</span></div>
         <div class="sheet-scroll"><table class="sheet-table" style="min-width:980px"><thead><tr>
-          <th style="width:44px">#</th><th style="min-width:230px">Curso · lanzada → abre</th><th class="num" style="width:110px">Alumnos</th><th style="width:150px">Pauta capturada</th><th style="min-width:340px">Qué hacer</th><th style="width:160px">Estado · atendida</th>
+          <th style="width:44px">#</th><th style="min-width:230px">Curso · lanzada → abre</th><th style="width:150px">Llenado del mínimo</th><th style="width:150px">Pauta capturada</th><th style="min-width:340px">Qué hacer</th><th style="width:160px">Estado · atendida</th>
         </tr></thead><tbody>${vs.map((v, i) => {
           const att = _acciones.get(accionId(v));
           const hora = att?.atendidoEn?.toDate ? att.atendidoEn.toDate().toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
           return `<tr class="${att ? "att" : ""}">
             <td class="sheet-row-num">${i + 1}</td>
             <td class="txt"><div class="cp-sub" style="text-transform:uppercase;letter-spacing:.04em;color:var(--primary);font-weight:800">${escapeHtml(v.consultoraNombre)}</div><div class="sheet-curso">${escapeHtml(v.curso)}${v.relanz ? `<span class="v-relanz${v.relanz.fallidas >= 2 ? " grave" : ""}" title="${escapeHtml(v.relanzTxt || "")}">Relanzamiento${v.relanz.fallidas >= 2 ? " ×" + v.relanz.fallidas : ""}</span>` : ""}</div><div class="cp-sub" style="margin-top:4px;white-space:nowrap">${fKeyC(v.lanzKey)} → <b>${fKeyC(v.K)}</b> · día ${Math.min(v.ventana, v.D)} de ${v.ventana} ${cierreChip(v.K)}</div></td>
-            <td class="txt num" style="white-space:nowrap"><span class="v-num${v.alumnos >= v.min ? " ok" : v.alumnos === 0 ? " mal" : ""}">${v.alumnos}</span> <small style="color:var(--muted)">/ mín ${v.min}</small><div class="cp-sub">proyección <b style="color:${v.proy >= v.min ? "var(--green)" : "var(--red)"}">${v.proy}</b></div></td>
+            <td class="txt" style="white-space:nowrap">${llenadoHtml(v.alumnos, v.min)}<div class="cp-sub" style="margin-top:4px">proyección <b style="color:${v.proy >= v.min ? "var(--green)" : "var(--red)"}">${pctDe(v.proy, v.min)}%</b></div></td>
             <td class="txt" style="white-space:nowrap">${v.foto ? `<b>${fmt$(v.pauta)}</b> · ${v.leads} msj<div class="cp-sub">${v.cpl !== null ? `CPL ${fmt$(v.cpl)} · ` : ""}${v.fotoDia ? '<span style="color:var(--green);font-weight:800">✓ hoy</span>' : "últ. " + fKeyC(v.foto.fecha)}</div>` : `<span style="color:var(--red);font-weight:700">sin captura</span><div class="cp-sub">captúrala para diagnosticar</div>`}</td>
             <td class="wrap"><span class="v-acc">${v.accionTxt}</span>${v.relanzTxt ? `<span class="v-nota ${v.tipo !== "ok" ? "mal" : ""}">${v.relanzTxt}</span>` : ""}${v.notas.map(nn => `<span class="v-nota ${nn.cls}">${nn.txt}</span>`).join("")}</td>
-            <td class="txt" style="white-space:nowrap"><select class="sheet-cell-select e-${v.estado}" style="padding:7px 26px 7px 8px;font-size:12px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px" data-cierre-estado="${v.rowId}" data-cons="${v.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === v.estado ? "selected" : ""}>${tx}</option>`).join("")}</select><div>${att ? `<span class="v-att">✓ ${escapeHtml(att.atendidoPorNombre || "Atendida")}${hora ? "<br>" + hora : ""}</span>${att.atendidoPor === usuario.uid ? `<button class="v-undo" data-desatender="${accionId(v)}">Desmarcar</button>` : ""}` : v.tipo === "ok" ? "" : `<button class="v-btn" data-atender="${v.id}">Ya lo atendí</button>`}</div></td>
+            <td class="txt" style="white-space:nowrap"><select class="sheet-cell-select e-${v.estado}" style="padding:7px 26px 7px 8px;font-size:12px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px" data-cierre-estado="${v.rowId}" data-cons="${v.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === v.estado ? "selected" : ""}>${tx}</option>`).join("")}</select><div>${att ? `<span class="v-att">✓ ${escapeHtml(att.atendidoPorNombre || "Atendida")}${hora ? "<br>" + hora : ""}</span>${att.atendidoPor === usuario.uid ? `<button class="v-undo" data-desatender="${accionId(v)}">Desmarcar</button>` : ""}` : v.tipo === "ok" ? "" : `<button class="v-btn" data-atender="${v.id}">${v.tipo === "escalar" ? "Ya le subí" : "Ya lo atendí"}</button>`}</div></td>
           </tr>`; }).join("")}</tbody></table></div>
       </div>`;
     }).join("");
@@ -809,6 +827,12 @@
     if (d === 1) return `<span class="cierre c-urgente">cierra MAÑANA</span>`;
     const cls = d <= 3 ? "c-urgente" : d <= 7 ? "c-pronto" : "";
     return `<span class="cierre ${cls}">cierra en ${d} días</span>`;
+  }
+  // Llenado del grupo como % del mínimo del curso. Nunca se muestra el número de alumnos ni el mínimo.
+  const pctDe = (alumnos, min) => Math.round((alumnos / Math.max(1, min)) * 100);
+  function llenadoHtml(alumnos, min, sub) {
+    const pct = pctDe(alumnos, min), cls = pct >= 100 ? "ok" : pct >= 50 ? "mid" : "mal";
+    return `<span class="ll ${cls}"><span class="ll-bar"><i style="width:${Math.min(100, pct)}%"></i></span><span class="ll-pct">${pct}%</span>${sub ? `<span class="ll-sub">${sub}</span>` : ""}</span>`;
   }
   const ESTADOS = [["sin_iniciar", "Sin iniciar"], ["pruebas", "En pruebas"], ["funciono", "Funcionó"], ["no_funciono", "No funcionó"], ["pausada", "Pausada"]];
   const ESTADO_TXT = Object.fromEntries(ESTADOS);
@@ -872,7 +896,8 @@
     if (!cont) return;
     if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#cp-contenido")) { _capRenderPendiente = true; return; }
     _capRenderPendiente = false;
-    if (!_capFecha) { _capFecha = hoyMXs(); const inp = document.getElementById("cp-fecha"); inp.value = _capFecha; inp.max = _capFecha; }
+    if (!_capFecha) _capFecha = hoyMXs();
+    { const inp = document.getElementById("cp-fecha"); if (!inp.value) { inp.value = _capFecha; inp.max = hoyMXs(); } }
     if (!cacheLista()) { cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>`; return; }
 
     const hoy = hoyMXs();
@@ -925,7 +950,7 @@
           : ap.fotoPrev ? `antes: <b>${fmt$(ap.fotoPrev.pauta)}</b> · <b>${ap.fotoPrev.mensajes}</b> msj (${fKeyC(ap.fotoPrev.fecha)})${baja ? `<span class="warn">↓ menor que antes: ¿seguro?</span>` : ""}` : `<span style="color:var(--muted-light)">primera captura</span>`;
         return `<tr class="${ap.fotoDia && !dirty ? "saved" : ""}${dirty ? " dirty" : ""}">
           <td class="sheet-row-num">${idx + 1}</td>
-          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}<small>Abre ${fKey(ap.K)} ${cierreChip(ap.K)} · ${ap.alumnos} alumno${ap.alumnos === 1 ? "" : "s"}</small></div></td>
+          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}<small style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">Abre ${fKey(ap.K)} ${cierreChip(ap.K)} ${llenadoHtml(ap.alumnos, Number((cache?.cursos || []).find(cu => cu.id === ap.cursoId)?.minimoAlumnos) || 8, "del mínimo")}</small></div></td>
           <td><select class="sheet-cell-select e-${estadoV}" data-row="${ap.rowId}" data-campo="estado">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === estadoV ? "selected" : ""}>${tx}</option>`).join("")}</select></td>
           <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="decimal" placeholder="${ap.fotoPrev ? ap.fotoPrev.pauta : "0"}" title="Acumulado en Meta hoy" data-row="${ap.rowId}" data-campo="pauta" value="${pautaV === "" ? "" : pautaV}"></td>
           <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="numeric" placeholder="${ap.fotoPrev ? ap.fotoPrev.mensajes : "0"}" title="Mensajes acumulados en Meta hoy" data-row="${ap.rowId}" data-campo="mensajes" value="${msgV === "" ? "" : msgV}"></td>
@@ -1080,7 +1105,7 @@
       const f = ultimaFoto(m);
       const alumnos = c.alumnos.filter(a => a.cursoId === m.cursoId && a.aperturaKey === m.aperturaKey).length;
       out.push({ lanzGrupo: msKey(lunesDe(keyMs(lanzKey))), consultoraId: m.consultoraId, consultoraNombre: c.nombre, cursoNombre: m.cursoNombre || m.cursoId, K: m.aperturaKey,
-        estado: m.estado || "pruebas", pauta: f ? Number(f.pauta) || 0 : 0, mensajes: f ? Number(f.mensajes) || 0 : 0, ultima: f?.fecha || null, alumnos, precio: Number(m.precioCurso) || 0 });
+        estado: m.estado || "pruebas", pauta: f ? Number(f.pauta) || 0 : 0, mensajes: f ? Number(f.mensajes) || 0 : 0, ultima: f?.fecha || null, alumnos, min: Number(c.cursos.find(x => x.id === m.cursoId)?.minimoAlumnos) || 8, precio: Number(m.precioCurso) || 0 });
     });
     return out;
   }
@@ -1104,12 +1129,12 @@
           <div class="curso-bloque-titulo">${escapeHtml(c.nombre)}</div>
           <div class="curso-bloque-stats"><span><b>${c.filas.length}</b> campaña${c.filas.length === 1 ? "" : "s"}</span></div>
         </div>
-        <div class="sheet-scroll"><table class="sheet-table"><thead><tr><th style="width:44px">#</th><th style="min-width:260px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Costo total</th><th class="num">Mensajes</th><th class="num">CPL</th><th class="num">Alumnos</th><th class="num">Costo/alumno</th><th>Última captura</th></tr></thead>
+        <div class="sheet-scroll"><table class="sheet-table"><thead><tr><th style="width:44px">#</th><th style="min-width:260px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Costo total</th><th class="num">Mensajes</th><th class="num">CPL</th><th>Llenado del mínimo</th><th>Última captura</th></tr></thead>
         <tbody>${c.filas.sort((a, b) => b.pauta - a.pauta).map((r, i) => `<tr>
           <td class="sheet-row-num">${i + 1}</td><td class="txt"><div class="sheet-curso">${escapeHtml(r.cursoNombre)}</div></td><td class="txt" style="white-space:nowrap">${fKeyC(r.K)} ${cierreChip(r.K)}</td>
           <td class="txt"><span class="estado-pill ${r.estado}">${ESTADO_TXT[r.estado] || r.estado}</span></td>
           <td class="txt num">${fmt$(r.pauta)}</td><td class="txt num">${r.mensajes}</td><td class="txt num"><b>${r.mensajes ? fmt$(r.pauta / r.mensajes) : "—"}</b></td>
-          <td class="txt num"><b>${r.alumnos}</b></td><td class="txt num">${r.alumnos ? fmt$(r.pauta / r.alumnos) : (r.pauta ? '<span style="color:var(--red);font-weight:700">sin ventas</span>' : "—")}</td>
+          <td class="txt">${llenadoHtml(r.alumnos, r.min)}${!r.alumnos && r.pauta ? ' <span style="color:var(--red);font-weight:700;font-size:11px">sin ventas</span>' : ""}</td>
           <td class="txt" style="color:var(--muted);font-size:12px">${r.ultima ? fKeyC(r.ultima) : "—"}</td>
         </tr>`).join("")}</tbody></table></div>
       </div>`;
@@ -1154,7 +1179,7 @@
   function pgCard(d, aplicada) {
     const k = d.kpisAlMomento || {};
     const hace = (ts) => { const t = ts?.toMillis?.(); if (!t) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; };
-    const det = [d.monto ? `Nuevo presupuesto: <b>${fmt$(d.monto)}/día</b>` : "", d.nuevaFecha ? `Nueva fecha: <b>${fKey(d.nuevaFecha)}</b> (${d.alumnosMovidos ?? 0} alumnos ya movidos)` : ""].filter(Boolean).join(" · ");
+    const det = [d.monto ? `Nuevo presupuesto: <b>${fmt$(d.monto)}/día</b>` : "", d.nuevaFecha ? `Nueva fecha: <b>${fKey(d.nuevaFecha)}</b> (los alumnos ya quedaron en la nueva fecha; actualiza la fecha en la pauta)` : ""].filter(Boolean).join(" · ");
     return `<div class="pg-card${aplicada ? " aplicada" : ""}">
       <div class="pg-head">
         <span class="chip ${aplicada ? "chip-green" : "chip-yellow"}">${aplicada ? "Aplicada" : "Pendiente"}</span>
@@ -1162,7 +1187,7 @@
         <span class="tf-cons-mini">${escapeHtml(d.consultoraNombre || "")}</span>
       </div>
       <div class="pg-meta"><b>${escapeHtml(d.cursoNombre || "")}</b> · apertura ${fKey(d.aperturaKey)}${det ? "<br>" + det : ""}<br>Pedida por ${escapeHtml(d.creadoPorNombre || "gerente")} ${hace(d.creadoEn)}${aplicada ? ` · aplicada ${hace(d.aplicadaEn)}` : ""}</div>
-      ${k.pauta !== undefined ? `<div class="pg-kpis"><span>Al momento: día <b>${k.dia ?? "—"}</b></span><span>pauta <b>${fmt$(k.pauta)}</b></span><span>leads <b>${k.leads ?? 0}</b></span><span>ventas <b>${k.ventas ?? 0}</b></span><span>CPL <b>${k.cpl ? fmt$(k.cpl) : "—"}</b></span><span>costo/alumno <b>${k.costoAlumno ? fmt$(k.costoAlumno) : "—"}</b></span></div>` : ""}
+      ${k.pauta !== undefined ? `<div class="pg-kpis"><span>Al momento: día <b>${k.dia ?? "—"}</b></span><span>pauta <b>${fmt$(k.pauta)}</b></span><span>mensajes <b>${k.leads ?? 0}</b></span><span>CPL <b>${k.cpl ? fmt$(k.cpl) : "—"}</b></span></div>` : ""}
       ${d.motivo ? `<div class="pg-motivo">"${escapeHtml(d.motivo)}"</div>` : ""}
       ${aplicada ? (d.notaTrafiquer ? `<div class="tf-att-nota">"${escapeHtml(d.notaTrafiquer)}"</div>` : "") : `<div class="pg-foot">
         <input class="tf-nota-input" data-pg-nota="${d.id}" maxlength="140" placeholder="¿Qué hiciste? Ej: presupuesto a $800/día en Meta (opcional)">
