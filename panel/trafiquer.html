@@ -71,8 +71,10 @@
     .cierre.c-hoy { background: var(--red); color: #fff; }
     .cierre.c-pasada { background: #e5e7eb; color: #374151; }
     .curso-bloque.alerta .curso-bloque-header { background: linear-gradient(135deg, #b3261e 0%, #7f1d1d 100%); }
-    .cierres-fila { cursor: pointer; }
-    .cierres-fila:hover td { background: var(--yellow-soft) !important; }
+    #tf-cierres .curso-bloque { margin: 0 0 18px; }
+    #tf-cierres .sheet-cell-select { padding: 8px 28px 8px 10px; font-size: 12.5px; }
+    .cierres-min { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .cierres-min.mal { color: var(--red); }
     .estado-pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--surface-soft); color: var(--muted); }
     .estado-pill.funciono { background: var(--green-bg); color: var(--green); } .estado-pill.no_funciono { background: var(--red-bg); color: var(--red); } .estado-pill.pruebas { background: var(--info-bg); color: var(--info); } .estado-pill.pausada { background: #e5e7eb; color: #374151; }
 
@@ -324,6 +326,7 @@
           </button>
         </div>
       </div>
+      <div id="tf-cierres"></div>
       <div class="tf-summary">
         <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
         <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
@@ -621,6 +624,7 @@
     render();
     renderCaptura();
     renderReporte();
+    renderCierres();
   }
 
   function poblarSelectConsultoras() {
@@ -799,6 +803,7 @@
       snap.docs.forEach(d => _metricas.set(d.id, d.data()));
       renderCaptura();
       renderReporte();
+      renderCierres();
     }, err => console.warn("metricasPauta:", err));
   }
 
@@ -882,26 +887,6 @@
     const ordenadas = [...porCons.entries()].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
 
     let html = "";
-    // ── Apartado: campañas que cierran en 3 días o menos (de cualquier lanzamiento) ──
-    const cierran = todas.filter(ap => diasPara(ap.K) <= 3).sort((a, b) => a.K.localeCompare(b.K) || a.consultoraNombre.localeCompare(b.consultoraNombre));
-    if (cierran.length) {
-      html += `<div class="curso-bloque alerta">
-        <div class="curso-bloque-header">
-          <div class="curso-bloque-titulo">Cierran en 3 días o menos</div>
-          <div class="curso-bloque-stats"><span><b>${cierran.length}</b> campaña${cierran.length === 1 ? "" : "s"}</span><span class="curso-bloque-badge">captura su acumulado final antes de que abran</span></div>
-        </div>
-        <div class="sheet-scroll"><table class="sheet-table" style="min-width:820px"><thead><tr><th style="width:44px">#</th><th>Consultora</th><th style="min-width:240px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Alumnos</th><th>Última captura</th></tr></thead>
-        <tbody>${cierran.map((ap, i) => `<tr class="cierres-fila" data-ir-lanz="${ap.lanzGrupo}" title="Ir a su lanzamiento">
-          <td class="sheet-row-num">${i + 1}</td>
-          <td class="txt"><b>${escapeHtml(ap.consultoraNombre)}</b></td>
-          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}</div></td>
-          <td class="txt">${fKey(ap.K)} ${cierreChip(ap.K)}</td>
-          <td class="txt"><span class="estado-pill ${ap.estado}">${ESTADO_TXT[ap.estado] || ap.estado}</span></td>
-          <td class="txt num"><b>${ap.alumnos}</b></td>
-          <td class="txt" style="color:var(--muted);font-size:12px">${ap.fotoDia ? `<span style="color:var(--green);font-weight:800">✓ hoy</span>` : ap.foto ? `${fKeyC(ap.foto.fecha)} · ${fmt$(ap.foto.pauta)} · ${ap.foto.mensajes} msj` : `<span style="color:var(--red);font-weight:700">sin captura</span>`}</td>
-        </tr>`).join("")}</tbody></table></div>
-      </div>`;
-    }
     ordenadas.forEach(([consId, c]) => {
       const cache = _cache.get(consId);
       const listados = new Set(c.aps.map(a => a.cursoId));
@@ -989,6 +974,61 @@
     renderCaptura();
   }
 
+  // ═══════════════ CIERRAN EN 3 DÍAS O MENOS (vive en "Campañas en riesgo") ═══════════════
+  // Aquí el trafiquer decide: pausar, dejar como está o subir presupuesto. El estado se guarda al momento.
+  function renderCierres() {
+    const cont = document.getElementById("tf-cierres"); if (!cont) return;
+    if (!_capFecha) _capFecha = hoyMXs();
+    if (!cacheLista()) { cont.innerHTML = ""; return; }
+    const todas = []; _cache.forEach((_, consId) => todas.push(...aperturasActivasDe(consId)));
+    const lista = todas.filter(ap => diasPara(ap.K) <= 3 && (_fCons === "todas" || ap.consultoraId === _fCons))
+      .sort((a, b) => a.K.localeCompare(b.K) || a.consultoraNombre.localeCompare(b.consultoraNombre) || a.cursoNombre.localeCompare(b.cursoNombre));
+    if (!lista.length) { cont.innerHTML = ""; return; }
+    const proyDe = ap => [..._problemas, ..._bajaSenal].find(p => p.cursoId === ap.cursoId && p.fecha === ap.K);
+    const hoyN = lista.filter(ap => diasPara(ap.K) === 0).length;
+    cont.innerHTML = `<div class="curso-bloque alerta">
+      <div class="curso-bloque-header">
+        <div class="curso-bloque-titulo">Cierran en 3 días o menos</div>
+        <div class="curso-bloque-stats"><span><b>${lista.length}</b> campaña${lista.length === 1 ? "" : "s"}</span>${hoyN ? `<span><b>${hoyN}</b> abren hoy</span>` : ""}<span class="curso-bloque-badge">decide: pausar, dejar o subir presupuesto</span></div>
+      </div>
+      <div class="sheet-scroll"><table class="sheet-table" style="min-width:980px"><thead><tr>
+        <th style="width:44px">#</th><th>Consultora</th><th style="min-width:260px">Curso</th><th>Abre</th><th class="num">Alumnos</th><th class="num">Proyección</th><th style="width:150px">Estado de la campaña</th><th>Última captura</th>
+      </tr></thead><tbody>${lista.map((ap, i) => {
+        const cu = (_cache.get(ap.consultoraId)?.cursos || []).find(c => c.id === ap.cursoId) || {};
+        const min = Number(cu.minimoAlumnos) || 8;
+        const pr = proyDe(ap);
+        return `<tr>
+          <td class="sheet-row-num">${i + 1}</td>
+          <td class="txt"><b>${escapeHtml(ap.consultoraNombre)}</b></td>
+          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}</div></td>
+          <td class="txt" style="white-space:nowrap">${fKey(ap.K)} ${cierreChip(ap.K)}</td>
+          <td class="txt num"><b>${ap.alumnos}</b> <span class="cierres-min${ap.alumnos < min ? " mal" : ""}">/ mín ${min}</span></td>
+          <td class="txt num">${pr ? `<b>${pr.proy}</b> <span class="cierres-min${pr.proy < min ? " mal" : ""}">${pr.accion}</span>` : ap.alumnos >= min ? `<span class="cierres-min" style="color:var(--green)">llena</span>` : `<span class="cierres-min">—</span>`}</td>
+          <td><select class="sheet-cell-select e-${ap.estado}" data-cierre-estado="${ap.rowId}" data-cons="${ap.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === ap.estado ? "selected" : ""}>${tx}</option>`).join("")}</select></td>
+          <td class="txt" style="color:var(--muted);font-size:12px">${ap.fotoDia ? `<span style="color:var(--green);font-weight:800">✓ hoy</span> · ${fmt$(ap.fotoDia.pauta)} · ${ap.fotoDia.mensajes} msj` : ap.foto ? `${fKeyC(ap.foto.fecha)} · ${fmt$(ap.foto.pauta)} · ${ap.foto.mensajes} msj` : `<span style="color:var(--red);font-weight:700">sin captura</span>`}</td>
+        </tr>`; }).join("")}</tbody></table></div>
+    </div>`;
+  }
+
+  async function guardarEstadoCierre(rowId, consId, estado, sel) {
+    const ap = aperturasActivasDe(consId).find(a => a.rowId === rowId); if (!ap) return;
+    sel.disabled = true;
+    try {
+      await setDoc(doc(db, "metricasPauta", rowId), {
+        consultoraId: ap.consultoraId, consultoraNombre: ap.consultoraNombre, cursoId: ap.cursoId, cursoNombre: ap.cursoNombre,
+        aperturaKey: ap.K, lanzamientoKey: ap.lanzKey, precioCurso: ap.precio || 0,
+        estado, estadoActualizadoEn: serverTimestamp(),
+        actualizadoEn: serverTimestamp(), actualizadoPor: usuario.uid, actualizadoPorNombre: usuario.nombre || usuario.email || "Trafiquer"
+      }, { merge: true });
+      toast(`${escapeHtml(ap.cursoNombre)}: ${ESTADO_TXT[estado]}`, "success");
+    } catch (e) { console.error(e); toast("No se pudo guardar: " + e.message, "error"); sel.disabled = false; }
+  }
+  document.getElementById("tf-cierres").addEventListener("change", e => {
+    const sel = e.target.closest("[data-cierre-estado]"); if (!sel) return;
+    sel.className = `sheet-cell-select e-${sel.value}`;
+    guardarEstadoCierre(sel.dataset.cierreEstado, sel.dataset.cons, sel.value, sel);
+  });
+
   function abrirAgregarCursos(consId) {
     const cache = _cache.get(consId); if (!cache) return;
     const listados = new Set(aperturasActivasDe(consId).filter(a => a.lanzGrupo === _capLanz).map(a => a.cursoId));
@@ -1033,7 +1073,6 @@
   });
   document.getElementById("cp-contenido").addEventListener("click", e => {
     const b = e.target.closest("[data-add-multi]"); if (b) { abrirAgregarCursos(b.dataset.addMulti); return; }
-    const f = e.target.closest("[data-ir-lanz]"); if (f && f.dataset.irLanz !== _capLanz) { _capLanz = f.dataset.irLanz; renderCaptura(); document.getElementById("cp-tabs").scrollIntoView({ behavior: "smooth", block: "start" }); }
   });
   document.getElementById("cp-tabs").addEventListener("click", e => {
     const b = e.target.closest("[data-lanz]"); if (!b) return;
@@ -1226,6 +1265,7 @@
   document.getElementById("tf-sel-cons").addEventListener("change", (e) => {
     _fCons = e.target.value;
     render();
+    renderCierres();
   });
 
   document.getElementById("tf-orden").addEventListener("click", (e) => {
