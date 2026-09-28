@@ -72,6 +72,23 @@
     .cierre.c-pasada { background: #e5e7eb; color: #374151; }
     .curso-bloque.alerta .curso-bloque-header { background: linear-gradient(135deg, #b3261e 0%, #7f1d1d 100%); }
     #tf-cierres .curso-bloque { margin: 0 0 18px; }
+    .dx { margin: 10px 0 4px; padding: 10px 12px; background: var(--surface-soft); border-radius: 12px; font-size: 12.5px; color: var(--text); line-height: 1.55; }
+    .dx-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+    .dx-t { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .dx-tag { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .dx-tag.ads { background: var(--red-bg); color: var(--red); }
+    .dx-tag.ventas { background: #fde68a; color: #78350f; }
+    .dx-tag.pauta { background: var(--yellow-bg); color: var(--yellow); }
+    .dx-tag.ok { background: var(--green-bg); color: var(--green); }
+    .dx-tag.info { background: var(--info-bg); color: var(--info); }
+    .dx-tag.gris { background: #e5e7eb; color: #374151; }
+    .dx b { font-weight: 800; }
+    .dx-cmp { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px 14px; margin: 6px 0; font-size: 12px; }
+    .dx-cmp span { color: var(--muted); }
+    .dx-cmp b { color: var(--text); }
+    .dx-accion { margin-top: 6px; font-weight: 700; color: var(--primary); }
+    .dx-estado { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-size: 11.5px; color: var(--muted); }
+    .dx-estado select { padding: 5px 26px 5px 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 9px; }
     #tf-cierres .sheet-cell-select { padding: 8px 28px 8px 10px; font-size: 12.5px; }
     .cierres-min { font-size: 11px; color: var(--muted); font-weight: 600; }
     .cierres-min.mal { color: var(--red); }
@@ -326,7 +343,6 @@
           </button>
         </div>
       </div>
-      <div id="tf-cierres"></div>
       <div class="tf-summary">
         <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
         <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
@@ -346,6 +362,7 @@
         </div>
       </div>
       <div id="tf-contenido"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div></div>
+      <div id="tf-cierres" style="margin-top:22px"></div>
     </section>
 
     <!-- ═══════════ PENDIENTES DEL GERENTE ═══════════ -->
@@ -617,8 +634,13 @@
         (p.bajaSenal ? bs : problemas).push(item);
       });
     });
-    _problemas = problemas;
-    _bajaSenal = bs;
+    // Una campaña con mensajes reales (≥10 capturados) no es "baja señal": sí hay campaña, lo que no hay es venta.
+    // Sube a la lista principal con su propia etiqueta para que el diagnóstico la explique.
+    const conMensajes = p => { const f = ultimaFoto(_metricas.get(metId(p.consultoraId, p.cursoId, p.fecha))); return !!(f && f.mensajes >= 10); };
+    const rescatadas = bs.filter(conMensajes).map(p => ({ ...p, bajaSenal: false, sev: 1, accion: "Hay mensajes, no vende", chip: "chip-red",
+      detalle: "La campaña sí está jalando mensajes pero no se convierten en alumnos. Revisa el diagnóstico antes de meter más pauta." }));
+    _problemas = [...problemas, ...rescatadas];
+    _bajaSenal = bs.filter(p => !conMensajes(p));
     poblarSelectConsultoras();
     document.getElementById("tf-updated").textContent = "En vivo · " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
     render();
@@ -690,6 +712,7 @@
         <span class="tf-min">proyectados · mín ${p.minimo}</span>
       </div>
       <div class="tf-detail">${escapeHtml(p.detalle)}</div>
+      ${diagnosticoHtml(p)}
       <div class="tf-card-foot">${attTxt}</div>${notaHtml}
     </div>`;
   }
@@ -804,6 +827,7 @@
       renderCaptura();
       renderReporte();
       renderCierres();
+      recalcular(); // la pauta cambia la clasificación (baja señal vs. hay mensajes) y el diagnóstico
     }, err => console.warn("metricasPauta:", err));
   }
 
@@ -974,6 +998,97 @@
     renderCaptura();
   }
 
+  // ═══════════════ DIAGNÓSTICO POR CAMPAÑA (para las tarjetas de riesgo) ═══════════════
+  // Cruza la pauta capturada con los alumnos de ventas y lo compara con la CORRIDA ANTERIOR del mismo
+  // curso a los mismos días de lanzamiento (si ya se capturó pauta esa vez) o, si no hay, con las demás
+  // campañas de la consultora en este lanzamiento. Responde tres cosas: ¿falta pauta?, ¿Ads no trae
+  // mensajes? o ¿llegan mensajes y ventas no cierra? Y estima cuánto más hay que invertir para el mínimo.
+  // Se afina solo: cada corrida capturada se vuelve historial de la siguiente.
+  function fotoAlDia(m, lanzMs, D) {
+    // acumulado de la corrida anterior a los mismos D días desde su lanzamiento
+    const fotos = m?.fotos || {}; const lim = msKey(lanzMs + Math.floor(D) * DAY);
+    const k = Object.keys(fotos).filter(x => esKey(x) && x <= lim).sort().pop();
+    return k ? { fecha: k, pauta: Number(fotos[k].pauta) || 0, mensajes: Number(fotos[k].mensajes) || 0 } : null;
+  }
+  function diagnosticoDe(p) {
+    const c = _cache.get(p.consultoraId); if (!c) return null;
+    const aps = aperturasActivasDe(p.consultoraId);
+    const ap = aps.find(a => a.cursoId === p.cursoId && a.K === p.fecha); if (!ap) return null;
+    const cu = c.cursos.find(x => x.id === p.cursoId) || {};
+    const freq = ap.freq, lanzMs = keyMs(ap.lanzKey);
+    const D = Math.max(0.5, (Date.now() - lanzMs) / DAY);
+    const pauta = ap.foto ? ap.foto.pauta : 0, leads = ap.foto ? ap.foto.mensajes : 0, alumnos = ap.alumnos;
+    const conv = leads ? alumnos / leads : null, cpl = leads ? pauta / leads : null;
+
+    // Corrida anterior del mismo curso
+    const keys = new Set();
+    c.alumnos.forEach(a => { if (a.cursoId === ap.cursoId && esKey(a.aperturaKey) && a.aperturaKey < ap.K) keys.add(a.aperturaKey); });
+    _metricas.forEach(m => { if (m.cursoId === ap.cursoId && esKey(m.aperturaKey) && m.aperturaKey < ap.K) keys.add(m.aperturaKey); });
+    const ks = [...keys].sort(); const prevKey = ks.pop() || null; const prevPrev = ks.pop() || null;
+    let prev = null;
+    if (prevKey) {
+      const lanzPrev = Math.max(prevPrev ? keyMs(prevPrev) : 0, keyMs(prevKey) - freq * DAY);
+      const mPrev = _metricas.get(metId(ap.consultoraId, ap.cursoId, prevKey)) || null;
+      const alPrev = c.alumnos.filter(a => a.cursoId === ap.cursoId && a.aperturaKey === prevKey);
+      const alPrevAlD = alPrev.filter(a => (a.creadoEn?.toMillis?.() || 0) - lanzPrev <= D * DAY).length;
+      const fPrev = fotoAlDia(mPrev, lanzPrev, D), fTot = ultimaFoto(mPrev);
+      prev = { key: prevKey, alumnosAlD: alPrevAlD, total: alPrev.length, pautaAlD: fPrev?.pauta ?? null, leadsAlD: fPrev?.mensajes ?? null, pautaTotal: fTot?.pauta ?? null, leadsTotal: fTot?.mensajes ?? null,
+        cac: fTot && alPrev.length ? fTot.pauta / alPrev.length : null, conv: fTot && fTot.mensajes ? alPrev.length / fTot.mensajes : null };
+    }
+    // Benchmark de la consultora en este momento (las demás campañas con captura)
+    const otras = aps.filter(a => a.rowId !== ap.rowId && a.foto && a.foto.mensajes > 0);
+    const sum = (arr, f) => arr.reduce((n, a) => n + f(a), 0);
+    const bench = otras.length ? { n: otras.length, conv: sum(otras, a => a.alumnos) / sum(otras, a => a.foto.mensajes), cpl: sum(otras, a => a.foto.pauta) / sum(otras, a => a.foto.mensajes),
+      cac: sum(otras, a => a.alumnos) ? sum(otras, a => a.foto.pauta) / sum(otras, a => a.alumnos) : null, pautaProm: sum(otras, a => a.foto.pauta) / otras.length } : null;
+
+    const tags = [], lineas = [], cmp = [];
+    if (!ap.foto) {
+      tags.push(["gris", "Sin pauta capturada"]); lineas.push("Captura la pauta y los mensajes de esta campaña para poder diagnosticar.");
+      return { ap, tags, lineas, cmp, accion: null };
+    }
+    // Comparación con la corrida anterior
+    if (prev && prev.pautaAlD !== null) {
+      cmp.push(`<span>Pauta a estos días</span> <b>${fmt$(pauta)}</b> vs <b>${fmt$(prev.pautaAlD)}</b> la vez pasada`);
+      cmp.push(`<span>Mensajes</span> <b>${leads}</b> vs <b>${prev.leadsAlD}</b>`);
+      cmp.push(`<span>Alumnos</span> <b>${alumnos}</b> vs <b>${prev.alumnosAlD}</b> (cerró con ${prev.total})`);
+      const rP = prev.pautaAlD ? pauta / prev.pautaAlD : null, rL = prev.leadsAlD ? leads / prev.leadsAlD : null, rA = prev.alumnosAlD ? alumnos / prev.alumnosAlD : null;
+      if (rP !== null && rP < 0.6) { tags.push(["pauta", "Vas bajo en pauta"]); lineas.push(`Llevas ${Math.round(rP * 100)}% de lo que llevabas a estos días en la corrida pasada (${fmt$(prev.pautaAlD)}). Con menos inversión no vas a llegar al mismo cierre.`); }
+      if (rP !== null && rP >= 0.6 && rL !== null && rL < 0.6) { tags.push(["ads", "Ads no está trayendo mensajes"]); lineas.push(`Misma inversión pero ${leads} mensajes contra ${prev.leadsAlD} la vez pasada (CPL ${cpl !== null ? fmt$(cpl) : "—"} vs ${prev.leadsAlD ? fmt$(prev.pautaAlD / prev.leadsAlD) : "—"}). Es el anuncio o la segmentación, no el presupuesto.`); }
+      if (rL !== null && rL >= 0.8 && rA !== null && rA < 0.6) { tags.push(["ventas", "Llegan mensajes y ventas no cierra"]); lineas.push(`Mensajes al nivel de la vez pasada (${leads} vs ${prev.leadsAlD}) pero ${alumnos} alumnos contra ${prev.alumnosAlD}. Conversión ${conv !== null ? (conv * 100).toFixed(1) : "—"}% vs ${prev.conv !== null ? (prev.conv * 100).toFixed(1) : "—"}%. Avísale a ventas: el problema no está en Ads.`); }
+      if (!tags.length && rA !== null && rA >= 0.9) { tags.push(["ok", "Va como la corrida pasada"]); }
+    } else if (bench && leads >= 5) {
+      cmp.push(`<span>Conversión</span> <b>${conv !== null ? (conv * 100).toFixed(1) + "%" : "—"}</b> vs <b>${(bench.conv * 100).toFixed(1)}%</b> de las otras ${bench.n} campañas`);
+      cmp.push(`<span>CPL</span> <b>${cpl !== null ? fmt$(cpl) : "—"}</b> vs <b>${fmt$(bench.cpl)}</b>`);
+      cmp.push(`<span>Pauta</span> <b>${fmt$(pauta)}</b> vs <b>${fmt$(bench.pautaProm)}</b> promedio`);
+      if (pauta < bench.pautaProm * 0.5) { tags.push(["pauta", "Vas bajo en pauta"]); lineas.push(`Esta campaña lleva la mitad o menos de lo que llevan las demás de la consultora (${fmt$(bench.pautaProm)} en promedio).`); }
+      if (cpl !== null && cpl > bench.cpl * 1.8) { tags.push(["ads", "Ads no está trayendo mensajes"]); lineas.push(`CPL ${fmt$(cpl)} contra ${fmt$(bench.cpl)} en las demás: el anuncio no jala, no es presupuesto.`); }
+      if (conv !== null && bench.conv > 0 && conv < bench.conv * 0.5 && leads >= 10) { tags.push(["ventas", "Llegan mensajes y ventas no cierra"]); lineas.push(`Conversión ${(conv * 100).toFixed(1)}% contra ${(bench.conv * 100).toFixed(1)}% de las demás campañas con los mismos vendedores. Avísale a ventas.`); }
+      if (!tags.length) tags.push(["info", "Primera corrida con pauta capturada · comparando con la consultora"]);
+    } else {
+      tags.push(["info", "Sin historial todavía"]); lineas.push("Esta es la primera corrida con pauta capturada y aún hay pocos mensajes para comparar. Con la siguiente corrida el diagnóstico ya sale solo.");
+    }
+    // Cuánto más invertir para el mínimo
+    let accion = null;
+    const faltan = Math.max(0, p.minimo - Math.max(p.count, p.proy));
+    const cac = prev?.cac ?? bench?.cac ?? (alumnos ? pauta / alumnos : null);
+    if (faltan > 0 && cac) accion = `Para llegar al mínimo faltan ~${faltan} alumnos ≈ <b>${fmt$(faltan * cac)}</b> más de pauta (a tu costo por alumno de ${fmt$(cac)}${prev?.cac ? ", de la corrida pasada" : bench?.cac ? ", promedio de la consultora" : ""}).${tags.some(t => t[0] === "ventas") ? " Ojo: si ventas no cierra, meter más pauta no lo arregla." : ""}`;
+    else if (faltan > 0) accion = `Faltan ~${faltan} alumnos para el mínimo. Captura un par de días más para estimar cuánta pauta necesitas.`;
+    return { ap, tags, lineas, cmp, accion };
+  }
+
+  function diagnosticoHtml(p) {
+    let d = null; try { d = diagnosticoDe(p); } catch (e) { console.warn("diagnóstico:", e); }
+    if (!d) return "";
+    const est = d.ap.estado;
+    return `<div class="dx">
+      <div class="dx-h"><span class="dx-t">Diagnóstico</span>${d.tags.map(([cls, t]) => `<span class="dx-tag ${cls}">${t}</span>`).join("")}
+        <label class="dx-estado">Estado <select class="sheet-cell-select e-${est}" data-cierre-estado="${d.ap.rowId}" data-cons="${d.ap.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === est ? "selected" : ""}>${tx}</option>`).join("")}</select></label></div>
+      ${d.cmp.length ? `<div class="dx-cmp">${d.cmp.map(x => `<div>${x}</div>`).join("")}</div>` : ""}
+      ${d.lineas.map(l => `<div>${l}</div>`).join("")}
+      ${d.accion ? `<div class="dx-accion">${d.accion}</div>` : ""}
+    </div>`;
+  }
+
   // ═══════════════ CIERRAN EN 3 DÍAS O MENOS (vive en "Campañas en riesgo") ═══════════════
   // Aquí el trafiquer decide: pausar, dejar como está o subir presupuesto. El estado se guarda al momento.
   function renderCierres() {
@@ -1023,7 +1138,7 @@
       toast(`${escapeHtml(ap.cursoNombre)}: ${ESTADO_TXT[estado]}`, "success");
     } catch (e) { console.error(e); toast("No se pudo guardar: " + e.message, "error"); sel.disabled = false; }
   }
-  document.getElementById("tf-cierres").addEventListener("change", e => {
+  document.getElementById("view-campanas").addEventListener("change", e => {
     const sel = e.target.closest("[data-cierre-estado]"); if (!sel) return;
     sel.className = `sheet-cell-select e-${sel.value}`;
     guardarEstadoCierre(sel.dataset.cierreEstado, sel.dataset.cons, sel.value, sel);
