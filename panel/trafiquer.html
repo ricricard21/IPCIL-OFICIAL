@@ -259,8 +259,6 @@
         </div>
       </div>
 
-      <div class="kpi-grid" id="cp-kpis"></div>
-
       <div class="sheet-wrapper">
         <div class="sheet-header">
           <div>
@@ -297,7 +295,6 @@
           Descargar Excel (CSV)
         </button>
       </div>
-      <div class="kpi-grid" id="rp-kpis"></div>
       <div class="sheet-wrapper">
         <div class="sheet-header">
           <div><div class="sheet-title">Reporte por lanzamiento</div><div style="font-size:11.5px;opacity:.85;margin-top:2px">Costo total, mensajes, CPL y los alumnos reales que registró ventas</div></div>
@@ -846,13 +843,8 @@
     }).join("");
 
     const g = grupos.get(_capLanz);
-    const tot = g.aps.reduce((o, ap) => { const f = ap.foto; o.pauta += f ? Number(f.pauta) || 0 : 0; o.msj += f ? Number(f.mensajes) || 0 : 0; o.hoy += ap.fotoDia ? 1 : 0; return o; }, { pauta: 0, msj: 0, hoy: 0 });
-    document.getElementById("cp-kpis").innerHTML =
-      kpiCard("Pauta del lanzamiento", fmt$(tot.pauta), `acumulado al ${fKeyC(_capFecha)}`, "kpi-icon-green") +
-      kpiCard("Mensajes", tot.msj, "acumulados", "kpi-icon-blue") +
-      kpiCard("CPL promedio", tot.msj ? fmt$(tot.pauta / tot.msj) : "—", "pauta ÷ mensajes", "kpi-icon-gold") +
-      kpiCard("Capturadas este día", `${tot.hoy}/${g.aps.length}`, tot.hoy === g.aps.length && g.aps.length ? "todas al día" : `faltan ${g.aps.length - tot.hoy}`, "kpi-icon-yellow");
-    document.getElementById("cp-counter").innerHTML = `Campañas: <strong>${g.aps.length}</strong>`;
+    const capturadas = g.aps.filter(ap => ap.fotoDia).length;
+    document.getElementById("cp-counter").innerHTML = `Campañas: <strong>${g.aps.length}</strong> · capturadas este día: <strong>${capturadas}</strong>`;
 
     // Bloques por consultora
     const porCons = new Map();
@@ -869,7 +861,7 @@
       let aps = c.aps.sort((a, b) => a.cursoNombre.localeCompare(b.cursoNombre));
       if (q) aps = aps.filter(ap => ap.cursoNombre.toLowerCase().includes(q) || c.nombre.toLowerCase().includes(q));
       if (q && !aps.length && !c.nombre.toLowerCase().includes(q)) return;
-      const t = c.aps.reduce((o, ap) => { const f = ap.foto; o.pauta += f ? Number(f.pauta) || 0 : 0; o.msj += f ? Number(f.mensajes) || 0 : 0; o.hoy += ap.fotoDia ? 1 : 0; return o; }, { pauta: 0, msj: 0, hoy: 0 });
+      const capt = c.aps.filter(ap => ap.fotoDia).length;
       const filas = aps.map((ap, idx) => {
         const v = _capVals.get(ap.rowId) || {};
         const dirty = _capVals.has(ap.rowId);
@@ -894,7 +886,7 @@
       html += `<div class="curso-bloque">
         <div class="curso-bloque-header">
           <div class="curso-bloque-titulo">${escapeHtml(c.nombre)}</div>
-          <div class="curso-bloque-stats">${c.aps.length ? `<span><b>${c.aps.length}</b> campañas</span><span><b>${fmt$(t.pauta)}</b> pauta</span><span><b>${t.msj}</b> msj</span><span>CPL <b>${t.msj ? fmt$(t.pauta / t.msj) : "—"}</b></span><span class="curso-bloque-badge">${t.hoy}/${c.aps.length} capturadas</span>` : `<span class="curso-bloque-badge">Sin campañas en este lanzamiento</span>`}</div>
+          <div class="curso-bloque-stats">${c.aps.length ? `<span><b>${c.aps.length}</b> campaña${c.aps.length === 1 ? "" : "s"}</span><span class="curso-bloque-badge">${capt}/${c.aps.length} capturadas</span>` : `<span class="curso-bloque-badge">Sin campañas en este lanzamiento</span>`}</div>
           ${otros.length ? `<button class="btn-curso-action" data-add-multi="${consId}">+ Agregar cursos</button>` : ""}
         </div>
         ${aps.length ? `<div class="sheet-scroll"><table class="sheet-table"><thead><tr>
@@ -1029,25 +1021,18 @@
     const grupos = new Map();
     filas.forEach(r => { const g = grupos.get(r.lanzGrupo) || []; g.push(r); grupos.set(r.lanzGrupo, g); });
     const lanzs = [...grupos.keys()].sort((a, b) => b.localeCompare(a));
-    if (!lanzs.length) { document.getElementById("rp-tabs").innerHTML = ""; document.getElementById("rp-kpis").innerHTML = ""; document.getElementById("rp-counter").innerHTML = "Campañas: <strong>0</strong>"; cont.innerHTML = `<div class="empty" style="padding:40px"><div class="empty-text">Aún no hay capturas</div><div class="empty-hint">En cuanto guardes pauta en "Captura de pauta", tu reporte se arma solo aquí.</div></div>`; return; }
+    if (!lanzs.length) { document.getElementById("rp-tabs").innerHTML = ""; document.getElementById("rp-counter").innerHTML = "Campañas: <strong>0</strong>"; cont.innerHTML = `<div class="empty" style="padding:40px"><div class="empty-text">Aún no hay capturas</div><div class="empty-hint">En cuanto guardes pauta en "Captura de pauta", tu reporte se arma solo aquí.</div></div>`; return; }
     if (!_repLanz || !grupos.has(_repLanz)) _repLanz = lanzs[0];
     document.getElementById("rp-tabs").innerHTML = lanzs.map(k => `<button class="apertura-tab${k === _repLanz ? " active" : ""}" data-rp-lanz="${k}"><span>Lanzamiento ${fKey(k)}</span><span class="tab-count">${grupos.get(k).length}</span></button>`).join("");
     const g = grupos.get(_repLanz);
-    const tot = g.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; return o; }, { pauta: 0, msj: 0, al: 0 });
-    document.getElementById("rp-kpis").innerHTML =
-      kpiCard("Pauta total", fmt$(tot.pauta), "del lanzamiento", "kpi-icon-green") +
-      kpiCard("Mensajes", tot.msj, `CPL ${tot.msj ? fmt$(tot.pauta / tot.msj) : "—"}`, "kpi-icon-blue") +
-      kpiCard("Alumnos", tot.al, "registrados por ventas", "kpi-icon-gold") +
-      kpiCard("Costo por alumno", tot.al ? fmt$(tot.pauta / tot.al) : "—", "pauta ÷ alumnos", "kpi-icon-yellow");
     document.getElementById("rp-counter").innerHTML = `Campañas: <strong>${g.length}</strong>`;
     const porCons = new Map();
     g.forEach(r => { const c = porCons.get(r.consultoraId) || { nombre: r.consultoraNombre, filas: [] }; c.filas.push(r); porCons.set(r.consultoraId, c); });
     cont.innerHTML = [...porCons.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => {
-      const t = c.filas.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; return o; }, { pauta: 0, msj: 0, al: 0 });
       return `<div class="curso-bloque">
         <div class="curso-bloque-header">
           <div class="curso-bloque-titulo">${escapeHtml(c.nombre)}</div>
-          <div class="curso-bloque-stats"><span><b>${c.filas.length}</b> campañas</span><span><b>${fmt$(t.pauta)}</b> pauta</span><span><b>${t.msj}</b> msj</span><span>CPL <b>${t.msj ? fmt$(t.pauta / t.msj) : "—"}</b></span><span><b>${t.al}</b> alumnos</span><span>${t.al ? fmt$(t.pauta / t.al) + " c/u" : ""}</span></div>
+          <div class="curso-bloque-stats"><span><b>${c.filas.length}</b> campaña${c.filas.length === 1 ? "" : "s"}</span></div>
         </div>
         <div class="sheet-scroll"><table class="sheet-table"><thead><tr><th style="width:44px">#</th><th style="min-width:260px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Costo total</th><th class="num">Mensajes</th><th class="num">CPL</th><th class="num">Alumnos</th><th class="num">Costo/alumno</th><th>Última captura</th></tr></thead>
         <tbody>${c.filas.sort((a, b) => b.pauta - a.pauta).map((r, i) => `<tr>
