@@ -200,6 +200,35 @@
     .tf-ok-s { font-size: 13px; color: var(--muted); margin-top: 5px; }
 
 
+    /* ═══ Veredictos ═══ */
+    .v-bloque { margin: 0 0 20px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: white; box-shadow: var(--shadow-sm); }
+    .v-head { color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .v-head .t { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
+    .v-head .s { font-size: 12px; opacity: .9; margin-top: 2px; }
+    .v-head .n { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 800; }
+    .v-rojo .v-head { background: linear-gradient(135deg, #b3261e 0%, #7f1d1d 100%); }
+    .v-amarillo .v-head { background: linear-gradient(135deg, #b45309 0%, #78350f 100%); }
+    .v-verde .v-head { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+    .v-gris .v-head { background: linear-gradient(135deg, #5f7570 0%, #3f4f4b 100%); }
+    .v-bloque .sheet-table td.wrap { white-space: normal; padding: 10px 12px; line-height: 1.5; font-size: 12.5px; }
+    .v-bloque .sheet-table tr.att td { opacity: .55; }
+    .v-acc { font-weight: 800; color: var(--text); }
+    .v-nota { display: block; margin-top: 4px; color: var(--text-soft); }
+    .v-nota.mal { color: var(--red); font-weight: 700; }
+    .v-nota.ventas { color: #78350f; font-weight: 700; }
+    .v-nota.pauta { color: var(--yellow); font-weight: 700; }
+    .v-relanz { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; background: #fde68a; color: #78350f; margin-left: 6px; vertical-align: middle; }
+    .v-relanz.grave { background: var(--red); color: #fff; }
+    .v-num { font-size: 15px; font-weight: 800; }
+    .v-num small { font-size: 11px; font-weight: 600; color: var(--muted); }
+    .v-num.mal { color: var(--red); }
+    .v-num.ok { color: var(--green); }
+    .v-btn { border: 1px solid var(--line); background: var(--surface); color: var(--primary); font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+    .v-btn:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .v-att { font-size: 11px; font-weight: 700; color: var(--green); white-space: nowrap; }
+    .v-undo { border: none; background: none; color: var(--muted); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0; margin-left: 6px; }
+    .v-ok-all { text-align: center; padding: 50px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); }
+
     /* ═══ Pendientes del gerente ═══ */
     .pg-card { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--yellow); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
     .pg-card.aplicada { border-left-color: var(--green); opacity: .7; }
@@ -328,12 +357,12 @@
       </div>
     </section>
 
-    <!-- ═══════════ CAMPAÑAS EN RIESGO (lo de siempre) ═══════════ -->
+    <!-- ═══════════ QUÉ HAGO CON CADA CAMPAÑA ═══════════ -->
     <section id="view-campanas" class="section">
       <div class="main-header">
         <div>
-          <h1 class="main-title">Campañas en riesgo</h1>
-          <p class="main-subtitle">Aperturas de los próximos 14 días que no van a llenar el mínimo · proyección aprendida del histórico</p>
+          <h1 class="main-title">Qué hago con cada campaña</h1>
+          <p class="main-subtitle">Cada curso lanzado con su veredicto: va a abrir, súbele, o ya no va · aprende de la corrida anterior del mismo curso</p>
         </div>
         <div class="tf-refresh">
           <span class="tf-updated" id="tf-updated"></span>
@@ -343,26 +372,25 @@
           </button>
         </div>
       </div>
-      <div class="tf-summary">
-        <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
-        <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
-        <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-consultoras">0</div><div class="tf-sum-lbl">Con pendientes</div></div>
+      <div class="tf-summary" style="grid-template-columns:repeat(4,1fr)">
+        <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-nova">0</div><div class="tf-sum-lbl">No van a llegar</div></div>
+        <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-subir">0</div><div class="tf-sum-lbl">Súbele para llegar</div></div>
+        <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-hoy">0</div><div class="tf-sum-lbl">Abren hoy sin llenar</div></div>
+        <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-ok">0</div><div class="tf-sum-lbl">Van a abrir</div></div>
       </div>
       <div class="tf-tools">
         <div class="tf-fchips" id="tf-fchips">
-          <button class="tf-fchip active" data-tipo="todos">Todos</button>
-          <button class="tf-fchip" data-tipo="0">Urgente HOY</button>
-          <button class="tf-fchip" data-tipo="1">Meter presupuesto</button>
-          <button class="tf-fchip" data-tipo="2">Empujón final</button>
+          <button class="tf-fchip active" data-tipo="todos">Todas</button>
+          <button class="tf-fchip" data-tipo="nova">No va</button>
+          <button class="tf-fchip" data-tipo="subir">Súbele</button>
+          <button class="tf-fchip" data-tipo="hoy">Abren hoy</button>
+          <button class="tf-fchip" data-tipo="ok">Van a abrir</button>
+          <button class="tf-fchip" data-tipo="relanz">Relanzamientos</button>
         </div>
         <select class="tf-sel" id="tf-sel-cons"><option value="todas">Todas las consultoras</option></select>
-        <div class="tf-orden" id="tf-orden">
-          <button class="active" data-orden="consultora">Por consultora</button>
-          <button data-orden="prioridad">Por prioridad</button>
-        </div>
+        <label class="tf-fchip" style="margin-left:auto;display:inline-flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="tf-ver-atendidas"> ver atendidas</label>
       </div>
       <div id="tf-contenido"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div></div>
-      <div id="tf-cierres" style="margin-top:22px"></div>
     </section>
 
     <!-- ═══════════ PENDIENTES DEL GERENTE ═══════════ -->
@@ -472,60 +500,6 @@
     return Math.max(proy, actuales);
   }
 
-  // Problemas de UNA consultora (solo presupuesto/campaña)
-  function problemasDe(cursos, alumnos) {
-    const hoyMX = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
-    const en14 = new Date(); en14.setDate(en14.getDate() + 14);
-    const en14Str = en14.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
-
-    const combos = new Map();
-    alumnos.forEach(a => {
-      if (a.estado === "email_enviado") return;
-      const ak = a.aperturaKey;
-      if (!ak || ak === "sin-asignar") return;
-      if (ak < hoyMX || ak > en14Str) return;
-      const k = a.cursoId + "|" + ak;
-      combos.set(k, (combos.get(k) || 0) + 1);
-    });
-
-    const hist = historicoAperturas(alumnos);
-    const out = [];
-
-    combos.forEach((count, k) => {
-      const idx = k.indexOf("|");
-      const cid = k.slice(0, idx), fecha = k.slice(idx + 1);
-      const curso = cursos.find(c => c.id === cid);
-      if (!curso) return;
-      const minimo = curso.minimoAlumnos || 8;
-      if (count >= minimo) return;
-
-      const d = new Date(fecha + "T00:00:00");
-      const dias = Math.max(0, Math.round((d - new Date(hoyMX + "T00:00:00")) / 864e5));
-      const proy = estimar(hist, alumnos, cid, count, dias);
-      if (proy >= minimo) return;
-
-      // Baja señal: casi sin inscritos y proyección plana → no hay campaña real que salvar
-      const bajaSenal = count < 3 && proy < Math.ceil(minimo * 0.5);
-
-      const base = { cursoId: cid, curso: curso.nombre, count, proy, minimo, dias, fecha, bajaSenal };
-      if (proy < Math.ceil(minimo * 0.75)) {
-        if (dias <= 3) {
-          out.push({ ...base, sev: 0, accion: "Urgente HOY", chip: "chip-red",
-            detalle: "Súbele fuerte a Ads hoy mismo o avisa a coordinación para recorrer/cancelar la fecha." });
-        } else {
-          out.push({ ...base, sev: 1, accion: "Meter presupuesto", chip: "chip-red",
-            detalle: "Aumenta presupuesto de Ads para este curso. Si en 2 días no repunta, avisa a coordinación." });
-        }
-      } else {
-        const faltan = minimo - proy;
-        out.push({ ...base, sev: 2, accion: "Empujón final", chip: "chip-yellow",
-          detalle: `Según proyección faltarían ~${faltan}: un empujón ligero de Ads + remarketing cierra el grupo.` });
-      }
-    });
-
-    return out;
-  }
-
   // ═══════════════ Atendidas (compartidas entre trafiquers, tiempo real) ═══════════════
   const accionId = p => `${p.consultoraId}_${p.cursoId}_${p.fecha}`;
 
@@ -627,166 +601,189 @@
 
   function recalcularAhora() {
     if (!cacheLista()) return; // espera a que TODAS las consultoras tengan cursos y alumnos
-    const problemas = [], bs = [];
-    _cache.forEach((c, id) => {
-      problemasDe(c.cursos, c.alumnos).forEach(p => {
-        const item = { ...p, consultoraId: id, consultoraNombre: c.nombre };
-        (p.bajaSenal ? bs : problemas).push(item);
-      });
-    });
-    // Una campaña con mensajes reales (≥10 capturados) no es "baja señal": sí hay campaña, lo que no hay es venta.
-    // Sube a la lista principal con su propia etiqueta para que el diagnóstico la explique.
-    const conMensajes = p => { const f = ultimaFoto(_metricas.get(metId(p.consultoraId, p.cursoId, p.fecha))); return !!(f && f.mensajes >= 10); };
-    const rescatadas = bs.filter(conMensajes).map(p => ({ ...p, bajaSenal: false, sev: 1, accion: "Hay mensajes, no vende", chip: "chip-red",
-      detalle: "La campaña sí está jalando mensajes pero no se convierten en alumnos. Revisa el diagnóstico antes de meter más pauta." }));
-    _problemas = [...problemas, ...rescatadas];
-    _bajaSenal = bs.filter(p => !conMensajes(p));
+    if (!_capFecha) _capFecha = hoyMXs();
+    try { _veredictos = calcularVeredictos(); } catch (e) { console.error("veredictos:", e); _veredictos = []; }
     poblarSelectConsultoras();
     document.getElementById("tf-updated").textContent = "En vivo · " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
     render();
     renderCaptura();
     renderReporte();
-    renderCierres();
   }
 
   function poblarSelectConsultoras() {
     const sel = document.getElementById("tf-sel-cons");
     const actual = sel.value;
-    const nombres = new Map();
-    [..._problemas, ..._bajaSenal].forEach(p => nombres.set(p.consultoraId, p.consultoraNombre));
     sel.innerHTML = `<option value="todas">Todas las consultoras</option>` +
-      [...nombres.entries()]
-        .sort((a, b) => a[1].localeCompare(b[1]))
-        .map(([id, n]) => `<option value="${id}">${escapeHtml(n)}</option>`).join("");
-    if ([...nombres.keys()].includes(actual) || actual === "todas") sel.value = actual;
+      [..._cache.entries()].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre))
+        .map(([id, c]) => `<option value="${id}">${escapeHtml(c.nombre)}</option>`).join("");
+    if (_cache.has(actual) || actual === "todas") sel.value = actual;
     else { sel.value = "todas"; _fCons = "todas"; }
   }
 
-  // ═══════════════ Render ═══════════════
-  function pasaFiltros(p) {
-    if (_fCons !== "todas" && p.consultoraId !== _fCons) return false;
-    if (_fTipo !== "todos" && String(p.sev) !== _fTipo) return false;
-    return true;
+  // ═══════════════ VEREDICTO POR CAMPAÑA ═══════════════
+  // Una fila por curso lanzado. Responde lo único que importa: ¿va a abrir? Y si no: ¿le subo, o ya no va?
+  //  · Proyección de alumnos: motor histórico (cuántos solía llevar el curso a estos días de abrir).
+  //  · Relanzamiento: si la corrida anterior de ESTE curso cerró sin llegar al mínimo, se avisa que
+  //    sin cambios (anuncio, segmentación, oferta) va a repetir el resultado.
+  //  · Diagnóstico: cruza pauta y mensajes capturados con la corrida anterior a los mismos días
+  //    (o con las demás campañas de la consultora si no hay historial) → falta pauta / Ads no trae / ventas no cierra.
+  //  · Cuánto más invertir: (alumnos que faltan) × (costo por alumno de la corrida anterior o de la consultora).
+  let _veredictos = [];
+  let _verAtendidas = false;
+  const VER = {
+    nova:   { orden: 0, cls: "v-rojo",     titulo: "No van a llegar",              sub: "Baja o detén la pauta y avisa a coordinación para posponer; meterle más no lo salva" },
+    subir:  { orden: 1, cls: "v-amarillo", titulo: "Pueden llegar si les subes",   sub: "Hay tiempo: mete presupuesto ahora, no la semana que entra" },
+    hoy:    { orden: 2, cls: "v-rojo",     titulo: "Abren hoy sin llenar",         sub: "Última decisión con coordinación: abre corta o se pospone (si se pospone, captura el acumulado final)" },
+    ok:     { orden: 3, cls: "v-verde",    titulo: "Van a abrir",                  sub: "Mantén la pauta como va" },
+    espera: { orden: 4, cls: "v-gris",     titulo: "Recién lanzadas",              sub: "Todavía no hay señal; se juzgan a partir del día 3" },
+  };
+  function fotoAlDia(m, lanzMs, D) {
+    const fotos = m?.fotos || {}; const lim = msKey(lanzMs + Math.floor(D) * DAY);
+    const k = Object.keys(fotos).filter(x => esKey(x) && x <= lim).sort().pop();
+    return k ? { fecha: k, pauta: Number(fotos[k].pauta) || 0, mensajes: Number(fotos[k].mensajes) || 0 } : null;
   }
 
-  function cardHtml(p, conConsultora) {
-    const att = _acciones.get(accionId(p));
-    const f = new Date(p.fecha + "T00:00:00");
-    const fTxt = isNaN(f) ? p.fecha : f.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
-    const id = accionId(p);
-    let attTxt, notaHtml = "";
-    if (att) {
-      const t = att.atendidoEn?.toDate ? att.atendidoEn.toDate() : null;
-      const hora = t ? t.toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
-      attTxt = `<span class="tf-att-info">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Atendida por ${escapeHtml(att.atendidoPorNombre || "Trafiquer")}${hora ? " · " + hora : ""}
-        </span>` +
-        (att.atendidoPor === usuario.uid
-          ? `<button class="tf-att-undo" data-desatender="${id}">Desmarcar</button>` : "");
-      if (att.nota) notaHtml = `<div class="tf-att-nota">"${escapeHtml(att.nota)}"</div>`;
-    } else if (_notaOpen === id) {
-      attTxt = `<div class="tf-nota-form">
-          <input class="tf-nota-input" data-nota-input="${id}" maxlength="140" placeholder="¿Qué hiciste? Ej: Subí $500/día en Meta (opcional)" value="${escapeHtml(_notaTxt)}">
-          <button class="tf-att-btn" data-guardar="${id}">Guardar</button>
-          <button class="tf-att-undo" data-cancelar="${id}">Cancelar</button>
-        </div>`;
-    } else {
-      attTxt = `<button class="tf-att-btn" data-atender="${id}">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Marcar atendida
-        </button>`;
-    }
+  function calcularVeredictos() {
+    const out = [];
+    _cache.forEach((c, consId) => {
+      const hist = historicoAperturas(c.alumnos);
+      const aps = aperturasActivasDe(consId);
+      // benchmark de la consultora ahora mismo (campañas con captura)
+      const conCap = aps.filter(a => a.foto && a.foto.mensajes > 0);
+      const sum = (arr, f) => arr.reduce((n, a) => n + f(a), 0);
+      const bench = conCap.length ? { n: conCap.length, conv: sum(conCap, a => a.alumnos) / sum(conCap, a => a.foto.mensajes), cpl: sum(conCap, a => a.foto.pauta) / sum(conCap, a => a.foto.mensajes),
+        cac: sum(conCap, a => a.alumnos) ? sum(conCap, a => a.foto.pauta) / sum(conCap, a => a.alumnos) : null, pautaProm: sum(conCap, a => a.foto.pauta) / conCap.length } : null;
 
-    return `<div class="tf-card sev-${p.sev}${att ? " atendida" : ""}">
-      <div class="tf-card-head">
-        <span class="chip ${p.chip}">${escapeHtml(p.accion)}</span>
-        ${conConsultora ? `<span class="tf-cons-mini">${escapeHtml(p.consultoraNombre)}</span>` : ""}
-        <span class="tf-card-curso">${escapeHtml(p.curso)}</span>
-        <span class="tf-card-dias">Abre ${escapeHtml(fTxt)} · en ${p.dias} día${p.dias === 1 ? "" : "s"}</span>
-      </div>
-      <div class="tf-nums">
-        <span class="tf-now">${p.count}</span>
-        <span class="tf-arrow">→</span>
-        <span class="tf-est">${p.proy}</span>
-        <span class="tf-min">proyectados · mín ${p.minimo}</span>
-      </div>
-      <div class="tf-detail">${escapeHtml(p.detalle)}</div>
-      ${diagnosticoHtml(p)}
-      <div class="tf-card-foot">${attTxt}</div>${notaHtml}
-    </div>`;
-  }
+      aps.forEach(ap => {
+        const cu = c.cursos.find(x => x.id === ap.cursoId) || {};
+        const min = Number(cu.minimoAlumnos) || 8;
+        const restantes = Math.max(0, diasPara(ap.K));
+        const D = Math.max(0, (Date.now() - keyMs(ap.lanzKey)) / DAY);
+        const ventana = Math.max(1, Math.round((keyMs(ap.K) - keyMs(ap.lanzKey)) / DAY));
+        const alumnos = ap.alumnos;
+        let proy = alumnos; try { proy = Math.max(alumnos, estimar(hist, c.alumnos, ap.cursoId, alumnos, restantes)); } catch (_) {}
+        const pauta = ap.foto ? ap.foto.pauta : 0, leads = ap.foto ? ap.foto.mensajes : 0;
+        const conv = leads ? alumnos / leads : null, cpl = leads ? pauta / leads : null;
 
-  function render() {
-    const cont = document.getElementById("tf-contenido");
-    if (!cont) return;
+        // ── Corridas anteriores de este curso ──
+        // Solo corridas ya cerradas (apertura hoy o antes); una apertura futura del mismo curso no es "corrida anterior"
+        const hoyK = hoyMXs();
+        const keysPrev = new Set();
+        c.alumnos.forEach(a => { if (a.cursoId === ap.cursoId && esKey(a.aperturaKey) && a.aperturaKey < ap.K && a.aperturaKey <= hoyK) keysPrev.add(a.aperturaKey); });
+        _metricas.forEach(m => { if (m.cursoId === ap.cursoId && esKey(m.aperturaKey) && m.aperturaKey < ap.K && m.aperturaKey <= hoyK) keysPrev.add(m.aperturaKey); });
+        const prevs = [...keysPrev].sort().map(k => ({ key: k, total: c.alumnos.filter(a => a.cursoId === ap.cursoId && a.aperturaKey === k).length }));
+        const prev = prevs[prevs.length - 1] || null;
+        let fallidas = 0; for (let i = prevs.length - 1; i >= 0 && prevs[i].total < min; i--) fallidas++;
+        const relanz = prev && prev.total < min ? { key: prev.key, total: prev.total, fallidas } : null;
+        // métricas de la corrida anterior a los mismos días
+        let cmpPrev = null, cacPrev = null;
+        if (prev) {
+          const prevPrev = prevs[prevs.length - 2]?.key || null;
+          const lanzPrev = Math.max(prevPrev ? keyMs(prevPrev) : 0, keyMs(prev.key) - ap.freq * DAY);
+          const mPrev = _metricas.get(metId(consId, ap.cursoId, prev.key)) || null;
+          const fPrev = fotoAlDia(mPrev, lanzPrev, D), fTot = ultimaFoto(mPrev);
+          const alPrevAlD = c.alumnos.filter(a => a.cursoId === ap.cursoId && a.aperturaKey === prev.key && (a.creadoEn?.toMillis?.() || 0) - lanzPrev <= D * DAY).length;
+          if (fPrev) cmpPrev = { pauta: fPrev.pauta, leads: fPrev.mensajes, alumnos: alPrevAlD, total: prev.total, conv: fTot && fTot.mensajes ? prev.total / fTot.mensajes : null };
+          if (fTot && prev.total > 0) cacPrev = fTot.pauta / prev.total;
+        }
+        const cac = cacPrev ?? bench?.cac ?? (alumnos && pauta ? pauta / alumnos : null);
 
-    const activos = _problemas.filter(p => !_acciones.get(accionId(p)));
-    document.getElementById("sum-urgente").textContent = activos.filter(p => p.sev <= 1).length;
-    document.getElementById("sum-empujon").textContent = activos.filter(p => p.sev === 2).length;
-    document.getElementById("sum-consultoras").textContent = new Set(activos.map(p => p.consultoraId)).size;
-    { const b = document.getElementById("badge-riesgo"); const nUrg = activos.filter(p => p.sev <= 1).length; b.textContent = nUrg; b.style.display = nUrg ? "" : "none"; }
+        // ── Diagnóstico (solo si hay captura) ──
+        const notas = [];
+        if (ap.foto) {
+          if (cmpPrev) {
+            const rP = cmpPrev.pauta ? pauta / cmpPrev.pauta : null, rL = cmpPrev.leads ? leads / cmpPrev.leads : null, rA = cmpPrev.alumnos ? alumnos / cmpPrev.alumnos : null;
+            notas.push({ cls: "", txt: `A estos mismos días la vez pasada: ${fmt$(cmpPrev.pauta)} de pauta, ${cmpPrev.leads} mensajes, ${cmpPrev.alumnos} alumnos (cerró con ${cmpPrev.total}). Hoy: ${fmt$(pauta)}, ${leads}, ${alumnos}.` });
+            if (rP !== null && rP < 0.6) notas.push({ cls: "pauta", txt: `Vas bajo en pauta: llevas el ${Math.round(rP * 100)}% de lo que llevabas la corrida pasada.` });
+            if (rP !== null && rP >= 0.6 && rL !== null && rL < 0.6) notas.push({ cls: "mal", txt: `Ads no está trayendo mensajes: misma inversión, ${leads} mensajes contra ${cmpPrev.leads}. Cambia anuncio o segmentación, no es presupuesto.` });
+            if (rL !== null && rL >= 0.8 && rA !== null && rA < 0.6) notas.push({ cls: "ventas", txt: `Llegan mensajes como la vez pasada y no se convierten (${conv !== null ? (conv * 100).toFixed(1) : "0"}% vs ${cmpPrev.conv !== null ? (cmpPrev.conv * 100).toFixed(1) : "—"}%). El problema está en ventas, no en Ads.` });
+          } else if (bench && bench.n >= 2 && leads >= 5) {
+            if (pauta < bench.pautaProm * 0.5) notas.push({ cls: "pauta", txt: `Lleva la mitad o menos de pauta que las demás campañas de la consultora (${fmt$(bench.pautaProm)} promedio).` });
+            if (cpl !== null && cpl > bench.cpl * 1.8) notas.push({ cls: "mal", txt: `CPL ${fmt$(cpl)} contra ${fmt$(bench.cpl)} en las demás: el anuncio no jala.` });
+            if (conv !== null && bench.conv > 0 && conv < bench.conv * 0.5 && leads >= 10) notas.push({ cls: "ventas", txt: `Conversión ${(conv * 100).toFixed(1)}% contra ${(bench.conv * 100).toFixed(1)}% de las demás con los mismos vendedores: es ventas, no Ads.` });
+          }
+        }
+        const ventasFalla = notas.some(n => n.cls === "ventas") || (leads >= 10 && alumnos === 0 && D >= 3);
 
-    const visibles = _problemas.filter(pasaFiltros);
-    const bsVisibles = _bajaSenal.filter(pasaFiltros);
+        // ── Veredicto ──
+        let tipo, accion;
+        const faltan = Math.max(0, min - Math.round(proy));
+        const inv = faltan > 0 && cac ? ` ≈ ${fmt$(faltan * cac)} más de pauta (a ${fmt$(cac)} por alumno${cacPrev ? ", tu costo de la corrida pasada" : bench?.cac ? ", promedio de la consultora" : ""})` : "";
+        if (restantes === 0) {
+          tipo = alumnos >= min ? "ok" : "hoy";
+          accion = alumnos >= min ? `Abre hoy con ${alumnos} alumnos (mín ${min}). Captura el acumulado final.` : `Abre hoy con ${alumnos} de ${min}. Coordinación decide si abre corta o se pospone; captura el acumulado final de la campaña.`;
+        } else if (D < 3 && alumnos < 2) {
+          tipo = "espera";
+          accion = `Lanzada hace ${Math.max(1, Math.ceil(D))} día${Math.ceil(D) === 1 ? "" : "s"}. Sin alumnos todavía es normal; se juzga al día 3.${!ap.foto ? " Ve capturando la pauta." : ""}`;
+        } else if (proy >= min) {
+          tipo = "ok";
+          accion = `Va a abrir: ${alumnos} alumnos y proyección de ${Math.round(proy)} (mín ${min}). Mantén la pauta.`;
+        } else if (alumnos === 0 && D >= 4) {
+          tipo = "nova";
+          accion = ventasFalla
+            ? `${Math.floor(D)} días, ${leads} mensajes y 0 alumnos: antes de bajar la pauta, ventas tiene que revisar esos chats. Si ventas confirma que no cierran, detén.`
+            : `${Math.floor(D)} días y 0 alumnos${ap.foto ? ` con ${fmt$(pauta)} gastados y ${leads} mensajes` : ""}: no va a llegar. Baja o detén la pauta y avisa a coordinación para posponer.`;
+        } else if (proy >= min * 0.75 || (restantes >= 5 && alumnos >= 2 && proy >= min * 0.5)) {
+          tipo = "subir";
+          accion = ventasFalla
+            ? `Faltan ~${faltan} alumnos y hay mensajes que no se cierran: primero ventas, luego pauta.`
+            : `Faltan ~${faltan} alumnos y quedan ${restantes} días: súbele ahora${inv}.`;
+        } else {
+          tipo = "nova";
+          accion = `Al ritmo actual cierra con ${Math.round(proy)} de ${min} y quedan ${restantes} días: no va a llegar. Baja o detén la pauta y avisa a coordinación para posponer.`;
+        }
+        let relanzTxt = null;
+        if (relanz && tipo !== "ok") relanzTxt = `Relanzamiento: la corrida del ${fKeyC(relanz.key)} cerró con ${relanz.total} de ${min}${relanz.fallidas >= 2 ? ` · van ${relanz.fallidas} corridas seguidas sin abrir` : ""}. Sin cambios en anuncio, segmentación u oferta va a repetir el resultado; avisa antes de meterle más.`;
+        else if (relanz) relanzTxt = `Relanzamiento que sí está funcionando (la del ${fKeyC(relanz.key)} cerró con ${relanz.total}).`;
 
-    let html = "";
-
-    if (!visibles.length && !bsVisibles.length) {
-      html = `<div class="tf-ok">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <div class="tf-ok-t">Todo en verde</div>
-        <div class="tf-ok-s">Nada pendiente con los filtros actuales.</div>
-      </div>`;
-      cont.innerHTML = html;
-      return;
-    }
-
-    const esAtt = p => !!_acciones.get(accionId(p));
-
-    if (_orden === "prioridad") {
-      // Lista plana: primero lo más urgente (menos días, más brecha), atendidas al final
-      const orden = [...visibles].sort((a, b) =>
-        (esAtt(a) - esAtt(b)) || (a.sev - b.sev) || (a.dias - b.dias) || ((b.minimo - b.proy) - (a.minimo - a.proy))
-      );
-      html += orden.map(p => cardHtml(p, true)).join("");
-    } else {
-      // Agrupado por consultora, atendidas al final de cada grupo
-      const grupos = new Map();
-      visibles.forEach(p => {
-        const g = grupos.get(p.consultoraId) || { nombre: p.consultoraNombre, items: [] };
-        g.items.push(p);
-        grupos.set(p.consultoraId, g);
+        out.push({ id: `${consId}_${ap.cursoId}_${ap.K}`, consultoraId: consId, consultoraNombre: c.nombre, cursoId: ap.cursoId, curso: ap.cursoNombre, fecha: ap.K, K: ap.K, lanzKey: ap.lanzKey,
+          rowId: ap.rowId, estado: ap.estado, foto: ap.foto, fotoDia: ap.fotoDia, min, alumnos, proy: Math.round(proy), D: Math.floor(D), ventana, restantes,
+          pauta, leads, cpl, tipo, accion: VER[tipo].titulo, accionTxt: accion, notas, relanz, relanzTxt, ventasFalla });
       });
-      const ordenados = [...grupos.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
-      html += ordenados.map(g => {
-        g.items.sort((a, b) => (esAtt(a) - esAtt(b)) || (a.sev - b.sev) || (a.dias - b.dias));
-        return `<section class="tf-consultora">
-          <div class="tf-consultora-h">${escapeHtml(g.nombre)} <span class="n">· ${g.items.length} campaña${g.items.length === 1 ? "" : "s"}</span></div>
-          ${g.items.map(p => cardHtml(p, false)).join("")}
-        </section>`;
-      }).join("");
-    }
-
-    // ── Baja señal (colapsada) ──
-    if (bsVisibles.length) {
-      html += `<button class="tf-bs-toggle" id="tf-bs-toggle">${_verBS ? "Ocultar" : "Ver"} baja señal (${bsVisibles.length}) — cursos casi sin inscritos ni campaña real ${_verBS ? "▴" : "▾"}</button>`;
-      if (_verBS) {
-        html += `<div class="tf-bs">
-          <div class="tf-bs-note">Cursos con menos de 3 inscritos y proyección plana: aquí meter presupuesto rara vez salva la fecha. Prioriza los de arriba; estos son más bien tema de coordinación (recorrer, cancelar o relanzar con otra oferta).</div>
-          ${bsVisibles.sort((a, b) => a.dias - b.dias).map(p => cardHtml(p, _orden === "prioridad" || _fCons === "todas")).join("")}
-        </div>`;
-      }
-    }
-
-    cont.innerHTML = html;
-    if (_notaOpen) {
-      const inp = cont.querySelector(`[data-nota-input="${_notaOpen}"]`);
-      if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
-    }
+    });
+    return out;
   }
 
+  // ═══════════════ Render de veredictos ═══════════════
+  function render() {
+    const cont = document.getElementById("tf-contenido"); if (!cont) return;
+    const todas = _veredictos;
+    const n = t => todas.filter(v => v.tipo === t && !_acciones.get(accionId(v))).length;
+    document.getElementById("sum-nova").textContent = n("nova");
+    document.getElementById("sum-subir").textContent = n("subir");
+    document.getElementById("sum-hoy").textContent = n("hoy");
+    document.getElementById("sum-ok").textContent = todas.filter(v => v.tipo === "ok").length;
+    { const b = document.getElementById("badge-riesgo"); const u = n("nova") + n("hoy"); b.textContent = u; b.style.display = u ? "" : "none"; }
 
+    let lista = todas.filter(v => _fCons === "todas" || v.consultoraId === _fCons);
+    if (_fTipo === "relanz") lista = lista.filter(v => v.relanz);
+    else if (_fTipo !== "todos") lista = lista.filter(v => v.tipo === _fTipo);
+    if (!_verAtendidas) lista = lista.filter(v => !_acciones.get(accionId(v)) || v.tipo === "ok");
+    if (!lista.length) { cont.innerHTML = `<div class="v-ok-all"><div style="font-size:16px;font-weight:800;color:var(--text)">Nada pendiente</div><div style="margin-top:4px">${todas.length ? "Con estos filtros no hay campañas que decidir." : "Cuando el coordinador abra grupo o ventas registre el primer alumno, sus campañas aparecen aquí con su veredicto."}</div></div>`; return; }
+
+    const grupos = new Map();
+    lista.forEach(v => { const g = grupos.get(v.tipo) || []; g.push(v); grupos.set(v.tipo, g); });
+    cont.innerHTML = [...grupos.entries()].sort((a, b) => VER[a[0]].orden - VER[b[0]].orden).map(([tipo, vs]) => {
+      vs.sort((a, b) => a.restantes - b.restantes || a.consultoraNombre.localeCompare(b.consultoraNombre) || a.curso.localeCompare(b.curso));
+      const V = VER[tipo];
+      return `<div class="v-bloque ${V.cls}">
+        <div class="v-head"><div><div class="t">${V.titulo}</div><div class="s">${V.sub}</div></div><span class="n">${vs.length} campaña${vs.length === 1 ? "" : "s"}</span></div>
+        <div class="sheet-scroll"><table class="sheet-table" style="min-width:980px"><thead><tr>
+          <th style="width:44px">#</th><th style="min-width:230px">Curso · lanzada → abre</th><th class="num" style="width:110px">Alumnos</th><th style="width:150px">Pauta capturada</th><th style="min-width:340px">Qué hacer</th><th style="width:160px">Estado · atendida</th>
+        </tr></thead><tbody>${vs.map((v, i) => {
+          const att = _acciones.get(accionId(v));
+          const hora = att?.atendidoEn?.toDate ? att.atendidoEn.toDate().toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+          return `<tr class="${att ? "att" : ""}">
+            <td class="sheet-row-num">${i + 1}</td>
+            <td class="txt"><div class="cp-sub" style="text-transform:uppercase;letter-spacing:.04em;color:var(--primary);font-weight:800">${escapeHtml(v.consultoraNombre)}</div><div class="sheet-curso">${escapeHtml(v.curso)}${v.relanz ? `<span class="v-relanz${v.relanz.fallidas >= 2 ? " grave" : ""}" title="${escapeHtml(v.relanzTxt || "")}">Relanzamiento${v.relanz.fallidas >= 2 ? " ×" + v.relanz.fallidas : ""}</span>` : ""}</div><div class="cp-sub" style="margin-top:4px;white-space:nowrap">${fKeyC(v.lanzKey)} → <b>${fKeyC(v.K)}</b> · día ${Math.min(v.ventana, v.D)} de ${v.ventana} ${cierreChip(v.K)}</div></td>
+            <td class="txt num" style="white-space:nowrap"><span class="v-num${v.alumnos >= v.min ? " ok" : v.alumnos === 0 ? " mal" : ""}">${v.alumnos}</span> <small style="color:var(--muted)">/ mín ${v.min}</small><div class="cp-sub">proyección <b style="color:${v.proy >= v.min ? "var(--green)" : "var(--red)"}">${v.proy}</b></div></td>
+            <td class="txt" style="white-space:nowrap">${v.foto ? `<b>${fmt$(v.pauta)}</b> · ${v.leads} msj<div class="cp-sub">${v.cpl !== null ? `CPL ${fmt$(v.cpl)} · ` : ""}${v.fotoDia ? '<span style="color:var(--green);font-weight:800">✓ hoy</span>' : "últ. " + fKeyC(v.foto.fecha)}</div>` : `<span style="color:var(--red);font-weight:700">sin captura</span><div class="cp-sub">captúrala para diagnosticar</div>`}</td>
+            <td class="wrap"><span class="v-acc">${v.accionTxt}</span>${v.relanzTxt ? `<span class="v-nota ${v.tipo !== "ok" ? "mal" : ""}">${v.relanzTxt}</span>` : ""}${v.notas.map(nn => `<span class="v-nota ${nn.cls}">${nn.txt}</span>`).join("")}</td>
+            <td class="txt" style="white-space:nowrap"><select class="sheet-cell-select e-${v.estado}" style="padding:7px 26px 7px 8px;font-size:12px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px" data-cierre-estado="${v.rowId}" data-cons="${v.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === v.estado ? "selected" : ""}>${tx}</option>`).join("")}</select><div>${att ? `<span class="v-att">✓ ${escapeHtml(att.atendidoPorNombre || "Atendida")}${hora ? "<br>" + hora : ""}</span>${att.atendidoPor === usuario.uid ? `<button class="v-undo" data-desatender="${accionId(v)}">Desmarcar</button>` : ""}` : v.tipo === "ok" ? "" : `<button class="v-btn" data-atender="${v.id}">Ya lo atendí</button>`}</div></td>
+          </tr>`; }).join("")}</tbody></table></div>
+      </div>`;
+    }).join("");
+  }
 
   // ═══════════════ CAPTURA DE PAUTA (metricasPauta) ═══════════════
   // Un doc por (consultora, curso, apertura). Se capturan ACUMULADOS como los muestra Meta:
@@ -824,10 +821,7 @@
     _unsubMet = onSnapshot(query(collection(db, "metricasPauta"), where("aperturaKey", ">=", desde)), snap => {
       _metricas = new Map();
       snap.docs.forEach(d => _metricas.set(d.id, d.data()));
-      renderCaptura();
-      renderReporte();
-      renderCierres();
-      recalcular(); // la pauta cambia la clasificación (baja señal vs. hay mensajes) y el diagnóstico
+      recalcular(); // la pauta cambia veredictos, captura y reporte
     }, err => console.warn("metricasPauta:", err));
   }
 
@@ -996,133 +990,6 @@
       console.error(e); toast("No se pudo guardar: " + e.message, "error");
     }
     renderCaptura();
-  }
-
-  // ═══════════════ DIAGNÓSTICO POR CAMPAÑA (para las tarjetas de riesgo) ═══════════════
-  // Cruza la pauta capturada con los alumnos de ventas y lo compara con la CORRIDA ANTERIOR del mismo
-  // curso a los mismos días de lanzamiento (si ya se capturó pauta esa vez) o, si no hay, con las demás
-  // campañas de la consultora en este lanzamiento. Responde tres cosas: ¿falta pauta?, ¿Ads no trae
-  // mensajes? o ¿llegan mensajes y ventas no cierra? Y estima cuánto más hay que invertir para el mínimo.
-  // Se afina solo: cada corrida capturada se vuelve historial de la siguiente.
-  function fotoAlDia(m, lanzMs, D) {
-    // acumulado de la corrida anterior a los mismos D días desde su lanzamiento
-    const fotos = m?.fotos || {}; const lim = msKey(lanzMs + Math.floor(D) * DAY);
-    const k = Object.keys(fotos).filter(x => esKey(x) && x <= lim).sort().pop();
-    return k ? { fecha: k, pauta: Number(fotos[k].pauta) || 0, mensajes: Number(fotos[k].mensajes) || 0 } : null;
-  }
-  function diagnosticoDe(p) {
-    const c = _cache.get(p.consultoraId); if (!c) return null;
-    const aps = aperturasActivasDe(p.consultoraId);
-    const ap = aps.find(a => a.cursoId === p.cursoId && a.K === p.fecha); if (!ap) return null;
-    const cu = c.cursos.find(x => x.id === p.cursoId) || {};
-    const freq = ap.freq, lanzMs = keyMs(ap.lanzKey);
-    const D = Math.max(0.5, (Date.now() - lanzMs) / DAY);
-    const pauta = ap.foto ? ap.foto.pauta : 0, leads = ap.foto ? ap.foto.mensajes : 0, alumnos = ap.alumnos;
-    const conv = leads ? alumnos / leads : null, cpl = leads ? pauta / leads : null;
-
-    // Corrida anterior del mismo curso
-    const keys = new Set();
-    c.alumnos.forEach(a => { if (a.cursoId === ap.cursoId && esKey(a.aperturaKey) && a.aperturaKey < ap.K) keys.add(a.aperturaKey); });
-    _metricas.forEach(m => { if (m.cursoId === ap.cursoId && esKey(m.aperturaKey) && m.aperturaKey < ap.K) keys.add(m.aperturaKey); });
-    const ks = [...keys].sort(); const prevKey = ks.pop() || null; const prevPrev = ks.pop() || null;
-    let prev = null;
-    if (prevKey) {
-      const lanzPrev = Math.max(prevPrev ? keyMs(prevPrev) : 0, keyMs(prevKey) - freq * DAY);
-      const mPrev = _metricas.get(metId(ap.consultoraId, ap.cursoId, prevKey)) || null;
-      const alPrev = c.alumnos.filter(a => a.cursoId === ap.cursoId && a.aperturaKey === prevKey);
-      const alPrevAlD = alPrev.filter(a => (a.creadoEn?.toMillis?.() || 0) - lanzPrev <= D * DAY).length;
-      const fPrev = fotoAlDia(mPrev, lanzPrev, D), fTot = ultimaFoto(mPrev);
-      prev = { key: prevKey, alumnosAlD: alPrevAlD, total: alPrev.length, pautaAlD: fPrev?.pauta ?? null, leadsAlD: fPrev?.mensajes ?? null, pautaTotal: fTot?.pauta ?? null, leadsTotal: fTot?.mensajes ?? null,
-        cac: fTot && alPrev.length ? fTot.pauta / alPrev.length : null, conv: fTot && fTot.mensajes ? alPrev.length / fTot.mensajes : null };
-    }
-    // Benchmark de la consultora en este momento (las demás campañas con captura)
-    const otras = aps.filter(a => a.rowId !== ap.rowId && a.foto && a.foto.mensajes > 0);
-    const sum = (arr, f) => arr.reduce((n, a) => n + f(a), 0);
-    const bench = otras.length ? { n: otras.length, conv: sum(otras, a => a.alumnos) / sum(otras, a => a.foto.mensajes), cpl: sum(otras, a => a.foto.pauta) / sum(otras, a => a.foto.mensajes),
-      cac: sum(otras, a => a.alumnos) ? sum(otras, a => a.foto.pauta) / sum(otras, a => a.alumnos) : null, pautaProm: sum(otras, a => a.foto.pauta) / otras.length } : null;
-
-    const tags = [], lineas = [], cmp = [];
-    if (!ap.foto) {
-      tags.push(["gris", "Sin pauta capturada"]); lineas.push("Captura la pauta y los mensajes de esta campaña para poder diagnosticar.");
-      return { ap, tags, lineas, cmp, accion: null };
-    }
-    // Comparación con la corrida anterior
-    if (prev && prev.pautaAlD !== null) {
-      cmp.push(`<span>Pauta a estos días</span> <b>${fmt$(pauta)}</b> vs <b>${fmt$(prev.pautaAlD)}</b> la vez pasada`);
-      cmp.push(`<span>Mensajes</span> <b>${leads}</b> vs <b>${prev.leadsAlD}</b>`);
-      cmp.push(`<span>Alumnos</span> <b>${alumnos}</b> vs <b>${prev.alumnosAlD}</b> (cerró con ${prev.total})`);
-      const rP = prev.pautaAlD ? pauta / prev.pautaAlD : null, rL = prev.leadsAlD ? leads / prev.leadsAlD : null, rA = prev.alumnosAlD ? alumnos / prev.alumnosAlD : null;
-      if (rP !== null && rP < 0.6) { tags.push(["pauta", "Vas bajo en pauta"]); lineas.push(`Llevas ${Math.round(rP * 100)}% de lo que llevabas a estos días en la corrida pasada (${fmt$(prev.pautaAlD)}). Con menos inversión no vas a llegar al mismo cierre.`); }
-      if (rP !== null && rP >= 0.6 && rL !== null && rL < 0.6) { tags.push(["ads", "Ads no está trayendo mensajes"]); lineas.push(`Misma inversión pero ${leads} mensajes contra ${prev.leadsAlD} la vez pasada (CPL ${cpl !== null ? fmt$(cpl) : "—"} vs ${prev.leadsAlD ? fmt$(prev.pautaAlD / prev.leadsAlD) : "—"}). Es el anuncio o la segmentación, no el presupuesto.`); }
-      if (rL !== null && rL >= 0.8 && rA !== null && rA < 0.6) { tags.push(["ventas", "Llegan mensajes y ventas no cierra"]); lineas.push(`Mensajes al nivel de la vez pasada (${leads} vs ${prev.leadsAlD}) pero ${alumnos} alumnos contra ${prev.alumnosAlD}. Conversión ${conv !== null ? (conv * 100).toFixed(1) : "—"}% vs ${prev.conv !== null ? (prev.conv * 100).toFixed(1) : "—"}%. Avísale a ventas: el problema no está en Ads.`); }
-      if (!tags.length && rA !== null && rA >= 0.9) { tags.push(["ok", "Va como la corrida pasada"]); }
-    } else if (bench && leads >= 5) {
-      cmp.push(`<span>Conversión</span> <b>${conv !== null ? (conv * 100).toFixed(1) + "%" : "—"}</b> vs <b>${(bench.conv * 100).toFixed(1)}%</b> de las otras ${bench.n} campañas`);
-      cmp.push(`<span>CPL</span> <b>${cpl !== null ? fmt$(cpl) : "—"}</b> vs <b>${fmt$(bench.cpl)}</b>`);
-      cmp.push(`<span>Pauta</span> <b>${fmt$(pauta)}</b> vs <b>${fmt$(bench.pautaProm)}</b> promedio`);
-      if (pauta < bench.pautaProm * 0.5) { tags.push(["pauta", "Vas bajo en pauta"]); lineas.push(`Esta campaña lleva la mitad o menos de lo que llevan las demás de la consultora (${fmt$(bench.pautaProm)} en promedio).`); }
-      if (cpl !== null && cpl > bench.cpl * 1.8) { tags.push(["ads", "Ads no está trayendo mensajes"]); lineas.push(`CPL ${fmt$(cpl)} contra ${fmt$(bench.cpl)} en las demás: el anuncio no jala, no es presupuesto.`); }
-      if (conv !== null && bench.conv > 0 && conv < bench.conv * 0.5 && leads >= 10) { tags.push(["ventas", "Llegan mensajes y ventas no cierra"]); lineas.push(`Conversión ${(conv * 100).toFixed(1)}% contra ${(bench.conv * 100).toFixed(1)}% de las demás campañas con los mismos vendedores. Avísale a ventas.`); }
-      if (!tags.length) tags.push(["info", "Primera corrida con pauta capturada · comparando con la consultora"]);
-    } else {
-      tags.push(["info", "Sin historial todavía"]); lineas.push("Esta es la primera corrida con pauta capturada y aún hay pocos mensajes para comparar. Con la siguiente corrida el diagnóstico ya sale solo.");
-    }
-    // Cuánto más invertir para el mínimo
-    let accion = null;
-    const faltan = Math.max(0, p.minimo - Math.max(p.count, p.proy));
-    const cac = prev?.cac ?? bench?.cac ?? (alumnos ? pauta / alumnos : null);
-    if (faltan > 0 && cac) accion = `Para llegar al mínimo faltan ~${faltan} alumnos ≈ <b>${fmt$(faltan * cac)}</b> más de pauta (a tu costo por alumno de ${fmt$(cac)}${prev?.cac ? ", de la corrida pasada" : bench?.cac ? ", promedio de la consultora" : ""}).${tags.some(t => t[0] === "ventas") ? " Ojo: si ventas no cierra, meter más pauta no lo arregla." : ""}`;
-    else if (faltan > 0) accion = `Faltan ~${faltan} alumnos para el mínimo. Captura un par de días más para estimar cuánta pauta necesitas.`;
-    return { ap, tags, lineas, cmp, accion };
-  }
-
-  function diagnosticoHtml(p) {
-    let d = null; try { d = diagnosticoDe(p); } catch (e) { console.warn("diagnóstico:", e); }
-    if (!d) return "";
-    const est = d.ap.estado;
-    return `<div class="dx">
-      <div class="dx-h"><span class="dx-t">Diagnóstico</span>${d.tags.map(([cls, t]) => `<span class="dx-tag ${cls}">${t}</span>`).join("")}
-        <label class="dx-estado">Estado <select class="sheet-cell-select e-${est}" data-cierre-estado="${d.ap.rowId}" data-cons="${d.ap.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === est ? "selected" : ""}>${tx}</option>`).join("")}</select></label></div>
-      ${d.cmp.length ? `<div class="dx-cmp">${d.cmp.map(x => `<div>${x}</div>`).join("")}</div>` : ""}
-      ${d.lineas.map(l => `<div>${l}</div>`).join("")}
-      ${d.accion ? `<div class="dx-accion">${d.accion}</div>` : ""}
-    </div>`;
-  }
-
-  // ═══════════════ CIERRAN EN 3 DÍAS O MENOS (vive en "Campañas en riesgo") ═══════════════
-  // Aquí el trafiquer decide: pausar, dejar como está o subir presupuesto. El estado se guarda al momento.
-  function renderCierres() {
-    const cont = document.getElementById("tf-cierres"); if (!cont) return;
-    if (!_capFecha) _capFecha = hoyMXs();
-    if (!cacheLista()) { cont.innerHTML = ""; return; }
-    const todas = []; _cache.forEach((_, consId) => todas.push(...aperturasActivasDe(consId)));
-    const lista = todas.filter(ap => diasPara(ap.K) <= 3 && (_fCons === "todas" || ap.consultoraId === _fCons))
-      .sort((a, b) => a.K.localeCompare(b.K) || a.consultoraNombre.localeCompare(b.consultoraNombre) || a.cursoNombre.localeCompare(b.cursoNombre));
-    if (!lista.length) { cont.innerHTML = ""; return; }
-    const proyDe = ap => [..._problemas, ..._bajaSenal].find(p => p.cursoId === ap.cursoId && p.fecha === ap.K);
-    const hoyN = lista.filter(ap => diasPara(ap.K) === 0).length;
-    cont.innerHTML = `<div class="curso-bloque alerta">
-      <div class="curso-bloque-header">
-        <div class="curso-bloque-titulo">Cierran en 3 días o menos</div>
-        <div class="curso-bloque-stats"><span><b>${lista.length}</b> campaña${lista.length === 1 ? "" : "s"}</span>${hoyN ? `<span><b>${hoyN}</b> abren hoy</span>` : ""}<span class="curso-bloque-badge">decide: pausar, dejar o subir presupuesto</span></div>
-      </div>
-      <div class="sheet-scroll"><table class="sheet-table" style="min-width:980px"><thead><tr>
-        <th style="width:44px">#</th><th>Consultora</th><th style="min-width:260px">Curso</th><th>Abre</th><th class="num">Alumnos</th><th class="num">Proyección</th><th style="width:150px">Estado de la campaña</th><th>Última captura</th>
-      </tr></thead><tbody>${lista.map((ap, i) => {
-        const cu = (_cache.get(ap.consultoraId)?.cursos || []).find(c => c.id === ap.cursoId) || {};
-        const min = Number(cu.minimoAlumnos) || 8;
-        const pr = proyDe(ap);
-        return `<tr>
-          <td class="sheet-row-num">${i + 1}</td>
-          <td class="txt"><b>${escapeHtml(ap.consultoraNombre)}</b></td>
-          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}</div></td>
-          <td class="txt" style="white-space:nowrap">${fKey(ap.K)} ${cierreChip(ap.K)}</td>
-          <td class="txt num"><b>${ap.alumnos}</b> <span class="cierres-min${ap.alumnos < min ? " mal" : ""}">/ mín ${min}</span></td>
-          <td class="txt num">${pr ? `<b>${pr.proy}</b> <span class="cierres-min${pr.proy < min ? " mal" : ""}">${pr.accion}</span>` : ap.alumnos >= min ? `<span class="cierres-min" style="color:var(--green)">llena</span>` : `<span class="cierres-min">—</span>`}</td>
-          <td><select class="sheet-cell-select e-${ap.estado}" data-cierre-estado="${ap.rowId}" data-cons="${ap.consultoraId}">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === ap.estado ? "selected" : ""}>${tx}</option>`).join("")}</select></td>
-          <td class="txt" style="color:var(--muted);font-size:12px">${ap.fotoDia ? `<span style="color:var(--green);font-weight:800">✓ hoy</span> · ${fmt$(ap.fotoDia.pauta)} · ${ap.fotoDia.mensajes} msj` : ap.foto ? `${fKeyC(ap.foto.fecha)} · ${fmt$(ap.foto.pauta)} · ${ap.foto.mensajes} msj` : `<span style="color:var(--red);font-weight:700">sin captura</span>`}</td>
-        </tr>`; }).join("")}</tbody></table></div>
-    </div>`;
   }
 
   async function guardarEstadoCierre(rowId, consId, estado, sel) {
@@ -1336,61 +1203,20 @@
 
   // ═══════════════ Eventos ═══════════════
   document.getElementById("tf-contenido").addEventListener("click", (e) => {
-    const bsT = e.target.closest("#tf-bs-toggle");
-    if (bsT) { _verBS = !_verBS; render(); return; }
-
     const at = e.target.closest("[data-atender]");
-    if (at) { _notaOpen = at.dataset.atender; _notaTxt = ""; render(); return; }
-
-    const guardar = e.target.closest("[data-guardar]");
-    if (guardar) {
-      const id = guardar.dataset.guardar;
-      const p = [..._problemas, ..._bajaSenal].find(x => accionId(x) === id);
-      if (p) { guardar.disabled = true; _notaOpen = null; marcarAtendida(p, _notaTxt); _notaTxt = ""; }
-      return;
-    }
-    const cancelar = e.target.closest("[data-cancelar]");
-    if (cancelar) { _notaOpen = null; _notaTxt = ""; render(); return; }
-
+    if (at) { const v = _veredictos.find(x => x.id === at.dataset.atender); if (v) { at.disabled = true; marcarAtendida(v, ""); } return; }
     const des = e.target.closest("[data-desatender]");
     if (des) desmarcar(des.dataset.desatender);
   });
-
-  document.getElementById("tf-contenido").addEventListener("input", (e) => {
-    if (e.target.matches("[data-nota-input]")) _notaTxt = e.target.value;
-  });
-
-  document.getElementById("tf-contenido").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && e.target.matches("[data-nota-input]")) {
-      e.preventDefault();
-      const id = e.target.dataset.notaInput;
-      const p = [..._problemas, ..._bajaSenal].find(x => accionId(x) === id);
-      if (p) { _notaOpen = null; marcarAtendida(p, _notaTxt); _notaTxt = ""; }
-    }
-  });
-
   document.getElementById("tf-fchips").addEventListener("click", (e) => {
-    const b = e.target.closest(".tf-fchip");
+    const b = e.target.closest(".tf-fchip[data-tipo]");
     if (!b) return;
     _fTipo = b.dataset.tipo;
-    document.querySelectorAll(".tf-fchip").forEach(x => x.classList.toggle("active", x === b));
+    document.querySelectorAll(".tf-fchip[data-tipo]").forEach(x => x.classList.toggle("active", x === b));
     render();
   });
-
-  document.getElementById("tf-sel-cons").addEventListener("change", (e) => {
-    _fCons = e.target.value;
-    render();
-    renderCierres();
-  });
-
-  document.getElementById("tf-orden").addEventListener("click", (e) => {
-    const b = e.target.closest("button");
-    if (!b) return;
-    _orden = b.dataset.orden;
-    document.querySelectorAll("#tf-orden button").forEach(x => x.classList.toggle("active", x === b));
-    render();
-  });
-
+  document.getElementById("tf-sel-cons").addEventListener("change", (e) => { _fCons = e.target.value; render(); });
+  document.getElementById("tf-ver-atendidas").addEventListener("change", (e) => { _verAtendidas = e.target.checked; render(); });
   document.getElementById("btn-refrescar").addEventListener("click", cargar);
   document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
 
