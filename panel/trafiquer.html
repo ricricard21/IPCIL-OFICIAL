@@ -2,36 +2,75 @@
 <html lang="es">
 <head>
   <meta name="robots" content="noindex, nofollow" />
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Trafiquer — IPCIL</title>
   <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="panel.css">
-<link rel="stylesheet" href="panel-doctoralia.css">
+  <link rel="stylesheet" href="panel-doctoralia.css">
   <style>
-    body { background: var(--bg); }
-    .tf-topbar {
-      position: sticky; top: 0; z-index: 50;
-      display: flex; align-items: center; justify-content: space-between; gap: 14px;
-      padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line);
-    }
-    .tf-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .tf-brand img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; }
-    .tf-brand-t { font-size: 16px; font-weight: 800; color: var(--primary); line-height: 1.1; }
-    .tf-brand-s { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-    .tf-user { display: flex; align-items: center; gap: 12px; }
-    .tf-user-name { font-size: 12.5px; font-weight: 700; color: var(--text); text-align: right; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .tf-user-rol { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    /* ═══ Hoja de captura (mismo lenguaje visual que el Registro de ventas) ═══ */
+    .sheet-wrapper { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--line); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .sheet-header { padding: 18px 22px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .sheet-title { font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+    .sheet-counter { background: rgba(255,255,255,0.18); padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+    .sheet-counter strong { color: #fff; font-weight: 800; }
+    .sheet-instructions { background: var(--yellow-soft); border-bottom: 1px solid var(--yellow-bg); padding: 10px 22px; font-size: 12px; color: var(--yellow); display: flex; align-items: center; gap: 8px; }
+    .aperturas-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); padding: 0 16px; overflow-x: auto; background: var(--surface-soft); margin-top: -1px; }
+    .apertura-tab { background: transparent; border: none; padding: 12px 18px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; display: flex; align-items: center; gap: 8px; transition: all var(--t); }
+    .apertura-tab:hover { color: var(--text); background: var(--surface); }
+    .apertura-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--surface); }
+    .apertura-tab .tab-count { background: var(--primary-soft); color: var(--primary); font-weight: 800; font-size: 10.5px; padding: 2px 7px; border-radius: 10px; line-height: 1.4; }
+    .apertura-tab.active .tab-count { background: var(--primary); color: white; }
+    .apertura-tab .tab-sub { font-size: 10.5px; font-weight: 600; color: var(--muted-light); }
+    .aperturas-toolbar { display: flex; align-items: center; gap: 12px; padding: 16px 20px 4px; flex-wrap: wrap; }
+    .curso-bloque { margin: 16px 20px 24px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: white; box-shadow: var(--shadow-sm); }
+    .curso-bloque-header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .curso-bloque-titulo { font-size: 14px; font-weight: 700; letter-spacing: 0.01em; line-height: 1.3; flex: 1; min-width: 0; text-transform: uppercase; }
+    .curso-bloque-stats { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; font-weight: 600; opacity: .95; }
+    .curso-bloque-stats b { font-weight: 800; }
+    .curso-bloque-badge { background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 10.5px; padding: 4px 10px; border-radius: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+    .btn-curso-action { background: #fff; color: var(--primary); border: none; padding: 7px 14px; border-radius: 999px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all var(--t); }
+    .btn-curso-action:hover { background: var(--primary-light); }
+    .sheet-scroll { overflow-x: auto; }
+    .sheet-table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 980px; }
+    .sheet-table th { background: var(--surface-soft); padding: 10px 12px; text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); border-bottom: 2px solid var(--primary); border-right: 1px solid var(--line-soft); white-space: nowrap; }
+    .sheet-table th:last-child { border-right: none; }
+    .sheet-table th.num, .sheet-table td.num { text-align: right; }
+    .sheet-table td { padding: 0; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); background: white; vertical-align: middle; font-size: 13px; color: var(--text); }
+    .sheet-table td:last-child { border-right: none; }
+    .sheet-table tr:last-child td { border-bottom: none; }
+    .sheet-table td.txt { padding: 9px 12px; }
+    .sheet-row-num { background: var(--surface-soft) !important; text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); padding: 8px 4px !important; width: 44px; }
+    .sheet-curso { font-weight: 700; line-height: 1.3; }
+    .sheet-curso small { display: block; font-weight: 600; font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sheet-cell-input, .sheet-cell-select { width: 100%; border: none; outline: none; padding: 11px 12px; font-family: inherit; font-size: 13.5px; color: var(--text); background: transparent; border-radius: 0; transition: background var(--t-fast); }
+    .sheet-cell-input.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .sheet-cell-input::placeholder { color: #c3cfcb; font-weight: 500; }
+    .sheet-cell-input:focus, .sheet-cell-select:focus { background: #fffbeb; box-shadow: inset 0 0 0 2px var(--primary); }
+    .sheet-cell-select { cursor: pointer; appearance: none; -webkit-appearance: none; font-weight: 700; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+    .sheet-cell-select.e-funciono { color: var(--green); } .sheet-cell-select.e-no_funciono { color: var(--red); } .sheet-cell-select.e-pausada { color: var(--muted); } .sheet-cell-select.e-pruebas { color: var(--info); }
+    .sheet-table tr.saved td { background: var(--primary-soft); }
+    .sheet-table tr.dirty td { background: #fffbeb; }
+    .sheet-table tr.dirty td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
+    .sheet-cpl { padding: 9px 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .sheet-prev { padding: 8px 12px; font-size: 11.5px; color: var(--muted); line-height: 1.35; white-space: nowrap; }
+    .sheet-prev b { color: var(--text); }
+    .sheet-prev .ok { color: var(--green); font-weight: 800; }
+    .sheet-prev .warn { color: var(--red); font-weight: 700; display: block; }
+    .sheet-empty { padding: 14px 18px; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .fecha-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 8px 6px 14px; font-size: 12px; font-weight: 700; color: var(--muted); }
+    .fecha-chip input { border: none; outline: none; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--text); background: transparent; }
+    .cp-check { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow: auto; padding: 4px 2px; }
+    .cp-check label { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--text); cursor: pointer; }
+    .cp-check .cp-sub { font-size: 11px; color: var(--muted); }
+    .estado-pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--surface-soft); color: var(--muted); }
+    .estado-pill.funciono { background: var(--green-bg); color: var(--green); } .estado-pill.no_funciono { background: var(--red-bg); color: var(--red); } .estado-pill.pruebas { background: var(--info-bg); color: var(--info); } .estado-pill.pausada { background: #e5e7eb; color: #374151; }
 
-    .tf-wrap { max-width: 880px; margin: 0 auto; padding: 26px 18px 60px; }
-    .tf-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
-    .tf-title { font-size: 24px; font-weight: 800; color: var(--text); }
-    .tf-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    /* ═══ Campañas en riesgo (lo que ya existía) ═══ */
     .tf-refresh { display: flex; align-items: center; gap: 10px; }
     .tf-updated { font-size: 11px; color: var(--muted-light); }
-
     .tf-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 16px; }
     .tf-sum { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: center; }
     .tf-sum-val { font-size: 24px; font-weight: 800; }
@@ -133,58 +172,8 @@
     .tf-ok-t { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 12px; }
     .tf-ok-s { font-size: 13px; color: var(--muted); margin-top: 5px; }
 
-    /* ── Pestañas (Campañas / Captura de pauta / Pendientes del gerente) ── */
-    .tf-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
-    .tf-tab-btn {
-      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
-      font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 8px 16px;
-      border-radius: 999px; cursor: pointer; transition: all var(--t-fast); display: inline-flex; align-items: center; gap: 8px;
-    }
-    .tf-tab-btn:hover { border-color: var(--primary); color: var(--primary); }
-    .tf-tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-    .tf-badge { display: inline-block; min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10.5px; font-weight: 800; text-align: center; }
-    .tf-tab-btn.active .tf-badge { background: #fff; color: var(--primary); }
-    .tf-tab { display: none; }
-    .tf-tab.active { display: block; }
 
-    /* ── Captura de pauta ── */
-    .cp-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 16px; }
-    .cp-fecha { font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; background: var(--surface); }
-    .cp-info { font-size: 11.5px; color: var(--muted); }
-    .cp-tabla-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; }
-    table.cp-tabla { width: 100%; border-collapse: collapse; min-width: 720px; }
-    .cp-tabla th { text-align: left; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); background: var(--surface-soft); white-space: nowrap; }
-    .cp-tabla td { padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--text); vertical-align: middle; }
-    .cp-tabla tr:last-child td { border-bottom: none; }
-    .cp-curso { font-weight: 700; }
-    .cp-sub { font-size: 10.5px; color: var(--muted); font-weight: 600; }
-    .cp-in { width: 96px; border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text); background: var(--bg); outline: none; text-align: right; }
-    .cp-in:focus { border-color: var(--primary); background: var(--surface); }
-    .cp-in.dirty { border-color: var(--primary); background: var(--primary-soft); }
-    .cp-ok { color: var(--green); font-weight: 800; font-size: 11px; }
-    .cp-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; background: var(--surface-soft); }
-    .cp-add select, .cp-add input[type=date] { font-family: inherit; font-size: 12px; border: 1px solid var(--line); border-radius: 9px; padding: 6px 9px; background: var(--surface); color: var(--text); }
-    .cp-grupo-h { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--primary); padding: 12px 12px 8px; }
-    .cp-grupo-h .n { color: var(--muted); font-weight: 700; text-transform: none; letter-spacing: 0; }
-
-    .cp-lanz { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-    .cp-lanz-btn {
-      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
-      font-family: inherit; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 12px; cursor: pointer; text-align: left; line-height: 1.25;
-    }
-    .cp-lanz-btn small { display: block; font-size: 10.5px; font-weight: 600; opacity: .8; }
-    .cp-lanz-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-    .cp-lanz-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
-    .cp-sel { font-family: inherit; font-size: 11.5px; font-weight: 700; border: 1px solid var(--line); border-radius: 9px; padding: 6px 8px; background: var(--bg); color: var(--text); }
-    .cp-sel.dirty { border-color: var(--primary); background: var(--primary-soft); }
-    .cp-sel.e-funciono { color: var(--green); } .cp-sel.e-no_funciono { color: var(--red); } .cp-sel.e-pausada { color: var(--muted); }
-    .cp-ult { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
-    .cp-ult b { color: var(--text); }
-    .cp-warn { color: var(--yellow); font-weight: 700; font-size: 10.5px; }
-    .cp-check { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow: auto; padding: 4px 2px; }
-    .cp-check label { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--text); cursor: pointer; }
-
-    /* ── Pendientes del gerente ── */
+    /* ═══ Pendientes del gerente ═══ */
     .pg-card { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--yellow); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
     .pg-card.aplicada { border-left-color: var(--green); opacity: .7; }
     .pg-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -195,136 +184,184 @@
     .pg-motivo { font-size: 12.5px; color: var(--text); margin-top: 8px; padding: 8px 10px; background: var(--surface-soft); border-radius: 10px; }
     .pg-foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
     .pg-sec-t { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 18px 0 10px; }
-
-    @media (max-width: 560px) {
-      .tf-summary { gap: 8px; }
-      .tf-sum { padding: 11px 8px; }
-      .tf-sum-val { font-size: 20px; }
-      .tf-card-dias { margin-left: 0; width: 100%; }
-      .tf-orden { margin-left: 0; }
-      .tf-sel { max-width: 100%; }
-    }
+    .badge-red { background: var(--red-bg) !important; color: var(--red) !important; }
+    .badge-yellow { background: var(--yellow-bg) !important; color: var(--yellow) !important; }
+    @media (max-width: 560px) { .tf-summary { gap: 8px; } .tf-sum { padding: 11px 8px; } .tf-sum-val { font-size: 20px; } .tf-card-dias { margin-left: 0; width: 100%; } .tf-orden { margin-left: 0; } .tf-sel { max-width: 100%; } }
   </style>
 </head>
 <body>
 
-  <header class="tf-topbar">
-    <div class="tf-brand">
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
       <img src="../assets/logo.jpeg" alt="IPCIL">
-      <div>
-        <div class="tf-brand-t">IPCI</div>
-        <div class="tf-brand-s">Tráfico &amp; Ads</div>
+      <div class="sidebar-brand-text">
+        <strong>IPCIL</strong>
+        <span>Tráfico &amp; Ads</span>
       </div>
-    </div>
-    <div class="tf-user">
-      <div>
-        <div class="tf-user-name" id="tf-nombre">Cargando...</div>
-        <div class="tf-user-rol">Trafiquer</div>
-      </div>
-      <button class="btn btn-secondary btn-sm" id="btn-salir">Salir</button>
-    </div>
-  </header>
-
-  <main class="tf-wrap">
-    <div class="tf-tabs" id="tf-tabs">
-      <button class="tf-tab-btn active" data-tab="captura">Captura de pauta</button>
-      <button class="tf-tab-btn" data-tab="reporte">Mi reporte</button>
-      <button class="tf-tab-btn" data-tab="campanas">Campañas en riesgo</button>
-      <button class="tf-tab-btn" data-tab="pendientes">Pendientes del gerente <span class="tf-badge" id="pg-n" style="display:none">0</span></button>
     </div>
 
-    <div class="tf-tab" id="tab-campanas">
-    <div class="tf-head">
-      <div>
-        <div class="tf-title">Campañas que necesitan acción</div>
-        <div class="tf-sub">Aperturas de los próximos 14 días con riesgo de no llenarse · proyección aprendida del histórico</div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-view="captura">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        Captura de pauta
+      </button>
+      <button class="sidebar-link" data-view="reporte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+        Mi reporte
+      </button>
+      <button class="sidebar-link" data-view="campanas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Campañas en riesgo
+        <span id="badge-riesgo" class="badge badge-red" style="display:none">0</span>
+      </button>
+      <button class="sidebar-link" data-view="pendientes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Pendientes del gerente
+        <span id="pg-n" class="badge badge-yellow" style="display:none">0</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-initial">T</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role">Trafiquer</div>
+        </div>
       </div>
-      <div class="tf-refresh">
-        <span class="tf-updated" id="tf-updated"></span>
-        <button class="btn btn-primary btn-sm" id="btn-refrescar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-          Actualizar
+      <button class="btn-logout" id="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <button class="hamburger" id="hamburger" style="position:absolute;top:16px;right:16px;z-index:30">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <!-- ═══════════ CAPTURA DE PAUTA ═══════════ -->
+    <section id="view-captura" class="section active">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Captura de pauta</h1>
+          <p class="main-subtitle">Por lanzamiento, como tu reporte · captura los acumulados tal cual los muestra Meta</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label class="fecha-chip" for="cp-fecha">Foto del día <input type="date" id="cp-fecha"></label>
+          <button class="btn btn-primary" id="cp-guardar" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="cp-kpis"></div>
+
+      <div class="sheet-wrapper">
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-title">Lanzamientos</div>
+            <div style="font-size:11.5px;opacity:.85;margin-top:2px">Cada pestaña es un lanzamiento · Cada tabla es una consultora con sus campañas</div>
+          </div>
+          <div class="sheet-counter" id="cp-counter">Campañas: <strong>0</strong></div>
+        </div>
+        <div class="sheet-instructions">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span><strong>Cómo se captura:</strong> copia de Meta el <b>total acumulado</b> de pauta y mensajes de cada campaña (no lo del día) · Tab salta de celda · Ctrl+S guarda</span>
+        </div>
+        <div class="aperturas-tabs" id="cp-tabs"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando lanzamientos...</div></div></div>
+        <div class="aperturas-toolbar">
+          <span class="text-sm text-muted" id="cp-estado"></span>
+          <div class="search-box" style="max-width:280px;margin-left:auto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="input" type="search" id="cp-buscar" placeholder="Buscar curso o consultora...">
+          </div>
+        </div>
+        <div id="cp-contenido"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ MI REPORTE ═══════════ -->
+    <section id="view-reporte" class="section">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title">Mi reporte</h1>
+          <p class="main-subtitle">Lo mismo que tu Excel, pero sale solo de lo que capturas · por lanzamiento → consultora → curso</p>
+        </div>
+        <button class="btn btn-secondary" id="rp-csv">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Descargar Excel (CSV)
         </button>
       </div>
-    </div>
-
-    <div class="tf-summary">
-      <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
-      <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
-      <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-consultoras">0</div><div class="tf-sum-lbl">Con pendientes</div></div>
-    </div>
-
-    <div class="tf-tools">
-      <div class="tf-fchips" id="tf-fchips">
-        <button class="tf-fchip active" data-tipo="todos">Todos</button>
-        <button class="tf-fchip" data-tipo="0">Urgente HOY</button>
-        <button class="tf-fchip" data-tipo="1">Meter presupuesto</button>
-        <button class="tf-fchip" data-tipo="2">Empujón final</button>
-      </div>
-      <select class="tf-sel" id="tf-sel-cons">
-        <option value="todas">Todas las consultoras</option>
-      </select>
-      <div class="tf-orden" id="tf-orden">
-        <button class="active" data-orden="consultora">Por consultora</button>
-        <button data-orden="prioridad">Por prioridad</button>
-      </div>
-    </div>
-
-    <div id="tf-contenido">
-      <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>
-    </div>
-    </div><!-- /tab-campanas -->
-
-    <!-- ═══ Captura de pauta (la ve el gerente en vivo) ═══ -->
-    <div class="tf-tab active" id="tab-captura">
-      <div class="tf-head">
-        <div>
-          <div class="tf-title">Captura de pauta</div>
-          <div class="tf-sub">Por lanzamiento, como tu reporte: pauta y mensajes <b>acumulados tal cual los muestra Meta</b>. El sistema saca solo el diario y el CPL.</div>
+      <div class="kpi-grid" id="rp-kpis"></div>
+      <div class="sheet-wrapper">
+        <div class="sheet-header">
+          <div><div class="sheet-title">Reporte por lanzamiento</div><div style="font-size:11.5px;opacity:.85;margin-top:2px">Costo total, mensajes, CPL y los alumnos reales que registró ventas</div></div>
+          <div class="sheet-counter" id="rp-counter">Campañas: <strong>0</strong></div>
         </div>
+        <div class="aperturas-tabs" id="rp-tabs"></div>
+        <div id="rp-contenido"></div>
       </div>
-      <div class="cp-bar">
-        <label class="cp-info" for="cp-fecha">Foto del día</label>
-        <input class="cp-fecha" type="date" id="cp-fecha">
-        <button class="btn btn-primary btn-sm" id="cp-guardar" disabled>Guardar cambios</button>
-        <span class="cp-info" id="cp-estado"></span>
-      </div>
-      <div class="cp-lanz" id="cp-lanz"></div>
-      <div id="cp-contenido"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div></div>
-    </div>
+    </section>
 
-    <!-- ═══ Mi reporte (sustituye el Excel) ═══ -->
-    <div class="tf-tab" id="tab-reporte">
-      <div class="tf-head">
+    <!-- ═══════════ CAMPAÑAS EN RIESGO (lo de siempre) ═══════════ -->
+    <section id="view-campanas" class="section">
+      <div class="main-header">
         <div>
-          <div class="tf-title">Mi reporte</div>
-          <div class="tf-sub">Lo mismo que tu Excel, pero sale solo de lo que capturas: por lanzamiento, por consultora, por curso</div>
+          <h1 class="main-title">Campañas en riesgo</h1>
+          <p class="main-subtitle">Aperturas de los próximos 14 días que no van a llenar el mínimo · proyección aprendida del histórico</p>
         </div>
         <div class="tf-refresh">
-          <button class="btn btn-secondary btn-sm" id="rp-csv">Descargar Excel (CSV)</button>
+          <span class="tf-updated" id="tf-updated"></span>
+          <button class="btn btn-primary btn-sm" id="btn-refrescar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+            Actualizar
+          </button>
         </div>
       </div>
-      <div class="cp-lanz" id="rp-lanz"></div>
-      <div class="tf-summary" id="rp-summary" style="grid-template-columns:repeat(4,1fr)"></div>
-      <div id="rp-contenido"></div>
-    </div>
+      <div class="tf-summary">
+        <div class="tf-sum is-red"><div class="tf-sum-val" id="sum-urgente">0</div><div class="tf-sum-lbl">Urgentes</div></div>
+        <div class="tf-sum is-yellow"><div class="tf-sum-val" id="sum-empujon">0</div><div class="tf-sum-lbl">Empujón final</div></div>
+        <div class="tf-sum is-blue"><div class="tf-sum-val" id="sum-consultoras">0</div><div class="tf-sum-lbl">Con pendientes</div></div>
+      </div>
+      <div class="tf-tools">
+        <div class="tf-fchips" id="tf-fchips">
+          <button class="tf-fchip active" data-tipo="todos">Todos</button>
+          <button class="tf-fchip" data-tipo="0">Urgente HOY</button>
+          <button class="tf-fchip" data-tipo="1">Meter presupuesto</button>
+          <button class="tf-fchip" data-tipo="2">Empujón final</button>
+        </div>
+        <select class="tf-sel" id="tf-sel-cons"><option value="todas">Todas las consultoras</option></select>
+        <div class="tf-orden" id="tf-orden">
+          <button class="active" data-orden="consultora">Por consultora</button>
+          <button data-orden="prioridad">Por prioridad</button>
+        </div>
+      </div>
+      <div id="tf-contenido"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div></div>
+    </section>
 
-    <!-- ═══ Pendientes del gerente ═══ -->
-    <div class="tf-tab" id="tab-pendientes">
-      <div class="tf-head">
+    <!-- ═══════════ PENDIENTES DEL GERENTE ═══════════ -->
+    <section id="view-pendientes" class="section">
+      <div class="main-header">
         <div>
-          <div class="tf-title">Pendientes del gerente</div>
-          <div class="tf-sub">Decisiones que tomó el gerente de ventas: aplícalas en Meta y márcalas</div>
+          <h1 class="main-title">Pendientes del gerente</h1>
+          <p class="main-subtitle">Decisiones que tomó el gerente de ventas: aplícalas en Meta y márcalas</p>
         </div>
       </div>
-      <div id="pg-contenido" style="margin-top:14px"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
-    </div>
+      <div id="pg-contenido"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+    </section>
+
   </main>
+</div>
 
 <script type="module">
   import {
     db,
-    requireRole, cerrarSesion, escapeHtml, toast,
+    requireRole, cerrarSesion, escapeHtml, toast, iniciales, setupSidebar,
     doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where,
     onSnapshot, serverTimestamp
   } from "./firebase-config.js";
@@ -351,6 +388,7 @@
   let _unsubAcciones = null;
   let _notaOpen = null;   // accionId con el formulario de nota abierto
   let _notaTxt = "";
+
 
   // ═══════════════ Motor de proyección (mismo del panel coordinador) ═══════════════
   function historicoAperturas(alumnos) {
@@ -645,6 +683,7 @@
     document.getElementById("sum-urgente").textContent = activos.filter(p => p.sev <= 1).length;
     document.getElementById("sum-empujon").textContent = activos.filter(p => p.sev === 2).length;
     document.getElementById("sum-consultoras").textContent = new Set(activos.map(p => p.consultoraId)).size;
+    { const b = document.getElementById("badge-riesgo"); const nUrg = activos.filter(p => p.sev <= 1).length; b.textContent = nUrg; b.style.display = nUrg ? "" : "none"; }
 
     const visibles = _problemas.filter(pasaFiltros);
     const bsVisibles = _bajaSenal.filter(pasaFiltros);
@@ -705,6 +744,8 @@
     }
   }
 
+
+
   // ═══════════════ CAPTURA DE PAUTA (metricasPauta) ═══════════════
   // Un doc por (consultora, curso, apertura). Se capturan ACUMULADOS como los muestra Meta:
   //   fotos.{YYYY-MM-DD} = { pauta, mensajes }   ← acumulado al cierre de ese día
@@ -721,7 +762,9 @@
   const metId = (consultoraId, cursoId, K) => `${consultoraId}_${cursoId}_${K}`;
   const fmt$ = v => "$" + (Number(v) || 0).toLocaleString("es-MX", { maximumFractionDigits: 0 });
   const ESTADOS = [["sin_iniciar", "Sin iniciar"], ["pruebas", "En pruebas"], ["funciono", "Funcionó"], ["no_funciono", "No funcionó"], ["pausada", "Pausada"]];
+  const ESTADO_TXT = Object.fromEntries(ESTADOS);
   let _capLanz = null;   // lanzamiento (lunes, YYYY-MM-DD) seleccionado
+  let _capBuscar = "";
 
   function suscribirMetricas() {
     if (_unsubMet) _unsubMet();
@@ -734,19 +777,10 @@
     }, err => console.warn("metricasPauta:", err));
   }
 
-  // Última foto (acumulado) y la anterior a una fecha
-  function fotoHasta(m, fecha) {
-    const fotos = m?.fotos || {};
-    const keys = Object.keys(fotos).filter(k => esKey(k) && k <= fecha).sort();
-    const k = keys.pop(); return k ? { fecha: k, ...fotos[k] } : null;
-  }
-  function fotoAntesDe(m, fecha) {
-    const fotos = m?.fotos || {};
-    const keys = Object.keys(fotos).filter(k => esKey(k) && k < fecha).sort();
-    const k = keys.pop(); return k ? { fecha: k, ...fotos[k] } : null;
-  }
+  function fotoHasta(m, fecha) { const f = m?.fotos || {}; const k = Object.keys(f).filter(x => esKey(x) && x <= fecha).sort().pop(); return k ? { fecha: k, ...f[k] } : null; }
+  function fotoAntesDe(m, fecha) { const f = m?.fotos || {}; const k = Object.keys(f).filter(x => esKey(x) && x < fecha).sort().pop(); return k ? { fecha: k, ...f[k] } : null; }
 
-  // Aperturas activas de una consultora, agrupadas por lanzamiento (lunes de la semana de lanzamiento).
+  // Aperturas activas de una consultora, con su lanzamiento (lunes de la semana de lanzamiento).
   // Criterio igual que el gerente: alumnos con aperturaKey >= hoy, pauta ya capturada, o calendario del curso
   // (el coordinador abrió grupo hace poco = ese día se lanzó la siguiente corrida).
   function aperturasActivasDe(consId) {
@@ -780,6 +814,10 @@
     return out;
   }
 
+  function kpiCard(label, value, sub, icon) {
+    return `<div class="kpi"><div class="kpi-content"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><span class="kpi-trend kpi-trend-flat">${sub}</span></div><div class="kpi-icon ${icon}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg></div></div>`;
+  }
+
   let _capRenderPendiente = false;
   function renderCaptura() {
     const cont = document.getElementById("cp-contenido");
@@ -787,63 +825,84 @@
     if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#cp-contenido")) { _capRenderPendiente = true; return; }
     _capRenderPendiente = false;
     if (!_capFecha) { _capFecha = hoyMXs(); const inp = document.getElementById("cp-fecha"); inp.value = _capFecha; inp.max = _capFecha; }
-    if (!_cache.size) { cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div>`; return; }
+    if (!_cache.size) { cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>`; return; }
 
-    // Todas las aperturas del trafiquer, agrupadas por lanzamiento
     const hoy = hoyMXs();
     const todas = []; _cache.forEach((_, consId) => todas.push(...aperturasActivasDe(consId)));
     const grupos = new Map();
     todas.forEach(ap => { const g = grupos.get(ap.lanzGrupo) || { key: ap.lanzGrupo, aps: [], aperturas: new Set() }; g.aps.push(ap); g.aperturas.add(ap.K); grupos.set(ap.lanzGrupo, g); });
-    // Siempre existe el lanzamiento de esta semana (aunque aún no tenga campañas) para poder agregar cursos
     const lanzHoy = msKey(lunesDe(keyMs(hoy)));
     if (!grupos.has(lanzHoy)) grupos.set(lanzHoy, { key: lanzHoy, aps: [], aperturas: new Set() });
     const lanzs = [...grupos.values()].sort((a, b) => b.key.localeCompare(a.key));
-    if (!_capLanz || !grupos.has(_capLanz)) _capLanz = lanzs[0].key;
-    document.getElementById("cp-lanz").innerHTML = lanzs.map(g => {
-      const aps = [...g.aperturas].sort(); const n = g.aps.length, cap = g.aps.filter(a => a.fotoDia).length;
-      return `<button class="cp-lanz-btn${g.key === _capLanz ? " active" : ""}" data-lanz="${g.key}">Lanzamiento ${fKey(g.key)}<small>${n ? `abre ${aps.map(fKeyC).join(" / ")} · ${n} campaña${n === 1 ? "" : "s"} · ${cap} con foto de este día` : "sin campañas aún · agrega cursos"}</small></button>`;
+    if (!_capLanz || !grupos.has(_capLanz)) _capLanz = (lanzs.find(g => g.aps.length) || lanzs[0]).key;
+
+    // Pestañas de lanzamiento (mismo estilo que las aperturas del panel de ventas)
+    document.getElementById("cp-tabs").innerHTML = lanzs.map(g => {
+      const aps = [...g.aperturas].sort();
+      return `<button class="apertura-tab${g.key === _capLanz ? " active" : ""}" data-lanz="${g.key}">
+        <span>Lanzamiento ${fKey(g.key)}</span>
+        ${g.aps.length ? `<span class="tab-count">${g.aps.length}</span><span class="tab-sub">abre ${aps.map(fKeyC).join(" / ")}</span>` : `<span class="tab-sub">esta semana · vacío</span>`}
+      </button>`;
     }).join("");
 
     const g = grupos.get(_capLanz);
+    const tot = g.aps.reduce((o, ap) => { const f = ap.foto; o.pauta += f ? Number(f.pauta) || 0 : 0; o.msj += f ? Number(f.mensajes) || 0 : 0; o.hoy += ap.fotoDia ? 1 : 0; return o; }, { pauta: 0, msj: 0, hoy: 0 });
+    document.getElementById("cp-kpis").innerHTML =
+      kpiCard("Pauta del lanzamiento", fmt$(tot.pauta), `acumulado al ${fKeyC(_capFecha)}`, "kpi-icon-green") +
+      kpiCard("Mensajes", tot.msj, "acumulados", "kpi-icon-blue") +
+      kpiCard("CPL promedio", tot.msj ? fmt$(tot.pauta / tot.msj) : "—", "pauta ÷ mensajes", "kpi-icon-gold") +
+      kpiCard("Capturadas este día", `${tot.hoy}/${g.aps.length}`, tot.hoy === g.aps.length && g.aps.length ? "todas al día" : `faltan ${g.aps.length - tot.hoy}`, "kpi-icon-yellow");
+    document.getElementById("cp-counter").innerHTML = `Campañas: <strong>${g.aps.length}</strong>`;
+
+    // Bloques por consultora
     const porCons = new Map();
     g.aps.forEach(ap => { const c = porCons.get(ap.consultoraId) || { nombre: ap.consultoraNombre, aps: [] }; c.aps.push(ap); porCons.set(ap.consultoraId, c); });
-    // consultoras del trafiquer sin campañas en este lanzamiento también se listan (para agregar)
     _cache.forEach((c, id) => { if (!porCons.has(id)) porCons.set(id, { nombre: c.nombre, aps: [] }); });
+    const q = _capBuscar.trim().toLowerCase();
     const ordenadas = [...porCons.entries()].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
 
     let html = "";
     ordenadas.forEach(([consId, c]) => {
       const cache = _cache.get(consId);
       const listados = new Set(c.aps.map(a => a.cursoId));
-      const otros = (cache?.cursos || []).filter(cu => cu.activo !== false && !listados.has(cu.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-      const filas = c.aps.sort((a, b) => a.cursoNombre.localeCompare(b.cursoNombre)).map(ap => {
+      const otros = (cache?.cursos || []).filter(cu => cu.activo !== false && !listados.has(cu.id));
+      let aps = c.aps.sort((a, b) => a.cursoNombre.localeCompare(b.cursoNombre));
+      if (q) aps = aps.filter(ap => ap.cursoNombre.toLowerCase().includes(q) || c.nombre.toLowerCase().includes(q));
+      if (q && !aps.length && !c.nombre.toLowerCase().includes(q)) return;
+      const t = c.aps.reduce((o, ap) => { const f = ap.foto; o.pauta += f ? Number(f.pauta) || 0 : 0; o.msj += f ? Number(f.mensajes) || 0 : 0; o.hoy += ap.fotoDia ? 1 : 0; return o; }, { pauta: 0, msj: 0, hoy: 0 });
+      const filas = aps.map((ap, idx) => {
         const v = _capVals.get(ap.rowId) || {};
         const dirty = _capVals.has(ap.rowId);
         const pautaV = v.pauta ?? (ap.fotoDia ? ap.fotoDia.pauta : ""), msgV = v.mensajes ?? (ap.fotoDia ? ap.fotoDia.mensajes : ""), precioV = v.precio ?? ap.precio, estadoV = v.estado ?? ap.estado;
         const p = Number(pautaV), mm = Number(msgV);
         const cpl = pautaV !== "" && mm > 0 ? fmt$(p / mm) : "—";
-        const ult = ap.fotoPrev ? `<span class="cp-ult">antes: <b>${fmt$(ap.fotoPrev.pauta)}</b> · <b>${ap.fotoPrev.mensajes}</b> msj <span style="opacity:.7">(${fKeyC(ap.fotoPrev.fecha)})</span></span>` : `<span class="cp-ult">sin captura previa</span>`;
-        const baja = ap.fotoPrev && pautaV !== "" && (p < Number(ap.fotoPrev.pauta) || (msgV !== "" && mm < Number(ap.fotoPrev.mensajes))) ? `<div class="cp-warn">↓ menor que la captura anterior: ¿seguro? (Meta acumula, no debería bajar)</div>` : "";
-        return `<tr>
-          <td><div class="cp-curso">${escapeHtml(ap.cursoNombre)}</div><div class="cp-sub">Abre ${fKey(ap.K)} · ${ap.alumnos} alumno${ap.alumnos === 1 ? "" : "s"}</div></td>
-          <td><select class="cp-sel e-${estadoV}${dirty ? " dirty" : ""}" data-row="${ap.rowId}" data-campo="estado">${ESTADOS.map(([val, t]) => `<option value="${val}" ${val === estadoV ? "selected" : ""}>${t}</option>`).join("")}</select></td>
-          <td><input class="cp-in${dirty ? " dirty" : ""}" type="number" min="0" step="1" inputmode="decimal" placeholder="0" data-row="${ap.rowId}" data-campo="pauta" value="${pautaV === "" ? "" : pautaV}">${baja}</td>
-          <td><input class="cp-in${dirty ? " dirty" : ""}" type="number" min="0" step="1" inputmode="numeric" placeholder="0" data-row="${ap.rowId}" data-campo="mensajes" value="${msgV === "" ? "" : msgV}"></td>
-          <td class="cp-ult"><b>${cpl}</b></td>
-          <td><input class="cp-in${dirty ? " dirty" : ""}" type="number" min="0" step="1" inputmode="decimal" data-row="${ap.rowId}" data-campo="precio" value="${precioV || ""}" style="width:80px"></td>
-          <td>${ult}${ap.fotoDia && !dirty ? `<div class="cp-ok">✓ foto de este día guardada</div>` : dirty ? `<div class="cp-sub" style="color:var(--primary)">sin guardar</div>` : ""}</td>
+        const baja = ap.fotoPrev && pautaV !== "" && (p < Number(ap.fotoPrev.pauta) || (msgV !== "" && mm < Number(ap.fotoPrev.mensajes)));
+        const prev = ap.fotoDia && !dirty
+          ? `<span class="ok">✓ guardado</span>${ap.fotoPrev ? `<br>antes: <b>${fmt$(ap.fotoPrev.pauta)}</b> · <b>${ap.fotoPrev.mensajes}</b> msj (${fKeyC(ap.fotoPrev.fecha)})` : ""}`
+          : ap.fotoPrev ? `antes: <b>${fmt$(ap.fotoPrev.pauta)}</b> · <b>${ap.fotoPrev.mensajes}</b> msj (${fKeyC(ap.fotoPrev.fecha)})${baja ? `<span class="warn">↓ menor que antes: ¿seguro?</span>` : ""}` : `<span style="color:var(--muted-light)">primera captura</span>`;
+        return `<tr class="${ap.fotoDia && !dirty ? "saved" : ""}${dirty ? " dirty" : ""}">
+          <td class="sheet-row-num">${idx + 1}</td>
+          <td class="txt"><div class="sheet-curso">${escapeHtml(ap.cursoNombre)}<small>Abre ${fKey(ap.K)} · ${ap.alumnos} alumno${ap.alumnos === 1 ? "" : "s"}</small></div></td>
+          <td><select class="sheet-cell-select e-${estadoV}" data-row="${ap.rowId}" data-campo="estado">${ESTADOS.map(([val, tx]) => `<option value="${val}" ${val === estadoV ? "selected" : ""}>${tx}</option>`).join("")}</select></td>
+          <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="decimal" placeholder="${ap.fotoPrev ? ap.fotoPrev.pauta : "0"}" title="Acumulado en Meta hoy" data-row="${ap.rowId}" data-campo="pauta" value="${pautaV === "" ? "" : pautaV}"></td>
+          <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="numeric" placeholder="${ap.fotoPrev ? ap.fotoPrev.mensajes : "0"}" title="Mensajes acumulados en Meta hoy" data-row="${ap.rowId}" data-campo="mensajes" value="${msgV === "" ? "" : msgV}"></td>
+          <td class="num sheet-cpl">${cpl}</td>
+          <td><input class="sheet-cell-input num" type="number" min="0" step="1" inputmode="decimal" data-row="${ap.rowId}" data-campo="precio" value="${precioV || ""}"></td>
+          <td class="sheet-prev">${prev}</td>
         </tr>`;
       }).join("");
-      html += `<div class="cp-tabla-wrap">
-        <div class="cp-grupo-h">${escapeHtml(c.nombre)} <span class="n">· ${c.aps.length} campaña${c.aps.length === 1 ? "" : "s"} en este lanzamiento</span></div>
-        ${c.aps.length ? `<table class="cp-tabla" style="min-width:860px"><thead><tr><th>Curso · apertura</th><th>Estado</th><th>Pauta total (MXN)</th><th>Mensajes totales</th><th>CPL</th><th>Precio</th><th>Captura anterior</th></tr></thead><tbody>${filas}</tbody></table>` : `<div class="cp-sub" style="padding:6px 12px 10px">Sin campañas en este lanzamiento.</div>`}
-        ${otros.length ? `<div class="cp-add">
-          <span class="cp-sub">¿Faltan cursos de este lanzamiento?</span>
-          <button class="btn btn-secondary btn-sm" data-add-multi="${consId}">Agregar cursos (${otros.length} disponibles)</button>
-        </div>` : ""}
+      html += `<div class="curso-bloque">
+        <div class="curso-bloque-header">
+          <div class="curso-bloque-titulo">${escapeHtml(c.nombre)}</div>
+          <div class="curso-bloque-stats">${c.aps.length ? `<span><b>${c.aps.length}</b> campañas</span><span><b>${fmt$(t.pauta)}</b> pauta</span><span><b>${t.msj}</b> msj</span><span>CPL <b>${t.msj ? fmt$(t.pauta / t.msj) : "—"}</b></span><span class="curso-bloque-badge">${t.hoy}/${c.aps.length} capturadas</span>` : `<span class="curso-bloque-badge">Sin campañas en este lanzamiento</span>`}</div>
+          ${otros.length ? `<button class="btn-curso-action" data-add-multi="${consId}">+ Agregar cursos</button>` : ""}
+        </div>
+        ${aps.length ? `<div class="sheet-scroll"><table class="sheet-table"><thead><tr>
+          <th style="width:44px">#</th><th style="min-width:260px">Curso · apertura</th><th style="width:140px">Estado</th><th class="num" style="width:140px">Pauta total (MXN)</th><th class="num" style="width:130px">Mensajes totales</th><th class="num" style="width:90px">CPL</th><th class="num" style="width:110px">Precio</th><th style="width:230px">Captura anterior</th>
+        </tr></thead><tbody>${filas}</tbody></table></div>` : `<div class="sheet-empty"><span>${q ? "Ningún curso coincide con la búsqueda." : "Cuando el coordinador abra grupo o ventas registre el primer alumno, sus cursos aparecen aquí solos. Si ya estás pautando alguno, agrégalo."}</span></div>`}
       </div>`;
     });
-    cont.innerHTML = html;
+    cont.innerHTML = html || `<div class="empty" style="padding:30px"><div class="empty-text">Sin consultoras asignadas</div></div>`;
     actualizarBtnGuardar();
   }
 
@@ -851,8 +910,8 @@
     const btn = document.getElementById("cp-guardar");
     const n = _capVals.size;
     btn.disabled = n === 0;
-    btn.textContent = n ? `Guardar ${n} cambio${n === 1 ? "" : "s"}` : "Guardar cambios";
-    document.getElementById("cp-estado").textContent = n ? "Tienes cambios sin guardar" : "";
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> ${n ? `Guardar ${n} cambio${n === 1 ? "" : "s"}` : "Guardar cambios"}`;
+    document.getElementById("cp-estado").textContent = n ? `${n} fila${n === 1 ? "" : "s"} con cambios sin guardar` : "";
   }
 
   async function guardarCaptura() {
@@ -883,7 +942,7 @@
     try {
       await Promise.all(ops);
       _capVals = new Map(); _extraRows = [];
-      toast(`Guardado (${ops.length} campaña${ops.length === 1 ? "" : "s"})`, "success");
+      toast(`Guardado · ${ops.length} campaña${ops.length === 1 ? "" : "s"}`, "success");
     } catch (e) {
       console.error(e); toast("No se pudo guardar: " + e.message, "error");
     }
@@ -892,16 +951,15 @@
 
   function abrirAgregarCursos(consId) {
     const cache = _cache.get(consId); if (!cache) return;
-    const todas = aperturasActivasDe(consId).filter(a => a.lanzGrupo === _capLanz);
-    const listados = new Set(todas.map(a => a.cursoId));
+    const listados = new Set(aperturasActivasDe(consId).filter(a => a.lanzGrupo === _capLanz).map(a => a.cursoId));
     const otros = cache.cursos.filter(cu => cu.activo !== false && !listados.has(cu.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
     const lanzKey = _capLanz;
     const wrap = document.createElement("div"); wrap.className = "modal-backdrop";
     wrap.innerHTML = `<div class="modal" style="max-width:520px">
-      <div class="modal-header"><div><div class="modal-title">Agregar cursos al lanzamiento ${fKey(lanzKey)}</div><div class="modal-subtitle">${escapeHtml(cache.nombre)} · la apertura se calcula con la frecuencia de cada curso</div></div>
+      <div class="modal-header"><div><div class="modal-title">Agregar cursos · ${escapeHtml(cache.nombre)}</div><div class="modal-subtitle">Lanzamiento ${fKey(lanzKey)} · la apertura se calcula con la frecuencia de cada curso</div></div>
         <button class="modal-close" type="button" data-close><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
       <div class="modal-body">
-        <input class="tf-nota-input" id="ag-buscar" placeholder="Buscar curso…" style="width:100%;margin-bottom:10px">
+        <input class="input" id="ag-buscar" placeholder="Buscar curso…" style="margin-bottom:10px">
         <div class="cp-check" id="ag-lista">${otros.map(cu => { const freq = Number(cu.frecuenciaDiasApertura) || 15; const K = msKey(keyMs(lanzKey) + freq * DAY); return `<label data-nombre="${escapeHtml((cu.nombre || "").toLowerCase())}"><input type="checkbox" value="${cu.id}" data-k="${K}"> ${escapeHtml(cu.nombre || cu.id)} <span class="cp-sub">· abre ${fKeyC(K)}</span></label>`; }).join("")}</div>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-secondary" data-close>Cancelar</button><button type="button" class="btn btn-primary" id="ag-ok">Agregar seleccionados</button></div>
@@ -910,11 +968,11 @@
     const cerrar = () => wrap.remove();
     wrap.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", cerrar));
     wrap.addEventListener("click", e => { if (e.target === wrap) cerrar(); });
-    wrap.querySelector("#ag-buscar").addEventListener("input", e => { const q = e.target.value.toLowerCase(); wrap.querySelectorAll("#ag-lista label").forEach(l => { l.style.display = l.dataset.nombre.includes(q) ? "" : "none"; }); });
+    wrap.querySelector("#ag-buscar").addEventListener("input", e => { const qq = e.target.value.toLowerCase(); wrap.querySelectorAll("#ag-lista label").forEach(l => { l.style.display = l.dataset.nombre.includes(qq) ? "" : "none"; }); });
     wrap.querySelector("#ag-ok").addEventListener("click", () => {
       const sel = [...wrap.querySelectorAll("#ag-lista input:checked")];
       if (!sel.length) { toast("Selecciona al menos un curso", "warning"); return; }
-      sel.forEach(i => { _extraRows.push({ consultoraId: consId, cursoId: i.value, aperturaKey: i.dataset.k }); const rowId = metId(consId, i.value, i.dataset.k); _capVals.set(rowId, { estado: "pruebas" }); });
+      sel.forEach(i => { _extraRows.push({ consultoraId: consId, cursoId: i.value, aperturaKey: i.dataset.k }); _capVals.set(metId(consId, i.value, i.dataset.k), { estado: "pruebas" }); });
       cerrar(); renderCaptura();
       toast(`${sel.length} curso${sel.length === 1 ? "" : "s"} agregado${sel.length === 1 ? "" : "s"}: captura y guarda`, "info");
     });
@@ -922,34 +980,37 @@
 
   document.getElementById("cp-contenido").addEventListener("focusout", () => { if (_capRenderPendiente) setTimeout(() => { if (!document.activeElement?.closest?.("#cp-contenido")) renderCaptura(); }, 60); });
   document.getElementById("cp-contenido").addEventListener("input", e => {
-    const inp = e.target.closest(".cp-in, .cp-sel"); if (!inp) return;
+    const inp = e.target.closest(".sheet-cell-input, .sheet-cell-select"); if (!inp) return;
     const v = _capVals.get(inp.dataset.row) || {};
     v[inp.dataset.campo] = inp.value;
     _capVals.set(inp.dataset.row, v);
-    inp.closest("tr").querySelectorAll(".cp-in, .cp-sel").forEach(i => i.classList.add("dirty"));
-    if (inp.classList.contains("cp-sel")) inp.className = `cp-sel e-${inp.value} dirty`;
+    const tr = inp.closest("tr"); tr.classList.add("dirty"); tr.classList.remove("saved");
+    if (inp.classList.contains("sheet-cell-select")) inp.className = `sheet-cell-select e-${inp.value}`;
+    // CPL en vivo
+    const pa = Number(tr.querySelector('[data-campo="pauta"]').value), ms = Number(tr.querySelector('[data-campo="mensajes"]').value);
+    tr.querySelector(".sheet-cpl").textContent = pa && ms > 0 ? fmt$(pa / ms) : "—";
     actualizarBtnGuardar();
   });
   document.getElementById("cp-contenido").addEventListener("click", e => {
     const b = e.target.closest("[data-add-multi]"); if (b) abrirAgregarCursos(b.dataset.addMulti);
   });
-  document.getElementById("cp-lanz").addEventListener("click", e => {
+  document.getElementById("cp-tabs").addEventListener("click", e => {
     const b = e.target.closest("[data-lanz]"); if (!b) return;
     _capLanz = b.dataset.lanz; renderCaptura();
   });
+  document.getElementById("cp-buscar").addEventListener("input", e => { _capBuscar = e.target.value; renderCaptura(); });
   document.getElementById("cp-fecha").addEventListener("change", e => {
     if (_capVals.size && !confirm("Tienes cambios sin guardar en este día. ¿Cambiar de día y perderlos?")) { e.target.value = _capFecha; return; }
     _capFecha = e.target.value || hoyMXs(); _capVals = new Map(); renderCaptura();
   });
   document.getElementById("cp-guardar").addEventListener("click", guardarCaptura);
+  document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && document.getElementById("view-captura").classList.contains("active")) { e.preventDefault(); guardarCaptura(); } });
 
   // ═══════════════ MI REPORTE (sustituye el Excel) ═══════════════
   let _repLanz = null;
   const ultimaFoto = (m) => { const ks = Object.keys(m?.fotos || {}).filter(esKey).sort(); const k = ks.pop(); return k ? { fecha: k, ...m.fotos[k] } : (m?.acum ? { fecha: m.acum.fecha, pauta: m.acum.pauta, mensajes: m.acum.mensajes } : null); };
-  const ESTADO_TXT = Object.fromEntries(ESTADOS);
 
   function filasReporte() {
-    // Solo métricas de mis consultoras; lanzamiento = semana (lunes) del lanzamientoKey
     const out = [];
     _metricas.forEach(m => {
       const c = _cache.get(m.consultoraId); if (!c || !esKey(m.aperturaKey)) return;
@@ -968,30 +1029,34 @@
     const grupos = new Map();
     filas.forEach(r => { const g = grupos.get(r.lanzGrupo) || []; g.push(r); grupos.set(r.lanzGrupo, g); });
     const lanzs = [...grupos.keys()].sort((a, b) => b.localeCompare(a));
-    if (!lanzs.length) { document.getElementById("rp-lanz").innerHTML = ""; document.getElementById("rp-summary").innerHTML = ""; cont.innerHTML = `<div class="tf-ok"><div class="tf-ok-t">Aún no hay capturas</div><div class="tf-ok-s">En cuanto guardes pauta en "Captura de pauta", tu reporte se arma solo aquí.</div></div>`; return; }
+    if (!lanzs.length) { document.getElementById("rp-tabs").innerHTML = ""; document.getElementById("rp-kpis").innerHTML = ""; document.getElementById("rp-counter").innerHTML = "Campañas: <strong>0</strong>"; cont.innerHTML = `<div class="empty" style="padding:40px"><div class="empty-text">Aún no hay capturas</div><div class="empty-hint">En cuanto guardes pauta en "Captura de pauta", tu reporte se arma solo aquí.</div></div>`; return; }
     if (!_repLanz || !grupos.has(_repLanz)) _repLanz = lanzs[0];
-    document.getElementById("rp-lanz").innerHTML = lanzs.map(k => { const g = grupos.get(k); const pauta = g.reduce((n, r) => n + r.pauta, 0); return `<button class="cp-lanz-btn${k === _repLanz ? " active" : ""}" data-rp-lanz="${k}">Lanzamiento ${fKey(k)}<small>${g.length} campañas · ${fmt$(pauta)}</small></button>`; }).join("");
+    document.getElementById("rp-tabs").innerHTML = lanzs.map(k => `<button class="apertura-tab${k === _repLanz ? " active" : ""}" data-rp-lanz="${k}"><span>Lanzamiento ${fKey(k)}</span><span class="tab-count">${grupos.get(k).length}</span></button>`).join("");
     const g = grupos.get(_repLanz);
-    const tot = g.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; o.ok += r.estado === "funciono" ? 1 : 0; return o; }, { pauta: 0, msj: 0, al: 0, ok: 0 });
-    document.getElementById("rp-summary").innerHTML =
-      `<div class="tf-sum is-blue"><div class="tf-sum-val">${fmt$(tot.pauta)}</div><div class="tf-sum-lbl">Pauta total</div></div>
-       <div class="tf-sum"><div class="tf-sum-val">${tot.msj}</div><div class="tf-sum-lbl">Mensajes</div></div>
-       <div class="tf-sum"><div class="tf-sum-val">${tot.msj ? fmt$(tot.pauta / tot.msj) : "—"}</div><div class="tf-sum-lbl">CPL promedio</div></div>
-       <div class="tf-sum is-blue"><div class="tf-sum-val">${tot.al}</div><div class="tf-sum-lbl">Alumnos · ${tot.al ? fmt$(tot.pauta / tot.al) : "—"} c/u</div></div>`;
+    const tot = g.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; return o; }, { pauta: 0, msj: 0, al: 0 });
+    document.getElementById("rp-kpis").innerHTML =
+      kpiCard("Pauta total", fmt$(tot.pauta), "del lanzamiento", "kpi-icon-green") +
+      kpiCard("Mensajes", tot.msj, `CPL ${tot.msj ? fmt$(tot.pauta / tot.msj) : "—"}`, "kpi-icon-blue") +
+      kpiCard("Alumnos", tot.al, "registrados por ventas", "kpi-icon-gold") +
+      kpiCard("Costo por alumno", tot.al ? fmt$(tot.pauta / tot.al) : "—", "pauta ÷ alumnos", "kpi-icon-yellow");
+    document.getElementById("rp-counter").innerHTML = `Campañas: <strong>${g.length}</strong>`;
     const porCons = new Map();
     g.forEach(r => { const c = porCons.get(r.consultoraId) || { nombre: r.consultoraNombre, filas: [] }; c.filas.push(r); porCons.set(r.consultoraId, c); });
     cont.innerHTML = [...porCons.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => {
       const t = c.filas.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; return o; }, { pauta: 0, msj: 0, al: 0 });
-      return `<div class="cp-tabla-wrap">
-        <div class="cp-grupo-h">${escapeHtml(c.nombre)} <span class="n">· ${c.filas.length} campañas · ${fmt$(t.pauta)} · ${t.msj} msj · CPL ${t.msj ? fmt$(t.pauta / t.msj) : "—"} · ${t.al} alumnos${t.al ? " · " + fmt$(t.pauta / t.al) + " por alumno" : ""}</span></div>
-        <table class="cp-tabla" style="min-width:820px"><thead><tr><th>Curso</th><th>Abre</th><th>Estado</th><th>Costo total</th><th>Mensajes</th><th>CPL</th><th>Alumnos</th><th>Costo/alumno</th><th>Última captura</th></tr></thead>
-        <tbody>${c.filas.sort((a, b) => b.pauta - a.pauta).map(r => `<tr>
-          <td class="cp-curso">${escapeHtml(r.cursoNombre)}</td><td class="cp-ult">${fKeyC(r.K)}</td>
-          <td><span class="cp-sel e-${r.estado}" style="border:none;background:none;padding:0">${ESTADO_TXT[r.estado] || r.estado}</span></td>
-          <td>${fmt$(r.pauta)}</td><td>${r.mensajes}</td><td>${r.mensajes ? fmt$(r.pauta / r.mensajes) : "—"}</td>
-          <td><b>${r.alumnos}</b></td><td>${r.alumnos ? fmt$(r.pauta / r.alumnos) : (r.pauta ? '<span class="cp-warn">sin ventas</span>' : "—")}</td>
-          <td class="cp-ult">${r.ultima ? fKeyC(r.ultima) : "—"}</td>
-        </tr>`).join("")}</tbody></table>
+      return `<div class="curso-bloque">
+        <div class="curso-bloque-header">
+          <div class="curso-bloque-titulo">${escapeHtml(c.nombre)}</div>
+          <div class="curso-bloque-stats"><span><b>${c.filas.length}</b> campañas</span><span><b>${fmt$(t.pauta)}</b> pauta</span><span><b>${t.msj}</b> msj</span><span>CPL <b>${t.msj ? fmt$(t.pauta / t.msj) : "—"}</b></span><span><b>${t.al}</b> alumnos</span><span>${t.al ? fmt$(t.pauta / t.al) + " c/u" : ""}</span></div>
+        </div>
+        <div class="sheet-scroll"><table class="sheet-table"><thead><tr><th style="width:44px">#</th><th style="min-width:260px">Curso</th><th>Abre</th><th>Estado</th><th class="num">Costo total</th><th class="num">Mensajes</th><th class="num">CPL</th><th class="num">Alumnos</th><th class="num">Costo/alumno</th><th>Última captura</th></tr></thead>
+        <tbody>${c.filas.sort((a, b) => b.pauta - a.pauta).map((r, i) => `<tr>
+          <td class="sheet-row-num">${i + 1}</td><td class="txt"><div class="sheet-curso">${escapeHtml(r.cursoNombre)}</div></td><td class="txt">${fKeyC(r.K)}</td>
+          <td class="txt"><span class="estado-pill ${r.estado}">${ESTADO_TXT[r.estado] || r.estado}</span></td>
+          <td class="txt num">${fmt$(r.pauta)}</td><td class="txt num">${r.mensajes}</td><td class="txt num"><b>${r.mensajes ? fmt$(r.pauta / r.mensajes) : "—"}</b></td>
+          <td class="txt num"><b>${r.alumnos}</b></td><td class="txt num">${r.alumnos ? fmt$(r.pauta / r.alumnos) : (r.pauta ? '<span style="color:var(--red);font-weight:700">sin ventas</span>' : "—")}</td>
+          <td class="txt" style="color:var(--muted);font-size:12px">${r.ultima ? fKeyC(r.ultima) : "—"}</td>
+        </tr>`).join("")}</tbody></table></div>
       </div>`;
     }).join("");
   }
@@ -1011,8 +1076,9 @@
     a.download = `reporte_${(usuario.nombre || "trafiquer").replace(/\s+/g, "_")}_${_repLanz}.csv`;
     document.body.appendChild(a); a.click(); a.remove();
   }
-  document.getElementById("rp-lanz").addEventListener("click", e => { const b = e.target.closest("[data-rp-lanz]"); if (!b) return; _repLanz = b.dataset.rpLanz; renderReporte(); });
+  document.getElementById("rp-tabs").addEventListener("click", e => { const b = e.target.closest("[data-rp-lanz]"); if (!b) return; _repLanz = b.dataset.rpLanz; renderReporte(); });
   document.getElementById("rp-csv").addEventListener("click", descargarCSV);
+
 
   // ═══════════════ PENDIENTES DEL GERENTE (decisionesGerente) ═══════════════
   const TIPO_LABEL = {
@@ -1095,12 +1161,6 @@
     if (e.key === "Enter" && e.target.matches("[data-pg-nota]")) { e.preventDefault(); marcarAplicada(e.target.dataset.pgNota); }
   });
 
-  // ═══════════════ Pestañas ═══════════════
-  document.getElementById("tf-tabs").addEventListener("click", e => {
-    const b = e.target.closest(".tf-tab-btn"); if (!b) return;
-    document.querySelectorAll(".tf-tab-btn").forEach(x => x.classList.toggle("active", x === b));
-    document.querySelectorAll(".tf-tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + b.dataset.tab));
-  });
 
   // ═══════════════ Eventos ═══════════════
   document.getElementById("tf-contenido").addEventListener("click", (e) => {
@@ -1159,12 +1219,21 @@
   });
 
   document.getElementById("btn-refrescar").addEventListener("click", cargar);
-  document.getElementById("btn-salir").addEventListener("click", cerrarSesion);
+  document.getElementById("btn-logout").addEventListener("click", cerrarSesion);
+
+  // ═══════════════ Navegación (sidebar) ═══════════════
+  document.querySelectorAll(".sidebar-link").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".sidebar-link").forEach(x => x.classList.toggle("active", x === b));
+    document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === "view-" + b.dataset.view));
+    document.getElementById("sidebar").classList.remove("open"); document.querySelector(".sidebar-backdrop")?.classList.remove("show");
+  }));
 
   // ═══════════════ Init ═══════════════
   (async () => {
     usuario = await requireRole("trafiquer");
-    document.getElementById("tf-nombre").textContent = usuario.nombre || usuario.email || "Trafiquer";
+    document.getElementById("user-name").textContent = usuario.nombre || usuario.email || "Trafiquer";
+    document.getElementById("user-initial").textContent = iniciales(usuario.nombre || usuario.email);
+    setupSidebar();
     suscribirAcciones();
     suscribirMetricas();
     suscribirPendientes();
