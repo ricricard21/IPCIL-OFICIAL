@@ -566,43 +566,57 @@
     return out;
   }
 
+  // ═══════════════ Carga en TIEMPO REAL ═══════════════
+  // Cursos y alumnos de cada consultora asignada se escuchan con onSnapshot (mismo patrón que el
+  // coordinador): en cuanto ventas registra un alumno o el coordinador abre grupo, el panel se
+  // recalcula solo (captura, reporte y campañas en riesgo). "Actualizar" re-suscribe.
+  let _unsubCons = [];
+  let _recalcTimer = null;
+
   async function cargar() {
     const cont = document.getElementById("tf-contenido");
     cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Analizando tus consultoras...</div></div>`;
-
+    _unsubCons.forEach(u => { try { u(); } catch (_) {} }); _unsubCons = [];
+    _cache = new Map();
     try {
       const consultoras = await consultorasAsignadas();
-      const problemas = [], bs = [];
-
+      if (!consultoras.length) { cont.innerHTML = `<div class="empty"><div class="empty-text">Sin consultoras asignadas</div><div class="empty-hint">Pide que te asignen consultoras.</div></div>`; renderCaptura(); return; }
       for (const cons of consultoras) {
-        try {
-          const [cursosSnap, alumnosSnap] = await Promise.all([
-            getDocs(query(collection(db, "cursos"), where("consultoraId", "==", cons.id))),
-            getDocs(query(collection(db, "alumnos"), where("consultoraId", "==", cons.id))),
-          ]);
-          const cursos = cursosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-          const alumnos = alumnosSnap.docs.map(d => d.data());
-          _cache.set(cons.id, { nombre: cons.nombre || cons.id, cursos, alumnos });
-          problemasDe(cursos, alumnos).forEach(p => {
-            const item = { ...p, consultoraId: cons.id, consultoraNombre: cons.nombre || cons.id };
-            (p.bajaSenal ? bs : problemas).push(item);
-          });
-        } catch (err) {
-          console.warn("Consultora sin acceso o con error:", cons.id, err);
-        }
+        const entry = { nombre: cons.nombre || cons.id, cursos: [], alumnos: [], listo: 0 };
+        _cache.set(cons.id, entry);
+        _unsubCons.push(onSnapshot(query(collection(db, "cursos"), where("consultoraId", "==", cons.id)), snap => {
+          entry.cursos = snap.docs.map(d => ({ id: d.id, ...d.data() })); entry.listo |= 1; recalcular();
+        }, err => { console.warn("cursos:", cons.id, err); entry.listo |= 1; recalcular(); }));
+        _unsubCons.push(onSnapshot(query(collection(db, "alumnos"), where("consultoraId", "==", cons.id)), snap => {
+          entry.alumnos = snap.docs.map(d => d.data()); entry.listo |= 2; recalcular();
+        }, err => { console.warn("alumnos:", cons.id, err); entry.listo |= 2; recalcular(); }));
       }
-
-      _problemas = problemas;
-      _bajaSenal = bs;
-      poblarSelectConsultoras();
-      document.getElementById("tf-updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-      render();
-      renderCaptura();
-      renderReporte();
     } catch (err) {
       console.error(err);
       cont.innerHTML = `<div class="empty"><div class="empty-text">No se pudieron cargar los datos</div><div class="empty-hint">Revisa tu conexión o avisa al administrador.</div></div>`;
     }
+  }
+
+  function cacheLista() { let ok = _cache.size > 0; _cache.forEach(c => { if (c.listo !== 3) ok = false; }); return ok; }
+
+  function recalcular() { clearTimeout(_recalcTimer); _recalcTimer = setTimeout(recalcularAhora, 250); }
+
+  function recalcularAhora() {
+    if (!cacheLista()) return; // espera a que TODAS las consultoras tengan cursos y alumnos
+    const problemas = [], bs = [];
+    _cache.forEach((c, id) => {
+      problemasDe(c.cursos, c.alumnos).forEach(p => {
+        const item = { ...p, consultoraId: id, consultoraNombre: c.nombre };
+        (p.bajaSenal ? bs : problemas).push(item);
+      });
+    });
+    _problemas = problemas;
+    _bajaSenal = bs;
+    poblarSelectConsultoras();
+    document.getElementById("tf-updated").textContent = "En vivo · " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+    render();
+    renderCaptura();
+    renderReporte();
   }
 
   function poblarSelectConsultoras() {
@@ -822,7 +836,7 @@
     if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#cp-contenido")) { _capRenderPendiente = true; return; }
     _capRenderPendiente = false;
     if (!_capFecha) { _capFecha = hoyMXs(); const inp = document.getElementById("cp-fecha"); inp.value = _capFecha; inp.max = _capFecha; }
-    if (!_cache.size) { cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>`; return; }
+    if (!cacheLista()) { cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>`; return; }
 
     const hoy = hoyMXs();
     const todas = []; _cache.forEach((_, consId) => todas.push(...aperturasActivasDe(consId)));
@@ -1223,7 +1237,7 @@
     suscribirMetricas();
     suscribirPendientes();
     await cargar();
-    setInterval(cargar, 30 * 60 * 1000);
+    setInterval(recalcular, 30 * 60 * 1000); // los datos ya llegan en vivo; esto solo refresca "días que faltan"
   })();
 </script>
 <script type="module" src="chat-widget.js?v=4"></script>
