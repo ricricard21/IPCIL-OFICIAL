@@ -133,6 +133,69 @@
     .tf-ok-t { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 12px; }
     .tf-ok-s { font-size: 13px; color: var(--muted); margin-top: 5px; }
 
+    /* ── Pestañas (Campañas / Captura de pauta / Pendientes del gerente) ── */
+    .tf-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    .tf-tab-btn {
+      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+      font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 8px 16px;
+      border-radius: 999px; cursor: pointer; transition: all var(--t-fast); display: inline-flex; align-items: center; gap: 8px;
+    }
+    .tf-tab-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .tf-tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .tf-badge { display: inline-block; min-width: 18px; padding: 1px 6px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10.5px; font-weight: 800; text-align: center; }
+    .tf-tab-btn.active .tf-badge { background: #fff; color: var(--primary); }
+    .tf-tab { display: none; }
+    .tf-tab.active { display: block; }
+
+    /* ── Captura de pauta ── */
+    .cp-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 16px; }
+    .cp-fecha { font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; background: var(--surface); }
+    .cp-info { font-size: 11.5px; color: var(--muted); }
+    .cp-tabla-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; }
+    table.cp-tabla { width: 100%; border-collapse: collapse; min-width: 720px; }
+    .cp-tabla th { text-align: left; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); background: var(--surface-soft); white-space: nowrap; }
+    .cp-tabla td { padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--text); vertical-align: middle; }
+    .cp-tabla tr:last-child td { border-bottom: none; }
+    .cp-curso { font-weight: 700; }
+    .cp-sub { font-size: 10.5px; color: var(--muted); font-weight: 600; }
+    .cp-in { width: 96px; border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text); background: var(--bg); outline: none; text-align: right; }
+    .cp-in:focus { border-color: var(--primary); background: var(--surface); }
+    .cp-in.dirty { border-color: var(--primary); background: var(--primary-soft); }
+    .cp-ok { color: var(--green); font-weight: 800; font-size: 11px; }
+    .cp-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; background: var(--surface-soft); }
+    .cp-add select, .cp-add input[type=date] { font-family: inherit; font-size: 12px; border: 1px solid var(--line); border-radius: 9px; padding: 6px 9px; background: var(--surface); color: var(--text); }
+    .cp-grupo-h { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--primary); padding: 12px 12px 8px; }
+    .cp-grupo-h .n { color: var(--muted); font-weight: 700; text-transform: none; letter-spacing: 0; }
+
+    .cp-lanz { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .cp-lanz-btn {
+      border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+      font-family: inherit; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 12px; cursor: pointer; text-align: left; line-height: 1.25;
+    }
+    .cp-lanz-btn small { display: block; font-size: 10.5px; font-weight: 600; opacity: .8; }
+    .cp-lanz-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .cp-lanz-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+    .cp-sel { font-family: inherit; font-size: 11.5px; font-weight: 700; border: 1px solid var(--line); border-radius: 9px; padding: 6px 8px; background: var(--bg); color: var(--text); }
+    .cp-sel.dirty { border-color: var(--primary); background: var(--primary-soft); }
+    .cp-sel.e-funciono { color: var(--green); } .cp-sel.e-no_funciono { color: var(--red); } .cp-sel.e-pausada { color: var(--muted); }
+    .cp-ult { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+    .cp-ult b { color: var(--text); }
+    .cp-warn { color: var(--yellow); font-weight: 700; font-size: 10.5px; }
+    .cp-check { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow: auto; padding: 4px 2px; }
+    .cp-check label { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--text); cursor: pointer; }
+
+    /* ── Pendientes del gerente ── */
+    .pg-card { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--yellow); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+    .pg-card.aplicada { border-left-color: var(--green); opacity: .7; }
+    .pg-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pg-tipo { font-size: 14px; font-weight: 800; color: var(--text); }
+    .pg-meta { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+    .pg-kpis { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+    .pg-kpis b { color: var(--text); font-weight: 800; }
+    .pg-motivo { font-size: 12.5px; color: var(--text); margin-top: 8px; padding: 8px 10px; background: var(--surface-soft); border-radius: 10px; }
+    .pg-foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+    .pg-sec-t { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 18px 0 10px; }
+
     @media (max-width: 560px) {
       .tf-summary { gap: 8px; }
       .tf-sum { padding: 11px 8px; }
@@ -163,6 +226,14 @@
   </header>
 
   <main class="tf-wrap">
+    <div class="tf-tabs" id="tf-tabs">
+      <button class="tf-tab-btn active" data-tab="captura">Captura de pauta</button>
+      <button class="tf-tab-btn" data-tab="reporte">Mi reporte</button>
+      <button class="tf-tab-btn" data-tab="campanas">Campañas en riesgo</button>
+      <button class="tf-tab-btn" data-tab="pendientes">Pendientes del gerente <span class="tf-badge" id="pg-n" style="display:none">0</span></button>
+    </div>
+
+    <div class="tf-tab" id="tab-campanas">
     <div class="tf-head">
       <div>
         <div class="tf-title">Campañas que necesitan acción</div>
@@ -202,17 +273,74 @@
     <div id="tf-contenido">
       <div class="loading"><div class="spinner"></div><div class="loading-text">Cargando tus consultoras...</div></div>
     </div>
+    </div><!-- /tab-campanas -->
+
+    <!-- ═══ Captura de pauta (la ve el gerente en vivo) ═══ -->
+    <div class="tf-tab active" id="tab-captura">
+      <div class="tf-head">
+        <div>
+          <div class="tf-title">Captura de pauta</div>
+          <div class="tf-sub">Por lanzamiento, como tu reporte: pauta y mensajes <b>acumulados tal cual los muestra Meta</b>. El sistema saca solo el diario y el CPL.</div>
+        </div>
+      </div>
+      <div class="cp-bar">
+        <label class="cp-info" for="cp-fecha">Foto del día</label>
+        <input class="cp-fecha" type="date" id="cp-fecha">
+        <button class="btn btn-primary btn-sm" id="cp-guardar" disabled>Guardar cambios</button>
+        <span class="cp-info" id="cp-estado"></span>
+      </div>
+      <div class="cp-lanz" id="cp-lanz"></div>
+      <div id="cp-contenido"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div></div>
+    </div>
+
+    <!-- ═══ Mi reporte (sustituye el Excel) ═══ -->
+    <div class="tf-tab" id="tab-reporte">
+      <div class="tf-head">
+        <div>
+          <div class="tf-title">Mi reporte</div>
+          <div class="tf-sub">Lo mismo que tu Excel, pero sale solo de lo que capturas: por lanzamiento, por consultora, por curso</div>
+        </div>
+        <div class="tf-refresh">
+          <button class="btn btn-secondary btn-sm" id="rp-csv">Descargar Excel (CSV)</button>
+        </div>
+      </div>
+      <div class="cp-lanz" id="rp-lanz"></div>
+      <div class="tf-summary" id="rp-summary" style="grid-template-columns:repeat(4,1fr)"></div>
+      <div id="rp-contenido"></div>
+    </div>
+
+    <!-- ═══ Pendientes del gerente ═══ -->
+    <div class="tf-tab" id="tab-pendientes">
+      <div class="tf-head">
+        <div>
+          <div class="tf-title">Pendientes del gerente</div>
+          <div class="tf-sub">Decisiones que tomó el gerente de ventas: aplícalas en Meta y márcalas</div>
+        </div>
+      </div>
+      <div id="pg-contenido" style="margin-top:14px"><div class="loading"><div class="spinner"></div><div class="loading-text">Cargando...</div></div></div>
+    </div>
   </main>
 
 <script type="module">
   import {
     db,
     requireRole, cerrarSesion, escapeHtml, toast,
-    doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where,
+    doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where,
     onSnapshot, serverTimestamp
   } from "./firebase-config.js";
 
   let usuario = null;
+  // ── Captura de pauta / pendientes del gerente ──
+  let _cache = new Map();        // consultoraId -> { nombre, cursos, alumnos } (se llena en cargar)
+  let _metricas = new Map();     // docId -> metricasPauta (aperturas recientes, tiempo real)
+  let _capFecha = "";            // día que se está capturando (YYYY-MM-DD)
+  let _capVals = new Map();      // rowId -> { pauta, mensajes, precio } editados sin guardar
+  let _extraRows = [];           // aperturas agregadas a mano: { consultoraId, cursoId, aperturaKey }
+  let _pendientes = [];          // decisiones del gerente en estado pendiente
+  let _aplicadas = [];           // últimas aplicadas por este trafiquer (contexto)
+  let _pendIds = new Set();      // para detectar nuevas y sonar
+  let _unsubMet = null, _unsubPend = null, _unsubApl = null;
+  let _audioCtx = null;
   let _problemas = [];        // cache de problemas calculados (todas las consultoras)
   let _bajaSenal = [];        // cursos con poca señal (colapsados)
   let _acciones = new Map();  // accionId -> data (marcadas como atendidas, en tiempo real)
@@ -419,6 +547,7 @@
           ]);
           const cursos = cursosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
           const alumnos = alumnosSnap.docs.map(d => d.data());
+          _cache.set(cons.id, { nombre: cons.nombre || cons.id, cursos, alumnos });
           problemasDe(cursos, alumnos).forEach(p => {
             const item = { ...p, consultoraId: cons.id, consultoraNombre: cons.nombre || cons.id };
             (p.bajaSenal ? bs : problemas).push(item);
@@ -433,6 +562,8 @@
       poblarSelectConsultoras();
       document.getElementById("tf-updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
       render();
+      renderCaptura();
+      renderReporte();
     } catch (err) {
       console.error(err);
       cont.innerHTML = `<div class="empty"><div class="empty-text">No se pudieron cargar los datos</div><div class="empty-hint">Revisa tu conexión o avisa al administrador.</div></div>`;
@@ -574,6 +705,403 @@
     }
   }
 
+  // ═══════════════ CAPTURA DE PAUTA (metricasPauta) ═══════════════
+  // Un doc por (consultora, curso, apertura). Se capturan ACUMULADOS como los muestra Meta:
+  //   fotos.{YYYY-MM-DD} = { pauta, mensajes }   ← acumulado al cierre de ese día
+  //   estado: sin_iniciar | pruebas | funciono | no_funciono | pausada
+  // El gerente saca el diario restando fotos. ID determinístico: recapturar el mismo día sobrescribe.
+  const DAY = 864e5;
+  const hoyMXs = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+  const esKey = k => /^\d{4}-\d{2}-\d{2}$/.test(k || "");
+  const keyMs = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d).getTime(); };
+  const msKey = ms => { const d = new Date(ms); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const fKey = k => { if (!esKey(k)) return k || "—"; return new Date(k + "T12:00:00").toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" }); };
+  const fKeyC = k => { if (!esKey(k)) return k || "—"; return new Date(k + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" }); };
+  const lunesDe = ms => { const d = new Date(ms); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); d.setHours(0, 0, 0, 0); return d.getTime(); };
+  const metId = (consultoraId, cursoId, K) => `${consultoraId}_${cursoId}_${K}`;
+  const fmt$ = v => "$" + (Number(v) || 0).toLocaleString("es-MX", { maximumFractionDigits: 0 });
+  const ESTADOS = [["sin_iniciar", "Sin iniciar"], ["pruebas", "En pruebas"], ["funciono", "Funcionó"], ["no_funciono", "No funcionó"], ["pausada", "Pausada"]];
+  let _capLanz = null;   // lanzamiento (lunes, YYYY-MM-DD) seleccionado
+
+  function suscribirMetricas() {
+    if (_unsubMet) _unsubMet();
+    const desde = msKey(keyMs(hoyMXs()) - 60 * DAY); // ~4 lanzamientos atrás, para "Mi reporte"
+    _unsubMet = onSnapshot(query(collection(db, "metricasPauta"), where("aperturaKey", ">=", desde)), snap => {
+      _metricas = new Map();
+      snap.docs.forEach(d => _metricas.set(d.id, d.data()));
+      renderCaptura();
+      renderReporte();
+    }, err => console.warn("metricasPauta:", err));
+  }
+
+  // Última foto (acumulado) y la anterior a una fecha
+  function fotoHasta(m, fecha) {
+    const fotos = m?.fotos || {};
+    const keys = Object.keys(fotos).filter(k => esKey(k) && k <= fecha).sort();
+    const k = keys.pop(); return k ? { fecha: k, ...fotos[k] } : null;
+  }
+  function fotoAntesDe(m, fecha) {
+    const fotos = m?.fotos || {};
+    const keys = Object.keys(fotos).filter(k => esKey(k) && k < fecha).sort();
+    const k = keys.pop(); return k ? { fecha: k, ...fotos[k] } : null;
+  }
+
+  // Aperturas activas de una consultora, agrupadas por lanzamiento (lunes de la semana de lanzamiento).
+  // Criterio igual que el gerente: alumnos con aperturaKey >= hoy, pauta ya capturada, o calendario del curso
+  // (el coordinador abrió grupo hace poco = ese día se lanzó la siguiente corrida).
+  function aperturasActivasDe(consId) {
+    const c = _cache.get(consId); if (!c) return [];
+    const hoy = hoyMXs(), hoyMs = keyMs(hoy), ahora = Date.now();
+    const out = [];
+    c.cursos.forEach(cu => {
+      if (cu.activo === false) return;
+      const freq = Number(cu.frecuenciaDiasApertura) || 15;
+      const todas = new Set();
+      c.alumnos.forEach(a => { if (a.cursoId === cu.id && esKey(a.aperturaKey)) todas.add(a.aperturaKey); });
+      _metricas.forEach(m => { if (m.cursoId === cu.id && esKey(m.aperturaKey)) todas.add(m.aperturaKey); });
+      _extraRows.forEach(r => { if (r.cursoId === cu.id) todas.add(r.aperturaKey); });
+      const keys = [...todas].sort();
+      let activas = keys.filter(k => k >= hoy);
+      if (!activas.length) {
+        const ult = cu.ultimaApertura?.toDate?.()?.getTime();
+        if (ult && ahora - ult <= 2 * freq * DAY) { let prox = ult; while (prox < hoyMs) prox += freq * DAY; const K = msKey(prox); activas = [K]; if (!keys.includes(K)) { keys.push(K); keys.sort(); } }
+      }
+      activas.forEach(K => {
+        const i = keys.indexOf(K); const prevKey = i > 0 ? keys[i - 1] : null;
+        const lanzMs = Math.max(prevKey ? keyMs(prevKey) : 0, keyMs(K) - freq * DAY);
+        const alumnos = c.alumnos.filter(a => a.cursoId === cu.id && a.aperturaKey === K).length;
+        const m = _metricas.get(metId(consId, cu.id, K)) || null;
+        out.push({ rowId: metId(consId, cu.id, K), consultoraId: consId, consultoraNombre: c.nombre, cursoId: cu.id, cursoNombre: cu.nombre || cu.id, K, freq, alumnos, m,
+          lanzKey: msKey(lanzMs), lanzGrupo: msKey(lunesDe(lanzMs)),
+          precio: Number(m?.precioCurso) || Number(cu.precio) || 0, estado: m?.estado || "sin_iniciar",
+          foto: fotoHasta(m, _capFecha), fotoDia: m?.fotos?.[_capFecha] || null, fotoPrev: fotoAntesDe(m, _capFecha) });
+      });
+    });
+    return out;
+  }
+
+  let _capRenderPendiente = false;
+  function renderCaptura() {
+    const cont = document.getElementById("cp-contenido");
+    if (!cont) return;
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#cp-contenido")) { _capRenderPendiente = true; return; }
+    _capRenderPendiente = false;
+    if (!_capFecha) { _capFecha = hoyMXs(); const inp = document.getElementById("cp-fecha"); inp.value = _capFecha; inp.max = _capFecha; }
+    if (!_cache.size) { cont.innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando aperturas...</div></div>`; return; }
+
+    // Todas las aperturas del trafiquer, agrupadas por lanzamiento
+    const hoy = hoyMXs();
+    const todas = []; _cache.forEach((_, consId) => todas.push(...aperturasActivasDe(consId)));
+    const grupos = new Map();
+    todas.forEach(ap => { const g = grupos.get(ap.lanzGrupo) || { key: ap.lanzGrupo, aps: [], aperturas: new Set() }; g.aps.push(ap); g.aperturas.add(ap.K); grupos.set(ap.lanzGrupo, g); });
+    // Siempre existe el lanzamiento de esta semana (aunque aún no tenga campañas) para poder agregar cursos
+    const lanzHoy = msKey(lunesDe(keyMs(hoy)));
+    if (!grupos.has(lanzHoy)) grupos.set(lanzHoy, { key: lanzHoy, aps: [], aperturas: new Set() });
+    const lanzs = [...grupos.values()].sort((a, b) => b.key.localeCompare(a.key));
+    if (!_capLanz || !grupos.has(_capLanz)) _capLanz = lanzs[0].key;
+    document.getElementById("cp-lanz").innerHTML = lanzs.map(g => {
+      const aps = [...g.aperturas].sort(); const n = g.aps.length, cap = g.aps.filter(a => a.fotoDia).length;
+      return `<button class="cp-lanz-btn${g.key === _capLanz ? " active" : ""}" data-lanz="${g.key}">Lanzamiento ${fKey(g.key)}<small>${n ? `abre ${aps.map(fKeyC).join(" / ")} · ${n} campaña${n === 1 ? "" : "s"} · ${cap} con foto de este día` : "sin campañas aún · agrega cursos"}</small></button>`;
+    }).join("");
+
+    const g = grupos.get(_capLanz);
+    const porCons = new Map();
+    g.aps.forEach(ap => { const c = porCons.get(ap.consultoraId) || { nombre: ap.consultoraNombre, aps: [] }; c.aps.push(ap); porCons.set(ap.consultoraId, c); });
+    // consultoras del trafiquer sin campañas en este lanzamiento también se listan (para agregar)
+    _cache.forEach((c, id) => { if (!porCons.has(id)) porCons.set(id, { nombre: c.nombre, aps: [] }); });
+    const ordenadas = [...porCons.entries()].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
+
+    let html = "";
+    ordenadas.forEach(([consId, c]) => {
+      const cache = _cache.get(consId);
+      const listados = new Set(c.aps.map(a => a.cursoId));
+      const otros = (cache?.cursos || []).filter(cu => cu.activo !== false && !listados.has(cu.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+      const filas = c.aps.sort((a, b) => a.cursoNombre.localeCompare(b.cursoNombre)).map(ap => {
+        const v = _capVals.get(ap.rowId) || {};
+        const dirty = _capVals.has(ap.rowId);
+        const pautaV = v.pauta ?? (ap.fotoDia ? ap.fotoDia.pauta : ""), msgV = v.mensajes ?? (ap.fotoDia ? ap.fotoDia.mensajes : ""), precioV = v.precio ?? ap.precio, estadoV = v.estado ?? ap.estado;
+        const p = Number(pautaV), mm = Number(msgV);
+        const cpl = pautaV !== "" && mm > 0 ? fmt$(p / mm) : "—";
+        const ult = ap.fotoPrev ? `<span class="cp-ult">antes: <b>${fmt$(ap.fotoPrev.pauta)}</b> · <b>${ap.fotoPrev.mensajes}</b> msj <span style="opacity:.7">(${fKeyC(ap.fotoPrev.fecha)})</span></span>` : `<span class="cp-ult">sin captura previa</span>`;
+        const baja = ap.fotoPrev && pautaV !== "" && (p < Number(ap.fotoPrev.pauta) || (msgV !== "" && mm < Number(ap.fotoPrev.mensajes))) ? `<div class="cp-warn">↓ menor que la captura anterior: ¿seguro? (Meta acumula, no debería bajar)</div>` : "";
+        return `<tr>
+          <td><div class="cp-curso">${escapeHtml(ap.cursoNombre)}</div><div class="cp-sub">Abre ${fKey(ap.K)} · ${ap.alumnos} alumno${ap.alumnos === 1 ? "" : "s"}</div></td>
+          <td><select class="cp-sel e-${estadoV}${dirty ? " dirty" : ""}" data-row="${ap.rowId}" data-campo="estado">${ESTADOS.map(([val, t]) => `<option value="${val}" ${val === estadoV ? "selected" : ""}>${t}</option>`).join("")}</select></td>
+          <td><input class="cp-in${dirty ? " dirty" : ""}" type="number" min="0" step="1" inputmode="decimal" placeholder="0" data-row="${ap.rowId}" data-campo="pauta" value="${pautaV === "" ? "" : pautaV}">${baja}</td>
+          <td><input class="cp-in${dirty ? " dirty" : ""}" type="number" min="0" step="1" inputmode="numeric" placeholder="0" data-row="${ap.rowId}" data-campo="mensajes" value="${msgV === "" ? "" : msgV}"></td>
+          <td class="cp-ult"><b>${cpl}</b></td>
+          <td><input class="cp-in${dirty ? " dirty" : ""}" type="number" min="0" step="1" inputmode="decimal" data-row="${ap.rowId}" data-campo="precio" value="${precioV || ""}" style="width:80px"></td>
+          <td>${ult}${ap.fotoDia && !dirty ? `<div class="cp-ok">✓ foto de este día guardada</div>` : dirty ? `<div class="cp-sub" style="color:var(--primary)">sin guardar</div>` : ""}</td>
+        </tr>`;
+      }).join("");
+      html += `<div class="cp-tabla-wrap">
+        <div class="cp-grupo-h">${escapeHtml(c.nombre)} <span class="n">· ${c.aps.length} campaña${c.aps.length === 1 ? "" : "s"} en este lanzamiento</span></div>
+        ${c.aps.length ? `<table class="cp-tabla" style="min-width:860px"><thead><tr><th>Curso · apertura</th><th>Estado</th><th>Pauta total (MXN)</th><th>Mensajes totales</th><th>CPL</th><th>Precio</th><th>Captura anterior</th></tr></thead><tbody>${filas}</tbody></table>` : `<div class="cp-sub" style="padding:6px 12px 10px">Sin campañas en este lanzamiento.</div>`}
+        ${otros.length ? `<div class="cp-add">
+          <span class="cp-sub">¿Faltan cursos de este lanzamiento?</span>
+          <button class="btn btn-secondary btn-sm" data-add-multi="${consId}">Agregar cursos (${otros.length} disponibles)</button>
+        </div>` : ""}
+      </div>`;
+    });
+    cont.innerHTML = html;
+    actualizarBtnGuardar();
+  }
+
+  function actualizarBtnGuardar() {
+    const btn = document.getElementById("cp-guardar");
+    const n = _capVals.size;
+    btn.disabled = n === 0;
+    btn.textContent = n ? `Guardar ${n} cambio${n === 1 ? "" : "s"}` : "Guardar cambios";
+    document.getElementById("cp-estado").textContent = n ? "Tienes cambios sin guardar" : "";
+  }
+
+  async function guardarCaptura() {
+    if (!_capVals.size) return;
+    const btn = document.getElementById("cp-guardar"); btn.disabled = true; btn.textContent = "Guardando…";
+    const todas = new Map();
+    _cache.forEach((_, consId) => aperturasActivasDe(consId).forEach(ap => todas.set(ap.rowId, ap)));
+    const ops = [];
+    _capVals.forEach((v, rowId) => {
+      const ap = todas.get(rowId); if (!ap) return;
+      const data = {
+        consultoraId: ap.consultoraId, consultoraNombre: ap.consultoraNombre,
+        cursoId: ap.cursoId, cursoNombre: ap.cursoNombre, aperturaKey: ap.K, lanzamientoKey: ap.lanzKey,
+        precioCurso: Number(v.precio ?? ap.precio) || 0,
+        actualizadoEn: serverTimestamp(), actualizadoPor: usuario.uid, actualizadoPorNombre: usuario.nombre || usuario.email || "Trafiquer"
+      };
+      if (v.estado !== undefined && v.estado !== ap.estado) { data.estado = v.estado; data.estadoActualizadoEn = serverTimestamp(); }
+      else if (!ap.m) data.estado = ap.estado;
+      // La foto del día solo se escribe si capturó pauta o mensajes (cambiar estado o precio no inventa una foto)
+      if (v.pauta !== undefined || v.mensajes !== undefined || ap.fotoDia) {
+        const pauta = Number(v.pauta ?? (ap.fotoDia?.pauta ?? ap.fotoPrev?.pauta ?? 0)) || 0;
+        const mensajes = Number(v.mensajes ?? (ap.fotoDia?.mensajes ?? ap.fotoPrev?.mensajes ?? 0)) || 0;
+        data.fotos = { [_capFecha]: { pauta, mensajes } };
+        data.acum = { pauta, mensajes, fecha: _capFecha };
+      }
+      ops.push(setDoc(doc(db, "metricasPauta", rowId), data, { merge: true }));
+    });
+    try {
+      await Promise.all(ops);
+      _capVals = new Map(); _extraRows = [];
+      toast(`Guardado (${ops.length} campaña${ops.length === 1 ? "" : "s"})`, "success");
+    } catch (e) {
+      console.error(e); toast("No se pudo guardar: " + e.message, "error");
+    }
+    renderCaptura();
+  }
+
+  function abrirAgregarCursos(consId) {
+    const cache = _cache.get(consId); if (!cache) return;
+    const todas = aperturasActivasDe(consId).filter(a => a.lanzGrupo === _capLanz);
+    const listados = new Set(todas.map(a => a.cursoId));
+    const otros = cache.cursos.filter(cu => cu.activo !== false && !listados.has(cu.id)).sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    const lanzKey = _capLanz;
+    const wrap = document.createElement("div"); wrap.className = "modal-backdrop";
+    wrap.innerHTML = `<div class="modal" style="max-width:520px">
+      <div class="modal-header"><div><div class="modal-title">Agregar cursos al lanzamiento ${fKey(lanzKey)}</div><div class="modal-subtitle">${escapeHtml(cache.nombre)} · la apertura se calcula con la frecuencia de cada curso</div></div>
+        <button class="modal-close" type="button" data-close><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+      <div class="modal-body">
+        <input class="tf-nota-input" id="ag-buscar" placeholder="Buscar curso…" style="width:100%;margin-bottom:10px">
+        <div class="cp-check" id="ag-lista">${otros.map(cu => { const freq = Number(cu.frecuenciaDiasApertura) || 15; const K = msKey(keyMs(lanzKey) + freq * DAY); return `<label data-nombre="${escapeHtml((cu.nombre || "").toLowerCase())}"><input type="checkbox" value="${cu.id}" data-k="${K}"> ${escapeHtml(cu.nombre || cu.id)} <span class="cp-sub">· abre ${fKeyC(K)}</span></label>`; }).join("")}</div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-close>Cancelar</button><button type="button" class="btn btn-primary" id="ag-ok">Agregar seleccionados</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const cerrar = () => wrap.remove();
+    wrap.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", cerrar));
+    wrap.addEventListener("click", e => { if (e.target === wrap) cerrar(); });
+    wrap.querySelector("#ag-buscar").addEventListener("input", e => { const q = e.target.value.toLowerCase(); wrap.querySelectorAll("#ag-lista label").forEach(l => { l.style.display = l.dataset.nombre.includes(q) ? "" : "none"; }); });
+    wrap.querySelector("#ag-ok").addEventListener("click", () => {
+      const sel = [...wrap.querySelectorAll("#ag-lista input:checked")];
+      if (!sel.length) { toast("Selecciona al menos un curso", "warning"); return; }
+      sel.forEach(i => { _extraRows.push({ consultoraId: consId, cursoId: i.value, aperturaKey: i.dataset.k }); const rowId = metId(consId, i.value, i.dataset.k); _capVals.set(rowId, { estado: "pruebas" }); });
+      cerrar(); renderCaptura();
+      toast(`${sel.length} curso${sel.length === 1 ? "" : "s"} agregado${sel.length === 1 ? "" : "s"}: captura y guarda`, "info");
+    });
+  }
+
+  document.getElementById("cp-contenido").addEventListener("focusout", () => { if (_capRenderPendiente) setTimeout(() => { if (!document.activeElement?.closest?.("#cp-contenido")) renderCaptura(); }, 60); });
+  document.getElementById("cp-contenido").addEventListener("input", e => {
+    const inp = e.target.closest(".cp-in, .cp-sel"); if (!inp) return;
+    const v = _capVals.get(inp.dataset.row) || {};
+    v[inp.dataset.campo] = inp.value;
+    _capVals.set(inp.dataset.row, v);
+    inp.closest("tr").querySelectorAll(".cp-in, .cp-sel").forEach(i => i.classList.add("dirty"));
+    if (inp.classList.contains("cp-sel")) inp.className = `cp-sel e-${inp.value} dirty`;
+    actualizarBtnGuardar();
+  });
+  document.getElementById("cp-contenido").addEventListener("click", e => {
+    const b = e.target.closest("[data-add-multi]"); if (b) abrirAgregarCursos(b.dataset.addMulti);
+  });
+  document.getElementById("cp-lanz").addEventListener("click", e => {
+    const b = e.target.closest("[data-lanz]"); if (!b) return;
+    _capLanz = b.dataset.lanz; renderCaptura();
+  });
+  document.getElementById("cp-fecha").addEventListener("change", e => {
+    if (_capVals.size && !confirm("Tienes cambios sin guardar en este día. ¿Cambiar de día y perderlos?")) { e.target.value = _capFecha; return; }
+    _capFecha = e.target.value || hoyMXs(); _capVals = new Map(); renderCaptura();
+  });
+  document.getElementById("cp-guardar").addEventListener("click", guardarCaptura);
+
+  // ═══════════════ MI REPORTE (sustituye el Excel) ═══════════════
+  let _repLanz = null;
+  const ultimaFoto = (m) => { const ks = Object.keys(m?.fotos || {}).filter(esKey).sort(); const k = ks.pop(); return k ? { fecha: k, ...m.fotos[k] } : (m?.acum ? { fecha: m.acum.fecha, pauta: m.acum.pauta, mensajes: m.acum.mensajes } : null); };
+  const ESTADO_TXT = Object.fromEntries(ESTADOS);
+
+  function filasReporte() {
+    // Solo métricas de mis consultoras; lanzamiento = semana (lunes) del lanzamientoKey
+    const out = [];
+    _metricas.forEach(m => {
+      const c = _cache.get(m.consultoraId); if (!c || !esKey(m.aperturaKey)) return;
+      const lanzKey = esKey(m.lanzamientoKey) ? m.lanzamientoKey : msKey(keyMs(m.aperturaKey) - 15 * DAY);
+      const f = ultimaFoto(m);
+      const alumnos = c.alumnos.filter(a => a.cursoId === m.cursoId && a.aperturaKey === m.aperturaKey).length;
+      out.push({ lanzGrupo: msKey(lunesDe(keyMs(lanzKey))), consultoraId: m.consultoraId, consultoraNombre: c.nombre, cursoNombre: m.cursoNombre || m.cursoId, K: m.aperturaKey,
+        estado: m.estado || "pruebas", pauta: f ? Number(f.pauta) || 0 : 0, mensajes: f ? Number(f.mensajes) || 0 : 0, ultima: f?.fecha || null, alumnos, precio: Number(m.precioCurso) || 0 });
+    });
+    return out;
+  }
+
+  function renderReporte() {
+    const cont = document.getElementById("rp-contenido"); if (!cont) return;
+    const filas = filasReporte();
+    const grupos = new Map();
+    filas.forEach(r => { const g = grupos.get(r.lanzGrupo) || []; g.push(r); grupos.set(r.lanzGrupo, g); });
+    const lanzs = [...grupos.keys()].sort((a, b) => b.localeCompare(a));
+    if (!lanzs.length) { document.getElementById("rp-lanz").innerHTML = ""; document.getElementById("rp-summary").innerHTML = ""; cont.innerHTML = `<div class="tf-ok"><div class="tf-ok-t">Aún no hay capturas</div><div class="tf-ok-s">En cuanto guardes pauta en "Captura de pauta", tu reporte se arma solo aquí.</div></div>`; return; }
+    if (!_repLanz || !grupos.has(_repLanz)) _repLanz = lanzs[0];
+    document.getElementById("rp-lanz").innerHTML = lanzs.map(k => { const g = grupos.get(k); const pauta = g.reduce((n, r) => n + r.pauta, 0); return `<button class="cp-lanz-btn${k === _repLanz ? " active" : ""}" data-rp-lanz="${k}">Lanzamiento ${fKey(k)}<small>${g.length} campañas · ${fmt$(pauta)}</small></button>`; }).join("");
+    const g = grupos.get(_repLanz);
+    const tot = g.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; o.ok += r.estado === "funciono" ? 1 : 0; return o; }, { pauta: 0, msj: 0, al: 0, ok: 0 });
+    document.getElementById("rp-summary").innerHTML =
+      `<div class="tf-sum is-blue"><div class="tf-sum-val">${fmt$(tot.pauta)}</div><div class="tf-sum-lbl">Pauta total</div></div>
+       <div class="tf-sum"><div class="tf-sum-val">${tot.msj}</div><div class="tf-sum-lbl">Mensajes</div></div>
+       <div class="tf-sum"><div class="tf-sum-val">${tot.msj ? fmt$(tot.pauta / tot.msj) : "—"}</div><div class="tf-sum-lbl">CPL promedio</div></div>
+       <div class="tf-sum is-blue"><div class="tf-sum-val">${tot.al}</div><div class="tf-sum-lbl">Alumnos · ${tot.al ? fmt$(tot.pauta / tot.al) : "—"} c/u</div></div>`;
+    const porCons = new Map();
+    g.forEach(r => { const c = porCons.get(r.consultoraId) || { nombre: r.consultoraNombre, filas: [] }; c.filas.push(r); porCons.set(r.consultoraId, c); });
+    cont.innerHTML = [...porCons.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => {
+      const t = c.filas.reduce((o, r) => { o.pauta += r.pauta; o.msj += r.mensajes; o.al += r.alumnos; return o; }, { pauta: 0, msj: 0, al: 0 });
+      return `<div class="cp-tabla-wrap">
+        <div class="cp-grupo-h">${escapeHtml(c.nombre)} <span class="n">· ${c.filas.length} campañas · ${fmt$(t.pauta)} · ${t.msj} msj · CPL ${t.msj ? fmt$(t.pauta / t.msj) : "—"} · ${t.al} alumnos${t.al ? " · " + fmt$(t.pauta / t.al) + " por alumno" : ""}</span></div>
+        <table class="cp-tabla" style="min-width:820px"><thead><tr><th>Curso</th><th>Abre</th><th>Estado</th><th>Costo total</th><th>Mensajes</th><th>CPL</th><th>Alumnos</th><th>Costo/alumno</th><th>Última captura</th></tr></thead>
+        <tbody>${c.filas.sort((a, b) => b.pauta - a.pauta).map(r => `<tr>
+          <td class="cp-curso">${escapeHtml(r.cursoNombre)}</td><td class="cp-ult">${fKeyC(r.K)}</td>
+          <td><span class="cp-sel e-${r.estado}" style="border:none;background:none;padding:0">${ESTADO_TXT[r.estado] || r.estado}</span></td>
+          <td>${fmt$(r.pauta)}</td><td>${r.mensajes}</td><td>${r.mensajes ? fmt$(r.pauta / r.mensajes) : "—"}</td>
+          <td><b>${r.alumnos}</b></td><td>${r.alumnos ? fmt$(r.pauta / r.alumnos) : (r.pauta ? '<span class="cp-warn">sin ventas</span>' : "—")}</td>
+          <td class="cp-ult">${r.ultima ? fKeyC(r.ultima) : "—"}</td>
+        </tr>`).join("")}</tbody></table>
+      </div>`;
+    }).join("");
+  }
+
+  function descargarCSV() {
+    const filas = filasReporte().filter(r => r.lanzGrupo === _repLanz);
+    if (!filas.length) { toast("No hay datos en este lanzamiento", "info"); return; }
+    const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const head = ["Lanzamiento", "Consultora", "Curso", "Apertura", "Estado", "Costo total", "Mensajes", "CPL", "Alumnos", "Costo por alumno", "Precio curso", "Última captura"];
+    const lines = filas.sort((a, b) => a.consultoraNombre.localeCompare(b.consultoraNombre) || b.pauta - a.pauta).map(r => [
+      _repLanz, r.consultoraNombre, r.cursoNombre, r.K, ESTADO_TXT[r.estado] || r.estado, r.pauta, r.mensajes,
+      r.mensajes ? (r.pauta / r.mensajes).toFixed(2) : "", r.alumnos, r.alumnos ? (r.pauta / r.alumnos).toFixed(2) : "", r.precio, r.ultima || ""
+    ].map(esc).join(","));
+    const csv = "\ufeff" + head.map(esc).join(",") + "\n" + lines.join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = `reporte_${(usuario.nombre || "trafiquer").replace(/\s+/g, "_")}_${_repLanz}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  document.getElementById("rp-lanz").addEventListener("click", e => { const b = e.target.closest("[data-rp-lanz]"); if (!b) return; _repLanz = b.dataset.rpLanz; renderReporte(); });
+  document.getElementById("rp-csv").addEventListener("click", descargarCSV);
+
+  // ═══════════════ PENDIENTES DEL GERENTE (decisionesGerente) ═══════════════
+  const TIPO_LABEL = {
+    subir_pauta: "Subir pauta", bajar_pauta: "Bajar pauta", pausar_pauta: "Pausar pauta",
+    posponer_apertura: "Actualizar fecha en la pauta (apertura pospuesta)", cerrar_apertura: "Pausar pauta (apertura cerrada)"
+  };
+  function unlockAudio() { try { if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (_audioCtx.state === "suspended") _audioCtx.resume().catch(() => {}); } catch (_) {} }
+  function ding() {
+    if (!_audioCtx || _audioCtx.state !== "running") return;
+    try { const t = _audioCtx.currentTime, o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+      o.type = "sine"; o.frequency.setValueAtTime(880, t); o.frequency.setValueAtTime(1174.66, t + 0.09);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+      o.connect(g).connect(_audioCtx.destination); o.start(t); o.stop(t + 0.35); } catch (_) {}
+  }
+  document.addEventListener("click", unlockAudio, { once: true });
+
+  function suscribirPendientes() {
+    if (_unsubPend) _unsubPend();
+    _unsubPend = onSnapshot(query(collection(db, "decisionesGerente"), where("estado", "==", "pendiente")), snap => {
+      const lista = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+      const nuevas = lista.filter(d => !_pendIds.has(d.id));
+      if (_pendIds.size && nuevas.length) { ding(); toast(`Nueva decisión del gerente: ${TIPO_LABEL[nuevas[0].tipo] || nuevas[0].tipo} · ${nuevas[0].cursoNombre || ""}`, "warning", 6000); }
+      _pendIds = new Set(lista.map(d => d.id));
+      _pendientes = lista;
+      renderPendientes();
+    }, err => { console.warn("decisionesGerente:", err); _pendientes = []; renderPendientes(); });
+    if (_unsubApl) _unsubApl();
+    _unsubApl = onSnapshot(query(collection(db, "decisionesGerente"), where("aplicadaPor", "==", usuario.uid)), snap => {
+      _aplicadas = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.aplicadaEn?.toMillis?.() || 0) - (a.aplicadaEn?.toMillis?.() || 0)).slice(0, 10);
+      renderPendientes();
+    }, err => { console.warn("aplicadas:", err); _aplicadas = []; renderPendientes(); });
+  }
+
+  function pgCard(d, aplicada) {
+    const k = d.kpisAlMomento || {};
+    const hace = (ts) => { const t = ts?.toMillis?.(); if (!t) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; };
+    const det = [d.monto ? `Nuevo presupuesto: <b>${fmt$(d.monto)}/día</b>` : "", d.nuevaFecha ? `Nueva fecha: <b>${fKey(d.nuevaFecha)}</b> (${d.alumnosMovidos ?? 0} alumnos ya movidos)` : ""].filter(Boolean).join(" · ");
+    return `<div class="pg-card${aplicada ? " aplicada" : ""}">
+      <div class="pg-head">
+        <span class="chip ${aplicada ? "chip-green" : "chip-yellow"}">${aplicada ? "Aplicada" : "Pendiente"}</span>
+        <span class="pg-tipo">${TIPO_LABEL[d.tipo] || d.tipo}</span>
+        <span class="tf-cons-mini">${escapeHtml(d.consultoraNombre || "")}</span>
+      </div>
+      <div class="pg-meta"><b>${escapeHtml(d.cursoNombre || "")}</b> · apertura ${fKey(d.aperturaKey)}${det ? "<br>" + det : ""}<br>Pedida por ${escapeHtml(d.creadoPorNombre || "gerente")} ${hace(d.creadoEn)}${aplicada ? ` · aplicada ${hace(d.aplicadaEn)}` : ""}</div>
+      ${k.pauta !== undefined ? `<div class="pg-kpis"><span>Al momento: día <b>${k.dia ?? "—"}</b></span><span>pauta <b>${fmt$(k.pauta)}</b></span><span>leads <b>${k.leads ?? 0}</b></span><span>ventas <b>${k.ventas ?? 0}</b></span><span>CPL <b>${k.cpl ? fmt$(k.cpl) : "—"}</b></span><span>costo/alumno <b>${k.costoAlumno ? fmt$(k.costoAlumno) : "—"}</b></span></div>` : ""}
+      ${d.motivo ? `<div class="pg-motivo">"${escapeHtml(d.motivo)}"</div>` : ""}
+      ${aplicada ? (d.notaTrafiquer ? `<div class="tf-att-nota">"${escapeHtml(d.notaTrafiquer)}"</div>` : "") : `<div class="pg-foot">
+        <input class="tf-nota-input" data-pg-nota="${d.id}" maxlength="140" placeholder="¿Qué hiciste? Ej: presupuesto a $800/día en Meta (opcional)">
+        <button class="tf-att-btn" data-pg-aplicar="${d.id}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Marcar aplicada
+        </button>
+      </div>`}
+    </div>`;
+  }
+
+  function renderPendientes() {
+    const cont = document.getElementById("pg-contenido"); if (!cont) return;
+    const n = _pendientes.length;
+    const badge = document.getElementById("pg-n"); badge.textContent = n; badge.style.display = n ? "" : "none";
+    let html = n ? _pendientes.map(d => pgCard(d, false)).join("") : `<div class="tf-ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div class="tf-ok-t">Sin pendientes</div><div class="tf-ok-s">Cuando el gerente tome una decisión, aparece aquí y suena.</div></div>`;
+    if (_aplicadas.length) html += `<div class="pg-sec-t">Últimas que aplicaste</div>` + _aplicadas.map(d => pgCard(d, true)).join("");
+    cont.innerHTML = html;
+  }
+
+  async function marcarAplicada(id) {
+    const nota = (document.querySelector(`[data-pg-nota="${id}"]`)?.value || "").trim().slice(0, 140);
+    const btn = document.querySelector(`[data-pg-aplicar="${id}"]`); if (btn) btn.disabled = true;
+    try {
+      await updateDoc(doc(db, "decisionesGerente", id), { estado: "aplicada", aplicadaPor: usuario.uid, aplicadaPorNombre: usuario.nombre || usuario.email || "Trafiquer", aplicadaEn: serverTimestamp(), notaTrafiquer: nota });
+      toast("Marcada como aplicada", "success");
+    } catch (e) { console.error(e); toast("No se pudo marcar: " + e.message, "error"); if (btn) btn.disabled = false; }
+  }
+  document.getElementById("pg-contenido").addEventListener("click", e => {
+    const b = e.target.closest("[data-pg-aplicar]"); if (b) marcarAplicada(b.dataset.pgAplicar);
+  });
+  document.getElementById("pg-contenido").addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target.matches("[data-pg-nota]")) { e.preventDefault(); marcarAplicada(e.target.dataset.pgNota); }
+  });
+
+  // ═══════════════ Pestañas ═══════════════
+  document.getElementById("tf-tabs").addEventListener("click", e => {
+    const b = e.target.closest(".tf-tab-btn"); if (!b) return;
+    document.querySelectorAll(".tf-tab-btn").forEach(x => x.classList.toggle("active", x === b));
+    document.querySelectorAll(".tf-tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + b.dataset.tab));
+  });
+
   // ═══════════════ Eventos ═══════════════
   document.getElementById("tf-contenido").addEventListener("click", (e) => {
     const bsT = e.target.closest("#tf-bs-toggle");
@@ -638,6 +1166,8 @@
     usuario = await requireRole("trafiquer");
     document.getElementById("tf-nombre").textContent = usuario.nombre || usuario.email || "Trafiquer";
     suscribirAcciones();
+    suscribirMetricas();
+    suscribirPendientes();
     await cargar();
     setInterval(cargar, 30 * 60 * 1000);
   })();
