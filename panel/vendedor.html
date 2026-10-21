@@ -1786,7 +1786,6 @@
       <input type="text" id="vipNombreInput" class="wa-modal-input" placeholder="Ej. Membresía Visión Pecuaria" autocomplete="off">
       <label class="wa-modal-label">Link de la página oficial</label>
       <input type="text" id="vipLinkInput" class="wa-modal-input" placeholder="https://www.visionpecuariamx.com/" autocomplete="off" spellcheck="false">
-      <button type="button" id="vipMarcarBtn" style="margin-top:10px;width:100%;background:#fffbeb;color:#92400e;border:1px dashed #f59e0b;border-radius:8px;padding:9px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">🔒 Ya se las mandé — solo marcar (no envía nada)</button>
     </div>
 
     <!-- Campos: Invitación a curso -->
@@ -3542,38 +3541,6 @@
   document.getElementById("waDirectoCancel").addEventListener("click", cerrarModalWaDirecto);
   document.getElementById("waDirectoOverlay").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) cerrarModalWaDirecto();
-  });
-
-  // 20-oct-2026: registra el candado de membresía SIN enviar (envíos hechos antes del candado)
-  document.getElementById("vipMarcarBtn").addEventListener("click", async () => {
-    if (!waDirectoCursoId) return;
-    const pend = waDirectoAlumnos.filter(a => !a.bloqueado);
-    if (pend.length === 0) { toast("Todos los de la lista ya están marcados 🔒", "info"); return; }
-    const ok = await confirmar({
-      titulo: "Marcar membresía como enviada",
-      mensaje: `Se marcarán ${pend.length} alumno${pend.length === 1 ? "" : "s"} como que YA recibieron la membresía (no se les envía nada). Quedarán bloqueados 30 días. Si solo quieres algunos, márcalos con el checkbox antes de abrir el modal.`,
-      btnOk: "Sí, marcar",
-      btnCancel: "Cancelar",
-    });
-    if (!ok) return;
-    const btn = document.getElementById("vipMarcarBtn");
-    const txt = btn.textContent;
-    btn.disabled = true; btn.textContent = "Marcando…";
-    try {
-      const fn = httpsCallable(functions, "marcarMembresiaEnviada");
-      const r = await fn({ cursoId: waDirectoCursoId, alumnoIds: pend.map(a => a.id) });
-      const d = r.data || {};
-      // Reflejar al instante sin esperar el snapshot
-      const ahoraTs = { toMillis: () => Date.now() };
-      pend.forEach(p => { const al = alumnos.find(x => x.id === p.id); if (al && !al.membresiaEnviadaEn) al.membresiaEnviadaEn = ahoraTs; });
-      waDirectoRecalcularLista();
-      toast(`🔒 ${d.marcados || 0} marcado${d.marcados === 1 ? "" : "s"}${d.yaEstaban ? ` · ${d.yaEstaban} ya estaban (mismo tel/correo)` : ""}`, "success", 6000);
-    } catch (e) {
-      console.error(e);
-      toast("No se pudo marcar: " + (e.message || "error"), "error");
-    } finally {
-      btn.disabled = false; btn.textContent = txt;
-    }
   });
 
   document.getElementById("waDirectoSend").addEventListener("click", async () => {
