@@ -3398,7 +3398,13 @@
       const id = tr.dataset.alumnoId;
       const a = alumnos.find(x => x.id === id) || {};
       const telNorm = waDirectoNormalizarTel(a.telefono);
+      // 20-oct-2026: candado de membresía (30 días). El backend es quien bloquea;
+      // aquí solo se muestra y se excluye del conteo.
+      const memMs = a.membresiaEnviadaEn?.toMillis?.() || 0;
+      const memBloq = waDirectoTipo === "membresia" && memMs > 0 && (Date.now() - memMs) < 30 * 864e5;
       return {
+        bloqueado: memBloq,
+        disponible: memBloq ? new Date(memMs + 30 * 864e5).toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "",
         id,
         nombre: a.nombre || "(sin nombre)",
         telRaw: a.telefono || "",
@@ -3418,13 +3424,15 @@
         <div class="wa-directo-item">
           <span class="nombre">${escapeHtml(a.nombre)}</span>
           ${a.telValido
-            ? `<span class="tel">📱 +${a.tel}</span>`
+            ? (a.bloqueado
+                ? `<span class="tel-malo" style="color:#b45309">🔒 Membresía ya enviada · disponible ${escapeHtml(a.disponible)}</span>`
+                : `<span class="tel">📱 +${a.tel}</span>`)
             : `<span class="tel-malo">⚠ Tel inválido: "${escapeHtml(a.telRaw || "vacío")}"</span>`}
         </div>
       `).join("");
     }
 
-    const validos = waDirectoAlumnos.filter(a => a.telValido).length;
+    const validos = waDirectoAlumnos.filter(a => a.telValido && !a.bloqueado).length;
     document.getElementById("waDirectoCount").textContent = validos;
     document.getElementById("waDirectoSend").disabled = validos === 0;
   }
@@ -3537,7 +3545,7 @@
 
   document.getElementById("waDirectoSend").addEventListener("click", async () => {
     if (!waDirectoCursoId) return;
-    const ids = waDirectoAlumnos.filter(a => a.telValido).map(a => a.id);
+    const ids = waDirectoAlumnos.filter(a => a.telValido && !a.bloqueado).map(a => a.id);
     if (ids.length === 0) return;
 
     const errEl = document.getElementById("waDirectoLinkError");
@@ -3598,16 +3606,17 @@
         consultora.membresiaLink = payload.membresiaLink;
       }
 
+      const bloqTxt = d.bloqueados ? ` · 🔒 ${d.bloqueados} ya tenía${d.bloqueados === 1 ? "" : "n"} la membresía (bloqueado 30 días)` : "";
       if (d.fallos === 0 && d.sinTelefono === 0) {
-        res.className = "wa-directo-resultado ok";
-        res.textContent = `✓ Enviado a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} por WhatsApp 📲`;
+        res.className = d.exitos > 0 ? "wa-directo-resultado ok" : "wa-directo-resultado warn";
+        res.textContent = `✓ Enviado a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} por WhatsApp 📲${bloqTxt}`;
         toast(`WhatsApp enviado a ${d.exitos} alumno${d.exitos === 1 ? "" : "s"} 📲`, "success");
         setTimeout(cerrarModalWaDirecto, 2500);
       } else {
         res.className = "wa-directo-resultado warn";
-        const detalleFallos = (d.detalle || []).filter(x => !x.ok).slice(0, 3)
+        const detalleFallos = (d.detalle || []).filter(x => !x.ok && !x.bloqueado).slice(0, 3)
           .map(x => `${x.nombre || x.id}: ${x.motivo || "?"}`).join(" · ");
-        res.textContent = `Enviados ${d.exitos}/${d.totales}. Fallos: ${d.fallos + (d.sinTelefono || 0)}. ${detalleFallos}`;
+        res.textContent = `Enviados ${d.exitos}/${d.totales}. Fallos: ${d.fallos + (d.sinTelefono || 0)}. ${detalleFallos}${bloqTxt}`;
       }
     } catch (err) {
       console.error("[WA-Directo] Error:", err);
@@ -3673,8 +3682,11 @@
       });
       const d = res.data || {};
       cerrarModalEnviarLink();
+      const bloqMail = d.bloqueados ? ` · 🔒 ${d.bloqueados} ya tenía${d.bloqueados === 1 ? "" : "n"} la membresía (bloqueado 30 días)` : "";
       if (d.exitos > 0) {
-        toast(`Aviso enviado a ${d.exitos} de ${d.totales} alumno${d.totales === 1 ? '' : 's'}`, "success");
+        toast(`Aviso enviado a ${d.exitos} de ${d.totales} alumno${d.totales === 1 ? '' : 's'}${bloqMail}`, "success", 6000);
+      } else if (d.bloqueados) {
+        toast(`🔒 No se envió nada: ${d.bloqueados} alumno${d.bloqueados === 1 ? "" : "s"} ya recibi${d.bloqueados === 1 ? "ó" : "eron"} la membresía en los últimos 30 días.`, "warning", 6000);
       } else {
         toast("No se pudo enviar a ningún alumno. Revisa que tengan correo registrado.", "error");
       }
